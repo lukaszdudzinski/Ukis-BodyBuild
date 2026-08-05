@@ -279,9 +279,9 @@ export const TrainingUI = {
         currentTraining.exercises.forEach((ex, exIndex) => {
             html += `
                 <div style="background: rgba(0,0,0,0.4); border: 1px solid #00BFFF; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
-                    <div style="display: flex; gap: 10px; margin-bottom: 10px;">
-                        <input type="text" class="exercise-name-input" placeholder="Nazwa ćwiczenia (np. Wyciskanie)" value="${ex.name}" onchange="window.TrainingUI.updateExerciseField('${ex.id}', 'name', this.value)" style="flex: 2; padding: 10px; border-radius: 4px; border: 1px solid #00BFFF; background: #222; color: #fff; font-size: 1em;">
-                        <select onchange="window.TrainingUI.updateExerciseField('${ex.id}', 'type', this.value)" style="flex: 1; padding: 10px; border-radius: 4px; border: 1px solid #00BFFF; background: #222; color: #fff;">
+                    <div style="margin-bottom: 10px;">
+                        <input type="text" class="exercise-name-input" placeholder="Nazwa ćwiczenia (np. Wyciskanie)" value="${ex.name}" onchange="window.TrainingUI.updateExerciseField('${ex.id}', 'name', this.value)" style="display: block; width: 100%; padding: 10px; margin-bottom: 10px; border-radius: 4px; border: 1px solid #00BFFF; background: #222; color: #fff; font-size: 1em; box-sizing: border-box; text-align: center;">
+                        <select onchange="window.TrainingUI.updateExerciseField('${ex.id}', 'type', this.value)" style="display: block; width: 100%; padding: 10px; border-radius: 4px; border: 1px solid #00BFFF; background: #222; color: #fff; font-size: 1em; box-sizing: border-box; text-align: center;">
                             <option value="strength" ${ex.type === 'strength' ? 'selected' : ''}>Siłowe</option>
                             <option value="cardio" ${ex.type === 'cardio' ? 'selected' : ''}>Cardio</option>
                         </select>
@@ -303,11 +303,11 @@ export const TrainingUI = {
                         `).join('')}
                     </div>
 
-                    <div style="display: flex; gap: 10px; align-items: center; margin-top: 15px;">
-                        <input type="number" id="weight-${ex.id}" placeholder="kg" style="flex: 1; padding: 10px; border-radius: 4px; border: 1px solid #444; background: #222; color: #fff; font-size: 1.1em;" inputmode="decimal">
-                        <span style="color: #aaa;">x</span>
-                        <input type="number" id="reps-${ex.id}" placeholder="powt" style="flex: 1; padding: 10px; border-radius: 4px; border: 1px solid #444; background: #222; color: #fff; font-size: 1.1em;" inputmode="numeric">
-                        <button onclick="window.TrainingUI.addSet('${ex.id}')" style="background: #00BFFF; color: #fff; border: none; padding: 10px; border-radius: 4px; cursor: pointer; flex: 1.5; font-weight: bold;">+ Seria</button>
+                    <div style="display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-top: 15px;">
+                        <input type="number" id="weight-${ex.id}" placeholder="kg" style="min-width: 60px; flex: 1; padding: 10px; border-radius: 4px; border: 1px solid #444; background: #222; color: #fff; font-size: 1em; text-align: center; box-sizing: border-box;" inputmode="decimal">
+                        <span style="color: #aaa; font-weight: bold;">X</span>
+                        <input type="number" id="reps-${ex.id}" placeholder="powt" style="min-width: 60px; flex: 1; padding: 10px; border-radius: 4px; border: 1px solid #444; background: #222; color: #fff; font-size: 1em; text-align: center; box-sizing: border-box;" inputmode="numeric">
+                        <button onclick="window.TrainingUI.addSet('${ex.id}')" style="background: #00BFFF; color: #fff; border: none; padding: 10px; border-radius: 4px; cursor: pointer; min-width: 80px; flex: 1; font-weight: bold; box-sizing: border-box;">+ Seria</button>
                     </div>
                 </div>
             `;
