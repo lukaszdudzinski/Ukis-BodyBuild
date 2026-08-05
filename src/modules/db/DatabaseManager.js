@@ -84,6 +84,12 @@ export const DatabaseManager = {
         } catch(e) {
             // Ignore error if column already exists
         }
+
+        try {
+            db.exec(`ALTER TABLE measurements ADD COLUMN height REAL;`);
+        } catch(e) {
+            // Ignore error if column already exists
+        }
     
     },
 
@@ -91,8 +97,8 @@ export const DatabaseManager = {
         await DatabaseManager.init();
         
         db.exec({
-            sql: `INSERT INTO measurements (date, weight, chest, waist, hips, thigh, biceps, photo) 
-                  VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+            sql: `INSERT INTO measurements (date, weight, chest, waist, hips, thigh, biceps, photo, height) 
+                  VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
             bind: [
                 data.date, 
                 data.weight, 
@@ -101,7 +107,8 @@ export const DatabaseManager = {
                 data.hips || null, 
                 data.thigh || null, 
                 data.biceps || null, 
-                data.photo || null
+                data.photo || null,
+                data.height || null
             ]
         });
         
@@ -207,9 +214,9 @@ export const DatabaseManager = {
             // Import Measurements
             data.measurements.forEach(m => {
                 db.exec({
-                    sql: `INSERT INTO measurements (id, date, weight, chest, waist, hips, thigh, biceps, photo, created_at) 
-                          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-                    bind: [m.id, m.date, m.weight, m.chest, m.waist, m.hips, m.thigh, m.biceps, m.photo, m.created_at]
+                    sql: `INSERT INTO measurements (id, date, weight, chest, waist, hips, thigh, biceps, photo, created_at, height) 
+                          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+                    bind: [m.id, m.date, m.weight, m.chest, m.waist, m.hips, m.thigh, m.biceps, m.photo, m.created_at, m.height || null]
                 });
             });
 

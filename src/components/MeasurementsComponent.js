@@ -17,6 +17,10 @@ export const MeasurementsComponent = {
                         <label for="measureWeight">Waga (kg)</label>
                         <input type="number" id="measureWeight" step="0.1" required>
                     </div>
+                    <div class="input-group">
+                        <label for="measureHeight">Wzrost (cm)</label>
+                        <input type="number" id="measureHeight" step="1">
+                    </div>
                 </div>
                 
                 <div class="form-column">

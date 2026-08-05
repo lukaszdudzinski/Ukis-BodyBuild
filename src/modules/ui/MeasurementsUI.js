@@ -62,6 +62,7 @@ export const MeasurementsUI = {
         const data = {
             date: document.getElementById('measureDate').value,
             weight: parseFloat(document.getElementById('measureWeight').value),
+            height: parseFloat(document.getElementById('measureHeight').value) || null,
             chest: parseFloat(document.getElementById('measureChest').value) || null,
             waist: parseFloat(document.getElementById('measureWaist').value) || null,
             hips: parseFloat(document.getElementById('measureHips').value) || null,
@@ -113,6 +114,7 @@ export const MeasurementsUI = {
                             ${rec.photo ? `<img src="${rec.photo}" style="width: 80px; height: 80px; object-fit: cover; border-radius: 8px; border: 1px solid #444;" />` : ''}
                             <div style="flex-grow: 1; display: grid; grid-template-columns: 1fr 1fr; gap: 5px; font-size: 0.9em;">
                                 <div><strong>Waga:</strong> ${rec.weight} kg</div>
+                                ${rec.height ? `<div><strong>Wzrost:</strong> ${rec.height} cm</div>` : ''}
                                 ${rec.chest ? `<div><strong>Klatka:</strong> ${rec.chest} cm</div>` : ''}
                                 ${rec.waist ? `<div><strong>Talia:</strong> ${rec.waist} cm</div>` : ''}
                                 ${rec.hips ? `<div><strong>Biodra:</strong> ${rec.hips} cm</div>` : ''}

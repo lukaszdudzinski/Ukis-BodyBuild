@@ -28,7 +28,10 @@
     border-radius: 8px;
     font-size: 1.1em;
     width: 100%;
+    max-width: 100%;
+    min-width: 0;
     box-sizing: border-box;
+    -webkit-appearance: none;
 }
 
 .input-group input:focus,
