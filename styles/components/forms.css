@@ -1,0 +1,258 @@
+/* ============================================================
+   KOMPONENTY: FORMULARZE I PRZYCISKI
+   ============================================================ */
+
+/* Input Groups */
+.input-group {
+    margin-bottom: 16px;
+    display: flex;
+    flex-direction: column;
+}
+
+.input-group label,
+.label-with-tooltip label {
+    margin-bottom: 6px;
+    font-size: 0.9em;
+    color: #ffffff !important;
+    font-weight: 500;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.9);
+    letter-spacing: 0.5px;
+}
+
+.input-group input,
+.input-group select {
+    background-color: #333;
+    border: 1px solid #4a4a4a;
+    color: #e0e0e0;
+    padding: 12px 10px;
+    border-radius: 8px;
+    font-size: 1.1em;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.input-group input:focus,
+.input-group select:focus {
+    outline: none;
+    border-color: #00d1b2;
+    box-shadow: 0 0 5px rgba(0, 209, 178, 0.5);
+}
+
+.input-group input:disabled {
+    opacity: 0.5;
+    background-color: #444;
+    cursor: not-allowed;
+}
+
+/* Buttons */
+.app-content button[type="submit"] {
+    background-color: #00d1b2;
+    color: #1e1e1e;
+    font-weight: bold;
+    padding: 12px 20px;
+    font-size: 1.1em;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    width: 100%;
+    text-shadow: none;
+    transition: all 0.2s ease;
+}
+
+.app-content button[type="submit"]:hover {
+    background-color: #00c4a7;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(0, 209, 178, 0.4);
+}
+
+.app-content button[type="submit"]:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 5px rgba(0, 209, 178, 0.2);
+}
+
+.pulse-button {
+    background-color: transparent;
+    color: #00d1b2;
+    font-weight: bold;
+    border: 1px solid #00d1b2;
+    padding: 12px 24px;
+    font-size: 1.1em;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    box-shadow: 0 0 10px rgba(0, 209, 178, 0.1);
+}
+
+.pulse-button:hover {
+    background-color: #00d1b2;
+    color: #1e1e1e;
+    box-shadow: 0 0 20px rgba(0, 209, 178, 0.4);
+}
+
+.back-to-dashboard {
+    background: none;
+    border: 1px solid #00d1b2;
+    color: #00d1b2;
+    padding: 6px 15px;
+    border-radius: 20px;
+    cursor: pointer;
+    font-size: 0.9em;
+    margin-bottom: 15px;
+    transition: all 0.2s;
+    font-weight: bold;
+}
+
+.back-to-dashboard:hover {
+    color: #1e1e1e;
+    background-color: #00d1b2;
+}
+
+/* Form Layouts */
+.two-column-form {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+}
+
+.form-column {
+    flex: 1;
+    min-width: 250px;
+}
+
+.form-full-width {
+    flex-basis: 100%;
+}
+
+@media (max-width: 768px) {
+    .two-column-form {
+        flex-direction: column;
+        gap: 0;
+    }
+
+    .form-column {
+        width: 100%;
+        min-width: 0;
+    }
+}
+
+/* Checkboxes (Checklists) */
+.checklist-group {
+    margin-bottom: 20px;
+    background-color: rgba(255, 255, 255, 0.2);
+    border-radius: 8px;
+    padding: 10px 15px;
+    border: 1px solid #4a4a4a;
+}
+
+.checklist-group h4 {
+    font-size: 1.2em;
+    color: #00d1b2;
+    border-bottom-color: rgba(255, 255, 255, 0.3);
+}
+
+.checklist-item label {
+    color: #f0f0f0;
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.6);
+}
+
+.checklist-item input[type="checkbox"] {
+    border-color: #ccc;
+    background-color: rgba(255, 255, 255, 0.3);
+}
+
+.checklist-item input[type="checkbox"]:checked {
+    background-color: #00d1b2;
+    border-color: #00d1b2;
+}
+
+.checklist-item input[type="checkbox"]:checked+label {
+    color: #ddd;
+    text-shadow: 0 1px 1px rgba(0, 0, 0, 0.4);
+    text-decoration: line-through;
+}
+
+.global-reset-wrapper {
+    background: rgba(40, 40, 40, 0.7);
+    border-radius: 8px;
+    padding: 10px;
+    margin-top: 15px;
+    margin-bottom: 15px;
+    text-align: center;
+    animation: pulse-glow-dark 3s infinite ease-in-out;
+    border: 1px solid rgba(0, 209, 178, 0.1);
+}
+
+#global-checklist-reset-btn {
+    background-color: #00d1b2;
+    color: #1e1e1e;
+    font-weight: bold;
+    border: none;
+    padding: 12px 24px;
+    font-size: 1em;
+    border-radius: 50px;
+    cursor: pointer;
+    width: 100%;
+    transition: all 0.3s ease;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+}
+
+#global-checklist-reset-btn:hover {
+    background-color: #00c4a7;
+    color: #fff;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 12px rgba(0, 209, 178, 0.4);
+}
+
+#global-checklist-reset-btn:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+@media (max-width: 768px) {
+    .checklist-item {
+        padding: 8px 0;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .checklist-item input[type="checkbox"] {
+        width: 28px;
+        height: 28px;
+    }
+
+    .checklist-item label {
+        font-size: 1.1em;
+        margin-left: 15px;
+        line-height: 1.4;
+    }
+}
+
+/* Shared Action Button (like Zapisz wynik) */
+.action-button {
+    background-color: #00d1b2;
+    color: #1e1e1e;
+    font-weight: bold;
+    padding: 12px 20px;
+    font-size: 1.1em;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    width: 100%;
+    margin-top: 10px;
+    text-shadow: none;
+    transition: all 0.2s ease;
+}
+
+.action-button:hover {
+    background-color: #00c4a7;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(0, 209, 178, 0.4);
+}
+
+.action-button:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 5px rgba(0, 209, 178, 0.2);
+}

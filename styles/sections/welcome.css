@@ -1,0 +1,46 @@
+/* ============================================================
+   NOWA ZAKŁADKA: EKRAN POWITALNY
+   ============================================================ */
+#welcome-screen .home-header {
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 80%;
+    padding: 20px;
+}
+
+#welcome-screen .home-logo {
+    width: 90px;
+    height: 90px;
+    border-radius: 50%;
+    border: 3px solid #00d1b2;
+    box-shadow: 0 0 20px rgba(0, 209, 178, 0.4);
+    margin-bottom: 20px;
+}
+
+#welcome-screen .home-header h2 {
+    font-size: 2.2em;
+    color: #fff;
+    margin-bottom: 10px;
+    animation: neon-pulse 3s infinite ease-in-out;
+}
+
+#welcome-screen .home-header p {
+    font-size: 1.3em;
+    color: #ffffff;
+    margin-top: 20px;
+    font-weight: 600;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 1);
+    background: rgba(0, 0, 0, 0.3);
+    padding: 15px 25px;
+    border-radius: 12px;
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+    letter-spacing: 0.5px;
+    max-width: 80%;
+    line-height: 1.5;
+}

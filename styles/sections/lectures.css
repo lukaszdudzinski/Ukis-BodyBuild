@@ -1,0 +1,194 @@
+/* ============================================================
+   WYKŁADY / LECTURES - GRID + VIEWER
+   ============================================================ */
+.lectures-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 16px;
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.lectures-grid-wrapper[hidden],
+.lecture-viewer[hidden] {
+    display: none;
+}
+
+.lecture-viewer {
+    background-color: rgba(10, 10, 10, 0.5);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 12px;
+    padding: 18px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6);
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    min-height: 300px;
+}
+
+.lecture-controls {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.lecture-controls button {
+    background: rgba(0, 0, 0, 0.4);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    color: #eaeaea;
+    padding: 8px 12px;
+    border-radius: 8px;
+    cursor: pointer;
+}
+
+.lecture-title {
+    color: #ffffff;
+    margin: 0;
+    font-size: 1.25em;
+}
+
+.lecture-body {
+    color: #e6e6e6;
+    line-height: 1.6;
+}
+
+.lecture-toc {
+    border-left: 1px solid rgba(255, 255, 255, 0.04);
+    padding-left: 12px;
+    margin-left: 10px;
+    color: #bdbdbd;
+    max-height: 380px;
+    overflow: auto;
+}
+
+/* Fix for TOC Link Clarity - Turquoise as requested */
+.lecture-toc ul {
+    list-style: disc;
+    /* or none if handled elsewhere, but keeping standard */
+    padding-left: 20px;
+}
+
+.lecture-toc li {
+    margin-bottom: 6px;
+}
+
+.lecture-toc a {
+    color: #00d1b2;
+    /* Turquoise / Teal matching app theme */
+    text-decoration: none;
+    transition: color 0.2s;
+}
+
+.lecture-toc a:hover {
+    color: #00ffda;
+    /* Lighter turquoise on hover */
+    text-decoration: underline;
+}
+
+/* When viewer replaces the list, make sure layout is comfortable */
+.lectures-wrapper.replace-mode {
+    display: grid;
+    grid-template-columns: 1fr 420px;
+    gap: 18px;
+    align-items: start;
+}
+
+/* Mobile adjustments */
+@media (max-width: 768px) {
+    .lectures-grid {
+        grid-template-columns: 1fr;
+        gap: 12px;
+    }
+
+    .lectures-wrapper.replace-mode {
+        grid-template-columns: 1fr;
+    }
+
+    .lecture-viewer {
+        padding: 14px;
+    }
+}
+
+
+
+/* Formula Box (Technical/Scifi Style) */
+.formula-box {
+    background: rgba(0, 209, 178, 0.1);
+    border: 1px solid #00d1b2;
+    padding: 20px;
+    border-radius: 8px;
+    margin: 20px 0;
+    text-align: center;
+    box-shadow: 0 0 15px rgba(0, 209, 178, 0.2);
+}
+
+.formula-main {
+    font-size: 1.4em;
+    font-weight: bold;
+    color: #00d1b2;
+    margin-bottom: 15px;
+    letter-spacing: 1px;
+}
+
+.formula-legend {
+    text-align: left;
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    font-size: 0.95em;
+    color: #e0e0e0;
+}
+
+.formula-legend li {
+    margin-bottom: 5px;
+    padding-left: 15px;
+    position: relative;
+}
+
+.formula-legend li::before {
+    content: "•";
+    color: #00d1b2;
+    position: absolute;
+    left: 0;
+}
+
+.calculation-example {
+    background: rgba(255, 255, 255, 0.05);
+    border-left: 4px solid #00d1b2;
+    padding: 15px;
+    margin: 15px 0;
+    font-family: monospace;
+    font-size: 1.1em;
+    color: #fff;
+}
+
+/* App Feature Highlight */
+.app-feature-highlight {
+    background: rgba(0, 0, 0, 0.6);
+    /* Darker background like the screenshot */
+    border-left: 4px solid #0099e5;
+    /* Distinctive Blue/Turquoise border */
+    padding: 15px;
+    margin-top: 30px;
+    text-align: left;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+}
+
+.app-feature-highlight h4 {
+    color: #ffffff;
+    /* White title like screenshot */
+    text-transform: none;
+    /* Screenshot doesn't show uppercase */
+    letter-spacing: normal;
+    margin-bottom: 8px;
+    font-size: 1em;
+    font-weight: bold;
+}
+
+.app-feature-highlight p {
+    color: #e0e0e0;
+    font-size: 0.95em;
+    line-height: 1.5;
+    margin-bottom: 0;
+}
