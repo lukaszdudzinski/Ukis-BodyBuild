@@ -183,14 +183,48 @@ export const TrainingUI = {
                     historyHtml += `<p style="color: #888; font-size: 0.9em; font-style: italic;">Brak sesji w historii do skopiowania.</p>`;
                 } else {
                     recentTrainings.forEach((rec, idx) => {
-                        const nameDisplay = rec.name ? `<strong style="color: #00BFFF;">${rec.name}</strong> (${rec.date})` : `<strong style="color: #00BFFF;">${rec.date}</strong>`;
-                        const exNames = rec.exercises.map(e => e.name).filter(n => n).join(', ');
-                        const preview = exNames.length > 30 ? exNames.substring(0, 30) + '...' : exNames;
+                        const nameDisplay = rec.name ? `<strong style="color: #00BFFF; font-size: 1.1em;">${rec.name}</strong> <span style="color: #aaa; font-size: 0.9em;">(${rec.date})</span>` : `<strong style="color: #00BFFF; font-size: 1.1em;">${rec.date}</strong>`;
+                        
+                        let exercisesPreview = '';
+                        if (rec.exercises && rec.exercises.length > 0) {
+                            rec.exercises.forEach(ex => {
+                                exercisesPreview += `<div style="margin-bottom: 8px;"><strong>${ex.name || 'Brak nazwy'}</strong> <span style="font-size: 0.8em; color: #888;">(${ex.type === 'cardio' ? 'Cardio' : 'Siłowe'})</span><br>`;
+                                if (ex.sets && ex.sets.length > 0) {
+                                    exercisesPreview += `<ul style="margin: 3px 0 0 0; padding-left: 20px; font-size: 0.9em; color: #ccc;">`;
+                                    ex.sets.forEach((s, i) => {
+                                        exercisesPreview += `<li>Seria ${i+1}: <strong style="color: #00BFFF;">${s.weight} kg</strong> x <strong>${s.reps} powt.</strong></li>`;
+                                    });
+                                    exercisesPreview += `</ul>`;
+                                } else {
+                                    exercisesPreview += `<span style="font-size: 0.9em; color: #888; padding-left: 10px;">Brak zapisanych serii</span>`;
+                                }
+                                exercisesPreview += `</div>`;
+                            });
+                        } else {
+                            exercisesPreview = `<p style="font-size: 0.9em; color: #888;">Brak zapisanych ćwiczeń.</p>`;
+                        }
+
                         historyHtml += `
-                            <button onclick="window.TrainingUI.startTraining(${idx})" class="action-button" style="width: 100%; margin-bottom: 5px; background-color: #333; border: 1px solid #555; text-align: left; padding: 10px;">
-                                ${nameDisplay}<br>
-                                <span style="font-size: 0.85em; color: #ccc;">Czas treningu: ${TrainingUI.formatTime(rec.duration_seconds)} | ${rec.exercises.length} ćw. ${preview ? `(${preview})` : ''}</span>
-                            </button>
+                            <div class="history-item-container" style="background-color: #222; border: 1px solid #444; margin-bottom: 10px; border-radius: 8px; padding: 12px; text-align: left;">
+                                <div style="display: flex; justify-content: space-between; align-items: center; cursor: pointer;" onclick="window.TrainingUI.toggleHistoryPreview(${idx})">
+                                    <div style="flex: 1;">
+                                        ${nameDisplay}<br>
+                                        <span style="font-size: 0.85em; color: #ccc;">Czas: ${TrainingUI.formatTime(rec.duration_seconds)} | Ćwiczeń: ${rec.exercises.length}</span>
+                                    </div>
+                                    <div style="color: #00BFFF; font-size: 1.2em; padding-left: 10px;">
+                                        <span id="preview-icon-${idx}">▼</span>
+                                    </div>
+                                </div>
+                                <div id="preview-content-${idx}" style="display: none; margin-top: 15px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 15px;">
+                                    <div style="margin-bottom: 15px;">
+                                        <h6 style="color: #ccc; margin-top: 0; margin-bottom: 10px;">Podgląd ćwiczeń:</h6>
+                                        ${exercisesPreview}
+                                    </div>
+                                    <button onclick="window.TrainingUI.startTraining(${idx})" class="action-button" style="width: 100%; background-color: #2ECC71; border-color: #2ECC71; color: #fff; font-weight: bold;">
+                                        📋 Skopiuj do tego dnia
+                                    </button>
+                                </div>
+                            </div>
                         `;
                     });
                 }
@@ -200,6 +234,20 @@ export const TrainingUI = {
         
         // Scroll to panel
         panel.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        panel.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    },
+
+    toggleHistoryPreview: (idx) => {
+        const content = document.getElementById(`preview-content-${idx}`);
+        const icon = document.getElementById(`preview-icon-${idx}`);
+        if (!content || !icon) return;
+        if (content.style.display === 'none') {
+            content.style.display = 'block';
+            icon.textContent = '▲';
+        } else {
+            content.style.display = 'none';
+            icon.textContent = '▼';
+        }
     },
 
     formatTime: (seconds) => {
