@@ -83,7 +83,7 @@ export const TrainingUI = {
                 trainingDates.add(rec.date);
             });
             TrainingUI.renderCalendar();
-            TrainingUI.renderHistoryList(records);
+            
             // Automatically select and show options for the currently selected date (defaults to today)
             if (selectedDate) {
                 TrainingUI.handleDayClick(selectedDate);

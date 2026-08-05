@@ -46,8 +46,8 @@ export const MeasurementsComponent = {
                 </div>
 
                 <!-- Photo upload -->
-                <div class="form-full-width" style="margin-top: 15px;">
-                    <label for="measurePhoto" class="action-button" style="display: block; text-align: center; background: rgba(0,0,0,0.4); border: 1px solid #444;">📸 Dodaj Zdjęcie Sylwetki</label>
+                <div class="form-full-width" style="margin-top: 15px; width: 100%; box-sizing: border-box;">
+                    <label for="measurePhoto" class="action-button" style="display: block; text-align: center; background: rgba(0,0,0,0.4); border: 1px solid #444; width: 100%; box-sizing: border-box;">📸 Dodaj Zdjęcie Sylwetki</label>
                     <input type="file" id="measurePhoto" accept="image/*" style="display: none;">
                     <img id="measurePhotoPreview" style="max-width: 100%; margin-top: 10px; border-radius: 8px; display: none;">
                 </div>
