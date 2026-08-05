@@ -428,23 +428,17 @@ export const TrainingUI = {
 
         let html = '';
         currentTraining.exercises.forEach((ex, exIndex) => {
-            html += `
-                <div style="background: rgba(0,0,0,0.4); border: 1px solid #00BFFF; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
-                    <div style="margin-bottom: 10px;">
-                        <input type="text" class="exercise-name-input" placeholder="Nazwa ćwiczenia (np. Wyciskanie)" value="${ex.name}" onchange="window.TrainingUI.updateExerciseField('${ex.id}', 'name', this.value)" style="display: block; width: 100%; padding: 10px; margin-bottom: 10px; border-radius: 4px; border: 1px solid #00BFFF; background: #222; color: #fff; font-size: 1em; box-sizing: border-box; text-align: center;">
-                        <select onchange="window.TrainingUI.updateExerciseField('${ex.id}', 'type', this.value)" style="display: block; width: 100%; padding: 10px; border-radius: 4px; border: 1px solid #00BFFF; background: #222; color: #fff; font-size: 1em; box-sizing: border-box; text-align: center;">
-                            <option value="strength" ${ex.type === 'strength' ? 'selected' : ''}>Siłowe</option>
-                            <option value="cardio" ${ex.type === 'cardio' ? 'selected' : ''}>Cardio</option>
-                        </select>
+            let exerciseDetailsHtml = '';
+            
+            if (ex.type === 'cardio') {
+                exerciseDetailsHtml = `
+                    <div style="margin-top: 15px; text-align: center;">
+                        <label style="color: #ccc; font-size: 0.9em;">Czas trwania (minuty):</label><br>
+                        <input type="number" id="cardio-time-${ex.id}" value="${ex.duration_minutes || ''}" onchange="window.TrainingUI.updateExerciseField('${ex.id}', 'duration_minutes', this.value)" placeholder="np. 30" style="width: 100%; max-width: 200px; padding: 10px; border-radius: 4px; border: 1px solid #444; background: #222; color: #fff; font-size: 1.2em; text-align: center; margin-top: 5px;" inputmode="numeric">
                     </div>
-
-                    <div style="margin-bottom: 15px; text-align: center;">
-                        <label class="action-button" style="display: inline-block; background-color: #333; border-color: #555; color: #fff; cursor: pointer; width: 100%; box-sizing: border-box;">
-                            📷 Zrób zdjęcie maszyny
-                            <input type="file" accept="image/*" capture="environment" style="display: none;">
-                        </label>
-                    </div>
-                    
+                `;
+            } else {
+                exerciseDetailsHtml = `
                     <div style="margin-bottom: 10px;">
                         ${ex.sets.map((set, i) => `
                             <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid rgba(0,191,255,0.2); font-size: 1em;">
@@ -460,6 +454,27 @@ export const TrainingUI = {
                         <input type="number" id="reps-${ex.id}" placeholder="powt" style="min-width: 60px; flex: 1; padding: 10px; border-radius: 4px; border: 1px solid #444; background: #222; color: #fff; font-size: 1em; text-align: center; box-sizing: border-box;" inputmode="numeric">
                         <button onclick="window.TrainingUI.addSet('${ex.id}')" style="background: #00BFFF; color: #fff; border: none; padding: 10px; border-radius: 4px; cursor: pointer; min-width: 80px; flex: 1; font-weight: bold; box-sizing: border-box;">+ Seria</button>
                     </div>
+                `;
+            }
+
+            html += `
+                <div style="background: rgba(0,0,0,0.4); border: 1px solid #00BFFF; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+                    <div style="margin-bottom: 10px;">
+                        <input type="text" class="exercise-name-input" placeholder="Nazwa ćwiczenia (np. Wyciskanie)" value="${ex.name}" onchange="window.TrainingUI.updateExerciseField('${ex.id}', 'name', this.value)" style="display: block; width: 100%; padding: 10px; margin-bottom: 10px; border-radius: 4px; border: 1px solid #00BFFF; background: #222; color: #fff; font-size: 1em; box-sizing: border-box; text-align: center;">
+                        <select onchange="window.TrainingUI.updateExerciseField('${ex.id}', 'type', this.value); window.TrainingUI.renderCurrentExercises();" style="display: block; width: 100%; padding: 10px; border-radius: 4px; border: 1px solid #00BFFF; background: #222; color: #fff; font-size: 1em; box-sizing: border-box; text-align: center;">
+                            <option value="strength" ${ex.type === 'strength' ? 'selected' : ''}>Siłowe</option>
+                            <option value="cardio" ${ex.type === 'cardio' ? 'selected' : ''}>Cardio</option>
+                        </select>
+                    </div>
+
+                    <div style="margin-bottom: 15px; text-align: center;">
+                        <label class="action-button" style="display: inline-block; background-color: #333; border-color: #555; color: #fff; cursor: pointer; width: 100%; box-sizing: border-box;">
+                            📷 Zrób zdjęcie maszyny
+                            <input type="file" accept="image/*" capture="environment" style="display: none;">
+                        </label>
+                    </div>
+                    
+                    ${exerciseDetailsHtml}
                 </div>
             `;
         });

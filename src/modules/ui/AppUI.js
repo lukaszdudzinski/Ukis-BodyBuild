@@ -1,4 +1,4 @@
-export const APP_VERSION = 'v2026.8.05.11'; // <-- TEN NUMER ZMIENIAMY PRZY KAŻDEJ AKTUALIZACJI
+export const APP_VERSION = 'v2026.8.05.12'; // <-- TEN NUMER ZMIENIAMY PRZY KAŻDEJ AKTUALIZACJI
 
 export const AppUI = {
     init: () => {
@@ -68,6 +68,8 @@ export const AppUI = {
                     content.style.display = 'block';
                 }
             });
+
+            document.dispatchEvent(new CustomEvent('tabChanged', { detail: { tab: tabId } }));
 
             // Mobile Home Button Logic (Show everywhere EXCEPT welcome screen)
             if (tilesHomeBtn) {
