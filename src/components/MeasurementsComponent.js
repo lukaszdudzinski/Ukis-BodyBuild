@@ -8,7 +8,7 @@ export const MeasurementsComponent = {
 
             <form id="measurementsForm" class="two-column-form">
                 <div class="form-column">
-                    <h4 style="color: #D81B60; margin-bottom: 10px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 5px;">Dane podstawowe</h4>
+                    <h4 style="color: #00BFFF; margin-bottom: 10px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 5px;">Dane podstawowe</h4>
                     <div class="input-group">
                         <label for="measureDate">Data pomiaru</label>
                         <input type="date" id="measureDate" required>
@@ -20,7 +20,7 @@ export const MeasurementsComponent = {
                 </div>
                 
                 <div class="form-column">
-                    <h4 style="color: #D81B60; margin-bottom: 10px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 5px;">Obwody (cm)</h4>
+                    <h4 style="color: #00BFFF; margin-bottom: 10px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 5px;">Obwody (cm)</h4>
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
                         <div class="input-group">
                             <label for="measureChest">Klatka</label>

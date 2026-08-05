@@ -165,3 +165,24 @@ body.glass-off:not(.dark-theme) .sidebar-nav li a.active {
         opacity: 1;
     }
 }
+
+/* Global Light Mode Overrides for hardcoded elements */
+body:not(.dark-theme) div[style*="background: rgba(0,0,0"],
+body:not(.dark-theme) div[style*="background: #222"],
+body:not(.dark-theme) div.log-card {
+    background-color: rgba(255, 255, 255, 0.6) !important;
+    border-color: #00BFFF !important;
+    color: #333 !important;
+}
+body:not(.dark-theme) div[style*="background: rgba(0,0,0"] *,
+body:not(.dark-theme) div[style*="background: #222"] *,
+body:not(.dark-theme) div.log-card * {
+    color: #333 !important;
+    text-shadow: none !important;
+}
+body:not(.dark-theme) input,
+body:not(.dark-theme) select {
+    background-color: #fff !important;
+    color: #000 !important;
+    border-color: #ccc !important;
+}

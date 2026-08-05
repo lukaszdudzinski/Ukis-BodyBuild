@@ -44,25 +44,29 @@ export const SettingsUI = {
         const savedGlass = localStorage.getItem('uki-bodybuild-glass');
 
         if (savedTheme === 'light') {
-            document.body.classList.add('light-mode');
+            document.body.classList.remove('dark-theme');
             if (themeToggle) themeToggle.checked = true;
+        } else {
+            document.body.classList.add('dark-theme');
+            if (themeToggle) themeToggle.checked = false;
         }
 
-        // Glass is ON by default. If 'off', we add .no-glass
+        // Glass is ON by default. If 'off', we add .glass-off
         if (savedGlass === 'off') {
-            document.body.classList.add('no-glass');
+            document.body.classList.add('glass-off');
             if (glassToggle) glassToggle.checked = false;
         } else {
+            document.body.classList.remove('glass-off');
             if (glassToggle) glassToggle.checked = true;
         }
 
         if (themeToggle) {
             themeToggle.addEventListener('change', (e) => {
                 if (e.target.checked) {
-                    document.body.classList.add('light-mode');
+                    document.body.classList.remove('dark-theme');
                     localStorage.setItem('uki-bodybuild-theme', 'light');
                 } else {
-                    document.body.classList.remove('light-mode');
+                    document.body.classList.add('dark-theme');
                     localStorage.setItem('uki-bodybuild-theme', 'dark');
                 }
             });
@@ -71,10 +75,10 @@ export const SettingsUI = {
         if (glassToggle) {
             glassToggle.addEventListener('change', (e) => {
                 if (e.target.checked) {
-                    document.body.classList.remove('no-glass');
+                    document.body.classList.remove('glass-off');
                     localStorage.setItem('uki-bodybuild-glass', 'on');
                 } else {
-                    document.body.classList.add('no-glass');
+                    document.body.classList.add('glass-off');
                     localStorage.setItem('uki-bodybuild-glass', 'off');
                 }
             });

@@ -84,8 +84,10 @@ export const TrainingUI = {
             });
             TrainingUI.renderCalendar();
             TrainingUI.renderHistoryList(records);
-            // Hide day action panel initially
-            document.getElementById('day-action-panel').style.display = 'none';
+            // Automatically select and show options for the currently selected date (defaults to today)
+            if (selectedDate) {
+                TrainingUI.handleDayClick(selectedDate);
+            }
         } catch (err) {
             console.error("Error loading training history:", err);
         }
