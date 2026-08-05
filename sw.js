@@ -1,13 +1,11 @@
-const CACHE_NAME = 'ukis-dive-tools-v2026.8.05.01'; // Release v2026.8.05.01
+const CACHE_NAME = 'ukis-bodybuild-v2026.8.05.02';
 // Core assets that MUST be cached immediately
 const CORE_ASSETS = [
     './',
     './index.html',
     './style.css',
     './src/main.js',
-    './img/logo.jpg',
-    './img/logo_lunar.svg',
-    './img/bg/background_uki.jpg',
+    './img/logo.png',
     './manifest.json'
 ];
 

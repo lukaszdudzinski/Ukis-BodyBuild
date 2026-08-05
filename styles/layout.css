@@ -88,8 +88,8 @@
     height: 45px;
     border-radius: 50%;
     object-fit: cover;
-    border: 2px solid rgba(0, 209, 178, 0.5);
-    box-shadow: 0 0 10px rgba(0, 209, 178, 0.3);
+    border: 2px solid rgba(0, 0, 128, 0.6);
+    box-shadow: 0 0 15px rgba(0, 0, 128, 0.9), 0 0 5px rgba(0, 0, 128, 0.5);
     flex-shrink: 0;
     margin-bottom: 0;
 }
@@ -99,7 +99,7 @@
     text-align: left;
     color: #ffffff;
     margin: 0;
-    animation: neon-pulse 3s infinite ease-in-out;
+    text-shadow: 0 0 15px rgba(0, 0, 128, 0.9), 0 0 5px rgba(0, 0, 128, 0.5);
     line-height: 1.2;
 }
 
@@ -147,7 +147,7 @@
 }
 
 .sidebar-nav li a.active {
-    background-color: #00d1b2;
+    background-color: #D81B60;
     color: #1e1e1e !important;
     font-weight: bold;
     text-shadow: none;
@@ -156,21 +156,21 @@
 /* PRO Menu Item */
 .sidebar-nav li.pro-menu-item a {
     font-weight: bold;
-    border-color: rgba(0, 209, 178, 0.3);
+    border-color: rgba(216, 27, 96, 0.3);
     animation: pulse-border-cyan 2s infinite ease-in-out;
     margin-bottom: 8px;
 }
 
 .sidebar-nav li.pro-menu-item a:hover {
-    background-color: rgba(0, 209, 178, 0.1);
-    box-shadow: 0 0 10px rgba(0, 209, 178, 0.3);
+    background-color: rgba(216, 27, 96, 0.1);
+    box-shadow: 0 0 10px rgba(216, 27, 96, 0.3);
 }
 
 .sidebar-nav li.pro-menu-item a.active {
-    background-color: #00d1b2;
+    background-color: #D81B60;
     color: #1e1e1e !important;
     animation: none;
-    box-shadow: 0 0 15px rgba(0, 209, 178, 0.5);
+    box-shadow: 0 0 15px rgba(216, 27, 96, 0.5);
 }
 
 /* --- Sidebar Footer & Buttons (RESTORED) --- */
@@ -191,7 +191,7 @@
     text-align: center;
     animation: pulse-glow-dark 3s infinite ease-in-out;
     flex-shrink: 0;
-    border: 1px solid rgba(0, 209, 178, 0.1);
+    border: 1px solid rgba(216, 27, 96, 0.1);
 }
 
 .donation-wrapper a {
@@ -203,7 +203,7 @@
 }
 
 .donation-wrapper a strong {
-    color: #00d1b2;
+    color: #D81B60;
     font-size: 1.0em;
     display: block;
     margin-top: 1px;
@@ -215,7 +215,7 @@
     content: '☕';
     font-size: 1.2em;
     margin-right: 6px;
-    color: #00d1b2;
+    color: #D81B60;
     vertical-align: middle;
 }
 
@@ -329,6 +329,7 @@
     flex-grow: 0;
     /* Do not stretch */
     white-space: nowrap;
+    text-shadow: 0 0 15px rgba(0, 0, 128, 0.9), 0 0 5px rgba(0, 0, 128, 0.5);
 }
 
 .logo-img {
@@ -336,7 +337,8 @@
     height: 35px;
     border-radius: 50%;
     margin: 0;
-    border: 1px solid rgba(0, 209, 178, 0.5);
+    border: 1px solid rgba(0, 0, 128, 0.6);
+    box-shadow: 0 0 15px rgba(0, 0, 128, 0.9);
 }
 
 #mobile-menu-toggle {
@@ -520,7 +522,7 @@
     width: 100%;
     max-width: 400px;
     padding: 15px 30px;
-    background: linear-gradient(135deg, #00d1b2 0%, #00bc9f 100%);
+    background: linear-gradient(135deg, #D81B60 0%, #AD1457 100%);
     color: #fff;
     font-size: 1.1em;
     font-weight: bold;
@@ -530,14 +532,14 @@
     border-radius: 50px;
     cursor: pointer;
     transition: transform 0.2s, box-shadow 0.2s;
-    box-shadow: 0 4px 15px rgba(0, 209, 178, 0.4);
+    box-shadow: 0 4px 15px rgba(216, 27, 96, 0.4);
     text-align: center;
     margin: 20px auto;
 }
 
 .quiz-start-btn-elegant:hover {
     transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(0, 209, 178, 0.6);
+    box-shadow: 0 6px 20px rgba(216, 27, 96, 0.6);
 }
 
 /* --- VIEW MODE: INTELLIGENT SWITCHING (Desktop vs Mobile) --- */
@@ -612,7 +614,7 @@ body.view-mode-tiles .app-wrapper {
         height: 100px;
         border-radius: 50%;
         border: 3px solid #fff;
-        box-shadow: 0 0 15px #00d1b2, 0 0 30px rgba(0, 209, 178, 0.6);
+        box-shadow: 0 0 15px #D81B60, 0 0 30px rgba(216, 27, 96, 0.6);
         margin-bottom: 15px;
         animation: pulse-scale 3s infinite ease-in-out;
     }
@@ -622,7 +624,7 @@ body.view-mode-tiles .app-wrapper {
         font-size: 2.2rem;
         color: #fff;
         margin: 0;
-        text-shadow: 0 0 10px #00d1b2, 0 0 20px rgba(0, 209, 178, 0.8);
+        text-shadow: 0 0 10px #D81B60, 0 0 20px rgba(216, 27, 96, 0.8);
         font-weight: 800;
         letter-spacing: 1px;
     }
@@ -722,8 +724,8 @@ body.view-mode-tiles .app-wrapper {
     transform: translateX(-50%) scale(1.05);
     /* Maintain center + scale */
     background-color: rgba(60, 60, 60, 0.95);
-    border-color: rgba(0, 209, 178, 0.5);
-    box-shadow: 0 8px 25px rgba(0, 209, 178, 0.3);
+    border-color: rgba(216, 27, 96, 0.5);
+    box-shadow: 0 8px 25px rgba(216, 27, 96, 0.3);
     color: #fff;
 }
 
@@ -775,7 +777,7 @@ body.view-mode-tiles .app-wrapper {
 .calendar-day-header {
     text-align: center;
     font-weight: bold;
-    color: #00d1b2;
+    color: #D81B60;
     padding: 10px 0;
     font-size: 0.9em;
 }
@@ -802,8 +804,8 @@ body.view-mode-tiles .app-wrapper {
 }
 
 .calendar-day.today {
-    border-color: #00d1b2;
-    box-shadow: 0 0 10px rgba(0, 209, 178, 0.2) inset;
+    border-color: #D81B60;
+    box-shadow: 0 0 10px rgba(216, 27, 96, 0.2) inset;
 }
 
 .calendar-day.has-event {
@@ -865,7 +867,7 @@ body.view-mode-tiles .app-wrapper {
 
 .calendar-modal {
     background: #1a1a2e;
-    border: 1px solid #00d1b2;
+    border: 1px solid #D81B60;
     border-radius: 12px;
     padding: 20px;
     width: 90%;
@@ -882,7 +884,7 @@ body.view-mode-tiles .app-wrapper {
 .payment-details {
     display: none;
     background: rgba(0, 0, 0, 0.4);
-    border: 1px solid rgba(0, 209, 178, 0.3);
+    border: 1px solid rgba(216, 27, 96, 0.3);
     border-radius: 8px;
     padding: 15px;
     margin-top: 15px;
@@ -911,9 +913,9 @@ body.view-mode-tiles .app-wrapper {
 }
 
 .copy-btn {
-    background: rgba(0, 209, 178, 0.2);
-    border: 1px solid #00d1b2;
-    color: #00d1b2;
+    background: rgba(216, 27, 96, 0.2);
+    border: 1px solid #D81B60;
+    color: #D81B60;
     border-radius: 4px;
     padding: 4px 8px;
     cursor: pointer;
@@ -922,7 +924,7 @@ body.view-mode-tiles .app-wrapper {
 }
 
 .copy-btn:hover {
-    background: #00d1b2;
+    background: #D81B60;
     color: #111;
 }
 

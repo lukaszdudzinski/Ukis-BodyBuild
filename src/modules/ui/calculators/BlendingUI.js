@@ -47,7 +47,7 @@ function initGasBlenderUI() {
                     <div class="calculation-details" style="display: none;">${explanationHTML}</div>
                     <div class="result-section">
                         <p class="result-label">Krok 1: Dodaj 100% Tlenu</p>
-                        <p class="result-value-main" style="color: #00d1b2 !important;">+${result.oxygenToAdd.toFixed(1)}<span class="unit">bar</span></p>
+                        <p class="result-value-main" style="color: #D81B60 !important;">+${result.oxygenToAdd.toFixed(1)}<span class="unit">bar</span></p>
                         <p class="result-value-sub">Ciśnienie pośrednie: ${result.pressureAfterO2.toFixed(1)} bar</p>
                     </div>
                     <div class="result-section">
@@ -120,7 +120,7 @@ function initTrimixUI() {
                     </div>
                     <div class="result-section">
                         <p class="result-label">Krok 2: Dodaj 100% Tlen (O2)</p>
-                        <p class="result-value-main" style="color: #00d1b2 !important;">+${result.o2Bar.toFixed(1)}<span class="unit">bar</span></p>
+                        <p class="result-value-main" style="color: #D81B60 !important;">+${result.o2Bar.toFixed(1)}<span class="unit">bar</span></p>
                         <p class="result-value-sub">Ciśnienie pośrednie: ${result.pressureAfterO2.toFixed(1)} bar</p>
                     </div>
                     <div class="result-section">

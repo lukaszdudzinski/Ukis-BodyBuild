@@ -41,7 +41,7 @@ export const UkiRiverGameUI = {
             <div class="game-ui-overlay" id="game-over-screen" style="display: none; background: rgba(0,0,0,0.85);">
                 <div class="game-over-content" style="text-align: center;">
                     <h2 style="color: #ff4444; font-size: 2.5em; text-shadow: 0 0 10px rgba(255,0,0,0.5);">GAME OVER</h2>
-                    <p style="font-size: 1.5em; margin: 10px 0;">Wynik: <span id="final-score" style="color: #00d1b2; font-weight: bold;">0</span></p>
+                    <p style="font-size: 1.5em; margin: 10px 0;">Wynik: <span id="final-score" style="color: #D81B60; font-weight: bold;">0</span></p>
                     
                     <div style="display: flex; flex-direction: column; gap: 15px; margin-top: 30px; width: 250px;">
                         <button class="action-button" id="game-restart-btn">Zagraj Ponownie</button>

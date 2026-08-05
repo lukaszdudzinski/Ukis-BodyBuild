@@ -2,7 +2,7 @@
    PODSTAWOWE STYLE
    ============================================================ */
 :root {
-    --primary-color: #00d1b2;
+    --primary-color: #D81B60;
     --text-color: #f5f5f5;
     --bg-overlay-dark: rgba(0, 0, 0, 0.35);
 }
@@ -14,8 +14,7 @@ body {
     color: #f5f5f5;
     text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
     transition: background-image 0.5s ease-in-out;
-    background-image: url('../img/bg/background_uki.jpg');
-    /* Adjusted path for styles/ folder */
+    background-color: #1a1a1a;
     background-size: cover;
     background-position: center center;
     background-attachment: fixed;
@@ -31,29 +30,29 @@ h3,
 /* --- ANIMACJE --- */
 @keyframes neon-pulse {
     0% {
-        text-shadow: 0 0 5px rgba(0, 209, 178, 0.5);
+        text-shadow: 0 0 5px rgba(216, 27, 96, 0.5);
     }
 
     50% {
-        text-shadow: 0 0 20px rgba(0, 209, 178, 0.8), 0 0 10px rgba(0, 209, 178, 0.4);
+        text-shadow: 0 0 20px rgba(216, 27, 96, 0.8), 0 0 10px rgba(216, 27, 96, 0.4);
     }
 
     100% {
-        text-shadow: 0 0 5px rgba(0, 209, 178, 0.5);
+        text-shadow: 0 0 5px rgba(216, 27, 96, 0.5);
     }
 }
 
 @keyframes pulse-glow-dark {
     0% {
-        box-shadow: 0 0 5px rgba(0, 209, 178, 0.4);
+        box-shadow: 0 0 5px rgba(216, 27, 96, 0.4);
     }
 
     50% {
-        box-shadow: 0 0 15px rgba(0, 209, 178, 0.9);
+        box-shadow: 0 0 15px rgba(216, 27, 96, 0.9);
     }
 
     100% {
-        box-shadow: 0 0 5px rgba(0, 209, 178, 0.4);
+        box-shadow: 0 0 5px rgba(216, 27, 96, 0.4);
     }
 }
 
@@ -79,34 +78,34 @@ h3,
 
 @keyframes pulse-border-cyan {
     0% {
-        border-color: rgba(0, 209, 178, 0.3);
-        box-shadow: 0 0 5px rgba(0, 209, 178, 0.1);
+        border-color: rgba(216, 27, 96, 0.3);
+        box-shadow: 0 0 5px rgba(216, 27, 96, 0.1);
     }
 
     50% {
-        border-color: rgba(0, 209, 178, 1);
-        box-shadow: 0 0 15px rgba(0, 209, 178, 0.4);
+        border-color: rgba(216, 27, 96, 1);
+        box-shadow: 0 0 15px rgba(216, 27, 96, 0.4);
     }
 
     100% {
-        border-color: rgba(0, 209, 178, 0.3);
-        box-shadow: 0 0 5px rgba(0, 209, 178, 0.1);
+        border-color: rgba(216, 27, 96, 0.3);
+        box-shadow: 0 0 5px rgba(216, 27, 96, 0.1);
     }
 }
 
 @keyframes pulse-scale {
     0% {
         transform: scale(1);
-        box-shadow: 0 0 0 0 rgba(0, 209, 178, 0.7);
+        box-shadow: 0 0 0 0 rgba(216, 27, 96, 0.7);
     }
 
     70% {
         transform: scale(1.05);
-        box-shadow: 0 0 0 10px rgba(0, 209, 178, 0);
+        box-shadow: 0 0 0 10px rgba(216, 27, 96, 0);
     }
 
     100% {
         transform: scale(1);
-        box-shadow: 0 0 0 0 rgba(0, 209, 178, 0);
+        box-shadow: 0 0 0 0 rgba(216, 27, 96, 0);
     }
 }

@@ -222,15 +222,15 @@ export const QuizUI = {
                         width: 100%; 
                         border-radius: 6px; 
                         cursor: pointer; 
-                        background: rgba(0, 209, 178, 0.1); 
-                        border: 1px solid #00d1b2; 
-                        color: #00d1b2; 
+                        background: rgba(216, 27, 96, 0.1); 
+                        border: 1px solid #D81B60; 
+                        color: #D81B60; 
                         font-size: 0.95em;
                         transition: all 0.3s ease;
-                        box-shadow: 0 0 10px rgba(0, 209, 178, 0.2);
+                        box-shadow: 0 0 10px rgba(216, 27, 96, 0.2);
                     "
-                    onmouseover="this.style.background='rgba(0, 209, 178, 0.3)'; this.style.transform='translateY(-2px)'; this.style.boxShadow='0 0 20px rgba(0, 209, 178, 0.6)'"
-                    onmouseout="this.style.background='rgba(0, 209, 178, 0.1)'; this.style.transform='translateY(0)'; this.style.boxShadow='0 0 10px rgba(0, 209, 178, 0.2)'"
+                    onmouseover="this.style.background='rgba(216, 27, 96, 0.3)'; this.style.transform='translateY(-2px)'; this.style.boxShadow='0 0 20px rgba(216, 27, 96, 0.6)'"
+                    onmouseout="this.style.background='rgba(216, 27, 96, 0.1)'; this.style.transform='translateY(0)'; this.style.boxShadow='0 0 10px rgba(216, 27, 96, 0.2)'"
                     >Spróbuj Ponownie</button>
                     
                     <button class="back-button-gameover" onclick="closeQuiz()" style="
@@ -297,8 +297,8 @@ export const QuizUI = {
                             max-width: 90%; 
                             max-height: 25vh; 
                             border-radius: 12px; 
-                            border: 2px solid #00d1b2; 
-                            box-shadow: 0 0 20px rgba(0, 209, 178, 0.4); 
+                            border: 2px solid #D81B60; 
+                            box-shadow: 0 0 20px rgba(216, 27, 96, 0.4); 
                             object-fit: contain;
                             transition: transform 0.3s ease;
                          "
@@ -318,12 +318,12 @@ export const QuizUI = {
                         height: 70px; 
                         line-height: 64px;
                         border-radius: 50%; 
-                        border: 3px solid #00d1b2; 
+                        border: 3px solid #D81B60; 
                         font-size: 1.4em; 
                         font-weight: bold; 
-                        color: #00d1b2;
+                        color: #D81B60;
                         margin: 0 auto 8px auto;
-                        box-shadow: 0 0 10px rgba(0, 209, 178, 0.2);
+                        box-shadow: 0 0 10px rgba(216, 27, 96, 0.2);
                         background: rgba(0,0,0,0.3);
                     ">${currentScore}/${currentQuizData.length}</div>
                     
@@ -339,13 +339,13 @@ export const QuizUI = {
                         width: 100%; 
                         border-radius: 6px; 
                         cursor: pointer;
-                        background: rgba(0, 209, 178, 0.1);
-                        border: 1px solid #00d1b2;
-                        color: #00d1b2;
+                        background: rgba(216, 27, 96, 0.1);
+                        border: 1px solid #D81B60;
+                        color: #D81B60;
                         transition: all 0.3s ease;
                     "
-                    onmouseover="this.style.background='rgba(0, 209, 178, 0.3)'; this.style.transform='translateY(-2px)'"
-                    onmouseout="this.style.background='rgba(0, 209, 178, 0.1)'; this.style.transform='translateY(0)'"
+                    onmouseover="this.style.background='rgba(216, 27, 96, 0.3)'; this.style.transform='translateY(-2px)'"
+                    onmouseout="this.style.background='rgba(216, 27, 96, 0.1)'; this.style.transform='translateY(0)'"
                     >Spróbuj Ponownie</button>
                     
                     <button class="pulse-button" onclick="closeQuiz()" style="

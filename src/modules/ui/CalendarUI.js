@@ -72,7 +72,7 @@ export const CalendarUI = {
             let indicatorsHtml = '<div class="event-indicators">';
             dayEvents.forEach(e => {
                 let color = '#42b883'; // zielony
-                if (e.category === 'wyjazd') color = '#00d1b2'; // turkusowy
+                if (e.category === 'wyjazd') color = '#D81B60'; // turkusowy
                 if (e.category === 'nurkowanie') color = '#3273dc'; // niebieski
                 indicatorsHtml += `<div class="event-dot" style="background-color: ${color};" title="${e.title}"></div>`;
             });
@@ -121,7 +121,7 @@ export const CalendarUI = {
         let eventsHtml = '';
         events.forEach((event, index) => {
             let badgeColor = '#42b883';
-            if (event.category === 'wyjazd') badgeColor = '#00d1b2';
+            if (event.category === 'wyjazd') badgeColor = '#D81B60';
             if (event.category === 'nurkowanie') badgeColor = '#3273dc';
 
             let smsTemplate = `Cześć. Poproszę o info dotyczące ${event.title} z dnia ${event.date}.`;
@@ -150,8 +150,8 @@ export const CalendarUI = {
 
                     <h3 style="margin-top: 0; margin-bottom: 5px; color: #fff; text-align: center;">${event.title}</h3>
                     
-                    <p style="color: #00d1b2; font-size: 0.95em; margin-bottom: 15px; text-align: center;">
-                        📍 ${event.location ? `<a href="${mapLink}" target="_blank" style="color: #00d1b2; text-decoration: underline;">${event.location}</a>` : 'Brak lokalizacji'}
+                    <p style="color: #D81B60; font-size: 0.95em; margin-bottom: 15px; text-align: center;">
+                        📍 ${event.location ? `<a href="${mapLink}" target="_blank" style="color: #D81B60; text-decoration: underline;">${event.location}</a>` : 'Brak lokalizacji'}
                     </p>
                     
                     <div style="font-size: 0.9em; color: #ccc; margin-bottom: 20px; text-align: center;">
@@ -208,7 +208,7 @@ export const CalendarUI = {
         overlay.innerHTML = `
             <div class="calendar-modal">
                 <button class="calendar-modal-close">&times;</button>
-                <h2 style="margin-top: 0; color: #00d1b2; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 10px; margin-bottom: 15px; text-align: center;">
+                <h2 style="margin-top: 0; color: #D81B60; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 10px; margin-bottom: 15px; text-align: center;">
                     Wydarzenia z dnia:<br>
                     <small style="color: #fff;">${dateStr}</small>
                 </h2>
@@ -239,7 +239,7 @@ export const CalendarUI = {
                     targetEl.classList.toggle('active');
                     if (targetEl.classList.contains('active')) {
                         btn.classList.add('active-payment-btn');
-                        btn.style.background = 'rgba(0, 209, 178, 0.3)';
+                        btn.style.background = 'rgba(216, 27, 96, 0.3)';
                     } else {
                         btn.classList.remove('active-payment-btn');
                         btn.style.background = 'rgba(255,255,255,0.2)'; // hovered state since mouse is on it
@@ -256,7 +256,7 @@ export const CalendarUI = {
                     navigator.clipboard.writeText(textToCopy).then(() => {
                         const originalText = btn.innerText;
                         btn.innerText = 'Skopiowano!';
-                        btn.style.background = '#00d1b2';
+                        btn.style.background = '#D81B60';
                         btn.style.color = '#111';
                         setTimeout(() => {
                             btn.innerText = originalText;

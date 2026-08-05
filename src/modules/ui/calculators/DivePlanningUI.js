@@ -453,7 +453,7 @@ function initProGasUI() {
                             <li><strong>Powrót (${rb_details.T_ascent.toFixed(1)} min):</strong> ${rb_details.Gas_ascent.toFixed(0)} l</li>
                             <li><strong>Całkowity RB:</strong> ${rb_details.TotalGasLiters.toFixed(0)} l (${rbResult.roundedBars} bar)</li>
                         </ul>
-                        <div style="margin-top: 5px; border-top: 1px solid #444; padding-top: 5px; color: #00d1b2;">
+                        <div style="margin-top: 5px; border-top: 1px solid #444; padding-top: 5px; color: #D81B60;">
                             <strong>Całkowite wymagane minimum:</strong> ${(totalConsCheck + rb_details.TotalGasLiters).toFixed(0)} l
                         </div>
                     </div>

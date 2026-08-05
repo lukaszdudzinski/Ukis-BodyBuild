@@ -118,7 +118,7 @@ export const LogbookUI = {
                             ${syncIcon}
                         </div>
                         <h4 style="margin-bottom: 5px; color: #fff;">${log.site || 'Nieznane miejsce'}</h4>
-                        <p style="color: #00d1b2; font-size: 0.85em; margin-bottom: 10px;">${log.location || 'Nieznana lokalizacja'} &bull; ${log.date}</p>
+                        <p style="color: #D81B60; font-size: 0.85em; margin-bottom: 10px;">${log.location || 'Nieznana lokalizacja'} &bull; ${log.date}</p>
                         
                         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; font-size: 0.9em; color: #ccc;">
                             <div><strong>Max Głęb.:</strong> ${log.maxDepth}m</div>

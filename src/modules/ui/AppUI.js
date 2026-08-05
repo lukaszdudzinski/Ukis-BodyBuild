@@ -234,7 +234,7 @@ export const AppUI = {
 
                             const successMsg = `
                                  <div style="text-align: center;">
-                                     <h2 style="color: #00d1b2; margin-bottom: 15px;">Dziękuję za wsparcie! ☕</h2>
+                                     <h2 style="color: #D81B60; margin-bottom: 15px;">Dziękuję za wsparcie! ☕</h2>
                                      <p style="font-size: 1.1em; line-height: 1.6;">
                                          Strefa PRO została pomyślnie uruchomiona.<br>
                                          Twój dostęp jest aktywny przez 30 dni.
@@ -288,7 +288,7 @@ export const AppUI = {
                         if (expiryDate) {
                             const dateStr = expiryDate.toLocaleDateString('pl-PL', { day: '2-digit', month: '2-digit', year: 'numeric' });
                             msg = `<div style="text-align: center;">
-                                <h2 style="color: #00d1b2; margin-bottom: 15px;">Dziękuję za wsparcie! ☕</h2>
+                                <h2 style="color: #D81B60; margin-bottom: 15px;">Dziękuję za wsparcie! ☕</h2>
                                 <h3 style="color: #ffffff; margin-bottom: 10px; font-size: 1.2em;">Status Strefy PRO</h3>
                                 <p style="font-size: 1.1em; line-height: 1.6;">
                                     Twój dostęp jest aktywny.<br>
@@ -651,7 +651,7 @@ export const AppUI = {
 
         if (proStatusDisplay) {
             proStatusDisplay.textContent = isUnlocked ? 'Aktywny' : 'Zablokowany';
-            proStatusDisplay.style.color = isUnlocked ? '#00d1b2' : '#DC143C';
+            proStatusDisplay.style.color = isUnlocked ? '#D81B60' : '#DC143C';
         }
 
         if (resetProBtn) {

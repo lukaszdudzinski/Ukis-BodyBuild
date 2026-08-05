@@ -60,7 +60,7 @@
 
 #global-tooltip.tooltip-content h4 {
     margin: 0 0 10px 0;
-    color: #00d1b2;
+    color: #D81B60;
 }
 
 #global-tooltip.tooltip-content p {
@@ -88,7 +88,7 @@
 }
 
 #tooltip-close-btn:hover {
-    color: #00d1b2;
+    color: #D81B60;
 }
 
 .tooltip-trigger {

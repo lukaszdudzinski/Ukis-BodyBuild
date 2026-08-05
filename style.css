@@ -1,0 +1,31 @@
+/* ============================================================
+   GŁÓWNY PLIK STYLE.CSS - IMPORTY
+   ============================================================ */
+
+/* 1. Base (Reset, Variables, Animations) */
+@import 'styles/base.css';
+
+/* 2. Layout (Grid, Sidebar, Containers) */
+@import 'styles/layout.css';
+
+/* 3. Themes (Light/Dark/Glass) */
+@import 'styles/themes.css';
+
+/* 4. Components */
+
+/* NOTE: I consolidated buttons in forms.css, need to check if I missed separate file or if I should create it */
+@import 'styles/components/cards.css';
+@import 'styles/components/forms.css';
+@import 'styles/components/modals.css';
+@import 'styles/components/formulas.css';
+@import 'styles/components/pwa.css';
+
+/* 5. Sections */
+@import 'styles/sections/welcome.css';
+@import 'styles/sections/pro-dashboard.css';
+@import 'styles/sections/lectures.css';
+@import 'styles/sections/settings.css';
+@import 'styles/sections/tools.css';
+@import 'styles/sections/science.css';
+@import 'styles/sections/quiz.css';
+@import 'styles/sections/game.css';

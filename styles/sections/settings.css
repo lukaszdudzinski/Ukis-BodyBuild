@@ -38,8 +38,8 @@
 }
 
 .wallpaper-thumb.active {
-    border-color: #00d1b2;
-    box-shadow: 0 0 15px rgba(0, 209, 178, 0.6);
+    border-color: #D81B60;
+    box-shadow: 0 0 15px rgba(216, 27, 96, 0.6);
     transform: scale(1.05);
 }
 

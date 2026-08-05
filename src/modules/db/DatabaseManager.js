@@ -21,12 +21,12 @@ export const DatabaseManager = {
 
                 // Check for OPFS availability
                 if (sqlite3.opfs) {
-                    db = new sqlite3.oo1.OpfsDb('/ukis_dive_tools.sqlite3');
+                    db = new sqlite3.oo1.OpfsDb('/ukis_bodybuild.sqlite3');
                     console.log('The OPFS is available. Opened OPFS database.');
                 } else {
                     console.warn('OPFS is not available. Falling back to kvvfs or memory.');
                     try {
-                        db = new sqlite3.oo1.DB('/ukis_dive_tools.sqlite3', 'c', 'kvvfs');
+                        db = new sqlite3.oo1.DB('/ukis_bodybuild.sqlite3', 'c', 'kvvfs');
                         console.log('Opened kvvfs (localStorage-backed) database.');
                     } catch (e) {
                          db = new sqlite3.oo1.DB(':memory:');
@@ -48,49 +48,44 @@ export const DatabaseManager = {
 
     createTables: () => {
         if (!db) return;
+        
+        // Pomiary Ciała (Measurements)
         db.exec(`
-            CREATE TABLE IF NOT EXISTS logbook (
+            CREATE TABLE IF NOT EXISTS measurements (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 date TEXT NOT NULL,
-                location TEXT NOT NULL,
-                site TEXT NOT NULL,
-                rating INTEGER,
-                notes TEXT,
-                maxDepth REAL,
-                avgDepth REAL,
-                bottomTime INTEGER,
-                gasType TEXT,
-                startPressure INTEGER,
-                endPressure INTEGER,
-                synced INTEGER DEFAULT 0,
+                weight REAL NOT NULL,
+                chest REAL,
+                waist REAL,
+                hips REAL,
+                thigh REAL,
+                biceps REAL,
+                photo TEXT,
                 created_at DATETIME DEFAULT CURRENT_TIMESTAMP
             );
         `);
+        
+        // Here we can add trainings and diet tables later
     },
 
-    addLog: async (logData) => {
+    addMeasurement: async (data) => {
         await DatabaseManager.init();
         
         db.exec({
-            sql: `INSERT INTO logbook (date, location, site, rating, notes, maxDepth, avgDepth, bottomTime, gasType, startPressure, endPressure, synced) 
-                  VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+            sql: `INSERT INTO measurements (date, weight, chest, waist, hips, thigh, biceps, photo) 
+                  VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
             bind: [
-                logData.date, 
-                logData.location, 
-                logData.site, 
-                logData.rating || 0, 
-                logData.notes || '', 
-                logData.maxDepth || 0, 
-                logData.avgDepth || 0, 
-                logData.bottomTime || 0, 
-                logData.gasType || 'air', 
-                logData.startPressure || 0, 
-                logData.endPressure || 0,
-                logData.synced || 0
+                data.date, 
+                data.weight, 
+                data.chest || null, 
+                data.waist || null, 
+                data.hips || null, 
+                data.thigh || null, 
+                data.biceps || null, 
+                data.photo || null
             ]
         });
         
-        // Return the last inserted id
         let newId = null;
         db.exec({
             sql: `SELECT last_insert_rowid() as id`,
@@ -100,26 +95,26 @@ export const DatabaseManager = {
             }
         });
         
-        return { ...logData, id: newId };
+        return { ...data, id: newId };
     },
 
-    getLogs: async () => {
+    getMeasurements: async () => {
         await DatabaseManager.init();
-        const logs = [];
+        const records = [];
         db.exec({
-            sql: `SELECT * FROM logbook ORDER BY date DESC, created_at DESC`,
+            sql: `SELECT * FROM measurements ORDER BY date DESC, created_at DESC`,
             rowMode: 'object',
             callback: function (row) {
-                logs.push(row);
+                records.push(row);
             }
         });
-        return logs;
+        return records;
     },
 
-    deleteLog: async (id) => {
+    deleteMeasurement: async (id) => {
         await DatabaseManager.init();
         db.exec({
-            sql: `DELETE FROM logbook WHERE id = ?`,
+            sql: `DELETE FROM measurements WHERE id = ?`,
             bind: [id]
         });
     }
