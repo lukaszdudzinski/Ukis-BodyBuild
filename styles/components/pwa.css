@@ -15,10 +15,10 @@
     box-sizing: border-box;
     /* Ensure padding doesn't add to width */
     background-color: #2a2a2a;
-    border: 1px solid rgba(216, 27, 96, 0.3);
+    border: 1px solid rgba(0, 191, 255, 0.3);
     border-radius: 12px;
     padding: 20px;
-    box-shadow: 0 0 15px rgba(216, 27, 96, 0.2);
+    box-shadow: 0 0 15px rgba(0, 191, 255, 0.2);
     z-index: 10000;
 
     /* Default hidden to prevent layout interaction */
@@ -36,18 +36,18 @@
 
 @keyframes glow-pulse-border {
     0% {
-        box-shadow: 0 0 10px rgba(216, 27, 96, 0.1);
-        border-color: rgba(216, 27, 96, 0.3);
+        box-shadow: 0 0 10px rgba(0, 191, 255, 0.1);
+        border-color: rgba(0, 191, 255, 0.3);
     }
 
     50% {
-        box-shadow: 0 0 20px rgba(216, 27, 96, 0.4);
-        border-color: rgba(216, 27, 96, 0.6);
+        box-shadow: 0 0 20px rgba(0, 191, 255, 0.4);
+        border-color: rgba(0, 191, 255, 0.6);
     }
 
     100% {
-        box-shadow: 0 0 10px rgba(216, 27, 96, 0.1);
-        border-color: rgba(216, 27, 96, 0.3);
+        box-shadow: 0 0 10px rgba(0, 191, 255, 0.1);
+        border-color: rgba(0, 191, 255, 0.3);
     }
 }
 
@@ -111,14 +111,14 @@
 }
 
 .pwa-btn.primary {
-    background: linear-gradient(135deg, #D81B60 0%, #AD1457d1 100%);
+    background: linear-gradient(135deg, #00BFFF 0%, #AD1457d1 100%);
     color: #fff;
-    box-shadow: 0 4px 10px rgba(216, 27, 96, 0.3);
+    box-shadow: 0 4px 10px rgba(0, 191, 255, 0.3);
 }
 
 .pwa-btn.primary:hover {
     transform: translateY(-2px);
-    box-shadow: 0 6px 15px rgba(216, 27, 96, 0.4);
+    box-shadow: 0 6px 15px rgba(0, 191, 255, 0.4);
 }
 
 .pwa-btn.secondary {
@@ -146,7 +146,7 @@
 .pwa-checkbox-row input[type="checkbox"] {
     width: 16px;
     height: 16px;
-    accent-color: #D81B60;
+    accent-color: #00BFFF;
     cursor: pointer;
     opacity: 0.7;
 }

@@ -9,13 +9,14 @@
     <link rel="stylesheet" href="game_styles.css">
     <link rel="manifest" href="manifest.json">
     <link rel="stylesheet" href="styles/lightbox.css">
+    <link rel="stylesheet" href="styles/components/calendar.css">
     <link rel="icon" type="image/png" href="img/logo.png">
     <link rel="apple-touch-icon" href="img/logo.png">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="BodyBuild">
-    <meta name="theme-color" content="#D81B60">
+    <meta name="theme-color" content="#00BFFF">
 </head>
 
 <body>
@@ -58,12 +59,7 @@
                         <strong>Postaw mi kawę!</strong>
                     </a>
                 </div>
-                <div class="emergency-wrapper" style="display:none;" id="emergency-btn">
-                    <a href="#">
-                        🚨 WYPADEK?
-                        <strong>SOS</strong>
-                    </a>
-                </div>
+
                 <div class="version-info" style="text-align: center; margin-top: 10px; color: #666; font-size: 0.8em;">
                     Loading Version...
                 </div>
@@ -89,10 +85,26 @@
                     
                     <!-- Dashboard Grid (Smart View: Hidden on Desktop, Visible on Mobile via CSS) -->
                     <div class="dashboard-grid">
-                        <!-- GAME TILE (Mobile Only) -->
-                        <div class="dashboard-card" onclick="switchTab('river-dive-game')">
-                            <h4>Uki's River Dive</h4>
-                            <p>Zagraj w wolnej chwili!</p>
+                        <!-- BodyBuild Tiles -->
+                        <div class="dashboard-card" onclick="switchTab('measurements-dashboard')">
+                            <h4>Pomiary Ciała</h4>
+                            <p>Waga i obwody</p>
+                        </div>
+                        <div class="dashboard-card" onclick="switchTab('training-dashboard')">
+                            <h4>Trening</h4>
+                            <p>Kalendarz i logi</p>
+                        </div>
+                        <div class="dashboard-card" onclick="switchTab('analytics-dashboard')">
+                            <h4>Analiza Progresu</h4>
+                            <p>Wykresy i statystyki</p>
+                        </div>
+                        <div class="dashboard-card" onclick="switchTab('diet-dashboard')">
+                            <h4>Dieta i Żywienie</h4>
+                            <p>Podgląd i plany</p>
+                        </div>
+                        <div class="dashboard-card" onclick="switchTab('settings-panel')">
+                            <h4>Profil i Ustawienia</h4>
+                            <p>Preferencje konta</p>
                         </div>
 
                         <!-- Special Row: Coffee & SOS (Bottom) -->
@@ -104,7 +116,6 @@
                                 <p>Wsparcie projektu</p>
                             </div>
                             </div>
-                        </div>
                     </div>
                 </div>
 
@@ -140,52 +151,7 @@
                             class="theme-switch" for="theme-toggle"><input type="checkbox" id="theme-toggle" /><span
                                 class="slider round"></span></label></div>
 
-                    <div class="settings-toggle-row"><label for="global-water-type">Domyślny Rodzaj
-                            Wody</label><select id="global-water-type" class="settings-select">
-                            <option value="fresh">Woda słodka</option>
-                            <option value="salt">Woda słona</option>
-                        </select></div>
-                    <h4>Zmień Tapetę</h4>
-                    <div class="wallpaper-options">
-                        <img src="img/bg/background_uki.jpg" class="wallpaper-thumb active"
-                            data-wallpaper="url('img/bg/background_uki.jpg')">
-                        <img src="img/bg/Gemini_Generated_Image_31b0jp31b0jp31b0 (1).png" class="wallpaper-thumb"
-                            data-wallpaper="url('img/bg/Gemini_Generated_Image_31b0jp31b0jp31b0 (1).png')">
-                        <img src="img/bg/Gemini_Generated_Image_31b0jp31b0jp31b0 (2).png" class="wallpaper-thumb"
-                            data-wallpaper="url('img/bg/Gemini_Generated_Image_31b0jp31b0jp31b0 (2).png')">
-                        <img src="img/bg/Generated Image September 22, 2025 - 3_04PM.png" class="wallpaper-thumb"
-                            data-wallpaper="url('img/bg/Generated Image September 22, 2025 - 3_04PM.png')">
-                    </div>
-                    <div class="settings-info-row" style="margin-top: 20px;">
-                        <span>Zapisany SAC</span>
-                        <div style="display:flex; align-items:center; gap:10px;">
-                            <span id="settings-sac-value"
-                                style="font-weight: bold; color: var(--primary-color);">Brak</span>
-                            <button id="reset-sac-btn" class="icon-btn danger" title="Wyczyść zapisany SAC">×</button>
-                        </div>
-                    </div>
 
-                    <div class="settings-toggle-row" style="margin-top: 5px; flex-wrap: wrap;">
-                        <label for="default-tank-select" style="flex: 1; min-width: 120px;">Domyślna Butla</label>
-                        <select id="default-tank-select" class="settings-select" style="flex: 1; min-width: 180px;">
-                            <!-- Populated by JS -->
-                        </select>
-                    </div>
-                    <div class="settings-info-row" style="margin-top: 5px;">
-                        <span>Status Strefy PRO
-                            <span class="tooltip-trigger"
-                                style="margin-left: 8px; font-size: 0.9em; color: #D81B60; cursor: help; border: 1px solid #D81B60; border-radius: 50%; width: 18px; height: 18px; display: inline-flex; align-items: center; justify-content: center; font-weight: bold;">i
-                                <div class="tooltip-content" style="width: 250px; text-align: left;">
-                                    <p>Aktywność Strefy PRO jest ważna przez 30 dni.</p>
-                                </div>
-                            </span>
-                        </span>
-                        <div style="display:flex; align-items:center; gap:10px;">
-                            <span id="pro-status-display" style="font-weight: bold; color: #D81B60;">Aktywny</span>
-                            <button id="reset-pro-btn" class="icon-btn warning"
-                                title="Zablokuj ponownie (Test)">🔒</button>
-                        </div>
-                    </div>
 
                     <!-- PWA Installation Guide Section -->
                     <div class="install-guide-section" id="settings-pwa-guide">
@@ -196,10 +162,7 @@
                         </div>
                         <div id="install-guide-content" class="install-guide-content">
                             <!-- Standardized Infographic Container -->
-                            <img src="img/pwa_install_guide.png" alt="Instrukcja instalacji" class="install-guide-img"
-                                style="border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.3);">
-                            <p style="font-size: 0.8em; color: #aaa; margin-top: 8px;"><i>Kliknij, aby
-                                    powiększyć</i></p>
+                            <p>Aby zainstalować aplikację na swoim urządzeniu...</p>
 
                             <div class="install-steps-list">
                                 <p style="font-weight: bold; color: #fff; margin-bottom: 10px;">iOS (iPhone / iPad) -
@@ -223,7 +186,7 @@
                         <div class="settings-info-row" style="margin-top: 25px;">
                             <span>Wersja Aplikacji</span>
                             <span class="app-version-display"
-                                style="font-weight: bold; color: var(--primary-color);">Loading...</span>
+                                style="font-weight: bold; color: #00BFFF;">Loading...</span>
                         </div>
                     </div>
                 </div>
@@ -240,29 +203,7 @@
         <div id="tooltip-body"></div>
     </div>
 
-    <!-- Quiz Modal Structure -->
-    <div id="quiz-modal" style="display: none;">
-        <div class="quiz-content">
-            <!-- Header -->
-            <div class="quiz-header">
-                <h3>Quiz - Sprawdź Wiedzę</h3>
-                <button class="quiz-close-btn" id="quiz-close-btn">×</button>
-            </div>
 
-            <!-- Body -->
-            <div id="quiz-body">
-                <!-- Dynamically populated by JS -->
-            </div>
-
-            <!-- Result Screen -->
-            <div id="quiz-result-screen" style="display: none;">
-                <div class="quiz-score-circle" id="quiz-score-circle">0/0</div>
-                <h3 id="quiz-result-message">Gratulacje!</h3>
-                <button class="retry-button" onclick="restartQuiz()">Spróbuj Ponownie</button>
-                <button class="pulse-button" onclick="closeQuiz()">Zamknij</button>
-            </div>
-        </div>
-    </div>
 
 
     <script type="module" src="src/main.js"></script>

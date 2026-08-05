@@ -36,7 +36,7 @@
 }
 
 .result-info-icon:hover {
-    background-color: #D81B60;
+    background-color: #00BFFF;
     color: #1e1e1e;
 }
 
@@ -75,13 +75,13 @@
 
 .result-value-main .unit,
 .result-value-main span {
-    color: #D81B60 !important;
+    color: #00BFFF !important;
     font-size: 0.6em;
     font-weight: 400;
     margin-left: 4px;
     vertical-align: baseline;
     opacity: 1;
-    text-shadow: 0 0 10px rgba(216, 27, 96, 0.4);
+    text-shadow: 0 0 10px rgba(0, 191, 255, 0.4);
 }
 
 .result-section .result-value-main {
@@ -100,8 +100,8 @@
 }
 
 .rb-info-section {
-    background-color: rgba(216, 27, 96, 0.1);
-    border: 1px solid #D81B60;
+    background-color: rgba(0, 191, 255, 0.1);
+    border: 1px solid #00BFFF;
     padding: 8px;
     border-radius: 6px;
     margin-bottom: 10px;
@@ -120,7 +120,7 @@
 }
 
 .rb-info-section .result-value-main .unit {
-    color: #D81B60 !important;
+    color: #00BFFF !important;
 }
 
 .result-verdict {

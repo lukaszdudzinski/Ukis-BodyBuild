@@ -2,10 +2,17 @@ import { DatabaseManager } from '../db/DatabaseManager.js';
 import { TrainingComponent } from '../../components/TrainingComponent.js';
 
 let currentTraining = {
+    date: null,
     startTime: null,
     timerInterval: null,
     exercises: []
 };
+
+let currentMonth = new Date().getMonth();
+let currentYear = new Date().getFullYear();
+let trainingDates = new Set(); // Stores dates in YYYY-MM-DD format
+let allTrainingsCache = [];
+let selectedDate = new Date().toISOString().split('T')[0];
 
 export const TrainingUI = {
     init: () => {
@@ -14,9 +21,14 @@ export const TrainingUI = {
             container.innerHTML = TrainingComponent.render();
         }
 
-        const startBtn = document.getElementById('start-training-btn');
-        if (startBtn) {
-            startBtn.addEventListener('click', TrainingUI.startTraining);
+        const startNewBtn = document.getElementById('start-new-session-btn');
+        if (startNewBtn) {
+            startNewBtn.addEventListener('click', () => TrainingUI.startTraining(null));
+        }
+
+        const addExerciseBtn = document.getElementById('add-exercise-to-plan-btn');
+        if (addExerciseBtn) {
+            addExerciseBtn.addEventListener('click', TrainingUI.addExercise);
         }
 
         const finishBtn = document.getElementById('finish-training-btn');
@@ -24,19 +36,129 @@ export const TrainingUI = {
             finishBtn.addEventListener('click', TrainingUI.finishTraining);
         }
 
-        const addExerciseBtn = document.getElementById('add-exercise-btn');
-        if (addExerciseBtn) {
-            addExerciseBtn.addEventListener('click', TrainingUI.addExercise);
-        }
+        // Calendar listeners
+        const prevMonthBtn = document.getElementById('cal-prev-month');
+        if (prevMonthBtn) prevMonthBtn.addEventListener('click', () => {
+            currentMonth--;
+            if (currentMonth < 0) { currentMonth = 11; currentYear--; }
+            TrainingUI.renderCalendar();
+        });
+        
+        const nextMonthBtn = document.getElementById('cal-next-month');
+        if (nextMonthBtn) nextMonthBtn.addEventListener('click', () => {
+            currentMonth++;
+            if (currentMonth > 11) { currentMonth = 0; currentYear++; }
+            TrainingUI.renderCalendar();
+        });
 
-        // Listen to tab switch to re-render history if needed
         document.addEventListener('tabChanged', (e) => {
             if(e.detail && e.detail.tab === 'training-dashboard') {
-                TrainingUI.renderHistory();
+                TrainingUI.loadHistoryAndCalendar();
             }
         });
 
-        TrainingUI.renderHistory();
+        TrainingUI.loadHistoryAndCalendar();
+    },
+
+    loadHistoryAndCalendar: async () => {
+        try {
+            const records = await DatabaseManager.getTrainings();
+            allTrainingsCache = records;
+            trainingDates.clear();
+            records.forEach(rec => {
+                trainingDates.add(rec.date);
+            });
+            TrainingUI.renderCalendar();
+            TrainingUI.renderHistoryList(records);
+            // Hide day action panel initially
+            document.getElementById('day-action-panel').style.display = 'none';
+        } catch (err) {
+            console.error("Error loading training history:", err);
+        }
+    },
+
+    renderCalendar: () => {
+        const grid = document.getElementById('training-calendar-grid');
+        const monthYearLabel = document.getElementById('cal-month-year');
+        if (!grid || !monthYearLabel) return;
+
+        const months = ['Styczeń', 'Luty', 'Marzec', 'Kwiecień', 'Maj', 'Czerwiec', 'Lipiec', 'Sierpień', 'Wrzesień', 'Październik', 'Listopad', 'Grudzień'];
+        monthYearLabel.textContent = `${months[currentMonth]} ${currentYear}`;
+
+        let html = '';
+        const daysOfWeek = ['Pn', 'Wt', 'Śr', 'Cz', 'Pt', 'So', 'Nd'];
+        daysOfWeek.forEach(day => {
+            html += `<div class="calendar-day-header">${day}</div>`;
+        });
+
+        const firstDay = new Date(currentYear, currentMonth, 1).getDay();
+        const adjustedFirstDay = firstDay === 0 ? 6 : firstDay - 1;
+        const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
+
+        for (let i = 0; i < adjustedFirstDay; i++) {
+            html += `<div class="calendar-day empty"></div>`;
+        }
+
+        const todayDate = new Date().toISOString().split('T')[0];
+
+        for (let day = 1; day <= daysInMonth; day++) {
+            const dateStr = `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+            const hasTraining = trainingDates.has(dateStr);
+            const isToday = dateStr === todayDate;
+            const isSelected = dateStr === selectedDate;
+
+            let classes = 'calendar-day';
+            if (hasTraining) classes += ' has-training';
+            if (isToday) classes += ' today';
+            if (isSelected) classes += ' selected';
+
+            html += `
+                <div class="${classes}" onclick="window.TrainingUI.handleDayClick('${dateStr}')">
+                    ${day}
+                    ${hasTraining ? '<div class="training-dot"></div>' : ''}
+                </div>
+            `;
+        }
+        grid.innerHTML = html;
+    },
+
+    handleDayClick: (dateStr) => {
+        selectedDate = dateStr;
+        TrainingUI.renderCalendar(); // To update the 'selected' visual state
+        
+        const panel = document.getElementById('day-action-panel');
+        const label = document.getElementById('selected-day-label');
+        const historyList = document.getElementById('history-sessions-list');
+        
+        if (panel && label && historyList) {
+            panel.style.display = 'block';
+            label.textContent = `Opcje dla: ${dateStr}`;
+            
+            // Build recent history for copying
+            let historyHtml = '<h5 style="color: #ccc; margin-bottom: 10px;">📋 Skopiuj sesję treningową:</h5>';
+            const recentTrainings = allTrainingsCache.slice(0, 5); // Take last 5
+            
+            if (recentTrainings.length === 0) {
+                historyHtml += `<p style="color: #888; font-size: 0.9em; font-style: italic;">Brak sesji w historii do skopiowania.</p>`;
+            } else {
+                recentTrainings.forEach((rec, idx) => {
+                    const exNames = rec.exercises.map(e => e.name).filter(n => n).join(', ');
+                    const preview = exNames.length > 30 ? exNames.substring(0, 30) + '...' : exNames;
+                    historyHtml += `
+                        <button onclick="window.TrainingUI.startTraining(${idx})" class="action-button" style="width: 100%; margin-bottom: 5px; background-color: #333; border: 1px solid #555; text-align: left; padding: 10px;">
+                            <strong style="color: #00BFFF;">${rec.date}</strong><br>
+                            <span style="font-size: 0.85em; color: #ccc;">${rec.exercises.length} ćw. ${preview ? `(${preview})` : ''}</span>
+                        </button>
+                    `;
+                });
+            }
+            historyList.innerHTML = historyHtml;
+        }
+        
+        // Scroll to panel
+        if (panel) {
+            panel.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
     },
 
     formatTime: (seconds) => {
@@ -53,38 +175,60 @@ export const TrainingUI = {
         document.getElementById('training-timer').innerText = TrainingUI.formatTime(diffSeconds);
     },
 
-    startTraining: () => {
+    startTraining: (copyFromIndex = null) => {
         document.getElementById('training-calendar-view').style.display = 'none';
         document.getElementById('active-training-view').style.display = 'block';
         
         currentTraining = {
+            date: selectedDate,
             startTime: Date.now(),
             exercises: []
         };
         
+        if (copyFromIndex !== null && allTrainingsCache[copyFromIndex]) {
+            const rec = allTrainingsCache[copyFromIndex];
+            currentTraining.exercises = rec.exercises.map(ex => ({
+                id: Math.random().toString(36).substr(2, 9),
+                type: ex.type || 'strength',
+                name: ex.name || '',
+                sets: ex.sets.map(s => ({ ...s }))
+            }));
+        }
+        
+        // If empty, start with one empty exercise block
+        if (currentTraining.exercises.length === 0) {
+            TrainingUI.addExercise();
+        } else {
+            TrainingUI.renderCurrentExercises();
+        }
+
         currentTraining.timerInterval = setInterval(TrainingUI.updateTimer, 1000);
-        TrainingUI.renderCurrentExercises();
     },
 
     addExercise: () => {
-        const typeSelect = document.getElementById('exerciseType');
-        const nameInput = document.getElementById('exerciseName');
-        const photoInput = document.getElementById('exercisePhoto'); // Not handling base64 fully for exercises yet to save complexity
-
-        if (!nameInput.value.trim()) {
-            alert("Podaj nazwę ćwiczenia!");
-            return;
-        }
-
         currentTraining.exercises.push({
             id: Date.now().toString(),
-            type: typeSelect.value,
-            name: nameInput.value.trim(),
+            type: 'strength',
+            name: '',
             sets: []
         });
-
-        nameInput.value = '';
         TrainingUI.renderCurrentExercises();
+        
+        // Focus the newly added exercise name input
+        setTimeout(() => {
+            const inputs = document.querySelectorAll('.exercise-name-input');
+            if (inputs.length > 0) {
+                inputs[inputs.length - 1].focus();
+                inputs[inputs.length - 1].scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+        }, 100);
+    },
+
+    updateExerciseField: (exerciseId, field, value) => {
+        const exercise = currentTraining.exercises.find(e => e.id === exerciseId);
+        if (exercise) {
+            exercise[field] = value;
+        }
     },
 
     addSet: (exerciseId) => {
@@ -104,9 +248,16 @@ export const TrainingUI = {
             reps: parseInt(repsInput.value, 10)
         });
 
-        weightInput.value = '';
-        repsInput.value = '';
+        // Keep the input values so the next set is easier to log!
         TrainingUI.renderCurrentExercises();
+        
+        // Refill the inputs
+        setTimeout(() => {
+            const w = document.getElementById(`weight-${exerciseId}`);
+            const r = document.getElementById(`reps-${exerciseId}`);
+            if(w) w.value = weightInput.value;
+            if(r) r.value = repsInput.value;
+        }, 50);
     },
 
     removeSet: (exerciseId, setIndex) => {
@@ -120,32 +271,43 @@ export const TrainingUI = {
     renderCurrentExercises: () => {
         const list = document.getElementById('current-exercises-list');
         if (currentTraining.exercises.length === 0) {
-            list.innerHTML = '<p style="color: #888; font-size: 0.9em; text-align: center;">Dodaj pierwsze ćwiczenie.</p>';
+            list.innerHTML = '';
             return;
         }
 
         let html = '';
         currentTraining.exercises.forEach((ex, exIndex) => {
             html += `
-                <div style="background: rgba(0,0,0,0.4); border: 1px solid rgba(0, 191, 255, 0.4); padding: 10px; border-radius: 8px; margin-bottom: 15px;">
-                    <h5 style="margin: 0 0 10px 0; color: #fff; font-size: 1.1em;">
-                        ${exIndex + 1}. ${ex.name} <span style="font-size: 0.8em; color: #aaa;">(${ex.type === 'strength' ? 'Siłowe' : 'Cardio'})</span>
-                    </h5>
+                <div style="background: rgba(0,0,0,0.4); border: 1px solid #00BFFF; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+                    <div style="display: flex; gap: 10px; margin-bottom: 10px;">
+                        <input type="text" class="exercise-name-input" placeholder="Nazwa ćwiczenia (np. Wyciskanie)" value="${ex.name}" onchange="window.TrainingUI.updateExerciseField('${ex.id}', 'name', this.value)" style="flex: 2; padding: 10px; border-radius: 4px; border: 1px solid #00BFFF; background: #222; color: #fff; font-size: 1em;">
+                        <select onchange="window.TrainingUI.updateExerciseField('${ex.id}', 'type', this.value)" style="flex: 1; padding: 10px; border-radius: 4px; border: 1px solid #00BFFF; background: #222; color: #fff;">
+                            <option value="strength" ${ex.type === 'strength' ? 'selected' : ''}>Siłowe</option>
+                            <option value="cardio" ${ex.type === 'cardio' ? 'selected' : ''}>Cardio</option>
+                        </select>
+                    </div>
+
+                    <div style="margin-bottom: 15px; text-align: center;">
+                        <label class="action-button" style="display: inline-block; background-color: #333; border-color: #555; color: #fff; cursor: pointer; width: 100%; box-sizing: border-box;">
+                            📷 Zrób zdjęcie maszyny
+                            <input type="file" accept="image/*" capture="environment" style="display: none;">
+                        </label>
+                    </div>
                     
                     <div style="margin-bottom: 10px;">
                         ${ex.sets.map((set, i) => `
-                            <div style="display: flex; justify-content: space-between; padding: 5px 0; border-bottom: 1px solid rgba(255,255,255,0.1); font-size: 0.9em;">
-                                <span>Seria ${i + 1}: <strong>${set.weight} kg</strong> x <strong>${set.reps} powt.</strong></span>
+                            <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid rgba(0,191,255,0.2); font-size: 1em;">
+                                <span>Seria ${i + 1}: <strong style="color: #00BFFF;">${set.weight} kg</strong> x <strong>${set.reps} powt.</strong></span>
                                 <button onclick="window.TrainingUI.removeSet('${ex.id}', ${i})" style="background: transparent; border: none; color: #ff4444; font-size: 1.2em; cursor: pointer;">&times;</button>
                             </div>
                         `).join('')}
                     </div>
 
-                    <div style="display: flex; gap: 5px; align-items: center;">
-                        <input type="number" id="weight-${ex.id}" placeholder="kg" style="width: 60px; padding: 5px; border-radius: 4px; border: 1px solid #444; background: #222; color: #fff;">
+                    <div style="display: flex; gap: 10px; align-items: center; margin-top: 15px;">
+                        <input type="number" id="weight-${ex.id}" placeholder="kg" style="flex: 1; padding: 10px; border-radius: 4px; border: 1px solid #444; background: #222; color: #fff; font-size: 1.1em;" inputmode="decimal">
                         <span style="color: #aaa;">x</span>
-                        <input type="number" id="reps-${ex.id}" placeholder="powt" style="width: 60px; padding: 5px; border-radius: 4px; border: 1px solid #444; background: #222; color: #fff;">
-                        <button onclick="window.TrainingUI.addSet('${ex.id}')" style="background: #00BFFF; color: #fff; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; flex-grow: 1;">+ Seria</button>
+                        <input type="number" id="reps-${ex.id}" placeholder="powt" style="flex: 1; padding: 10px; border-radius: 4px; border: 1px solid #444; background: #222; color: #fff; font-size: 1.1em;" inputmode="numeric">
+                        <button onclick="window.TrainingUI.addSet('${ex.id}')" style="background: #00BFFF; color: #fff; border: none; padding: 10px; border-radius: 4px; cursor: pointer; flex: 1.5; font-weight: bold;">+ Seria</button>
                     </div>
                 </div>
             `;
@@ -155,77 +317,70 @@ export const TrainingUI = {
     },
 
     finishTraining: async () => {
-        if(confirm("Czy na pewno chcesz zakończyć i zapisać trening?")) {
+        if(confirm("Czy na pewno chcesz zakończyć i zapisać ten trening?")) {
             if (currentTraining.timerInterval) {
                 clearInterval(currentTraining.timerInterval);
             }
 
             const duration = Math.floor((Date.now() - currentTraining.startTime) / 1000);
-            const todayDate = new Date().toISOString().split('T')[0];
+            
+            // Filter out empty exercises
+            const validExercises = currentTraining.exercises.filter(ex => ex.name.trim() !== '' || ex.sets.length > 0);
 
             try {
                 await DatabaseManager.addTraining({
-                    date: todayDate,
+                    date: currentTraining.date,
                     duration_seconds: duration,
-                    exercises: currentTraining.exercises
+                    exercises: validExercises
                 });
-                alert("Trening zapisany!");
+                alert("Trening zapisany pomyślnie!");
             } catch (err) {
                 console.error("Error saving training:", err);
                 alert("Błąd zapisu treningu!");
             }
 
-            // Reset UI
             document.getElementById('active-training-view').style.display = 'none';
             document.getElementById('training-calendar-view').style.display = 'block';
-            TrainingUI.renderHistory();
+            TrainingUI.loadHistoryAndCalendar();
         }
     },
 
-    renderHistory: async () => {
-        const container = document.getElementById('training-list');
+    renderHistoryList: (records) => {
+        const container = document.getElementById('training-list-content');
         if (!container) return;
-
-        try {
-            const records = await DatabaseManager.getTrainings();
-            
-            if (records.length === 0) {
-                container.innerHTML = '<p style="color: #888; text-align: center; font-style: italic;">Brak zarejestrowanych treningów.</p>';
-                return;
-            }
-
-            let html = '';
-            records.forEach(rec => {
-                const totalSets = rec.exercises.reduce((sum, ex) => sum + ex.sets.length, 0);
-                const totalVolume = rec.exercises.reduce((sum, ex) => {
-                    return sum + ex.sets.reduce((sSum, set) => sSum + (set.weight * set.reps), 0);
-                }, 0);
-
-                html += `
-                    <div class="log-card" style="background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.1); padding: 15px; border-radius: 8px; margin-bottom: 15px;">
-                        <div style="display: flex; justify-content: space-between; margin-bottom: 10px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 10px;">
-                            <strong style="color: #00BFFF; font-size: 1.1em;">🏋️ ${rec.date}</strong>
-                            <span style="color: #aaa;">Czas: ${TrainingUI.formatTime(rec.duration_seconds)}</span>
-                        </div>
-                        <div style="font-size: 0.9em; line-height: 1.5;">
-                            <div><strong>Ćwiczeń:</strong> ${rec.exercises.length}</div>
-                            <div><strong>Wszystkich serii:</strong> ${totalSets}</div>
-                            <div><strong>Przerzucony ciężar:</strong> ${totalVolume} kg</div>
-                        </div>
-                        <div style="margin-top: 10px; border-top: 1px dashed rgba(255,255,255,0.1); padding-top: 10px; font-size: 0.85em; color: #ccc;">
-                            ${rec.exercises.map(ex => `<div>- ${ex.name} (${ex.sets.length} serii)</div>`).join('')}
-                        </div>
-                    </div>
-                `;
-            });
-            
-            container.innerHTML = html;
-        } catch (err) {
-            console.error("Error loading training history:", err);
-            container.innerHTML = '<p style="color: #ff4444; text-align: center;">Błąd ładowania historii treningów.</p>';
+        
+        if (records.length === 0) {
+            container.innerHTML = '<p style="color: #888; text-align: center; font-style: italic;">Brak zarejestrowanych treningów.</p>';
+            return;
         }
+
+        let html = '';
+        records.forEach(rec => {
+            const totalSets = rec.exercises.reduce((sum, ex) => sum + ex.sets.length, 0);
+            const totalVolume = rec.exercises.reduce((sum, ex) => {
+                return sum + ex.sets.reduce((sSum, set) => sSum + (set.weight * set.reps), 0);
+            }, 0);
+
+            html += `
+                <div class="log-card" style="background: rgba(0,0,0,0.4); border: 1px solid rgba(0, 191, 255, 0.4); padding: 15px; border-radius: 8px; margin-bottom: 15px;">
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 10px; border-bottom: 1px solid rgba(0,191,255,0.2); padding-bottom: 10px;">
+                        <strong style="color: #00BFFF; font-size: 1.1em;">🏋️ ${rec.date}</strong>
+                        <span style="color: #aaa;">Czas: ${TrainingUI.formatTime(rec.duration_seconds)}</span>
+                    </div>
+                    <div style="font-size: 0.9em; line-height: 1.5; color: #eee;">
+                        <div><strong>Ćwiczeń:</strong> ${rec.exercises.length}</div>
+                        <div><strong>Wszystkich serii:</strong> ${totalSets}</div>
+                        <div><strong>Przerzucony ciężar:</strong> ${totalVolume} kg</div>
+                    </div>
+                    <div style="margin-top: 10px; border-top: 1px dashed rgba(255,255,255,0.1); padding-top: 10px; font-size: 0.85em; color: #bbb;">
+                        ${rec.exercises.map(ex => `<div>- <strong style="color:#fff;">${ex.name || 'Nieznane ćwiczenie'}</strong> (${ex.sets.length} serii)</div>`).join('')}
+                    </div>
+                </div>
+            `;
+        });
+        
+        container.innerHTML = html;
     }
 };
 
-// Expose to window for inline onclick handlers in innerHTML
 window.TrainingUI = TrainingUI;

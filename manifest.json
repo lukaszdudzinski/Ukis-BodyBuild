@@ -1,24 +1,24 @@
 {
-    "name": "Uki's Dive Tools v2026.2.22.01",
-    "short_name": "DiveTools",
-    "description": "Profesjonalne narzędzia do planowania nurkowań.",
+    "name": "Uki's BodyBuild",
+    "short_name": "BodyBuild",
+    "description": "Profesjonalne narzędzie do monitorowania postępów sylwetkowych.",
     "start_url": "./index.html",
     "display": "standalone",
-    "version": "v2026.2.22.01",
+    "version": "v1.0.0",
     "background_color": "#121212",
-    "theme_color": "#00d1b2",
+    "theme_color": "#D81B60",
     "orientation": "any",
     "scope": "./",
     "icons": [
         {
-            "src": "img/logo.jpg",
+            "src": "img/logo.png",
             "sizes": "192x192",
-            "type": "image/jpeg"
+            "type": "image/png"
         },
         {
-            "src": "img/logo.jpg",
+            "src": "img/logo.png",
             "sizes": "512x512",
-            "type": "image/jpeg"
+            "type": "image/png"
         }
     ]
 }

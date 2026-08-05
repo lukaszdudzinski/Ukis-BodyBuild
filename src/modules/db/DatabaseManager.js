@@ -1,4 +1,4 @@
-import sqlite3InitModule from '../../../libs/sqlite/sqlite3.js';
+import sqlite3InitModule from '../../../libs/sqlite/sqlite3.mjs';
 
 let db = null;
 let isReady = false;
@@ -26,7 +26,7 @@ export const DatabaseManager = {
                 } else {
                     console.warn('OPFS is not available. Falling back to kvvfs or memory.');
                     try {
-                        db = new sqlite3.oo1.DB('/ukis_bodybuild.sqlite3', 'c', 'kvvfs');
+                        db = new sqlite3.oo1.DB('local', 'c', 'kvvfs');
                         console.log('Opened kvvfs (localStorage-backed) database.');
                     } catch (e) {
                          db = new sqlite3.oo1.DB(':memory:');
@@ -106,7 +106,9 @@ export const DatabaseManager = {
             }
         });
         
-        return { ...data, id: newId 
+        return { ...data, id: newId };
+    },
+    
     addTraining: async (data) => {
         await DatabaseManager.init();
         
@@ -145,9 +147,6 @@ export const DatabaseManager = {
             }
         });
         return records;
-    }
-};
-
     },
 
     getMeasurements: async () => {
@@ -169,46 +168,55 @@ export const DatabaseManager = {
             sql: `DELETE FROM measurements WHERE id = ?`,
             bind: [id]
         });
-    }
-
-    addTraining: async (data) => {
-        await DatabaseManager.init();
-        
-        db.exec({
-            sql: `INSERT INTO trainings (date, duration_seconds, exercises_json) VALUES (?, ?, ?)`,
-            bind: [
-                data.date, 
-                data.duration_seconds, 
-                JSON.stringify(data.exercises)
-            ]
-        });
-        
-        let newId = null;
-        db.exec({
-            sql: `SELECT last_insert_rowid() as id`,
-            rowMode: 'object',
-            callback: function (row) {
-                newId = row.id;
-            }
-        });
-        
-        return { ...data, id: newId };
     },
 
-    getTrainings: async () => {
+    exportDatabase: async () => {
         await DatabaseManager.init();
-        const records = [];
-        db.exec({
-            sql: `SELECT * FROM trainings ORDER BY date DESC, created_at DESC`,
-            rowMode: 'object',
-            callback: function (row) {
-                records.push({
-                    ...row,
-                    exercises: JSON.parse(row.exercises_json)
-                });
-            }
+        const measurements = await DatabaseManager.getMeasurements();
+        const trainings = await DatabaseManager.getTrainings();
+        return JSON.stringify({
+            measurements: measurements,
+            trainings: trainings,
+            version: '1.0'
         });
-        return records;
+    },
+
+    importDatabase: async (jsonString) => {
+        await DatabaseManager.init();
+        try {
+            const data = JSON.parse(jsonString);
+            
+            // Basic validation
+            if (!data.measurements || !data.trainings) {
+                throw new Error("Nieprawidłowy format pliku JSON.");
+            }
+
+            // Clear tables
+            db.exec(`DELETE FROM measurements`);
+            db.exec(`DELETE FROM trainings`);
+
+            // Import Measurements
+            data.measurements.forEach(m => {
+                db.exec({
+                    sql: `INSERT INTO measurements (id, date, weight, chest, waist, hips, thigh, biceps, photo, created_at) 
+                          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+                    bind: [m.id, m.date, m.weight, m.chest, m.waist, m.hips, m.thigh, m.biceps, m.photo, m.created_at]
+                });
+            });
+
+            // Import Trainings
+            data.trainings.forEach(t => {
+                db.exec({
+                    sql: `INSERT INTO trainings (id, date, duration_seconds, exercises_json, created_at) 
+                          VALUES (?, ?, ?, ?, ?)`,
+                    bind: [t.id, t.date, t.duration_seconds, JSON.stringify(t.exercises), t.created_at]
+                });
+            });
+
+            return true;
+        } catch (e) {
+            console.error("Błąd podczas importu bazy:", e);
+            return false;
+        }
     }
 };
-

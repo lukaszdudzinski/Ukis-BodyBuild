@@ -1,6 +1,7 @@
 import { AppUI } from './modules/ui/AppUI.js';
 import { MeasurementsUI } from './modules/ui/MeasurementsUI.js';
 import { TrainingUI } from './modules/ui/TrainingUI.js';
+import { SettingsUI } from './modules/ui/SettingsUI.js';
 
 // Initialize Application
 const initApp = () => {
@@ -8,6 +9,7 @@ const initApp = () => {
     AppUI.init();
     MeasurementsUI.init();
     TrainingUI.init();
+    SettingsUI.init();
 
     console.log("Uki's BodyBuild Initialized (Module System)");
 };

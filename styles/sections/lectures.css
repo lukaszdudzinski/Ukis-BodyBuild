@@ -74,7 +74,7 @@
 }
 
 .lecture-toc a {
-    color: #D81B60;
+    color: #00BFFF;
     /* Turquoise / Teal matching app theme */
     text-decoration: none;
     transition: color 0.2s;
@@ -114,19 +114,19 @@
 
 /* Formula Box (Technical/Scifi Style) */
 .formula-box {
-    background: rgba(216, 27, 96, 0.1);
-    border: 1px solid #D81B60;
+    background: rgba(0, 191, 255, 0.1);
+    border: 1px solid #00BFFF;
     padding: 20px;
     border-radius: 8px;
     margin: 20px 0;
     text-align: center;
-    box-shadow: 0 0 15px rgba(216, 27, 96, 0.2);
+    box-shadow: 0 0 15px rgba(0, 191, 255, 0.2);
 }
 
 .formula-main {
     font-size: 1.4em;
     font-weight: bold;
-    color: #D81B60;
+    color: #00BFFF;
     margin-bottom: 15px;
     letter-spacing: 1px;
 }
@@ -148,14 +148,14 @@
 
 .formula-legend li::before {
     content: "•";
-    color: #D81B60;
+    color: #00BFFF;
     position: absolute;
     left: 0;
 }
 
 .calculation-example {
     background: rgba(255, 255, 255, 0.05);
-    border-left: 4px solid #D81B60;
+    border-left: 4px solid #00BFFF;
     padding: 15px;
     margin: 15px 0;
     font-family: monospace;

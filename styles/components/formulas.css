@@ -18,7 +18,7 @@
 .formula-box .formula {
     font-family: 'Courier New', Courier, monospace;
     font-size: 1.2em;
-    color: #D81B60;
+    color: #00BFFF;
     background-color: rgba(0, 0, 0, 0.3);
     padding: 10px;
     border-radius: 4px;
@@ -59,7 +59,7 @@
 #global-tooltip .formula-box-small .formula {
     font-family: 'Courier New', Courier, monospace;
     font-size: 1em;
-    color: #D81B60;
+    color: #00BFFF;
     padding: 5px;
     border-radius: 4px;
     background-color: rgba(0, 0, 0, 0.3);
