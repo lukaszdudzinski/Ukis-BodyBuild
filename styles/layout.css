@@ -88,8 +88,8 @@
     height: 45px;
     border-radius: 50%;
     object-fit: cover;
-    border: 2px solid rgba(0, 0, 128, 0.6);
-    box-shadow: 0 0 15px rgba(0, 0, 128, 0.9), 0 0 5px rgba(0, 0, 128, 0.5);
+    border: 2px solid rgba(0, 191, 255, 0.6);
+    animation: azure-pulse-glow 2.5s infinite ease-in-out;
     flex-shrink: 0;
     margin-bottom: 0;
 }
@@ -99,7 +99,7 @@
     text-align: left;
     color: #ffffff;
     margin: 0;
-    text-shadow: 0 0 15px rgba(0, 0, 128, 0.9), 0 0 5px rgba(0, 0, 128, 0.5);
+    animation: azure-pulse-text 2.5s infinite ease-in-out;
     line-height: 1.2;
 }
 
@@ -329,7 +329,7 @@
     flex-grow: 0;
     /* Do not stretch */
     white-space: nowrap;
-    text-shadow: 0 0 15px rgba(0, 0, 128, 0.9), 0 0 5px rgba(0, 0, 128, 0.5);
+    animation: azure-pulse-text 2.5s infinite ease-in-out;
 }
 
 .logo-img {
@@ -337,8 +337,8 @@
     height: 35px;
     border-radius: 50%;
     margin: 0;
-    border: 1px solid rgba(0, 0, 128, 0.6);
-    box-shadow: 0 0 15px rgba(0, 0, 128, 0.9);
+    border: 1px solid rgba(0, 191, 255, 0.6);
+    animation: azure-pulse-glow 2.5s infinite ease-in-out;
 }
 
 #mobile-menu-toggle {

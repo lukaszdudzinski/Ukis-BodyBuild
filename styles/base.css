@@ -42,6 +42,30 @@ h3,
     }
 }
 
+@keyframes azure-pulse-text {
+    0% {
+        text-shadow: 0 0 5px rgba(0, 191, 255, 0.5);
+    }
+    50% {
+        text-shadow: 0 0 15px rgba(0, 191, 255, 1), 0 0 5px rgba(0, 191, 255, 0.8);
+    }
+    100% {
+        text-shadow: 0 0 5px rgba(0, 191, 255, 0.5);
+    }
+}
+
+@keyframes azure-pulse-glow {
+    0% {
+        box-shadow: 0 0 5px rgba(0, 191, 255, 0.5);
+    }
+    50% {
+        box-shadow: 0 0 15px rgba(0, 191, 255, 1);
+    }
+    100% {
+        box-shadow: 0 0 5px rgba(0, 191, 255, 0.5);
+    }
+}
+
 @keyframes pulse-glow-dark {
     0% {
         box-shadow: 0 0 5px rgba(216, 27, 96, 0.4);

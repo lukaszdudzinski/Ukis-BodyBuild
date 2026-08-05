@@ -1,7 +1,13 @@
 import { DatabaseManager } from '../db/DatabaseManager.js';
+import { MeasurementsComponent } from '../../components/MeasurementsComponent.js';
 
 export const MeasurementsUI = {
     init: () => {
+        const container = document.getElementById('measurements-dashboard');
+        if (container) {
+            container.innerHTML = MeasurementsComponent.render();
+        }
+
         const form = document.getElementById('measurementsForm');
         if (form) {
             form.addEventListener('submit', MeasurementsUI.handleSave);
