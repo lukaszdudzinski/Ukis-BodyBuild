@@ -122,16 +122,48 @@ export const AnalyticsUI = {
                 const trendText = diff > 0 ? `Zwiększyłeś objętość o ${Math.abs(diff)} kg w porównaniu do poprzedniej sesji! Rewelacja!` : `Odpocznij jeśli trzeba. Ważna jest technika!`;
                 
                 analyticsContentHtml += `
-                    <div style="background: rgba(0,0,0,0.3); border: 1px solid ${trendColor}; padding: 15px; border-radius: 8px;">
+                    <div style="background: rgba(0,0,0,0.3); border: 1px solid ${trendColor}; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
                         <strong style="color: ${trendColor};">${trendIcon} Progres z ostatniej sesji</strong>
                         <p style="margin: 5px 0 0 0; font-size: 0.9em; color: #ccc;">${trendText}</p>
                     </div>
                 `;
             }
+
+            // Share Button
+            analyticsContentHtml += `
+                <div style="text-align: center; margin-top: 25px;">
+                    <button onclick="window.AnalyticsUI.shareProgress(${thisMonthWorkouts.length}, ${thisMonthVolume}, ${totalVolume})" class="action-button" style="background-color: #3b5998; border-color: #3b5998; color: white; width: 100%; max-width: 300px;">
+                        📤 Udostępnij swój progres
+                    </button>
+                    <p style="font-size: 0.8em; color: #888; margin-top: 10px;">Pochwal się na Facebooku lub Instagramie!</p>
+                </div>
+            `;
         }
 
         html += analyticsContentHtml;
         container.innerHTML = html;
+    },
+
+    shareProgress: async (monthWorkouts, monthVolume, totalVolume) => {
+        const textToShare = `Tylko w tym miesiącu zrobiłem ${monthWorkouts} treningów i przerzuciłem ${monthVolume} kg! 🏋️‍♂️🔥 Całkowita objętość: ${totalVolume} kg. Buduję formę z Uki's BodyBuild! 💪`;
+        
+        if (navigator.share) {
+            try {
+                await navigator.share({
+                    title: "Mój Progres Treningowy",
+                    text: textToShare,
+                    url: window.location.href
+                });
+                console.log('Udostępniono pomyślnie');
+            } catch (error) {
+                console.log('Błąd podczas udostępniania:', error);
+            }
+        } else {
+            // Fallback: Copy to clipboard
+            navigator.clipboard.writeText(textToShare)
+                .then(() => alert("Twój progres został skopiowany do schowka! Możesz go wkleić na Facebooku lub Instagramie."))
+                .catch(err => console.error("Błąd kopiowania", err));
+        }
     }
 };
 

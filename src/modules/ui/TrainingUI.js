@@ -5,7 +5,11 @@ let currentTraining = {
     date: null,
     startTime: null,
     timerInterval: null,
-    exercises: []
+    exercises: [],
+    name: '',
+    isPaused: false,
+    pauseStartTime: null,
+    totalPausedTime: 0
 };
 
 let currentMonth = new Date().getMonth();
@@ -34,6 +38,16 @@ export const TrainingUI = {
         const finishBtn = document.getElementById('finish-training-btn');
         if (finishBtn) {
             finishBtn.addEventListener('click', TrainingUI.finishTraining);
+        }
+
+        const pauseBtn = document.getElementById('pause-training-btn');
+        if (pauseBtn) {
+            pauseBtn.addEventListener('click', TrainingUI.togglePause);
+        }
+
+        const continueBtn = document.getElementById('continue-session-btn');
+        if (continueBtn) {
+            continueBtn.addEventListener('click', () => TrainingUI.continueTraining());
         }
 
         // Calendar listeners
@@ -128,37 +142,62 @@ export const TrainingUI = {
         
         const panel = document.getElementById('day-action-panel');
         const label = document.getElementById('selected-day-label');
+        
+        const emptyState = document.getElementById('day-action-empty-state');
+        const existingState = document.getElementById('day-action-existing-state');
+        const existingPreview = document.getElementById('existing-training-preview');
         const historyList = document.getElementById('history-sessions-list');
         
-        if (panel && label && historyList) {
-            panel.style.display = 'block';
-            label.textContent = `Opcje dla: ${dateStr}`;
+        if (!panel) return;
+        panel.style.display = 'block';
+        label.textContent = `Opcje dla: ${dateStr}`;
+
+        const existingTraining = allTrainingsCache.find(t => t.date === dateStr);
+
+        if (existingTraining) {
+            // Day already has training
+            if (emptyState) emptyState.style.display = 'none';
+            if (existingState) existingState.style.display = 'block';
             
-            // Build recent history for copying
-            let historyHtml = '<h5 style="color: #ccc; margin-bottom: 10px;">📋 Skopiuj sesję treningową:</h5>';
-            const recentTrainings = allTrainingsCache.slice(0, 5); // Take last 5
-            
-            if (recentTrainings.length === 0) {
-                historyHtml += `<p style="color: #888; font-size: 0.9em; font-style: italic;">Brak sesji w historii do skopiowania.</p>`;
-            } else {
-                recentTrainings.forEach((rec, idx) => {
-                    const exNames = rec.exercises.map(e => e.name).filter(n => n).join(', ');
-                    const preview = exNames.length > 30 ? exNames.substring(0, 30) + '...' : exNames;
-                    historyHtml += `
-                        <button onclick="window.TrainingUI.startTraining(${idx})" class="action-button" style="width: 100%; margin-bottom: 5px; background-color: #333; border: 1px solid #555; text-align: left; padding: 10px;">
-                            <strong style="color: #00BFFF;">${rec.date}</strong><br>
-                            <span style="font-size: 0.85em; color: #ccc;">${rec.exercises.length} ćw. ${preview ? `(${preview})` : ''}</span>
-                        </button>
-                    `;
-                });
+            if (existingPreview) {
+                const nameDisplay = existingTraining.name ? `<strong style="color: #00BFFF; font-size: 1.2em;">${existingTraining.name}</strong><br>` : '';
+                existingPreview.innerHTML = `
+                    ${nameDisplay}
+                    <span>Czas treningu: ${TrainingUI.formatTime(existingTraining.duration_seconds)}</span><br>
+                    <span style="font-size: 0.9em; color: #888;">Liczba ćwiczeń: ${existingTraining.exercises.length}</span>
+                `;
             }
-            historyList.innerHTML = historyHtml;
+        } else {
+            // Day has no training
+            if (emptyState) emptyState.style.display = 'block';
+            if (existingState) existingState.style.display = 'none';
+
+            if (historyList) {
+                // Build recent history for copying
+                let historyHtml = '<h5 style="color: #ccc; margin-bottom: 10px;">📋 Skopiuj sesję treningową:</h5>';
+                const recentTrainings = allTrainingsCache.slice(0, 5); // Take last 5
+                
+                if (recentTrainings.length === 0) {
+                    historyHtml += `<p style="color: #888; font-size: 0.9em; font-style: italic;">Brak sesji w historii do skopiowania.</p>`;
+                } else {
+                    recentTrainings.forEach((rec, idx) => {
+                        const nameDisplay = rec.name ? `<strong style="color: #00BFFF;">${rec.name}</strong> (${rec.date})` : `<strong style="color: #00BFFF;">${rec.date}</strong>`;
+                        const exNames = rec.exercises.map(e => e.name).filter(n => n).join(', ');
+                        const preview = exNames.length > 30 ? exNames.substring(0, 30) + '...' : exNames;
+                        historyHtml += `
+                            <button onclick="window.TrainingUI.startTraining(${idx})" class="action-button" style="width: 100%; margin-bottom: 5px; background-color: #333; border: 1px solid #555; text-align: left; padding: 10px;">
+                                ${nameDisplay}<br>
+                                <span style="font-size: 0.85em; color: #ccc;">Czas treningu: ${TrainingUI.formatTime(rec.duration_seconds)} | ${rec.exercises.length} ćw. ${preview ? `(${preview})` : ''}</span>
+                            </button>
+                        `;
+                    });
+                }
+                historyList.innerHTML = historyHtml;
+            }
         }
         
         // Scroll to panel
-        if (panel) {
-            panel.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        }
+        panel.scrollIntoView({ behavior: 'smooth', block: 'center' });
     },
 
     formatTime: (seconds) => {
@@ -169,10 +208,59 @@ export const TrainingUI = {
     },
 
     updateTimer: () => {
-        if (!currentTraining.startTime) return;
+        if (!currentTraining.startTime || currentTraining.isPaused) return;
         const now = Date.now();
-        const diffSeconds = Math.floor((now - currentTraining.startTime) / 1000);
+        const diffSeconds = Math.floor((now - currentTraining.startTime - currentTraining.totalPausedTime) / 1000);
         document.getElementById('training-timer').innerText = TrainingUI.formatTime(diffSeconds);
+    },
+
+    togglePause: () => {
+        const pauseBtn = document.getElementById('pause-training-btn');
+        if (!pauseBtn) return;
+
+        if (currentTraining.isPaused) {
+            // Wznów
+            currentTraining.isPaused = false;
+            currentTraining.totalPausedTime += (Date.now() - currentTraining.pauseStartTime);
+            currentTraining.pauseStartTime = null;
+            pauseBtn.innerHTML = '⏸ Pauza';
+            pauseBtn.style.backgroundColor = '#f39c12';
+            pauseBtn.style.borderColor = '#f39c12';
+        } else {
+            // Zapauzuj
+            currentTraining.isPaused = true;
+            currentTraining.pauseStartTime = Date.now();
+            pauseBtn.innerHTML = '▶ Wznów';
+            pauseBtn.style.backgroundColor = '#2ECC71';
+            pauseBtn.style.borderColor = '#2ECC71';
+        }
+    },
+
+    continueTraining: () => {
+        const existingTraining = allTrainingsCache.find(t => t.date === selectedDate);
+        if (!existingTraining) return;
+
+        document.getElementById('training-calendar-view').style.display = 'none';
+        document.getElementById('active-training-view').style.display = 'block';
+
+        currentTraining = {
+            date: selectedDate,
+            startTime: Date.now() - (existingTraining.duration_seconds * 1000), // Simulate started in the past
+            timerInterval: null,
+            exercises: JSON.parse(JSON.stringify(existingTraining.exercises)),
+            name: existingTraining.name || '',
+            isPaused: false,
+            pauseStartTime: null,
+            totalPausedTime: 0
+        };
+
+        const nameInput = document.getElementById('training-name-input');
+        if (nameInput) {
+            nameInput.value = currentTraining.name;
+        }
+
+        TrainingUI.renderCurrentExercises();
+        currentTraining.timerInterval = setInterval(TrainingUI.updateTimer, 1000);
     },
 
     startTraining: (copyFromIndex = null) => {
@@ -182,9 +270,18 @@ export const TrainingUI = {
         currentTraining = {
             date: selectedDate,
             startTime: Date.now(),
-            exercises: []
+            exercises: [],
+            name: '',
+            isPaused: false,
+            pauseStartTime: null,
+            totalPausedTime: 0
         };
         
+        const nameInput = document.getElementById('training-name-input');
+        if (nameInput) {
+            nameInput.value = '';
+        }
+
         if (copyFromIndex !== null && allTrainingsCache[copyFromIndex]) {
             const rec = allTrainingsCache[copyFromIndex];
             currentTraining.exercises = rec.exercises.map(ex => ({
@@ -193,6 +290,10 @@ export const TrainingUI = {
                 name: ex.name || '',
                 sets: ex.sets.map(s => ({ ...s }))
             }));
+            if (rec.name && nameInput) {
+                currentTraining.name = rec.name;
+                nameInput.value = rec.name;
+            }
         }
         
         // If empty, start with one empty exercise block
@@ -322,16 +423,24 @@ export const TrainingUI = {
                 clearInterval(currentTraining.timerInterval);
             }
 
-            const duration = Math.floor((Date.now() - currentTraining.startTime) / 1000);
+            if (currentTraining.isPaused) {
+                currentTraining.totalPausedTime += (Date.now() - currentTraining.pauseStartTime);
+            }
+
+            const duration = Math.floor((Date.now() - currentTraining.startTime - currentTraining.totalPausedTime) / 1000);
             
             // Filter out empty exercises
             const validExercises = currentTraining.exercises.filter(ex => ex.name.trim() !== '' || ex.sets.length > 0);
+
+            const nameInput = document.getElementById('training-name-input');
+            const trainingName = nameInput ? nameInput.value.trim() : '';
 
             try {
                 await DatabaseManager.addTraining({
                     date: currentTraining.date,
                     duration_seconds: duration,
-                    exercises: validExercises
+                    exercises: validExercises,
+                    name: trainingName
                 });
                 alert("Trening zapisany pomyślnie!");
             } catch (err) {
@@ -343,43 +452,6 @@ export const TrainingUI = {
             document.getElementById('training-calendar-view').style.display = 'block';
             TrainingUI.loadHistoryAndCalendar();
         }
-    },
-
-    renderHistoryList: (records) => {
-        const container = document.getElementById('training-list-content');
-        if (!container) return;
-        
-        if (records.length === 0) {
-            container.innerHTML = '<p style="color: #888; text-align: center; font-style: italic;">Brak zarejestrowanych treningów.</p>';
-            return;
-        }
-
-        let html = '';
-        records.forEach(rec => {
-            const totalSets = rec.exercises.reduce((sum, ex) => sum + ex.sets.length, 0);
-            const totalVolume = rec.exercises.reduce((sum, ex) => {
-                return sum + ex.sets.reduce((sSum, set) => sSum + (set.weight * set.reps), 0);
-            }, 0);
-
-            html += `
-                <div class="log-card" style="background: rgba(0,0,0,0.4); border: 1px solid rgba(0, 191, 255, 0.4); padding: 15px; border-radius: 8px; margin-bottom: 15px;">
-                    <div style="display: flex; justify-content: space-between; margin-bottom: 10px; border-bottom: 1px solid rgba(0,191,255,0.2); padding-bottom: 10px;">
-                        <strong style="color: #00BFFF; font-size: 1.1em;">🏋️ ${rec.date}</strong>
-                        <span style="color: #aaa;">Czas: ${TrainingUI.formatTime(rec.duration_seconds)}</span>
-                    </div>
-                    <div style="font-size: 0.9em; line-height: 1.5; color: #eee;">
-                        <div><strong>Ćwiczeń:</strong> ${rec.exercises.length}</div>
-                        <div><strong>Wszystkich serii:</strong> ${totalSets}</div>
-                        <div><strong>Przerzucony ciężar:</strong> ${totalVolume} kg</div>
-                    </div>
-                    <div style="margin-top: 10px; border-top: 1px dashed rgba(255,255,255,0.1); padding-top: 10px; font-size: 0.85em; color: #bbb;">
-                        ${rec.exercises.map(ex => `<div>- <strong style="color:#fff;">${ex.name || 'Nieznane ćwiczenie'}</strong> (${ex.sets.length} serii)</div>`).join('')}
-                    </div>
-                </div>
-            `;
-        });
-        
-        container.innerHTML = html;
     }
 };
 

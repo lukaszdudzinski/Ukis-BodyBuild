@@ -73,9 +73,17 @@ export const DatabaseManager = {
                 date TEXT NOT NULL,
                 duration_seconds INTEGER NOT NULL,
                 exercises_json TEXT NOT NULL,
+                name TEXT,
                 created_at DATETIME DEFAULT CURRENT_TIMESTAMP
             );
         `);
+        
+        // Ensure name column exists (for backward compatibility if table was created before)
+        try {
+            db.exec(`ALTER TABLE trainings ADD COLUMN name TEXT;`);
+        } catch(e) {
+            // Ignore error if column already exists
+        }
     
     },
 
@@ -113,11 +121,12 @@ export const DatabaseManager = {
         await DatabaseManager.init();
         
         db.exec({
-            sql: `INSERT INTO trainings (date, duration_seconds, exercises_json) VALUES (?, ?, ?)`,
+            sql: `INSERT INTO trainings (date, duration_seconds, exercises_json, name) VALUES (?, ?, ?, ?)`,
             bind: [
                 data.date, 
                 data.duration_seconds, 
-                JSON.stringify(data.exercises)
+                JSON.stringify(data.exercises),
+                data.name || ''
             ]
         });
         
@@ -207,9 +216,9 @@ export const DatabaseManager = {
             // Import Trainings
             data.trainings.forEach(t => {
                 db.exec({
-                    sql: `INSERT INTO trainings (id, date, duration_seconds, exercises_json, created_at) 
-                          VALUES (?, ?, ?, ?, ?)`,
-                    bind: [t.id, t.date, t.duration_seconds, JSON.stringify(t.exercises), t.created_at]
+                    sql: `INSERT INTO trainings (id, date, duration_seconds, exercises_json, name, created_at) 
+                          VALUES (?, ?, ?, ?, ?, ?)`,
+                    bind: [t.id, t.date, t.duration_seconds, JSON.stringify(t.exercises), t.name || '', t.created_at]
                 });
             });
 
