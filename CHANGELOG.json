@@ -1,5 +1,15 @@
 [
   {
+    "version": "v.2026.8.6.02",
+    "date": "2026-08-06",
+    "changes": [
+      "Wdrożono inteligentny moduł Diety z rozpoznawaniem posiłków AI.",
+      "Dodano wyliczanie celu kalorycznego TDEE w zakładce Ustawienia.",
+      "Integracja z bezpiecznym serwerem pośredniczącym Cloudflare.",
+      "Poprawiono formatowanie numeru wersji w systemie."
+    ]
+  },
+  {
     "version": "v.2026.8.6.01",
     "date": "2026-08-06",
     "changes": [
@@ -11,7 +21,7 @@
     ]
   },
   {
-    "version": "v2026.8.05.13",
+    "version": "v.2026.8.5.13",
     "date": "2026-08-05",
     "changes": [
       "Dodano pole 'Szyja' w pomiarach ciała (niezbędne do wyliczania BF%).",
