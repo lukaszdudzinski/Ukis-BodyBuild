@@ -96,7 +96,21 @@ export const DatabaseManager = {
         } catch(e) {
             // Ignore error if column already exists
         }
-    
+
+        // Dieta (Diet Logs)
+        db.exec(`
+            CREATE TABLE IF NOT EXISTS diet_logs (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                date TEXT NOT NULL,
+                meal_type TEXT NOT NULL,
+                food_name TEXT NOT NULL,
+                calories INTEGER DEFAULT 0,
+                protein INTEGER DEFAULT 0,
+                carbs INTEGER DEFAULT 0,
+                fat INTEGER DEFAULT 0,
+                created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+            );
+        `);
     },
 
     addMeasurement: async (data) => {
@@ -189,6 +203,65 @@ export const DatabaseManager = {
         await DatabaseManager.init();
         db.exec({
             sql: `DELETE FROM measurements WHERE id = ?`,
+            bind: [id]
+        });
+    },
+
+    addDietLog: async (data) => {
+        await DatabaseManager.init();
+        
+        db.exec({
+            sql: `INSERT INTO diet_logs (date, meal_type, food_name, calories, protein, carbs, fat) 
+                  VALUES (?, ?, ?, ?, ?, ?, ?)`,
+            bind: [
+                data.date, 
+                data.meal_type, 
+                data.food_name, 
+                data.calories || 0, 
+                data.protein || 0, 
+                data.carbs || 0, 
+                data.fat || 0
+            ]
+        });
+        
+        let newId = null;
+        db.exec({
+            sql: `SELECT last_insert_rowid() as id`,
+            rowMode: 'object',
+            callback: function (row) {
+                newId = row.id;
+            }
+        });
+        
+        return { ...data, id: newId };
+    },
+
+    getDietLogs: async (date = null) => {
+        await DatabaseManager.init();
+        const records = [];
+        let query = `SELECT * FROM diet_logs ORDER BY date DESC, created_at DESC`;
+        let bindParams = [];
+        
+        if (date) {
+            query = `SELECT * FROM diet_logs WHERE date = ? ORDER BY created_at DESC`;
+            bindParams = [date];
+        }
+
+        db.exec({
+            sql: query,
+            bind: bindParams,
+            rowMode: 'object',
+            callback: function (row) {
+                records.push(row);
+            }
+        });
+        return records;
+    },
+
+    deleteDietLog: async (id) => {
+        await DatabaseManager.init();
+        db.exec({
+            sql: `DELETE FROM diet_logs WHERE id = ?`,
             bind: [id]
         });
     },
