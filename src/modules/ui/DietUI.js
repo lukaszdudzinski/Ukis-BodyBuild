@@ -56,19 +56,26 @@ export const DietUI = {
                 </div>
             </div>
 
-            <!-- Kamera / Skaner -->
-            <div style="text-align: center; margin-bottom: 30px; padding: 0 15px;">
-                <div style="margin-bottom: 15px; text-align: left;">
-                    <label style="color: #aaa; font-size: 0.9em; display: block; margin-bottom: 5px;">Opcjonalny opis (lub podyktuj głosem):</label>
-                    <textarea id="diet-context-input" placeholder="np. Sałatka z kurczakiem i awokado" style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #444; background: #222; color: #fff; font-size: 1em; resize: none; box-sizing: border-box;" rows="2"></textarea>
-                </div>
-                <label id="diet-scan-btn" class="action-button" style="display: flex; align-items: center; justify-content: center; width: 100%; max-width: 350px; margin: 0 auto; background: linear-gradient(135deg, #FF9800, #F44336); border: none; padding: 15px 20px; border-radius: 30px; font-size: 1.1em; font-weight: bold; cursor: pointer; box-shadow: 0 4px 15px rgba(255, 152, 0, 0.4); box-sizing: border-box; white-space: normal; line-height: 1.2;">
-                    📸 Zeskanuj Posiłek (AI)
-                    <input type="file" id="diet-camera-input" accept="image/*" capture="environment" style="display: none;">
-                </label>
-                <div id="diet-loading" style="display: none; margin-top: 15px; color: #FF9800;">
-                    <span class="spinner" style="display: inline-block; width: 20px; height: 20px; border: 3px solid rgba(255,152,0,0.3); border-radius: 50%; border-top-color: #FF9800; animation: spin 1s ease-in-out infinite;"></span>
-                    Analizowanie przez AI...
+            <!-- Kamera / Skaner / Tekst -->
+            <div style="margin-bottom: 30px; padding: 0 15px;">
+                <div style="background: rgba(255,255,255,0.05); padding: 15px; border-radius: 12px; border: 1px solid #FF9800; text-align: center;">
+                    <label style="color: #ccc; font-size: 0.9em; display: block; margin-bottom: 10px; font-weight: bold;">Co dzisiaj jadłeś?</label>
+                    <textarea id="diet-context-input" placeholder="Napisz lub podyktuj głosem z klawiatury (np. Sałatka z kurczakiem i awokado)..." style="width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #555; background: #1a1a1a; color: #fff; font-size: 1em; resize: none; box-sizing: border-box; margin-bottom: 15px;" rows="3"></textarea>
+                    
+                    <div style="display: flex; gap: 10px; justify-content: center; flex-wrap: wrap;">
+                        <button id="diet-text-scan-btn" class="action-button" style="flex: 1; min-width: 140px; background: #333; border: 1px solid #FF9800; color: #FF9800; padding: 12px; border-radius: 25px; font-size: 0.95em; font-weight: bold; cursor: pointer;">
+                            ✍️ Wyślij Opis
+                        </button>
+                        <label id="diet-scan-btn" class="action-button" style="flex: 1; min-width: 140px; display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, #FF9800, #F44336); border: none; padding: 12px; border-radius: 25px; font-size: 0.95em; font-weight: bold; cursor: pointer; color: #fff; box-shadow: 0 4px 15px rgba(255, 152, 0, 0.4);">
+                            📸 Zrób Zdjęcie
+                            <input type="file" id="diet-camera-input" accept="image/*" capture="environment" style="display: none;">
+                        </label>
+                    </div>
+
+                    <div id="diet-loading" style="display: none; margin-top: 15px; color: #FF9800; font-weight: bold;">
+                        <span class="spinner" style="display: inline-block; width: 20px; height: 20px; border: 3px solid rgba(255,152,0,0.3); border-radius: 50%; border-top-color: #FF9800; animation: spin 1s ease-in-out infinite; vertical-align: middle; margin-right: 8px;"></span>
+                        Analizowanie przez AI...
+                    </div>
                 </div>
             </div>
 
@@ -127,6 +134,11 @@ export const DietUI = {
         const cameraInput = document.getElementById('diet-camera-input');
         if (cameraInput) {
             cameraInput.addEventListener('change', DietUI.handleScan);
+        }
+
+        const textScanBtn = document.getElementById('diet-text-scan-btn');
+        if (textScanBtn) {
+            textScanBtn.addEventListener('click', DietUI.handleTextScan);
         }
 
         const configBtn = document.getElementById('diet-config-btn');
@@ -287,19 +299,22 @@ export const DietUI = {
         if (!file) return;
 
         const loading = document.getElementById('diet-loading');
-        const btnLabel = document.getElementById('diet-scan-btn');
+        const cameraBtn = document.getElementById('diet-scan-btn');
+        const textBtn = document.getElementById('diet-text-scan-btn');
+        
         if (loading) loading.style.display = 'block';
-        if (btnLabel) btnLabel.style.display = 'none';
+        if (cameraBtn) cameraBtn.style.display = 'none';
+        if (textBtn) textBtn.style.display = 'none';
 
         try {
             // Pobranie opcjonalnego kontekstu
             const contextInput = document.getElementById('diet-context-input');
             const contextText = contextInput ? contextInput.value : '';
 
-            // Konwersja na base64 z kompresją w locie dla optymalizacji przesyłu
+            // Konwersja na base64
             const base64 = await DietUI.resizeAndToBase64(file);
             
-            // Wywołanie API Gemini
+            // Wywołanie API
             const result = await DietAIEngine.analyzeImage(base64, contextText);
             
             // Zapis do bazy
@@ -318,20 +333,60 @@ export const DietUI = {
             if (contextInput) contextInput.value = '';
 
             alert(`Dodano: ${result.food_name} (${result.calories} kcal)`);
-
-            // Odświeżenie widoku
             DietUI.loadTodayData();
 
-        } catch (err) {
-            let errorMsg = err.message;
-            if (errorMsg.includes('Unexpected token') || errorMsg.includes('JSON')) {
-                errorMsg = "AI nie rozpoznało jedzenia na zdjęciu lub zdjęcie było niewyraźne. Spróbuj jeszcze raz!";
-            }
-            alert("Błąd: " + errorMsg);
+        } catch (error) {
+            alert(error.message);
         } finally {
             if (loading) loading.style.display = 'none';
-            if (btnLabel) btnLabel.style.display = 'inline-block';
-            e.target.value = ''; // Reset input
+            if (cameraBtn) cameraBtn.style.display = 'flex';
+            if (textBtn) textBtn.style.display = 'block';
+            if (e.target) e.target.value = '';
+        }
+    },
+
+    handleTextScan: async () => {
+        const contextInput = document.getElementById('diet-context-input');
+        const contextText = contextInput ? contextInput.value.trim() : '';
+
+        if (!contextText) {
+            alert('Wpisz lub podyktuj opis posiłku, zanim wyślesz sam tekst!');
+            return;
+        }
+
+        const loading = document.getElementById('diet-loading');
+        const cameraBtn = document.getElementById('diet-scan-btn');
+        const textBtn = document.getElementById('diet-text-scan-btn');
+        
+        if (loading) loading.style.display = 'block';
+        if (cameraBtn) cameraBtn.style.display = 'none';
+        if (textBtn) textBtn.style.display = 'none';
+
+        try {
+            // Przesyłamy null zamiast base64
+            const result = await DietAIEngine.analyzeImage(null, contextText);
+            
+            const today = new Date().toISOString().split('T')[0];
+            await DatabaseManager.addDietLog({
+                date: today,
+                meal_type: 'Inny',
+                food_name: result.food_name || 'Nieznany posiłek',
+                calories: parseInt(result.calories) || 0,
+                protein: parseInt(result.protein) || 0,
+                carbs: parseInt(result.carbs) || 0,
+                fat: parseInt(result.fat) || 0
+            });
+
+            if (contextInput) contextInput.value = '';
+            alert(`Dodano: ${result.food_name} (${result.calories} kcal)`);
+            DietUI.loadTodayData();
+
+        } catch (error) {
+            alert(error.message);
+        } finally {
+            if (loading) loading.style.display = 'none';
+            if (cameraBtn) cameraBtn.style.display = 'flex';
+            if (textBtn) textBtn.style.display = 'block';
         }
     },
 

@@ -1,4 +1,4 @@
-export const APP_VERSION = 'v.2026.8.7.02'; // <-- TEN NUMER ZMIENIAMY PRZY KAŻDEJ AKTUALIZACJI
+export const APP_VERSION = 'v.2026.8.7.03'; // <-- TEN NUMER ZMIENIAMY PRZY KAŻDEJ AKTUALIZACJI
 
 export const AppUI = {
     init: () => {
@@ -11,6 +11,18 @@ export const AppUI = {
         versionDisplays.forEach(el => {
             el.textContent = APP_VERSION;
         });
+
+        // Setup Nickname Welcome
+        AppUI.updateWelcomeMessage();
+        document.addEventListener('nickUpdated', AppUI.updateWelcomeMessage);
+    },
+
+    updateWelcomeMessage: () => {
+        const nick = localStorage.getItem('userNick');
+        const headerTitle = document.querySelector('.home-header h2');
+        if (headerTitle) {
+            headerTitle.textContent = nick ? `Cześć, ${nick}! 🚀` : "Uki's BodyBuild";
+        }
     },
 
     initMobileMenu: () => {

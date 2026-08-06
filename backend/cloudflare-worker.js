@@ -37,8 +37,8 @@ export default {
       // 2. Pobieramy zdjęcie wysłane z naszej aplikacji oraz opcjonalny kontekst
       const { imageBase64, contextText } = await request.json();
 
-      if (!imageBase64) {
-        return new Response(JSON.stringify({ error: "Brak zdjęcia" }), { status: 400, headers: corsHeaders });
+      if (!imageBase64 && (!contextText || contextText.trim().length === 0)) {
+        return new Response(JSON.stringify({ error: "Brak zdjęcia lub opisu" }), { status: 400, headers: corsHeaders });
       }
 
       // 3. Sprawdzamy czy dodałeś klucz GEMINI w Cloudflare Secrets
@@ -48,10 +48,16 @@ export default {
       }
 
       // 4. Budujemy zapytanie do Google Gemini Pro Vision
-      let prompt = `Przeanalizuj to zdjęcie posiłku. `;
-      
-      if (contextText && contextText.trim().length > 0) {
-        prompt += `\nUżytkownik dostarczył dodatkowy kontekst / opis słowny posiłku: "${contextText}". Weź to pod uwagę (szczególnie przy nazwie i składnikach których nie widać).\n`;
+      let prompt = ``;
+      if (imageBase64) {
+          prompt += `Przeanalizuj to zdjęcie posiłku. `;
+          if (contextText && contextText.trim().length > 0) {
+              prompt += `\nUżytkownik dostarczył dodatkowy opis słowny posiłku: "${contextText}". Zignoruj zdjęcie jeśli jest niewyraźne lub nie przedstawia jedzenia, i oprzyj się w 100% na tym tekście.\n`;
+          } else {
+              prompt += `\nJeśli zdjęcie jest niewyraźne lub nie ma na nim jedzenia, spróbuj mimo to odgadnąć, lub zwróć zera.\n`;
+          }
+      } else {
+          prompt += `Oceń kaloryczność posiłku wyłącznie na podstawie tego opisu: "${contextText}".\n`;
       }
 
       prompt += `
@@ -68,17 +74,20 @@ Format:
       // Zaktualizowano model do najnowszego gemini-3.6-flash (Sierpień 2026)
       const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key=${GEMINI_API_KEY}`;
       
+      const parts = [ { text: prompt } ];
+      
+      if (imageBase64) {
+          parts.push({
+              inline_data: {
+                  mime_type: "image/jpeg",
+                  data: imageBase64.split(',')[1] // Usuwamy "data:image/jpeg;base64," jeśli jest
+              }
+          });
+      }
+
       const geminiPayload = {
         contents: [{
-          parts: [
-            { text: prompt },
-            {
-              inline_data: {
-                mime_type: "image/jpeg",
-                data: imageBase64.split(',')[1] // Usuwamy "data:image/jpeg;base64," jeśli jest
-              }
-            }
-          ]
+          parts: parts
         }]
       };
 

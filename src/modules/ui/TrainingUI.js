@@ -35,6 +35,11 @@ export const TrainingUI = {
             addExerciseBtn.addEventListener('click', TrainingUI.addExercise);
         }
 
+        const addSupersetBtn = document.getElementById('add-superset-to-plan-btn');
+        if (addSupersetBtn) {
+            addSupersetBtn.addEventListener('click', TrainingUI.addSuperset);
+        }
+
         const finishBtn = document.getElementById('finish-training-btn');
         if (finishBtn) {
             finishBtn.addEventListener('click', TrainingUI.finishTraining);
@@ -388,15 +393,39 @@ export const TrainingUI = {
         }, 100);
     },
 
+    addSuperset: () => {
+        currentTraining.exercises.push({
+            id: Date.now().toString(),
+            type: 'superset',
+            name: '',
+            exercises: [
+                { id: Date.now().toString() + '-1', type: 'strength', name: '', sets: [] },
+                { id: Date.now().toString() + '-2', type: 'strength', name: '', sets: [] }
+            ]
+        });
+        TrainingUI.renderCurrentExercises();
+    },
+
+    getExerciseById: (id) => {
+        for (let ex of currentTraining.exercises) {
+            if (ex.id === id) return ex;
+            if (ex.type === 'superset' && ex.exercises) {
+                const nested = ex.exercises.find(e => e.id === id);
+                if (nested) return nested;
+            }
+        }
+        return null;
+    },
+
     updateExerciseField: (exerciseId, field, value) => {
-        const exercise = currentTraining.exercises.find(e => e.id === exerciseId);
+        const exercise = TrainingUI.getExerciseById(exerciseId);
         if (exercise) {
             exercise[field] = value;
         }
     },
 
-    addSet: (exerciseId) => {
-        const exercise = currentTraining.exercises.find(e => e.id === exerciseId);
+    addSet: (exerciseId, isDropset = false) => {
+        const exercise = TrainingUI.getExerciseById(exerciseId);
         if (!exercise) return;
         
         const weightInput = document.getElementById(`weight-${exerciseId}`);
@@ -409,7 +438,8 @@ export const TrainingUI = {
 
         exercise.sets.push({
             weight: parseFloat(weightInput.value),
-            reps: parseInt(repsInput.value, 10)
+            reps: parseInt(repsInput.value, 10),
+            type: isDropset ? 'dropset' : 'normal'
         });
 
         TrainingUI.renderCurrentExercises();
@@ -434,7 +464,7 @@ export const TrainingUI = {
     },
 
     removeSet: (exerciseId, setIndex) => {
-        const exercise = currentTraining.exercises.find(e => e.id === exerciseId);
+        const exercise = TrainingUI.getExerciseById(exerciseId);
         if (exercise) {
             exercise.sets.splice(setIndex, 1);
             TrainingUI.renderCurrentExercises();
@@ -449,9 +479,8 @@ export const TrainingUI = {
         }
 
         let html = '';
-        currentTraining.exercises.forEach((ex, exIndex) => {
+        const renderExerciseForm = (ex, isNested = false) => {
             let exerciseDetailsHtml = '';
-            
             if (ex.type === 'cardio') {
                 exerciseDetailsHtml = `
                     <div style="margin-top: 15px; text-align: center;">
@@ -462,50 +491,69 @@ export const TrainingUI = {
             } else {
                 exerciseDetailsHtml = `
                     <div style="margin-bottom: 10px;">
-                        ${ex.sets.map((set, i) => `
-                            <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid rgba(0,191,255,0.2); font-size: 1em;">
-                                <span>Seria ${i + 1}: <strong style="color: #00BFFF;">${set.weight} kg</strong> x <strong>${set.reps} powt.</strong></span>
-                                <button onclick="window.TrainingUI.removeSet('${ex.id}', ${i})" style="background: transparent; border: none; color: #ff4444; font-size: 1.2em; cursor: pointer;">&times;</button>
-                            </div>
-                        `).join('')}
+                        ${(ex.sets || []).map((set, i) => {
+                            const isDropset = set.type === 'dropset';
+                            const style = isDropset ? 'padding: 6px 0 6px 20px; border-bottom: 1px dashed rgba(255,152,0,0.3); font-size: 0.95em; color: #ccc; border-left: 3px solid #FF9800;' : 'padding: 8px 0; border-bottom: 1px solid rgba(0,191,255,0.2); font-size: 1em;';
+                            const prefix = isDropset ? '↳ 🔥 Dropset:' : `Seria ${i + 1}:`;
+                            return `
+                                <div style="display: flex; justify-content: space-between; ${style}">
+                                    <span>${prefix} <strong style="color: ${isDropset ? '#FF9800' : '#00BFFF'};">${set.weight} kg</strong> x <strong>${set.reps} powt.</strong></span>
+                                    <button onclick="window.TrainingUI.removeSet('${ex.id}', ${i})" style="background: transparent; border: none; color: #ff4444; font-size: 1.2em; cursor: pointer;">&times;</button>
+                                </div>
+                            `;
+                        }).join('')}
                     </div>
 
                     <div style="display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-top: 15px;">
                         <input type="number" id="weight-${ex.id}" placeholder="kg" style="min-width: 60px; flex: 1; padding: 10px; border-radius: 4px; border: 1px solid #444; background: #222; color: #fff; font-size: 1em; text-align: center; box-sizing: border-box;" inputmode="decimal">
                         <span style="color: #aaa; font-weight: bold;">X</span>
                         <input type="number" id="reps-${ex.id}" placeholder="powt" style="min-width: 60px; flex: 1; padding: 10px; border-radius: 4px; border: 1px solid #444; background: #222; color: #fff; font-size: 1em; text-align: center; box-sizing: border-box;" inputmode="numeric">
-                        <button onclick="window.TrainingUI.addSet('${ex.id}')" style="background: #00BFFF; color: #fff; border: none; padding: 10px; border-radius: 4px; cursor: pointer; min-width: 80px; flex: 1; font-weight: bold; box-sizing: border-box;">+ Seria</button>
+                    </div>
+                    <div style="display: flex; gap: 10px; margin-top: 10px;">
+                        <button onclick="window.TrainingUI.addSet('${ex.id}', false)" style="background: #00BFFF; color: #fff; border: none; padding: 10px; border-radius: 4px; cursor: pointer; flex: 1; font-weight: bold; box-sizing: border-box;">+ Seria</button>
+                        <button onclick="window.TrainingUI.addSet('${ex.id}', true)" style="background: #FF9800; color: #fff; border: none; padding: 10px; border-radius: 4px; cursor: pointer; flex: 1; font-weight: bold; box-sizing: border-box;">🔥 Dropset</button>
                     </div>
                     <div style="margin-top: 10px; text-align: center;">
                         <label style="color: #ccc; font-size: 0.85em; display: inline-flex; align-items: center; gap: 8px; cursor: pointer;">
-                            <input type="checkbox" onchange="window.TrainingUI.updateExerciseField('${ex.id}', 'autoCopy', this.checked)" ${ex.autoCopy ? 'checked' : ''} style="transform: scale(1.2);">
+                            <input type="checkbox" onchange="window.TrainingUI.updateExerciseField('${ex.id}', 'autoCopy', this.checked)" ${ex.autoCopy ? 'checked' : ''} style="width: 16px; height: 16px;">
                             Kopiuj ciężar do następnej serii
                         </label>
                     </div>
                 `;
             }
-
-            html += `
-                <div style="background: rgba(0,0,0,0.4); border: 1px solid #00BFFF; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
-                    <div style="margin-bottom: 10px;">
-                        <input type="text" class="exercise-name-input" placeholder="Nazwa ćwiczenia (np. Wyciskanie)" value="${ex.name}" onchange="window.TrainingUI.updateExerciseField('${ex.id}', 'name', this.value)" style="display: block; width: 100%; padding: 10px; margin-bottom: 10px; border-radius: 4px; border: 1px solid #00BFFF; background: #222; color: #fff; font-size: 1em; box-sizing: border-box; text-align: center;">
-                        <select onchange="window.TrainingUI.updateExerciseField('${ex.id}', 'type', this.value); window.TrainingUI.renderCurrentExercises();" style="display: block; width: 100%; padding: 10px; border-radius: 4px; border: 1px solid #00BFFF; background: #222; color: #fff; font-size: 1em; box-sizing: border-box; text-align: center;">
+            
+            return `
+                <div style="background-color: ${isNested ? 'rgba(0,0,0,0.2)' : '#1e1e1e'}; border: 1px solid ${isNested ? '#E91E63' : '#333'}; padding: 15px; border-radius: 8px; margin-bottom: 15px;">
+                    <div style="display: flex; gap: 10px;">
+                        <input type="text" class="exercise-name-input" placeholder="Nazwa ćwiczenia (np. Wyciskanie)" value="${ex.name}" onchange="window.TrainingUI.updateExerciseField('${ex.id}', 'name', this.value)" style="display: block; width: 100%; padding: 10px; margin-bottom: 10px; border-radius: 4px; border: 1px solid ${isNested ? '#E91E63' : '#00BFFF'}; background: #222; color: #fff; font-size: 1em; box-sizing: border-box; text-align: center;">
+                        <select onchange="window.TrainingUI.updateExerciseField('${ex.id}', 'type', this.value); window.TrainingUI.renderCurrentExercises();" style="display: block; width: 100%; padding: 10px; border-radius: 4px; border: 1px solid ${isNested ? '#E91E63' : '#00BFFF'}; background: #222; color: #fff; font-size: 1em; box-sizing: border-box; text-align: center;">
                             <option value="strength" ${ex.type === 'strength' ? 'selected' : ''}>Siłowe</option>
                             <option value="cardio" ${ex.type === 'cardio' ? 'selected' : ''}>Cardio</option>
                         </select>
                     </div>
-
                     <div style="margin-bottom: 15px; text-align: center;">
                         <label class="action-button" style="display: inline-block; background-color: #333; border-color: #555; color: #fff; cursor: pointer; width: 100%; box-sizing: border-box; text-shadow: 0 1px 3px rgba(0,0,0,0.8);">
                             📷 Zrób zdjęcie maszyny
                             <input type="file" accept="image/*" capture="environment" style="display: none;" onchange="window.TrainingUI.handleMachinePhoto(event, '${ex.id}')">
                         </label>
-                        ${ex.machinePhoto ? `<img src="${ex.machinePhoto}" style="width: 100px; height: 100px; object-fit: cover; border-radius: 8px; margin-top: 10px; border: 1px solid #00BFFF;" alt="Maszyna">` : ''}
+                        ${ex.machinePhoto ? `<img src="${ex.machinePhoto}" style="width: 100px; height: 100px; object-fit: cover; border-radius: 8px; margin-top: 10px; border: 1px solid ${isNested ? '#E91E63' : '#00BFFF'};" alt="Maszyna">` : ''}
                     </div>
-                    
                     ${exerciseDetailsHtml}
                 </div>
             `;
+        };
+
+        currentTraining.exercises.forEach((ex) => {
+            if (ex.type === 'superset') {
+                html += `
+                    <div style="background: linear-gradient(145deg, #2a0815, #1a050d); border: 1px solid #E91E63; padding: 15px; border-radius: 8px; margin-bottom: 15px; box-shadow: 0 4px 15px rgba(233, 30, 99, 0.2);">
+                        <h4 style="color: #E91E63; margin-top: 0; margin-bottom: 15px; text-align: center; text-transform: uppercase; font-size: 0.9em; letter-spacing: 1px;">🔗 Superseria</h4>
+                        ${ex.exercises.map(nestedEx => renderExerciseForm(nestedEx, true)).join('')}
+                    </div>
+                `;
+            } else {
+                html += renderExerciseForm(ex, false);
+            }
         });
         
         list.innerHTML = html;
@@ -517,7 +565,7 @@ export const TrainingUI = {
 
         const reader = new FileReader();
         reader.onload = (e) => {
-            const exercise = currentTraining.exercises.find(ex => ex.id === exerciseId);
+            const exercise = TrainingUI.getExerciseById(exerciseId);
             if (exercise) {
                 // Compress image? To save space, we should ideally compress, but let's use DataURL for now.
                 exercise.machinePhoto = e.target.result;

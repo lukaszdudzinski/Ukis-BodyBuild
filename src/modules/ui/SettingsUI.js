@@ -18,6 +18,9 @@ export const SettingsUI = {
                     </label>
                     <input type="file" id="db-import-file" accept=".json" style="display: none;">
                 </div>
+                <div class="form-full-width" style="margin-bottom: 20px;">
+                    <button id="reset-tutorial-btn" class="action-button" style="width: 100%; margin-bottom: 10px; background-color: #FF9800; border-color: #FF9800; color: #fff;">🔄 Zobacz ponownie powitanie (Reset)</button>
+                </div>
             `;
             settingsPanel.insertBefore(dataSection, document.getElementById('settings-pwa-guide'));
         }
@@ -30,6 +33,16 @@ export const SettingsUI = {
         const importInput = document.getElementById('db-import-file');
         if (importInput) {
             importInput.addEventListener('change', SettingsUI.handleImport);
+        }
+
+        const resetTutorialBtn = document.getElementById('reset-tutorial-btn');
+        if (resetTutorialBtn) {
+            resetTutorialBtn.addEventListener('click', () => {
+                localStorage.removeItem('tutorial_global');
+                localStorage.removeItem('userNick');
+                alert("Powitanie zostało zresetowane! Przejdź do głównego ekranu lub odśwież stronę.");
+                if (window.OnboardingUI) window.OnboardingUI.init();
+            });
         }
 
         SettingsUI.initTheme();

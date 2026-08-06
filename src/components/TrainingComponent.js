@@ -55,8 +55,11 @@ export const TrainingComponent = {
                     <div id="current-exercises-list">
                         <!-- Populated by JS with Exercise Blocks -->
                     </div>
-
-                    <button id="add-exercise-to-plan-btn" class="action-button" style="width: 100%; margin-top: 15px; background-color: rgba(0, 191, 255, 0.1); border-color: #00BFFF; color: #00BFFF;">+ Dodaj ćwiczenie do planu</button>
+                    
+                    <div style="display: flex; gap: 10px; margin-top: 15px;">
+                        <button type="button" id="add-exercise-to-plan-btn" class="action-button" style="flex: 1; background-color: rgba(0, 191, 255, 0.1); border-color: #00BFFF; color: #00BFFF;">+ Dodaj ćwiczenie</button>
+                        <button type="button" id="add-superset-to-plan-btn" class="action-button" style="flex: 1; background-color: rgba(233, 30, 99, 0.1); border-color: #E91E63; color: #E91E63;">🔗 Dodaj Superserię</button>
+                    </div>
                 </div>
 
                 <div class="form-full-width" style="margin-top: 30px;">

@@ -1,9 +1,11 @@
 [
   {
-    "version": "v.2026.8.7.02",
+    "version": "v.2026.8.7.03",
     "date": "2026-08-07",
     "changes": [
-      "Wydanie nowej wersji poprawkowej."
+      "👋 Witamy Cię osobiście! Nasz nowy system powitań zapamięta Twoje imię, aby aplikacja stała się jeszcze bardziej osobista.",
+      "🔥 Wkraczamy na wyższy poziom! Dodaliśmy długo oczekiwane Dropsety oraz Superserie – buduj formę jeszcze intensywniej!",
+      "✨ Drobne usprawnienia interfejsu (m.in. ułatwiony dostęp do nowych bloków ćwiczeń)."
     ]
   },
   {
