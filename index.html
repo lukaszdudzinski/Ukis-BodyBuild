@@ -172,7 +172,7 @@
                                 <span style="color: #666; font-size: 2em;">👤</span>
                             </div>
                             <div style="flex: 1;">
-                                <label class="action-button" style="display: inline-block; background-color: #333; border-color: #555; cursor: pointer; padding: 5px 10px; border-radius: 5px; font-size: 0.9em; width: 100%; box-sizing: border-box; text-align: center;">
+                                <label class="action-button" style="display: inline-block; background-color: #333; border-color: #555; cursor: pointer; padding: 5px 10px; border-radius: 5px; font-size: 0.9em; width: 100%; box-sizing: border-box; text-align: center; color: #fff; text-shadow: 0 1px 3px rgba(0,0,0,0.8);">
                                     Zmień Awatar
                                     <input type="file" id="profile-avatar-upload" accept="image/*" style="display: none;">
                                 </label>
@@ -186,11 +186,22 @@
 
                         <div style="margin-bottom: 15px;">
                             <label style="display: block; margin-bottom: 5px; color: #ccc;">Tapeta Aplikacji:</label>
-                            <label class="action-button" style="display: block; background-color: #333; border-color: #555; cursor: pointer; padding: 10px; border-radius: 5px; text-align: center; box-sizing: border-box;">
+                            <label class="action-button" style="display: block; background-color: #333; border-color: #555; cursor: pointer; padding: 10px; border-radius: 5px; text-align: center; box-sizing: border-box; color: #fff; text-shadow: 0 1px 3px rgba(0,0,0,0.8);">
                                 🖼️ Wybierz tapetę
                                 <input type="file" id="profile-wallpaper-upload" accept="image/*" style="display: none;">
                             </label>
                             <button id="profile-wallpaper-remove" class="action-button" style="display: none; background-color: #ff4444; border-color: #ff4444; width: 100%; margin-top: 10px; padding: 10px;">Usuń tapetę</button>
+                        </div>
+
+                        <div style="margin-bottom: 15px;">
+                            <label style="display: block; margin-bottom: 5px; color: #ccc;">Przypominaj o pomiarach ciała co:</label>
+                            <select id="profile-reminder-select" style="width: 100%; padding: 10px; border-radius: 4px; border: 1px solid #00BFFF; background: #222; color: #fff;">
+                                <option value="7">Tydzień (7 dni)</option>
+                                <option value="14">Dwa tygodnie (14 dni)</option>
+                                <option value="30" selected>Miesiąc (30 dni)</option>
+                                <option value="0">Wyłączone</option>
+                            </select>
+                            <p style="font-size: 0.8em; color: #888; margin-top: 5px;">Aplikacja wyświetli przypomnienie w zakładce "Analiza Składu", jeśli minie określony czas od ostatnich pomiarów.</p>
                         </div>
                     </div>
                     
@@ -302,7 +313,7 @@
         <div style="font-weight: bold; margin-bottom: 10px;">Dostępna nowa aktualizacja! 🚀</div>
         <div style="display: flex; justify-content: center; gap: 10px;">
             <button id="pwa-update-btn-refresh" style="padding: 8px 16px; background: #000; color: #FF9800; border: none; border-radius: 4px; font-weight: bold; cursor: pointer;">
-                Odśwież (Zaktualizuj)
+                Zaktualizuj
             </button>
             <button id="pwa-update-btn-changelog" style="padding: 8px 16px; background: rgba(0,0,0,0.1); color: #000; border: 1px solid #000; border-radius: 4px; font-weight: bold; cursor: pointer;">
                 Co nowego?

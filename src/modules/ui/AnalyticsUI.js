@@ -40,25 +40,30 @@ export const AnalyticsUI = {
                 </div>
             `;
         } else {
-            // Check if older than 30 days
-            measurements.sort((a, b) => new Date(b.date) - new Date(a.date));
-            const lastMeasurement = measurements[0];
-            const daysSinceMeasurement = Math.floor((new Date() - new Date(lastMeasurement.date)) / (1000 * 60 * 60 * 24));
+            // Check if older than configured days
+            const reminderDaysStr = localStorage.getItem('uki-bodybuild-reminder') || '30';
+            const reminderDays = parseInt(reminderDaysStr, 10);
             
-            if (daysSinceMeasurement > 30) {
-                measurementReminderHtml = `
-                    <div style="background: rgba(255, 68, 68, 0.1); border-left: 4px solid #ff4444; padding: 15px; margin-bottom: 20px; border-radius: 4px;">
-                        <strong style="color: #ff4444;">Czas na pomiary! 📏</strong>
-                        <p style="margin: 5px 0 0 0; font-size: 0.9em; color: #ddd;">Minęło ${daysSinceMeasurement} dni od Twojego ostatniego wpisu (z dnia ${lastMeasurement.date}). Wejdź w "Pomiary Ciała" i zaktualizuj swoje wymiary!</p>
-                    </div>
-                `;
-            } else {
-                measurementReminderHtml = `
-                    <div style="background: rgba(0, 191, 255, 0.1); border-left: 4px solid #00BFFF; padding: 15px; margin-bottom: 20px; border-radius: 4px;">
-                        <strong style="color: #00BFFF;">Pomiary pod kontrolą ✅</strong>
-                        <p style="margin: 5px 0 0 0; font-size: 0.9em; color: #ddd;">Ostatni pomiar robiłeś ${daysSinceMeasurement} dni temu. Trzymaj tak dalej!</p>
-                    </div>
-                `;
+            if (reminderDays > 0) {
+                measurements.sort((a, b) => new Date(b.date) - new Date(a.date));
+                const lastMeasurement = measurements[0];
+                const daysSinceMeasurement = Math.floor((new Date() - new Date(lastMeasurement.date)) / (1000 * 60 * 60 * 24));
+                
+                if (daysSinceMeasurement >= reminderDays) {
+                    measurementReminderHtml = `
+                        <div style="background: rgba(255, 68, 68, 0.1); border-left: 4px solid #ff4444; padding: 15px; margin-bottom: 20px; border-radius: 4px;">
+                            <strong style="color: #ff4444;">Czas na pomiary! 📏</strong>
+                            <p style="margin: 5px 0 0 0; font-size: 0.9em; color: #ddd;">Minęło ${daysSinceMeasurement} dni od Twojego ostatniego wpisu. Wejdź w "Pomiary Ciała" i zaktualizuj swoje wymiary!</p>
+                        </div>
+                    `;
+                } else {
+                    measurementReminderHtml = `
+                        <div style="background: rgba(0, 191, 255, 0.1); border-left: 4px solid #00BFFF; padding: 15px; margin-bottom: 20px; border-radius: 4px;">
+                            <strong style="color: #00BFFF;">Pomiary pod kontrolą ✅</strong>
+                            <p style="margin: 5px 0 0 0; font-size: 0.9em; color: #ddd;">Ostatni pomiar robiłeś ${daysSinceMeasurement} dni temu. Trzymaj tak dalej!</p>
+                        </div>
+                    `;
+                }
             }
         }
         
@@ -134,7 +139,7 @@ export const AnalyticsUI = {
         } // End of trainings if/else block
 
         // 3. Advanced Analytics (FFMI, WHR, BF%)
-            let advancedHtml = '<h4 style="color: #00BFFF; border-bottom: 1px solid rgba(0,191,255,0.2); padding-bottom: 5px; margin-bottom: 15px; margin-top: 25px;">Zaawansowana Analityka</h4>';
+            let advancedHtml = '<h4 style="color: #00BFFF; border-bottom: 1px solid rgba(0,191,255,0.2); padding-bottom: 5px; margin-bottom: 15px; margin-top: 25px;">Analiza składu ciała</h4>';
             
             if (measurements.length > 0) {
                 // sort measurements correctly
@@ -160,11 +165,19 @@ export const AnalyticsUI = {
                     bf = (495 / val) - 450;
                     bf = Math.max(2, Math.min(60, bf)); // sanity clamping
 
+                    let bfText = "";
+                    if(bf < 6) bfText = "Ekstremalnie niski (Startowa forma)";
+                    else if(bf < 14) bfText = "Wysportowana sylwetka (Atletyczna)";
+                    else if(bf < 18) bfText = "Dobra kondycja (Fitness)";
+                    else if(bf < 25) bfText = "Przeciętna sylwetka";
+                    else bfText = "Podwyższony poziom tkanki tłuszczowej";
+
                     bfHtml = `
                         <div style="background: rgba(0,0,0,0.5); border: 1px solid #00BFFF; padding: 15px; border-radius: 8px; margin-bottom: 15px;">
                             <strong style="color: #00BFFF; font-size: 1.2em;">Szacunkowy BF%</strong>
                             <div style="font-size: 2em; font-weight: bold; margin: 10px 0;">${bf.toFixed(1)} %</div>
-                            <p style="margin: 0; font-size: 0.8em; color: #aaa;">Tkanka tłuszczowa (wzór US Navy)</p>
+                            <p style="margin: 0; font-size: 0.9em; font-weight: bold; color: #fff;">${bfText}</p>
+                            <p style="margin: 5px 0 0 0; font-size: 0.8em; color: #aaa;">Tkanka tłuszczowa wg wzoru US Navy</p>
                         </div>
                     `;
                 } else {
@@ -183,11 +196,19 @@ export const AnalyticsUI = {
                     let ffmi = leanMass / (heightM * heightM);
                     const normalizedFfmi = ffmi + 6.1 * (1.8 - heightM);
 
+                    let ffmiText = "";
+                    if(normalizedFfmi < 18) ffmiText = "Poniżej przeciętnej";
+                    else if(normalizedFfmi < 20) ffmiText = "Przeciętna muskulatura";
+                    else if(normalizedFfmi < 22) ffmiText = "Dobra muskulatura (Wysportowany)";
+                    else if(normalizedFfmi < 25) ffmiText = "Doskonała muskulatura";
+                    else ffmiText = "Genetyczna elita (lub doping)";
+
                     ffmiHtml = `
                         <div style="background: rgba(0,0,0,0.5); border: 1px solid #2ECC71; padding: 15px; border-radius: 8px; margin-bottom: 15px;">
                             <strong style="color: #2ECC71; font-size: 1.2em;">FFMI (Index Beztłuszczowy)</strong>
                             <div style="font-size: 2em; font-weight: bold; margin: 10px 0;">${normalizedFfmi.toFixed(1)}</div>
-                            <p style="margin: 0; font-size: 0.8em; color: #aaa;">Wskaźnik suchej masy mięśniowej</p>
+                            <p style="margin: 0; font-size: 0.9em; font-weight: bold; color: #fff;">${ffmiText}</p>
+                            <p style="margin: 5px 0 0 0; font-size: 0.8em; color: #aaa;">Wskaźnik suchej masy mięśniowej</p>
                         </div>
                     `;
                 }
@@ -195,11 +216,18 @@ export const AnalyticsUI = {
                 let whrHtml = '';
                 if (waist && hips) {
                     const whr = waist / hips;
+                    
+                    let whrText = "";
+                    if(whr < 0.90) whrText = "Zdrowe proporcje (Niskie ryzyko)";
+                    else if(whr < 1.0) whrText = "Umiarkowane ryzyko";
+                    else whrText = "Typ jabłka (Podwyższone ryzyko)";
+
                     whrHtml = `
                         <div style="background: rgba(0,0,0,0.5); border: 1px solid #9B59B6; padding: 15px; border-radius: 8px; margin-bottom: 15px;">
                             <strong style="color: #9B59B6; font-size: 1.2em;">WHR (Talia-Biodra)</strong>
                             <div style="font-size: 2em; font-weight: bold; margin: 10px 0;">${whr.toFixed(2)}</div>
-                            <p style="margin: 0; font-size: 0.8em; color: #aaa;">Proporcje sylwetki</p>
+                            <p style="margin: 0; font-size: 0.9em; font-weight: bold; color: #fff;">${whrText}</p>
+                            <p style="margin: 5px 0 0 0; font-size: 0.8em; color: #aaa;">Proporcje sylwetki</p>
                         </div>
                     `;
                 } else {
@@ -237,8 +265,39 @@ export const AnalyticsUI = {
                         trendsHtml += `<div style="background: rgba(255,255,255,0.05); padding: 15px; border-radius: 8px;">${diffs}</div>`;
                     }
                 }
+                
+                let historyChartHtml = '';
+                if (sortedMeasurements.length > 1) {
+                    historyChartHtml += '<h5 style="color: #00BFFF; margin-top: 25px; margin-bottom: 15px;">Historia poziomu tkanki tłuszczowej (BF%)</h5>';
+                    historyChartHtml += '<div style="display: flex; align-items: flex-end; gap: 8px; height: 140px; padding: 10px 10px 30px 10px; background: rgba(255,255,255,0.05); border-radius: 8px; overflow-x: auto;">';
+                    
+                    const chartData = sortedMeasurements.slice(0, 10).reverse();
+                    
+                    chartData.forEach(m => {
+                        let hBf = null;
+                        if (m.height && m.waist && m.neck) {
+                            const val = 1.0324 - 0.19077 * Math.log10(m.waist - m.neck) + 0.15456 * Math.log10(m.height);
+                            hBf = (495 / val) - 450;
+                            hBf = Math.max(2, Math.min(60, hBf));
+                        }
+                        
+                        if (hBf) {
+                            const heightPct = Math.min(100, (hBf / 40) * 100);
+                            const dateShort = new Date(m.date).toLocaleDateString('pl-PL', {day:'numeric', month:'short'});
+                            
+                            historyChartHtml += `
+                                <div style="display: flex; flex-direction: column; align-items: center; min-width: 40px;">
+                                    <div style="font-size: 0.75em; color: #fff; margin-bottom: 5px;">${hBf.toFixed(1)}%</div>
+                                    <div style="width: 25px; height: ${heightPct}%; background: #00BFFF; border-radius: 4px 4px 0 0; min-height: 5px; max-height: 100px;"></div>
+                                    <div style="font-size: 0.65em; color: #aaa; margin-top: 8px; transform: rotate(-45deg); transform-origin: top left; white-space: nowrap;">${dateShort}</div>
+                                </div>
+                            `;
+                        }
+                    });
+                    historyChartHtml += '</div>';
+                }
 
-                advancedHtml += `<div style="display: flex; flex-direction: column;">${bfHtml}${ffmiHtml}${whrHtml}</div>${trendsHtml}`;
+                advancedHtml += `<div style="display: flex; flex-direction: column;">${bfHtml}${ffmiHtml}${whrHtml}</div>${trendsHtml}${historyChartHtml}`;
             } else {
                  advancedHtml += '<p style="text-align: center; color: #888;">Dodaj pomiary ciała, aby uzyskać zaawansowaną analitykę (BF%, FFMI, WHR).</p>';
             }

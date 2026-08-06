@@ -113,6 +113,7 @@ export const SettingsUI = {
         const avatarPreview = document.getElementById('profile-avatar-preview');
         const wallpaperUpload = document.getElementById('profile-wallpaper-upload');
         const wallpaperRemove = document.getElementById('profile-wallpaper-remove');
+        const reminderSelect = document.getElementById('profile-reminder-select');
 
         // Load saved values
         const savedNick = localStorage.getItem('uki-bodybuild-nick');
@@ -130,6 +131,15 @@ export const SettingsUI = {
         }
 
         SettingsUI.applyWallpaper();
+
+        if (reminderSelect) {
+            const savedReminder = localStorage.getItem('uki-bodybuild-reminder') || '30';
+            reminderSelect.value = savedReminder;
+            
+            reminderSelect.addEventListener('change', (e) => {
+                localStorage.setItem('uki-bodybuild-reminder', e.target.value);
+            });
+        }
 
         // Listeners
         if (nickInput) {
