@@ -66,12 +66,15 @@ export const AnalyticsUI = {
 
         // 2. Volume & Intensity Analytics
         let analyticsContentHtml = '';
+        
+        let totalVolume = 0;
+        let totalWorkouts = trainings.length;
+        let thisMonthWorkouts = [];
+        let thisMonthVolume = 0;
+
         if (trainings.length === 0) {
             analyticsContentHtml = '<p style="text-align: center; color: #888;">Za mało danych treningowych do przeprowadzenia analizy.</p>';
         } else {
-            let totalVolume = 0;
-            let totalWorkouts = trainings.length;
-            
             // Calculate total volume for each training
             const workoutsWithVolume = trainings.map(t => {
                 const vol = t.exercises.reduce((sum, ex) => {
@@ -88,9 +91,8 @@ export const AnalyticsUI = {
             const thisMonth = new Date().getMonth();
             const thisYear = new Date().getFullYear();
             
-            const thisMonthWorkouts = workoutsWithVolume.filter(w => w.date.getMonth() === thisMonth && w.date.getFullYear() === thisYear);
+            thisMonthWorkouts = workoutsWithVolume.filter(w => w.date.getMonth() === thisMonth && w.date.getFullYear() === thisYear);
             
-            let thisMonthVolume = 0;
             thisMonthWorkouts.forEach(w => thisMonthVolume += w.volume);
 
             analyticsContentHtml = `
@@ -129,8 +131,9 @@ export const AnalyticsUI = {
                     </div>
                 `;
             }
+        } // End of trainings if/else block
 
-            // 3. Advanced Analytics (FFMI, WHR, BF%)
+        // 3. Advanced Analytics (FFMI, WHR, BF%)
             let advancedHtml = '<h4 style="color: #00BFFF; border-bottom: 1px solid rgba(0,191,255,0.2); padding-bottom: 5px; margin-bottom: 15px; margin-top: 25px;">Zaawansowana Analityka</h4>';
             
             if (measurements.length > 0) {
@@ -251,7 +254,6 @@ export const AnalyticsUI = {
                     <p style="font-size: 0.8em; color: #888; margin-top: 10px;">Pochwal się na Facebooku lub Instagramie!</p>
                 </div>
             `;
-        }
 
         html += analyticsContentHtml;
         container.innerHTML = html;

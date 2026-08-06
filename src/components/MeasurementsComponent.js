@@ -46,7 +46,7 @@ export const MeasurementsComponent = {
                             <label for="measureBiceps">Biceps</label>
                             <input type="number" id="measureBiceps" step="0.5">
                         </div>
-                        <div class="input-group" style="grid-column: span 2;">
+                        <div class="input-group">
                             <label for="measureNeck" style="display: flex; align-items: center; justify-content: space-between;">
                                 Szyja
                                 <span style="cursor: pointer; font-size: 1.1em;" onclick="alert('Kompletne dane (w tym obwód szyi, talii i wzrost) pozwalają aplikacji na dokładne wyliczenie poziomu tkanki tłuszczowej (wzór US Navy). Podawanie ich ułatwi nasze analizy, ale nie jest obowiązkowe.')">ℹ️</span>
@@ -58,7 +58,7 @@ export const MeasurementsComponent = {
 
                 <!-- Photo upload -->
                 <div class="form-full-width" style="margin-top: 15px; width: 100%; box-sizing: border-box;">
-                    <label for="measurePhoto" class="action-button" style="display: block; text-align: center; background: rgba(0,0,0,0.4); border: 1px solid #444; width: 100%; box-sizing: border-box;">📸 Dodaj Zdjęcie Sylwetki</label>
+                    <label for="measurePhoto" class="action-button" style="display: block; text-align: center; background: rgba(0,0,0,0.4); border: 1px solid #444; width: 100%; box-sizing: border-box; color: #fff; text-shadow: 0 1px 3px rgba(0,0,0,0.8);">📸 Dodaj Zdjęcie Sylwetki</label>
                     <input type="file" id="measurePhoto" accept="image/*" style="display: none;">
                     <img id="measurePhotoPreview" style="max-width: 100%; margin-top: 10px; border-radius: 8px; display: none;">
                 </div>
