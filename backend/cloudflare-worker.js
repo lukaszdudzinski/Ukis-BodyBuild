@@ -59,7 +59,8 @@ Format:
   "fat": liczba tłuszczy w gramach
 }`;
 
-      const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`;
+      // Zaktualizowano model do najnowszego gemini-3.6-flash (Sierpień 2026)
+      const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key=${GEMINI_API_KEY}`;
       
       const geminiPayload = {
         contents: [{
