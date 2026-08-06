@@ -6,6 +6,7 @@ import { HistoryUI } from './modules/ui/HistoryUI.js';
 import { AnalyticsUI } from './modules/ui/AnalyticsUI.js';
 import { DietUI } from './modules/ui/DietUI.js';
 import { OnboardingUI } from './modules/ui/OnboardingUI.js';
+import { ChatUI } from './modules/ui/ChatUI.js';
 import { DatabaseManager } from './modules/db/DatabaseManager.js';
 
 // Expose for E2E testing and PWA updater
@@ -23,6 +24,7 @@ const initApp = () => {
     AnalyticsUI.init();
     DietUI.init();
     OnboardingUI.init();
+    ChatUI.init();
 
     console.log("Uki's BodyBuild Initialized (Module System)");
 };

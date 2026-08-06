@@ -1,5 +1,13 @@
 [
   {
+    "version": "v.2026.8.7.04",
+    "date": "2026-08-07",
+    "changes": [
+      "🤖 Poznaj Edwarda! Twój nowy osobisty Trener AI jest gotowy do akcji. Znajdziesz go w prawym dolnym rogu ekranu – zadawaj pytania o dietę, trening lub po prostu poproś o dawkę motywacji!",
+      "⚙️ Zaktualizowany silnik AI: Upewnij się, że Twój Cloudflare Worker posiada najnowszą łatkę obsługującą czat, którą przygotowaliśmy."
+    ]
+  },
+  {
     "version": "v.2026.8.7.03",
     "date": "2026-08-07",
     "changes": [

@@ -35,10 +35,10 @@ export default {
 
     try {
       // 2. Pobieramy zdjęcie wysłane z naszej aplikacji oraz opcjonalny kontekst
-      const { imageBase64, contextText } = await request.json();
+      const { imageBase64, contextText, action } = await request.json();
 
       if (!imageBase64 && (!contextText || contextText.trim().length === 0)) {
-        return new Response(JSON.stringify({ error: "Brak zdjęcia lub opisu" }), { status: 400, headers: corsHeaders });
+        return new Response(JSON.stringify({ error: "Brak zdjęcia lub tekstu" }), { status: 400, headers: corsHeaders });
       }
 
       // 3. Sprawdzamy czy dodałeś klucz GEMINI w Cloudflare Secrets
@@ -49,18 +49,26 @@ export default {
 
       // 4. Budujemy zapytanie do Google Gemini Pro Vision
       let prompt = ``;
-      if (imageBase64) {
-          prompt += `Przeanalizuj to zdjęcie posiłku. `;
-          if (contextText && contextText.trim().length > 0) {
-              prompt += `\nUżytkownik dostarczył dodatkowy opis słowny posiłku: "${contextText}". Zignoruj zdjęcie jeśli jest niewyraźne lub nie przedstawia jedzenia, i oprzyj się w 100% na tym tekście.\n`;
-          } else {
-              prompt += `\nJeśli zdjęcie jest niewyraźne lub nie ma na nim jedzenia, spróbuj mimo to odgadnąć, lub zwróć zera.\n`;
-          }
+      
+      if (action === "chat") {
+          // Tryb Trenera AI "Edwarda"
+          prompt += `Jesteś Edward, twardym, zmotywowanym i inspirującym trenerem personalnym oraz dietetykiem z wieloletnim doświadczeniem. Otrzymujesz zapytanie od podopiecznego: "${contextText}".
+Twoim celem jest odpowiadać krótko, na temat, merytorycznie i zabawnie (dodając emotikony), budując motywację. Bądź wymagający, ale serdeczny.
+Zwróć TYLKO czystą treść odpowiedzi (tekst/markdown). Nie dodawaj żadnego JSONa.`;
       } else {
-          prompt += `Oceń kaloryczność posiłku wyłącznie na podstawie tego opisu: "${contextText}".\n`;
-      }
+          // Domyślny tryb (analiza diety)
+          if (imageBase64) {
+              prompt += `Przeanalizuj to zdjęcie posiłku. `;
+              if (contextText && contextText.trim().length > 0) {
+                  prompt += `\nUżytkownik dostarczył dodatkowy opis słowny posiłku: "${contextText}". Zignoruj zdjęcie jeśli jest niewyraźne lub nie przedstawia jedzenia, i oprzyj się w 100% na tym tekście.\n`;
+              } else {
+                  prompt += `\nJeśli zdjęcie jest niewyraźne lub nie ma na nim jedzenia, spróbuj mimo to odgadnąć, lub zwróć zera.\n`;
+              }
+          } else {
+              prompt += `Oceń kaloryczność posiłku wyłącznie na podstawie tego opisu: "${contextText}".\n`;
+          }
 
-      prompt += `
+          prompt += `
 Zwróć TYLKO czysty obiekt JSON (bez znaczników markdown \`\`\`json). 
 Format:
 {
@@ -70,6 +78,7 @@ Format:
   "carbs": liczba węglowodanów w gramach,
   "fat": liczba tłuszczy w gramach
 }`;
+      }
 
       // Zaktualizowano model do najnowszego gemini-3.6-flash (Sierpień 2026)
       const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key=${GEMINI_API_KEY}`;
@@ -110,7 +119,16 @@ Format:
 
       const rawText = geminiData.candidates[0].content.parts[0].text;
       
-      // Czasem Gemini zwraca z markdownem, usuwamy go
+      if (action === "chat") {
+          return new Response(JSON.stringify({ response: rawText.trim() }), { 
+            headers: { 
+                "Content-Type": "application/json",
+                ...corsHeaders 
+            } 
+          });
+      }
+      
+      // Czasem Gemini zwraca z markdownem, usuwamy go (tylko w trybie JSON)
       const cleanJsonStr = rawText.replace(/```json/g, '').replace(/```/g, '').trim();
       
       return new Response(cleanJsonStr, { 
