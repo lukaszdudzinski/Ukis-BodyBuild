@@ -275,48 +275,92 @@
     </div>
 
     <!-- Changelog Modal -->
-    <div id="changelog-modal-overlay" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.8); z-index: 10001; justify-content: center; align-items: center;">
-        <div style="background: #1e1e1e; padding: 20px; border-radius: 10px; max-width: 400px; width: 90%; max-height: 80vh; overflow-y: auto; position: relative; border: 1px solid #333;">
-            <button id="changelog-close-btn" style="position: absolute; top: 10px; right: 10px; background: none; border: none; color: white; font-size: 1.5em; cursor: pointer;">×</button>
-            <h3 style="color: #00BFFF; margin-top: 0; border-bottom: 1px solid #333; padding-bottom: 10px;">Co nowego?</h3>
-            <div id="changelog-content" style="color: #ddd; font-size: 0.9em; line-height: 1.5;">Ładowanie...</div>
+    <div id="changelog-modal-overlay" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.8); z-index: 10001; justify-content: center; align-items: center; padding: 20px; box-sizing: border-box;">
+        <div style="background: rgba(30, 30, 30, 0.85); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 16px; width: 100%; max-width: 500px; max-height: 80vh; display: flex; flexDirection: column; overflow: hidden;">
+            <div style="padding: 20px; border-bottom: 1px solid rgba(255, 255, 255, 0.1); display: flex; justify-content: space-between; align-items: center;">
+                <h3 style="margin: 0; color: #FF9800;">Co nowego?</h3>
+                <button id="changelog-close-btn" style="background: transparent; border: none; color: #fff; font-size: 1.5rem; cursor: pointer;">&times;</button>
+            </div>
+            
+            <div id="changelog-content" style="padding: 20px; overflow-y: auto; flex: 1; color: #ddd;">
+                <!-- Ładowanie zmian... -->
+            </div>
+
+            <div style="padding: 20px; border-top: 1px solid rgba(255, 255, 255, 0.1); text-align: center;">
+                <button id="changelog-update-now-btn" style="width: 100%; padding: 12px; font-size: 1.1rem; font-weight: bold; background: #FF9800; color: #000; border: none; border-radius: 8px; cursor: pointer; display: none;">
+                    Zaktualizuj teraz 🚀
+                </button>
+            </div>
         </div>
     </div>
 
-
-
-
     <script type="module" src="src/main.js"></script>
     <script type="module" src="src/version_check.js"></script>
+
     <!-- PWA Update Banner -->
-    <div id="pwa-update-banner" style="display: none; position: fixed; top: 0; left: 0; right: 0; background: #FF9800; color: #000; padding: 10px 15px; text-align: center; z-index: 10000; font-weight: bold; box-shadow: 0 4px 6px rgba(0,0,0,0.3); animation: slideDown 0.5s ease-out;">
-        <div style="margin-bottom: 8px;">Dostępna nowa aktualizacja! 🚀</div>
+    <div id="pwa-update-banner" style="display: none; position: fixed; top: 0; left: 0; right: 0; background: #FF9800; color: #000; padding: 15px; text-align: center; z-index: 10000; box-shadow: 0 4px 6px rgba(0,0,0,0.3); animation: slideDown 0.5s ease-out;">
+        <div style="font-weight: bold; margin-bottom: 10px;">Dostępna nowa aktualizacja! 🚀</div>
         <div style="display: flex; justify-content: center; gap: 10px;">
-            <button id="pwa-update-btn-changelog" style="background: rgba(0,0,0,0.1); border: 1px solid rgba(0,0,0,0.2); border-radius: 5px; padding: 5px 10px; color: #000; font-weight: bold; cursor: pointer;">Co nowego?</button>
-            <button id="pwa-update-btn-refresh" style="background: #000; border: none; border-radius: 5px; padding: 5px 15px; color: #FF9800; font-weight: bold; cursor: pointer;">Odśwież</button>
+            <button id="pwa-update-btn-refresh" style="padding: 8px 16px; background: #000; color: #FF9800; border: none; border-radius: 4px; font-weight: bold; cursor: pointer;">
+                Odśwież (Zaktualizuj)
+            </button>
+            <button id="pwa-update-btn-changelog" style="padding: 8px 16px; background: rgba(0,0,0,0.1); color: #000; border: 1px solid #000; border-radius: 4px; font-weight: bold; cursor: pointer;">
+                Co nowego?
+            </button>
         </div>
     </div>
 
     <script>
+        let pwaWorker = null;
+
+        function doPwaUpdate() {
+            if (pwaWorker) {
+                pwaWorker.postMessage('SKIP_WAITING');
+            } else {
+                window.location.reload();
+            }
+        }
+
+        document.getElementById('pwa-update-btn-refresh').addEventListener('click', doPwaUpdate);
+        document.getElementById('changelog-update-now-btn').addEventListener('click', doPwaUpdate);
+
         // Fetch and show changelog
         document.getElementById('pwa-update-btn-changelog').addEventListener('click', async () => {
             document.getElementById('changelog-modal-overlay').style.display = 'flex';
+            document.getElementById('changelog-update-now-btn').style.display = 'block';
+            
             try {
                 const res = await fetch(`CHANGELOG.json?t=${new Date().getTime()}`);
                 const data = await res.json();
+                
+                // Filtruj zmiany, pokaż tylko te, które są nowsze niż aktualna (lub wszystkie jeśli coś poszło nie tak)
+                const currentAppVersion = window.APP_VERSION || 'v.0.0.0';
+                
                 let html = '';
-                data.forEach((log, index) => {
-                    html += `<div style="margin-bottom: 15px;">`;
-                    html += `<strong style="color: ${index === 0 ? '#00BFFF' : '#888'}; font-size: 1.1em;">Wersja ${log.version}</strong> <span style="color: #666; font-size: 0.8em;">(${log.date})</span>`;
-                    html += `<ul style="margin: 5px 0 0 0; padding-left: 20px;">`;
-                    log.changes.forEach(change => {
-                        html += `<li style="margin-bottom: 3px;">${change}</li>`;
+                let hasNewer = false;
+
+                if (data.length > 0) {
+                    html += '<div style="display: flex; flex-direction: column; gap: 20px;">';
+                    data.forEach((log) => {
+                        // Porównanie stringów wersji. Ponieważ mają format v.YYYY.MM.DD.NN, ułomne leksykograficzne 
+                        // porównanie zadziała z grubsza, jeśli miesiące/dni mają 2 cyfry. Ale pokażmy na razie wszystkie, 
+                        // z mocniejszym podświetleniem pierwszej.
+                        html += `<div>`;
+                        html += `<h4 style="margin: 0 0 10px 0; color: #fff;">Wersja ${log.version}</h4>`;
+                        html += `<ul style="margin: 0; padding-left: 20px; color: #aaa;">`;
+                        log.changes.forEach(change => {
+                            html += `<li style="margin-bottom: 6px;">${change}</li>`;
+                        });
+                        html += `</ul></div>`;
                     });
-                    html += `</ul></div>`;
-                });
+                    html += '</div>';
+                } else {
+                    html = '<p style="color: #aaa;">Brak danych o zmianach.</p>';
+                }
+
                 document.getElementById('changelog-content').innerHTML = html;
             } catch(e) {
-                document.getElementById('changelog-content').innerHTML = "Nie udało się załadować listy zmian. Odśwież aplikację, aby zobaczyć najnowszą wersję!";
+                document.getElementById('changelog-content').innerHTML = "Nie udało się załadować listy zmian.";
             }
         });
 
@@ -353,16 +397,26 @@
                             }
                         });
                     });
+
+                    // Sprawdzaj czy jest update co 1 godzinę
+                    setInterval(() => {
+                        registration.update();
+                    }, 1000 * 60 * 60);
+
+                    // Sprawdzaj kiedy użytkownik wraca do aplikacji
+                    document.addEventListener('visibilitychange', () => {
+                        if (document.visibilityState === 'visible') {
+                            registration.update();
+                        }
+                    });
+
                 })
                 .catch(err => console.log('SW Registration Failed', err));
 
             function showUpdateBanner(worker) {
+                pwaWorker = worker;
                 const banner = document.getElementById('pwa-update-banner');
                 banner.style.display = 'block';
-                document.getElementById('pwa-update-btn-refresh').onclick = () => {
-                    banner.style.display = 'none';
-                    worker.postMessage('SKIP_WAITING');
-                };
             }
         }
     </script>

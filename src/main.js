@@ -1,4 +1,4 @@
-import { AppUI } from './modules/ui/AppUI.js';
+import { AppUI, APP_VERSION } from './modules/ui/AppUI.js';
 import { MeasurementsUI } from './modules/ui/MeasurementsUI.js';
 import { TrainingUI } from './modules/ui/TrainingUI.js';
 import { SettingsUI } from './modules/ui/SettingsUI.js';
@@ -7,8 +7,9 @@ import { AnalyticsUI } from './modules/ui/AnalyticsUI.js';
 import { DietUI } from './modules/ui/DietUI.js';
 import { DatabaseManager } from './modules/db/DatabaseManager.js';
 
-// Expose for E2E testing
+// Expose for E2E testing and PWA updater
 window.DatabaseManager = DatabaseManager;
+window.APP_VERSION = APP_VERSION;
 
 // Initialize Application
 const initApp = () => {
