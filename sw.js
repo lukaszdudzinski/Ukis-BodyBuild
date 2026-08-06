@@ -1,4 +1,4 @@
-const CACHE_NAME = 'ukis-bodybuild-v.2026.8.6.02';
+const CACHE_NAME = 'ukis-bodybuild-v.2026.8.6.03';
 // Core assets that MUST be cached immediately
 const CORE_ASSETS = [
     './',
@@ -65,3 +65,8 @@ self.addEventListener('fetch', (e) => {
     );
 });
 
+self.addEventListener('message', (event) => {
+    if (event.data === 'SKIP_WAITING') {
+        self.skipWaiting();
+    }
+});
