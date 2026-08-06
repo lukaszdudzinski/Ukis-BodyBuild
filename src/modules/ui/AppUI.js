@@ -1,4 +1,4 @@
-export const APP_VERSION = 'v.2026.8.6.04'; // <-- TEN NUMER ZMIENIAMY PRZY KAŻDEJ AKTUALIZACJI
+export const APP_VERSION = 'v.2026.8.6.05'; // <-- TEN NUMER ZMIENIAMY PRZY KAŻDEJ AKTUALIZACJI
 
 export const AppUI = {
     init: () => {
