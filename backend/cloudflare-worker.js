@@ -59,7 +59,7 @@ Format:
   "fat": liczba tłuszczy w gramach
 }`;
 
-      const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${GEMINI_API_KEY}`;
+      const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`;
       
       const geminiPayload = {
         contents: [{
@@ -83,7 +83,15 @@ Format:
 
       const geminiData = await geminiResponse.json();
 
+      if (!geminiResponse.ok) {
+        throw new Error(`Google API Błąd: ${geminiData.error?.message || geminiResponse.statusText}`);
+      }
+
       // 5. Ekstrakcja danych i odpowiedź do aplikacji
+      if (!geminiData.candidates || geminiData.candidates.length === 0) {
+        throw new Error("Google API nie zwróciło żadnych danych (prawdopodobnie zdjęcie naruszyło filtry bezpieczeństwa).");
+      }
+
       const rawText = geminiData.candidates[0].content.parts[0].text;
       
       // Czasem Gemini zwraca z markdownem, usuwamy go
