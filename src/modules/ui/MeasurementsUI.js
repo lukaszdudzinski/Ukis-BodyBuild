@@ -18,11 +18,18 @@ export const MeasurementsUI = {
             photoInput.addEventListener('change', MeasurementsUI.handlePhotoPreview);
         }
 
-        // Initialize date to today
         const dateInput = document.getElementById('measureDate');
         if (dateInput && !dateInput.value) {
             const today = new Date().toISOString().split('T')[0];
             dateInput.value = today;
+        }
+
+        const genderSelect = document.getElementById('measureGender');
+        if (genderSelect) {
+            const savedGender = localStorage.getItem('uki-bodybuild-gender');
+            if (savedGender) {
+                genderSelect.value = savedGender;
+            }
         }
 
         // Render history on load
@@ -71,6 +78,11 @@ export const MeasurementsUI = {
             neck: parseFloat(document.getElementById('measureNeck').value) || null,
             photo: preview && preview.dataset.base64 ? preview.dataset.base64 : null
         };
+
+        const genderSelect = document.getElementById('measureGender');
+        if (genderSelect) {
+            localStorage.setItem('uki-bodybuild-gender', genderSelect.value);
+        }
 
         try {
             await DatabaseManager.addMeasurement(data);

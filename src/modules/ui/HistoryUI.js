@@ -107,7 +107,11 @@ export const HistoryUI = {
     },
 
     shareTraining: async (dateStr, totalVolume, exercisesCount) => {
-        const textToShare = `Właśnie ukończyłem trening (${dateStr})! Zrobiłem ${exercisesCount} ćwiczeń i przerzuciłem ${totalVolume} kg! 🔥 Uki's BodyBuild 💪`;
+        const gender = localStorage.getItem('uki-bodybuild-gender') || 'male';
+        const finishedText = gender === 'female' ? 'ukończyłam' : 'ukończyłem';
+        const didText = gender === 'female' ? 'Zrobiłam' : 'Zrobiłem';
+        const liftedText = gender === 'female' ? 'przerzuciłam' : 'przerzuciłem';
+        const textToShare = `Właśnie ${finishedText} trening (${dateStr})! ${didText} ${exercisesCount} ćwiczeń i ${liftedText} ${totalVolume} kg! 🔥 Uki's BodyBuild 💪`;
         
         try {
             // Fetch avatar and nickname from settings

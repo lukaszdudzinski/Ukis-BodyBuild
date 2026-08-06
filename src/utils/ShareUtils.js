@@ -34,13 +34,19 @@ export const ShareUtils = {
                 y += 180;
             });
             
-            // Draw Avatar and Nickname (Footer)
+                // Draw Avatar and Nickname (Footer)
             const drawFooter = () => {
                 ctx.fillStyle = '#ffffff';
-                ctx.font = '40px Arial';
+                ctx.font = 'bold 45px Arial';
                 ctx.textAlign = 'right';
                 const nickText = nickname || "BodyBuilder";
-                ctx.fillText(nickText, canvas.width - 150, canvas.height - 80);
+                ctx.fillText(nickText, canvas.width - 150, canvas.height - 110);
+                
+                // Add encouragement text
+                ctx.fillStyle = '#00BFFF';
+                ctx.font = 'italic 35px Arial';
+                ctx.textAlign = 'center';
+                ctx.fillText("Trenuj z Uki's BodyBuild - Dołącz do nas!", canvas.width / 2, canvas.height - 40);
                 
                 // convert canvas to blob and share
                 canvas.toBlob(async (blob) => {
@@ -77,10 +83,10 @@ export const ShareUtils = {
                 img.onload = () => {
                     ctx.save();
                     ctx.beginPath();
-                    ctx.arc(canvas.width - 80, canvas.height - 90, 40, 0, Math.PI * 2, true);
+                    ctx.arc(canvas.width - 90, canvas.height - 120, 50, 0, Math.PI * 2, true);
                     ctx.closePath();
                     ctx.clip();
-                    ctx.drawImage(img, canvas.width - 120, canvas.height - 130, 80, 80);
+                    ctx.drawImage(img, canvas.width - 140, canvas.height - 170, 100, 100);
                     ctx.restore();
                     drawFooter();
                 };

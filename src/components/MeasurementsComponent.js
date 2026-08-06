@@ -14,6 +14,13 @@ export const MeasurementsComponent = {
                         <input type="date" id="measureDate" required>
                     </div>
                     <div class="input-group">
+                        <label for="measureGender">Płeć</label>
+                        <select id="measureGender" required style="width: 100%; padding: 10px; border-radius: 4px; border: 1px solid #444; background: #222; color: #fff; box-sizing: border-box;">
+                            <option value="male">Mężczyzna</option>
+                            <option value="female">Kobieta</option>
+                        </select>
+                    </div>
+                    <div class="input-group">
                         <label for="measureWeight">Waga (kg)</label>
                         <input type="number" id="measureWeight" step="0.1" required>
                     </div>

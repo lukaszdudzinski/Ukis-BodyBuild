@@ -153,24 +153,40 @@ export const AnalyticsUI = {
                 const neck = last.neck;
                 const hips = last.hips;
 
+                const gender = localStorage.getItem('uki-bodybuild-gender') || 'male';
+
                 let missingForBF = [];
                 if (!height) missingForBF.push("Wzrost");
                 if (!waist) missingForBF.push("Talia");
                 if (!neck) missingForBF.push("Szyja");
+                if (gender === 'female' && !hips) missingForBF.push("Biodra");
 
                 let bf = null;
                 let bfHtml = '';
                 if (missingForBF.length === 0) {
-                    const val = 1.0324 - 0.19077 * Math.log10(waist - neck) + 0.15456 * Math.log10(height);
-                    bf = (495 / val) - 450;
+                    if (gender === 'male') {
+                        const val = 1.0324 - 0.19077 * Math.log10(waist - neck) + 0.15456 * Math.log10(height);
+                        bf = (495 / val) - 450;
+                    } else {
+                        const val = 1.29579 - 0.35004 * Math.log10(waist + hips - neck) + 0.22100 * Math.log10(height);
+                        bf = (495 / val) - 450;
+                    }
                     bf = Math.max(2, Math.min(60, bf)); // sanity clamping
 
                     let bfText = "";
-                    if(bf < 6) bfText = "Ekstremalnie niski (Startowa forma)";
-                    else if(bf < 14) bfText = "Wysportowana sylwetka (Atletyczna)";
-                    else if(bf < 18) bfText = "Dobra kondycja (Fitness)";
-                    else if(bf < 25) bfText = "Przeciętna sylwetka";
-                    else bfText = "Podwyższony poziom tkanki tłuszczowej";
+                    if (gender === 'male') {
+                        if(bf < 6) bfText = "Ekstremalnie niski (Startowa forma)";
+                        else if(bf < 14) bfText = "Wysportowana sylwetka (Atletyczna)";
+                        else if(bf < 18) bfText = "Dobra kondycja (Fitness)";
+                        else if(bf < 25) bfText = "Przeciętna sylwetka";
+                        else bfText = "Podwyższony poziom tkanki tłuszczowej";
+                    } else {
+                        if(bf < 14) bfText = "Ekstremalnie niski (Startowa forma)";
+                        else if(bf < 21) bfText = "Wysportowana sylwetka (Atletyczna)";
+                        else if(bf < 25) bfText = "Dobra kondycja (Fitness)";
+                        else if(bf < 32) bfText = "Przeciętna sylwetka";
+                        else bfText = "Podwyższony poziom tkanki tłuszczowej";
+                    }
 
                     bfHtml = `
                         <div style="background: rgba(0,0,0,0.5); border: 1px solid #00BFFF; padding: 15px; border-radius: 8px; margin-bottom: 15px;">
@@ -197,11 +213,19 @@ export const AnalyticsUI = {
                     const normalizedFfmi = ffmi + 6.1 * (1.8 - heightM);
 
                     let ffmiText = "";
-                    if(normalizedFfmi < 18) ffmiText = "Poniżej przeciętnej";
-                    else if(normalizedFfmi < 20) ffmiText = "Przeciętna muskulatura";
-                    else if(normalizedFfmi < 22) ffmiText = "Dobra muskulatura (Wysportowany)";
-                    else if(normalizedFfmi < 25) ffmiText = "Doskonała muskulatura";
-                    else ffmiText = "Genetyczna elita (lub doping)";
+                    if (gender === 'male') {
+                        if(normalizedFfmi < 18) ffmiText = "Poniżej przeciętnej";
+                        else if(normalizedFfmi < 20) ffmiText = "Przeciętna muskulatura";
+                        else if(normalizedFfmi < 22) ffmiText = "Dobra muskulatura (Wysportowany)";
+                        else if(normalizedFfmi < 25) ffmiText = "Doskonała muskulatura";
+                        else ffmiText = "Genetyczna elita (lub doping)";
+                    } else {
+                        if(normalizedFfmi < 15) ffmiText = "Poniżej przeciętnej";
+                        else if(normalizedFfmi < 17) ffmiText = "Przeciętna muskulatura";
+                        else if(normalizedFfmi < 19) ffmiText = "Dobra muskulatura (Wysportowana)";
+                        else if(normalizedFfmi < 21) ffmiText = "Doskonała muskulatura";
+                        else ffmiText = "Genetyczna elita";
+                    }
 
                     ffmiHtml = `
                         <div style="background: rgba(0,0,0,0.5); border: 1px solid #2ECC71; padding: 15px; border-radius: 8px; margin-bottom: 15px;">
@@ -218,9 +242,15 @@ export const AnalyticsUI = {
                     const whr = waist / hips;
                     
                     let whrText = "";
-                    if(whr < 0.90) whrText = "Zdrowe proporcje (Niskie ryzyko)";
-                    else if(whr < 1.0) whrText = "Umiarkowane ryzyko";
-                    else whrText = "Typ jabłka (Podwyższone ryzyko)";
+                    if (gender === 'male') {
+                        if(whr < 0.90) whrText = "Zdrowe proporcje (Niskie ryzyko)";
+                        else if(whr < 1.0) whrText = "Umiarkowane ryzyko";
+                        else whrText = "Typ jabłka (Podwyższone ryzyko)";
+                    } else {
+                        if(whr < 0.80) whrText = "Zdrowe proporcje (Niskie ryzyko)";
+                        else if(whr < 0.85) whrText = "Umiarkowane ryzyko";
+                        else whrText = "Typ jabłka (Podwyższone ryzyko)";
+                    }
 
                     whrHtml = `
                         <div style="background: rgba(0,0,0,0.5); border: 1px solid #9B59B6; padding: 15px; border-radius: 8px; margin-bottom: 15px;">
@@ -275,9 +305,18 @@ export const AnalyticsUI = {
                     
                     chartData.forEach(m => {
                         let hBf = null;
-                        if (m.height && m.waist && m.neck) {
-                            const val = 1.0324 - 0.19077 * Math.log10(m.waist - m.neck) + 0.15456 * Math.log10(m.height);
-                            hBf = (495 / val) - 450;
+                        let missingForHbf = false;
+                        if (!m.height || !m.waist || !m.neck) missingForHbf = true;
+                        if (gender === 'female' && !m.hips) missingForHbf = true;
+
+                        if (!missingForHbf) {
+                            if (gender === 'male') {
+                                const val = 1.0324 - 0.19077 * Math.log10(m.waist - m.neck) + 0.15456 * Math.log10(m.height);
+                                hBf = (495 / val) - 450;
+                            } else {
+                                const val = 1.29579 - 0.35004 * Math.log10(m.waist + m.hips - m.neck) + 0.22100 * Math.log10(m.height);
+                                hBf = (495 / val) - 450;
+                            }
                             hBf = Math.max(2, Math.min(60, hBf));
                         }
                         
@@ -319,8 +358,10 @@ export const AnalyticsUI = {
     },
 
     shareProgress: async (monthWorkouts, monthVolume, totalVolume) => {
-        const textToShare = `W tym miesiącu zrobiłem ${monthWorkouts} treningów i przerzuciłem ${monthVolume} kg! 🔥 Buduję formę z Uki's BodyBuild! 💪`;
-        
+        const gender = localStorage.getItem('uki-bodybuild-gender') || 'male';
+        const didText = gender === 'female' ? 'zrobiłam' : 'zrobiłem';
+        const liftedText = gender === 'female' ? 'przerzuciłam' : 'przerzuciłem';
+        const textToShare = `W tym miesiącu ${didText} ${monthWorkouts} treningów i ${liftedText} ${monthVolume} kg! 🔥 Buduję formę z Uki's BodyBuild! 💪`;
         try {
             // Fetch avatar and nickname from settings
             const settingsStr = localStorage.getItem('uki_bodybuild_settings');
