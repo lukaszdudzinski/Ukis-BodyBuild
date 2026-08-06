@@ -1,5 +1,5 @@
 export const DietAIEngine = {
-    analyzeImage: async (base64Image) => {
+    analyzeImage: async (base64Image, contextText) => {
         // Z LocalStorage pobieramy URL do naszego Workera Cloudflare (lub używamy domyślnego dla wszystkich klientów)
         const workerUrl = localStorage.getItem('dietWorkerUrl') || 'https://uki-dieta.lukasz-dudzinski.workers.dev';
         
@@ -19,7 +19,7 @@ export const DietAIEngine = {
                 headers: {
                     "Content-Type": "application/json"
                 },
-                body: JSON.stringify({ imageBase64: base64Image })
+                body: JSON.stringify({ imageBase64: base64Image, contextText: contextText })
             });
 
             if (!response.ok) {

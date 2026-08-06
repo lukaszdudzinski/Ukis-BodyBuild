@@ -154,24 +154,34 @@ export const TrainingUI = {
         panel.style.display = 'block';
         label.textContent = `Opcje dla: ${dateStr}`;
 
-        const existingTraining = allTrainingsCache.find(t => t.date === dateStr);
+        const existingTrainingsOnDay = allTrainingsCache.filter(t => t.date === dateStr);
 
-        if (existingTraining) {
-            // Day already has training
-            if (emptyState) emptyState.style.display = 'none';
+        // Always show emptyState which now contains "start new session"
+        if (emptyState) emptyState.style.display = 'block';
+
+        if (existingTrainingsOnDay.length > 0) {
+            // Day has trainings
             if (existingState) existingState.style.display = 'block';
             
             if (existingPreview) {
-                const nameDisplay = existingTraining.name ? `<strong style="color: #00BFFF; font-size: 1.2em;">${existingTraining.name}</strong><br>` : '';
-                existingPreview.innerHTML = `
-                    ${nameDisplay}
-                    <span>Czas treningu: ${TrainingUI.formatTime(existingTraining.duration_seconds)}</span><br>
-                    <span style="font-size: 0.9em; color: #888;">Liczba ćwiczeń: ${existingTraining.exercises.length}</span>
-                `;
+                let html = '';
+                existingTrainingsOnDay.forEach(existingTraining => {
+                    const nameDisplay = existingTraining.name ? `<strong style="color: #00BFFF; font-size: 1.1em;">${existingTraining.name}</strong><br>` : '';
+                    html += `
+                        <div style="background-color: #222; border: 1px solid #444; margin-bottom: 15px; border-radius: 8px; padding: 15px; text-align: left;">
+                            ${nameDisplay}
+                            <span style="font-size: 0.9em;">Czas treningu: ${TrainingUI.formatTime(existingTraining.duration_seconds)}</span><br>
+                            <span style="font-size: 0.8em; color: #888;">Liczba ćwiczeń: ${existingTraining.exercises.length}</span>
+                            <div style="margin-top: 10px;">
+                                <button onclick="window.TrainingUI.continueTraining(${existingTraining.id})" class="action-button pulse" style="width: 100%; background-color: #2ECC71; border-color: #2ECC71; color: #fff; font-size: 0.9em; padding: 8px;">▶ Kontynuuj ten trening</button>
+                            </div>
+                        </div>
+                    `;
+                });
+                existingPreview.innerHTML = html;
             }
         } else {
             // Day has no training
-            if (emptyState) emptyState.style.display = 'block';
             if (existingState) existingState.style.display = 'none';
 
             if (historyList) {
@@ -286,8 +296,10 @@ export const TrainingUI = {
         }
     },
 
-    continueTraining: () => {
-        const existingTraining = allTrainingsCache.find(t => t.date === selectedDate);
+    continueTraining: (trainingId) => {
+        const existingTraining = trainingId !== undefined 
+            ? allTrainingsCache.find(t => t.id === trainingId)
+            : allTrainingsCache.find(t => t.date === selectedDate);
         if (!existingTraining) return;
 
         document.getElementById('training-calendar-view').style.display = 'none';
@@ -400,16 +412,25 @@ export const TrainingUI = {
             reps: parseInt(repsInput.value, 10)
         });
 
-        // Keep the input values so the next set is easier to log!
         TrainingUI.renderCurrentExercises();
-        
-        // Refill the inputs
-        setTimeout(() => {
-            const w = document.getElementById(`weight-${exerciseId}`);
-            const r = document.getElementById(`reps-${exerciseId}`);
-            if(w) w.value = weightInput.value;
-            if(r) r.value = repsInput.value;
-        }, 50);
+
+        // Refill the inputs if autoCopy is enabled
+        if (exercise.autoCopy) {
+            setTimeout(() => {
+                const w = document.getElementById(`weight-${exerciseId}`);
+                const r = document.getElementById(`reps-${exerciseId}`);
+                if(w) w.value = weightInput.value;
+                if(r) r.value = repsInput.value;
+            }, 50);
+        } else {
+            // clear them
+            setTimeout(() => {
+                const w = document.getElementById(`weight-${exerciseId}`);
+                const r = document.getElementById(`reps-${exerciseId}`);
+                if(w) w.value = '';
+                if(r) r.value = '';
+            }, 50);
+        }
     },
 
     removeSet: (exerciseId, setIndex) => {
@@ -454,6 +475,12 @@ export const TrainingUI = {
                         <span style="color: #aaa; font-weight: bold;">X</span>
                         <input type="number" id="reps-${ex.id}" placeholder="powt" style="min-width: 60px; flex: 1; padding: 10px; border-radius: 4px; border: 1px solid #444; background: #222; color: #fff; font-size: 1em; text-align: center; box-sizing: border-box;" inputmode="numeric">
                         <button onclick="window.TrainingUI.addSet('${ex.id}')" style="background: #00BFFF; color: #fff; border: none; padding: 10px; border-radius: 4px; cursor: pointer; min-width: 80px; flex: 1; font-weight: bold; box-sizing: border-box;">+ Seria</button>
+                    </div>
+                    <div style="margin-top: 10px; text-align: center;">
+                        <label style="color: #ccc; font-size: 0.85em; display: inline-flex; align-items: center; gap: 8px; cursor: pointer;">
+                            <input type="checkbox" onchange="window.TrainingUI.updateExerciseField('${ex.id}', 'autoCopy', this.checked)" ${ex.autoCopy ? 'checked' : ''} style="transform: scale(1.2);">
+                            Kopiuj ciężar do następnej serii
+                        </label>
                     </div>
                 `;
             }

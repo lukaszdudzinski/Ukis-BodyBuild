@@ -58,6 +58,10 @@ export const DietUI = {
 
             <!-- Kamera / Skaner -->
             <div style="text-align: center; margin-bottom: 30px; padding: 0 15px;">
+                <div style="margin-bottom: 15px; text-align: left;">
+                    <label style="color: #aaa; font-size: 0.9em; display: block; margin-bottom: 5px;">Opcjonalny opis (lub podyktuj głosem):</label>
+                    <textarea id="diet-context-input" placeholder="np. Sałatka z kurczakiem i awokado" style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #444; background: #222; color: #fff; font-size: 1em; resize: none; box-sizing: border-box;" rows="2"></textarea>
+                </div>
                 <label id="diet-scan-btn" class="action-button" style="display: flex; align-items: center; justify-content: center; width: 100%; max-width: 350px; margin: 0 auto; background: linear-gradient(135deg, #FF9800, #F44336); border: none; padding: 15px 20px; border-radius: 30px; font-size: 1.1em; font-weight: bold; cursor: pointer; box-shadow: 0 4px 15px rgba(255, 152, 0, 0.4); box-sizing: border-box; white-space: normal; line-height: 1.2;">
                     📸 Zeskanuj Posiłek (AI)
                     <input type="file" id="diet-camera-input" accept="image/*" capture="environment" style="display: none;">
@@ -288,11 +292,15 @@ export const DietUI = {
         if (btnLabel) btnLabel.style.display = 'none';
 
         try {
+            // Pobranie opcjonalnego kontekstu
+            const contextInput = document.getElementById('diet-context-input');
+            const contextText = contextInput ? contextInput.value : '';
+
             // Konwersja na base64 z kompresją w locie dla optymalizacji przesyłu
             const base64 = await DietUI.resizeAndToBase64(file);
             
             // Wywołanie API Gemini
-            const result = await DietAIEngine.analyzeImage(base64);
+            const result = await DietAIEngine.analyzeImage(base64, contextText);
             
             // Zapis do bazy
             const today = new Date().toISOString().split('T')[0];
@@ -305,6 +313,11 @@ export const DietUI = {
                 carbs: parseInt(result.carbs) || 0,
                 fat: parseInt(result.fat) || 0
             });
+
+            // Wyczyść input
+            if (contextInput) contextInput.value = '';
+
+            alert(`Dodano: ${result.food_name} (${result.calories} kcal)`);
 
             // Odświeżenie widoku
             DietUI.loadTodayData();

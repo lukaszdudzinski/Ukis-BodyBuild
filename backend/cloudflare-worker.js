@@ -34,8 +34,8 @@ export default {
     }
 
     try {
-      // 2. Pobieramy zdjęcie wysłane z naszej aplikacji
-      const { imageBase64 } = await request.json();
+      // 2. Pobieramy zdjęcie wysłane z naszej aplikacji oraz opcjonalny kontekst
+      const { imageBase64, contextText } = await request.json();
 
       if (!imageBase64) {
         return new Response(JSON.stringify({ error: "Brak zdjęcia" }), { status: 400, headers: corsHeaders });
@@ -48,7 +48,13 @@ export default {
       }
 
       // 4. Budujemy zapytanie do Google Gemini Pro Vision
-      const prompt = `Przeanalizuj to zdjęcie posiłku. 
+      let prompt = `Przeanalizuj to zdjęcie posiłku. `;
+      
+      if (contextText && contextText.trim().length > 0) {
+        prompt += `\nUżytkownik dostarczył dodatkowy kontekst / opis słowny posiłku: "${contextText}". Weź to pod uwagę (szczególnie przy nazwie i składnikach których nie widać).\n`;
+      }
+
+      prompt += `
 Zwróć TYLKO czysty obiekt JSON (bez znaczników markdown \`\`\`json). 
 Format:
 {

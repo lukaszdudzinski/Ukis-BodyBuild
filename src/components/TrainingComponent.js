@@ -22,19 +22,19 @@ export const TrainingComponent = {
                 <div id="day-action-panel" style="display: none; margin-top: 20px; padding: 15px; background: rgba(0,0,0,0.4); border: 1px solid #00BFFF; border-radius: 8px;">
                     <h4 id="selected-day-label" style="color: #00BFFF; margin-bottom: 15px; text-align: center;">Opcje dla dnia</h4>
                     
+                    <div id="day-action-existing-state" style="display: none; text-align: center; margin-bottom: 20px;">
+                        <h5 style="color: #00BFFF; margin-bottom: 10px;">🏋️ Treningi w tym dniu:</h5>
+                        <div id="existing-training-preview" style="margin-bottom: 15px; color: #ccc;">
+                            <!-- Previews of existing trainings -->
+                        </div>
+                    </div>
+
                     <div id="day-action-empty-state">
                         <button id="start-new-session-btn" class="action-button pulse" style="width: 100%; margin-bottom: 10px; background-color: rgba(0, 191, 255, 0.2); border-color: #00BFFF; color: #00BFFF;">➕ Dodaj nową sesję treningową</button>
                         <div id="history-sessions-list" style="margin-top: 15px;">
                             <h5 style="color: #ccc; margin-bottom: 10px;">📋 Skopiuj sesję treningową:</h5>
                             <!-- Populated with recent sessions -->
                         </div>
-                    </div>
-
-                    <div id="day-action-existing-state" style="display: none; text-align: center;">
-                        <div id="existing-training-preview" style="margin-bottom: 15px; color: #ccc;">
-                            <!-- Preview of existing training -->
-                        </div>
-                        <button id="continue-session-btn" class="action-button pulse" style="width: 100%; background-color: #2ECC71; border-color: #2ECC71; color: #fff;">▶ Kontynuuj ten trening</button>
                     </div>
                 </div>
             </div>

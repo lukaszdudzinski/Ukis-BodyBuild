@@ -1,5 +1,14 @@
 [
   {
+    "version": "v.2026.8.7.01",
+    "date": "2026-08-07",
+    "changes": [
+      "🔄 Wygodne powtórzenia: w treningu dodaliśmy nowy przełącznik 'Kopiuj ciężar do następnej serii', który oszczędzi Ci wpisywania tych samych liczb!",
+      "📅 Więcej na luzie: teraz możesz rozbić trening na części i dodać drugą (a nawet kolejną!) sesję treningową w tym samym dniu.",
+      "🎤 AI rozumie kontekst: moduł rozpoznawania posiłków ze zdjęcia ma teraz dodatkowe pole - podyktuj lub wpisz opcjonalny kontekst (np. niewidoczne składniki sosu) przed wysłaniem do analizy AI!"
+    ]
+  },
+  {
     "version": "v.2026.8.6.16",
     "date": "2026-08-06",
     "changes": [
