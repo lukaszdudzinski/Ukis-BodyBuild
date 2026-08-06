@@ -1,4 +1,5 @@
 import { DatabaseManager } from '../db/DatabaseManager.js';
+import { ShareUtils } from '../../utils/ShareUtils.js';
 
 export const HistoryUI = {
     init: () => {
@@ -78,7 +79,6 @@ export const HistoryUI = {
                             </div>
                             
                             <h4 style="color: #00BFFF; margin-bottom: 10px;">Szczegóły ćwiczeń:</h4>
-                            <div style="font-size: 0.9em; color: #bbb;">
                                 ${rec.exercises.map((ex, i) => `
                                     <div style="margin-bottom: 10px; padding: 10px; background: rgba(255,255,255,0.05); border-radius: 5px;">
                                         <div style="color: #fff; font-weight: bold; margin-bottom: 5px;">${i+1}. ${ex.name || 'Nieznane ćwiczenie'}</div>
@@ -91,6 +91,10 @@ export const HistoryUI = {
                                     </div>
                                 `).join('')}
                             </div>
+                            
+                            <button onclick='window.HistoryUI.shareTraining(${JSON.stringify(rec.date)}, ${totalVolume}, ${rec.exercises.length})' class="action-button" style="background-color: #3b5998; border-color: #3b5998; color: white; width: 100%; margin-top: 15px;">
+                                📤 Udostępnij Trening
+                            </button>
                         </div>
                     </div>
                 `;
@@ -100,6 +104,37 @@ export const HistoryUI = {
         }
         
         container.innerHTML = html;
+    },
+
+    shareTraining: async (dateStr, totalVolume, exercisesCount) => {
+        const textToShare = `Właśnie ukończyłem trening (${dateStr})! Zrobiłem ${exercisesCount} ćwiczeń i przerzuciłem ${totalVolume} kg! 🔥 Uki's BodyBuild 💪`;
+        
+        try {
+            // Fetch avatar and nickname from settings
+            const settingsStr = localStorage.getItem('uki_bodybuild_settings');
+            let avatar = null;
+            let nickname = 'BodyBuilder';
+            if (settingsStr) {
+                const settings = JSON.parse(settingsStr);
+                avatar = settings.avatar || null;
+                nickname = settings.nickname || 'BodyBuilder';
+            }
+
+            const statsList = [
+                { label: 'Data treningu', value: dateStr },
+                { label: 'Ciężar', value: `${totalVolume} kg`, color: '#00BFFF' },
+                { label: 'Liczba ćwiczeń', value: String(exercisesCount) }
+            ];
+
+            await ShareUtils.generateAndShareImage("Mój Trening", statsList, avatar, nickname, textToShare);
+            
+        } catch (error) {
+            console.log('Błąd podczas udostępniania:', error);
+            // Fallback: Copy to clipboard
+            navigator.clipboard.writeText(textToShare)
+                .then(() => alert("Szczegóły treningu skopiowane do schowka!"))
+                .catch(err => console.error("Błąd kopiowania", err));
+        }
     }
 };
 

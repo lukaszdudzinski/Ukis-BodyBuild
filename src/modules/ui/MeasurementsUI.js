@@ -68,6 +68,7 @@ export const MeasurementsUI = {
             hips: parseFloat(document.getElementById('measureHips').value) || null,
             thigh: parseFloat(document.getElementById('measureThigh').value) || null,
             biceps: parseFloat(document.getElementById('measureBiceps').value) || null,
+            neck: parseFloat(document.getElementById('measureNeck').value) || null,
             photo: preview && preview.dataset.base64 ? preview.dataset.base64 : null
         };
 
@@ -120,6 +121,7 @@ export const MeasurementsUI = {
                                 ${rec.hips ? `<div><strong>Biodra:</strong> ${rec.hips} cm</div>` : ''}
                                 ${rec.thigh ? `<div><strong>Udo:</strong> ${rec.thigh} cm</div>` : ''}
                                 ${rec.biceps ? `<div><strong>Biceps:</strong> ${rec.biceps} cm</div>` : ''}
+                                ${rec.neck ? `<div><strong>Szyja:</strong> ${rec.neck} cm</div>` : ''}
                             </div>
                         </div>
                     </div>

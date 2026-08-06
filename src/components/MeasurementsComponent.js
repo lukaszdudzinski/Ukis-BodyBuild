@@ -46,6 +46,13 @@ export const MeasurementsComponent = {
                             <label for="measureBiceps">Biceps</label>
                             <input type="number" id="measureBiceps" step="0.5">
                         </div>
+                        <div class="input-group" style="grid-column: span 2;">
+                            <label for="measureNeck" style="display: flex; align-items: center; justify-content: space-between;">
+                                Szyja
+                                <span style="cursor: pointer; font-size: 1.1em;" onclick="alert('Kompletne dane (w tym obwód szyi, talii i wzrost) pozwalają aplikacji na dokładne wyliczenie poziomu tkanki tłuszczowej (wzór US Navy). Podawanie ich ułatwi nasze analizy, ale nie jest obowiązkowe.')">ℹ️</span>
+                            </label>
+                            <input type="number" id="measureNeck" step="0.5">
+                        </div>
                     </div>
                 </div>
 

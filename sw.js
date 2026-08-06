@@ -1,4 +1,4 @@
-const CACHE_NAME = 'ukis-bodybuild-v2026.8.05.13';
+const CACHE_NAME = 'ukis-bodybuild-v2026.8.06.14';
 // Core assets that MUST be cached immediately
 const CORE_ASSETS = [
     './',
@@ -10,12 +10,17 @@ const CORE_ASSETS = [
 ];
 
 self.addEventListener('install', (e) => {
-    self.skipWaiting(); // Activate worker immediately
     e.waitUntil(
         caches.open(CACHE_NAME).then((cache) => {
             return cache.addAll(CORE_ASSETS);
         })
     );
+});
+
+self.addEventListener('message', (event) => {
+    if (event.data === 'SKIP_WAITING') {
+        self.skipWaiting();
+    }
 });
 
 self.addEventListener('activate', (e) => {
