@@ -12,10 +12,14 @@
 # Error details
 
 ```
-Error: page.evaluate: TypeError: Cannot read properties of undefined (reading 'addMeasurement')
-    at eval (eval at evaluate (:311:30), <anonymous>:14:36)
-    at UtilityScript.evaluate (<anonymous>:313:16)
-    at UtilityScript.<anonymous> (<anonymous>:1:44)
+Test timeout of 30000ms exceeded.
+```
+
+```
+Error: page.click: Test timeout of 30000ms exceeded.
+Call log:
+  - waiting for locator('button[onclick="window.AppUI.switchTab(\'analytics-dashboard\')"]')
+
 ```
 
 # Page snapshot
@@ -54,11 +58,111 @@ Error: page.evaluate: TypeError: Cannot read properties of undefined (reading 'a
           - /url: https://suppi.pl/ukidives
           - text: ☕ Podoba Ci się to narzędzie?
           - strong [ref=f1e25]: Postaw mi kawę!
-        - generic [ref=f1e26]: Loading Version...
+        - generic [ref=f1e26]: v.2026.8.6.01
     - main [ref=f1e27]:
-      - generic [ref=f1e30]:
+      - generic [ref=f1e30] [cursor=pointer]:
         - img "Logo" [ref=f1e31]
         - heading "Uki's BodyBuild" [level=2] [ref=f1e32]
         - paragraph [ref=f1e33]: Wybierz narzędzie z menu
   - text: ✕
+```
+
+# Test source
+
+```ts
+  1  | const { test, expect } = require('@playwright/test');
+  2  | 
+  3  | test.describe('Advanced Analytics Module', () => {
+  4  |   test('should display FFMI, WHR and BF% when all measurements are provided', async ({ page }) => {
+  5  |     // We mock localStorage and IndexedDB in a real scenario, but since playwright loads the actual page,
+  6  |     // we can inject measurements directly into the IndexedDB/OPFS via page.evaluate
+  7  |     await page.goto('http://127.0.0.1:8080'); // Assuming local server is running on 8080 during tests
+  8  | 
+  9  |     // Wait for App UI to load
+  10 |     await page.waitForSelector('.app-container');
+  11 | 
+  12 |     // Inject mock data into DatabaseManager
+  13 |     await page.evaluate(async () => {
+  14 |       // Mock some measurement data
+  15 |       const mockData = {
+  16 |         date: '2026-08-06',
+  17 |         weight: 80.0,
+  18 |         height: 180,
+  19 |         neck: 38.0,
+  20 |         waist: 85.0,
+  21 |         hips: 95.0,
+  22 |         chest: 105.0,
+  23 |         thigh: 60.0,
+  24 |         biceps: 38.0,
+  25 |         photo: null
+  26 |       };
+  27 |       
+  28 |       await window.DatabaseManager.addMeasurement(mockData);
+  29 |     });
+  30 | 
+  31 |     // Navigate to Analytics Tab
+  32 |     await page.click('button[onclick="window.AppUI.switchTab(\'analytics-dashboard\')"]');
+  33 |     
+  34 |     // Wait for the analytics to render
+  35 |     await page.waitForSelector('#analytics-content h4', { state: 'visible' });
+  36 | 
+  37 |     // Verify Advanced Analytics section exists
+  38 |     const advancedTitle = await page.locator('text=Zaawansowana Analityka').isVisible();
+  39 |     expect(advancedTitle).toBeTruthy();
+  40 | 
+  41 |     // Verify BF% is calculated (US Navy formula)
+  42 |     const bfTitle = await page.locator('text=Szacunkowy BF%').isVisible();
+  43 |     expect(bfTitle).toBeTruthy();
+  44 | 
+  45 |     // Verify FFMI is calculated
+  46 |     const ffmiTitle = await page.locator('text=FFMI (Index Beztłuszczowy)').isVisible();
+  47 |     expect(ffmiTitle).toBeTruthy();
+  48 | 
+  49 |     // Verify WHR is calculated
+  50 |     const whrTitle = await page.locator('text=WHR (Talia-Biodra)').isVisible();
+  51 |     expect(whrTitle).toBeTruthy();
+  52 | 
+  53 |     // Clean up
+  54 |     await page.evaluate(async () => {
+  55 |       window.DatabaseManager.db.exec("DELETE FROM measurements");
+  56 |     });
+  57 |   });
+  58 | 
+  59 |   test('should display missing data warning when neck is not provided', async ({ page }) => {
+  60 |     await page.goto('http://127.0.0.1:8080');
+  61 | 
+  62 |     await page.evaluate(async () => {
+  63 |       const mockData = {
+  64 |         date: '2026-08-06',
+  65 |         weight: 80.0,
+  66 |         height: 180,
+  67 |         // neck is missing
+  68 |         waist: 85.0,
+  69 |         hips: 95.0,
+  70 |         chest: 105.0,
+  71 |         thigh: 60.0,
+  72 |         biceps: 38.0,
+  73 |         photo: null
+  74 |       };
+  75 |       await window.DatabaseManager.addMeasurement(mockData);
+  76 |     });
+  77 | 
+  78 |     // Navigate to Analytics Tab
+> 79 |     await page.click('button[onclick="window.AppUI.switchTab(\'analytics-dashboard\')"]');
+     |                ^ Error: page.click: Test timeout of 30000ms exceeded.
+  80 |     
+  81 |     // Check for missing data warning
+  82 |     const missingWarning = await page.locator('text=Brak danych do wyliczenia BF%').isVisible();
+  83 |     expect(missingWarning).toBeTruthy();
+  84 | 
+  85 |     const missingNeckText = await page.locator('text=Uzupełnij: Szyja').isVisible();
+  86 |     expect(missingNeckText).toBeTruthy();
+  87 | 
+  88 |     // Clean up
+  89 |     await page.evaluate(async () => {
+  90 |       window.DatabaseManager.db.exec("DELETE FROM measurements");
+  91 |     });
+  92 |   });
+  93 | });
+  94 | 
 ```

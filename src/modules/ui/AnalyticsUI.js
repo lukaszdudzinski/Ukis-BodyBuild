@@ -130,8 +130,6 @@ export const AnalyticsUI = {
                 `;
             }
 
-            }
-
             // 3. Advanced Analytics (FFMI, WHR, BF%)
             let advancedHtml = '<h4 style="color: #00BFFF; border-bottom: 1px solid rgba(0,191,255,0.2); padding-bottom: 5px; margin-bottom: 15px; margin-top: 25px;">Zaawansowana Analityka</h4>';
             

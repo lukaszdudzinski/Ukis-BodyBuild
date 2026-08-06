@@ -4,6 +4,10 @@ import { TrainingUI } from './modules/ui/TrainingUI.js';
 import { SettingsUI } from './modules/ui/SettingsUI.js';
 import { HistoryUI } from './modules/ui/HistoryUI.js';
 import { AnalyticsUI } from './modules/ui/AnalyticsUI.js';
+import { DatabaseManager } from './modules/db/DatabaseManager.js';
+
+// Expose for E2E testing
+window.DatabaseManager = DatabaseManager;
 
 // Initialize Application
 const initApp = () => {
