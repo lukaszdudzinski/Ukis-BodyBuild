@@ -32,9 +32,10 @@ export const DietUI = {
                         <circle cx="75" cy="75" r="65" fill="none" stroke="#333" stroke-width="12" />
                         <circle id="diet-kcal-ring" cx="75" cy="75" r="65" fill="none" stroke="#FF9800" stroke-width="12" stroke-dasharray="408.4" stroke-dashoffset="408.4" stroke-linecap="round" style="transition: stroke-dashoffset 1s ease-out; transform: rotate(-90deg); transform-origin: 50% 50%;" />
                     </svg>
-                    <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);">
-                        <div id="diet-kcal-consumed" style="font-size: 1.8em; font-weight: bold; color: #fff;">0</div>
-                        <div style="font-size: 0.8em; color: #888;">Zjedzono</div>
+                    <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px;">
+                        <div style="font-size: 0.8em; color: #aaa; text-transform: uppercase; font-weight: bold;">Zjedzono</div>
+                        <div id="diet-kcal-consumed" style="font-size: 2.2em; font-weight: bold; color: #fff; line-height: 1;">0</div>
+                        <div style="font-size: 0.9em; color: #aaa; font-weight: bold;">kcal</div>
                     </div>
                 </div>
                 
@@ -215,8 +216,10 @@ export const DietUI = {
                     item.innerHTML = `
                         <div>
                             <div style="font-weight: bold; font-size: 1.1em; color: #fff;">${log.food_name}</div>
-                            <div style="font-size: 0.8em; color: #888; margin-top: 4px;">
-                                B: ${log.protein}g | W: ${log.carbs}g | T: ${log.fat}g
+                            <div style="font-size: 1em; color: #fff; margin-top: 6px; display: flex; gap: 15px; font-weight: 500;">
+                                <span><strong style="color: #4CAF50;">B:</strong> ${log.protein}g</span>
+                                <span><strong style="color: #4fc3f7;">W:</strong> ${log.carbs}g</span>
+                                <span><strong style="color: #ff5252;">T:</strong> ${log.fat}g</span>
                             </div>
                         </div>
                         <div style="text-align: right;">

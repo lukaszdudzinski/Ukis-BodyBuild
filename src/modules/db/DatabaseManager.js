@@ -170,6 +170,22 @@ export const DatabaseManager = {
         return { ...data, id: newId };
     },
 
+    updateTraining: async (data) => {
+        await DatabaseManager.init();
+        
+        db.exec({
+            sql: `UPDATE trainings SET duration_seconds = ?, exercises_json = ?, name = ? WHERE id = ?`,
+            bind: [
+                data.duration_seconds, 
+                JSON.stringify(data.exercises),
+                data.name || '',
+                data.id
+            ]
+        });
+        
+        return data;
+    },
+
     getTrainings: async () => {
         await DatabaseManager.init();
         const records = [];

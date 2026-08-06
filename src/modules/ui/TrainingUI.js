@@ -294,6 +294,7 @@ export const TrainingUI = {
         document.getElementById('active-training-view').style.display = 'block';
 
         currentTraining = {
+            id: existingTraining.id,
             date: selectedDate,
             startTime: Date.now() - (existingTraining.duration_seconds * 1000), // Simulate started in the past
             timerInterval: null,
@@ -468,10 +469,11 @@ export const TrainingUI = {
                     </div>
 
                     <div style="margin-bottom: 15px; text-align: center;">
-                        <label class="action-button" style="display: inline-block; background-color: #333; border-color: #555; color: #fff; cursor: pointer; width: 100%; box-sizing: border-box;">
+                        <label class="action-button" style="display: inline-block; background-color: #333; border-color: #555; color: #fff; cursor: pointer; width: 100%; box-sizing: border-box; text-shadow: 0 1px 3px rgba(0,0,0,0.8);">
                             📷 Zrób zdjęcie maszyny
-                            <input type="file" accept="image/*" capture="environment" style="display: none;">
+                            <input type="file" accept="image/*" capture="environment" style="display: none;" onchange="window.TrainingUI.handleMachinePhoto(event, '${ex.id}')">
                         </label>
+                        ${ex.machinePhoto ? `<img src="${ex.machinePhoto}" style="width: 100px; height: 100px; object-fit: cover; border-radius: 8px; margin-top: 10px; border: 1px solid #00BFFF;" alt="Maszyna">` : ''}
                     </div>
                     
                     ${exerciseDetailsHtml}
@@ -480,6 +482,22 @@ export const TrainingUI = {
         });
         
         list.innerHTML = html;
+    },
+
+    handleMachinePhoto: (event, exerciseId) => {
+        const file = event.target.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            const exercise = currentTraining.exercises.find(ex => ex.id === exerciseId);
+            if (exercise) {
+                // Compress image? To save space, we should ideally compress, but let's use DataURL for now.
+                exercise.machinePhoto = e.target.result;
+                TrainingUI.renderCurrentExercises();
+            }
+        };
+        reader.readAsDataURL(file);
     },
 
     finishTraining: async () => {
@@ -501,12 +519,22 @@ export const TrainingUI = {
             const trainingName = nameInput ? nameInput.value.trim() : '';
 
             try {
-                await DatabaseManager.addTraining({
-                    date: currentTraining.date,
-                    duration_seconds: duration,
-                    exercises: validExercises,
-                    name: trainingName
-                });
+                if (currentTraining.id) {
+                    await DatabaseManager.updateTraining({
+                        id: currentTraining.id,
+                        date: currentTraining.date,
+                        duration_seconds: duration,
+                        exercises: validExercises,
+                        name: trainingName
+                    });
+                } else {
+                    await DatabaseManager.addTraining({
+                        date: currentTraining.date,
+                        duration_seconds: duration,
+                        exercises: validExercises,
+                        name: trainingName
+                    });
+                }
                 alert("Trening zapisany pomyślnie!");
             } catch (err) {
                 console.error("Error saving training:", err);
