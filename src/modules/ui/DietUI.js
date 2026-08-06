@@ -40,18 +40,18 @@ export const DietUI = {
                 </div>
                 
                 <!-- Makro -->
-                <div style="display: flex; justify-content: space-between; margin-top: 15px; border-top: 1px solid #333; padding-top: 15px;">
-                    <div>
-                        <div style="color: #4CAF50; font-weight: bold;" id="diet-protein-display">0g</div>
-                        <div style="font-size: 0.7em; color: #888;">Białko</div>
+                <div style="display: flex; justify-content: space-around; margin-top: 20px; border-top: 1px solid #333; padding-top: 15px;">
+                    <div style="text-align: center;">
+                        <div style="color: #4CAF50; font-size: 1.3em; font-weight: bold;" id="diet-protein-display">0g</div>
+                        <div style="font-size: 0.9em; color: #ccc; margin-top: 3px;">Białko</div>
                     </div>
-                    <div>
-                        <div style="color: #2196F3; font-weight: bold;" id="diet-carbs-display">0g</div>
-                        <div style="font-size: 0.7em; color: #888;">Węgle</div>
+                    <div style="text-align: center;">
+                        <div style="color: #2196F3; font-size: 1.3em; font-weight: bold;" id="diet-carbs-display">0g</div>
+                        <div style="font-size: 0.9em; color: #ccc; margin-top: 3px;">Węgle</div>
                     </div>
-                    <div>
-                        <div style="color: #E91E63; font-weight: bold;" id="diet-fat-display">0g</div>
-                        <div style="font-size: 0.7em; color: #888;">Tłuszcze</div>
+                    <div style="text-align: center;">
+                        <div style="color: #E91E63; font-size: 1.3em; font-weight: bold;" id="diet-fat-display">0g</div>
+                        <div style="font-size: 0.9em; color: #ccc; margin-top: 3px;">Tłuszcze</div>
                     </div>
                 </div>
             </div>
@@ -219,11 +219,11 @@ export const DietUI = {
                     item.style.cssText = 'background: rgba(255,255,255,0.05); padding: 15px; border-radius: 8px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; border-left: 4px solid #FF9800;';
                     item.innerHTML = `
                         <div>
-                            <div style="font-weight: bold; font-size: 1.1em; color: #fff;">${log.food_name}</div>
-                            <div style="font-size: 1em; color: #fff; margin-top: 6px; display: flex; gap: 15px; font-weight: 500;">
-                                <span><strong style="color: #4CAF50;">B:</strong> ${log.protein}g</span>
-                                <span><strong style="color: #4fc3f7;">W:</strong> ${log.carbs}g</span>
-                                <span><strong style="color: #ff5252;">T:</strong> ${log.fat}g</span>
+                            <div style="font-weight: bold; font-size: 1.2em; color: #fff;">${log.food_name}</div>
+                            <div style="font-size: 1.05em; color: #ddd; margin-top: 8px; display: flex; gap: 15px; font-weight: 500;">
+                                <span><strong style="color: #4CAF50; font-size: 1.1em;">B:</strong> ${log.protein}g</span>
+                                <span><strong style="color: #2196F3; font-size: 1.1em;">W:</strong> ${log.carbs}g</span>
+                                <span><strong style="color: #E91E63; font-size: 1.1em;">T:</strong> ${log.fat}g</span>
                             </div>
                         </div>
                         <div style="text-align: right;">
