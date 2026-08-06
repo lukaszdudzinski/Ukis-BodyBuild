@@ -56,21 +56,64 @@ export const DietUI = {
             </div>
 
             <!-- Kamera / Skaner -->
-            <div style="text-align: center; margin-bottom: 30px;">
-                <label id="diet-scan-btn" class="action-button" style="display: inline-block; background: linear-gradient(135deg, #FF9800, #F44336); border: none; padding: 15px 30px; border-radius: 30px; font-size: 1.2em; cursor: pointer; box-shadow: 0 4px 15px rgba(255, 152, 0, 0.4);">
+            <div style="text-align: center; margin-bottom: 30px; padding: 0 15px;">
+                <label id="diet-scan-btn" class="action-button" style="display: flex; align-items: center; justify-content: center; width: 100%; max-width: 350px; margin: 0 auto; background: linear-gradient(135deg, #FF9800, #F44336); border: none; padding: 15px 20px; border-radius: 30px; font-size: 1.1em; font-weight: bold; cursor: pointer; box-shadow: 0 4px 15px rgba(255, 152, 0, 0.4); box-sizing: border-box; white-space: normal; line-height: 1.2;">
                     📸 Zeskanuj Posiłek (AI)
                     <input type="file" id="diet-camera-input" accept="image/*" capture="environment" style="display: none;">
                 </label>
                 <div id="diet-loading" style="display: none; margin-top: 15px; color: #FF9800;">
                     <span class="spinner" style="display: inline-block; width: 20px; height: 20px; border: 3px solid rgba(255,152,0,0.3); border-radius: 50%; border-top-color: #FF9800; animation: spin 1s ease-in-out infinite;"></span>
-                    Analizowanie przez Gemini AI...
+                    Analizowanie przez AI...
                 </div>
+            </div>
+
+            <!-- Przycisk konfiguracji TDEE -->
+            <div style="text-align: center; margin-bottom: 20px;">
+                <button id="diet-config-btn" style="background: rgba(255,255,255,0.1); border: 1px solid #444; color: #ccc; padding: 8px 15px; border-radius: 20px; font-size: 0.9em; cursor: pointer;">
+                    ⚙️ Oblicz zapotrzebowanie kaloryczne
+                </button>
             </div>
 
             <!-- Dzisiejsze posiłki -->
             <h3 style="margin-bottom: 15px;">Dzisiejsze posiłki</h3>
             <div id="diet-logs-list">
                 <!-- Tu wpada lista posiłków -->
+            </div>
+
+            <!-- Modal konfiguracji TDEE -->
+            <div id="diet-tdee-modal" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.8); z-index: 1000; justify-content: center; align-items: center; padding: 20px;">
+                <div style="background: #1e1e1e; padding: 25px; border-radius: 12px; max-width: 400px; width: 100%; position: relative; border: 1px solid #333;">
+                    <button id="diet-tdee-close" style="position: absolute; top: 15px; right: 15px; background: none; border: none; color: #fff; font-size: 1.5em; cursor: pointer;">×</button>
+                    <h3 style="margin-top: 0; color: #FF9800; margin-bottom: 20px;">Twój cel kaloryczny</h3>
+                    
+                    <div style="margin-bottom: 15px;">
+                        <label style="display: block; margin-bottom: 5px; color: #aaa; font-size: 0.9em;">Aktywność i Treningi (w tygodniu)</label>
+                        <select id="diet-tdee-activity" class="input-field" style="width: 100%; padding: 10px; background: #222; border: 1px solid #444; color: #fff; border-radius: 5px;">
+                            <option value="1.2">Brak aktywności (Praca siedząca)</option>
+                            <option value="1.375">Niska (1-2 treningi)</option>
+                            <option value="1.55" selected>Umiarkowana (3-4 treningi)</option>
+                            <option value="1.725">Wysoka (5-6 treningów)</option>
+                            <option value="1.9">Bardzo wysoka (Fizyczna praca + treningi)</option>
+                        </select>
+                    </div>
+
+                    <div style="margin-bottom: 20px;">
+                        <label style="display: block; margin-bottom: 5px; color: #aaa; font-size: 0.9em;">Obecny cel</label>
+                        <select id="diet-tdee-goal" class="input-field" style="width: 100%; padding: 10px; background: #222; border: 1px solid #444; color: #fff; border-radius: 5px;">
+                            <option value="cut">Redukcja (-500 kcal)</option>
+                            <option value="maintenance" selected>Utrzymanie wagi</option>
+                            <option value="bulk">Budowa masy (+300 kcal)</option>
+                        </select>
+                    </div>
+
+                    <p style="font-size: 0.85em; color: #888; margin-bottom: 20px; line-height: 1.4;">
+                        Kalkulator pobierze Twoją ostatnią wagę z modułu "Pomiary Ciała" i na jej podstawie wyliczy propozycję kalorii (wzór Mifflin-St Jeor).
+                    </p>
+
+                    <button id="diet-tdee-save" style="width: 100%; background: #FF9800; color: #000; border: none; padding: 12px; border-radius: 5px; font-weight: bold; cursor: pointer;">
+                        Przelicz i Zapisz
+                    </button>
+                </div>
             </div>
         `;
     },
@@ -79,6 +122,43 @@ export const DietUI = {
         const cameraInput = document.getElementById('diet-camera-input');
         if (cameraInput) {
             cameraInput.addEventListener('change', DietUI.handleScan);
+        }
+
+        const configBtn = document.getElementById('diet-config-btn');
+        const modal = document.getElementById('diet-tdee-modal');
+        const closeBtn = document.getElementById('diet-tdee-close');
+        const saveBtn = document.getElementById('diet-tdee-save');
+
+        if (configBtn && modal) {
+            configBtn.addEventListener('click', () => {
+                // Załaduj zapisane ustawienia
+                const savedGoal = localStorage.getItem('dietGoal') || 'maintenance';
+                const savedActivity = localStorage.getItem('dietActivity') || '1.55';
+                
+                document.getElementById('diet-tdee-goal').value = savedGoal;
+                document.getElementById('diet-tdee-activity').value = savedActivity;
+                
+                modal.style.display = 'flex';
+            });
+        }
+
+        if (closeBtn && modal) {
+            closeBtn.addEventListener('click', () => {
+                modal.style.display = 'none';
+            });
+        }
+
+        if (saveBtn && modal) {
+            saveBtn.addEventListener('click', async () => {
+                const goal = document.getElementById('diet-tdee-goal').value;
+                const activity = document.getElementById('diet-tdee-activity').value;
+                
+                localStorage.setItem('dietGoal', goal);
+                localStorage.setItem('dietActivity', activity);
+                
+                modal.style.display = 'none';
+                await DietUI.loadTodayData();
+            });
         }
     },
 
@@ -96,8 +176,9 @@ export const DietUI = {
         // 10 * waga + 6.25 * wzrost - 5 * wiek + 5
         let bmr = (10 * weight) + (6.25 * height) - (5 * age) + 5;
         
-        // Mnożnik aktywności - domyślnie 1.55 (umiarkowana)
-        let tdee = bmr * 1.55;
+        // Mnożnik aktywności z konfiguracji
+        const activityMultiplier = parseFloat(localStorage.getItem('dietActivity') || '1.55');
+        let tdee = bmr * activityMultiplier;
 
         const goal = localStorage.getItem('dietGoal') || 'maintenance';
         if (goal === 'cut') tdee -= 500;
@@ -226,7 +307,11 @@ export const DietUI = {
             DietUI.loadTodayData();
 
         } catch (err) {
-            alert(err.message);
+            let errorMsg = err.message;
+            if (errorMsg.includes('Unexpected token') || errorMsg.includes('JSON')) {
+                errorMsg = "AI nie rozpoznało jedzenia na zdjęciu lub zdjęcie było niewyraźne. Spróbuj jeszcze raz!";
+            }
+            alert("Błąd: " + errorMsg);
         } finally {
             if (loading) loading.style.display = 'none';
             if (btnLabel) btnLabel.style.display = 'inline-block';
