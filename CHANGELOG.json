@@ -1,0 +1,23 @@
+[
+  {
+    "version": "v.2026.8.6.01",
+    "date": "2026-08-06",
+    "changes": [
+      "Poprawiono proporcje kalendarza (skalowanie na urządzeniach mobilnych).",
+      "Dodano zaawansowaną analitykę: wyliczanie BF% (US Navy) oraz FFMI.",
+      "Udostępnianie treningów i wyników w mediach społecznościowych z generowaniem grafiki z awatarem.",
+      "Naprawiono krytyczny błąd blokujący przełączanie zakładek.",
+      "Wdrożono zaawansowany baner aktualizacji PWA (w tym changelog)."
+    ]
+  },
+  {
+    "version": "v2026.8.05.13",
+    "date": "2026-08-05",
+    "changes": [
+      "Dodano pole 'Szyja' w pomiarach ciała (niezbędne do wyliczania BF%).",
+      "Dodano Wzrost w pomiarach ciała.",
+      "Poprawki formularzy w urządzeniach z systemem iOS (skalowanie paska daty).",
+      "Zoptymalizowano proces ładowania danych w historii pomiarów."
+    ]
+  }
+]
