@@ -3,21 +3,26 @@
     "version": "v.2026.8.6.16",
     "date": "2026-08-06",
     "changes": [
-      "Wydanie nowej wersji poprawkowej."
+      "✨ Szlify Social Media: udostępnianie Twoich postępów wygląda teraz obłędnie i obsługuje gramatykę zależną od płci!",
+      "👤 Nowość w Pomiarach: dodano wybór płci (Kobieta/Mężczyzna) z automatycznym zapamiętywaniem.",
+      "🧠 Mądrzejsza Analityka: wbudowaliśmy specjalny wariant wzoru US Navy dla Pań (uwzględniający biodra) oraz dostosowane progi formy (FFMI, BF%, WHR)."
     ]
   },
   {
     "version": "v.2026.8.6.15",
     "date": "2026-08-06",
     "changes": [
-      "Wydanie nowej wersji poprawkowej."
+      "🐛 Koniec z dublowaniem treningów! Funkcja 'Kontynuuj Trening' teraz idealnie zlicza czas i nadpisuje jeden wpis w historii.",
+      "📷 Miniaturki w Treningu: po zrobieniu zdjęcia maszyny od razu zobaczysz jej zgrabny podgląd na liście ćwiczeń.",
+      "🎨 Lifting Diety: większe czcionki, jaskrawe kolory makro i czytelniejsze kółko kaloryczne dla jeszcze lepszego UX."
     ]
   },
   {
     "version": "v.2026.8.6.14",
     "date": "2026-08-06",
     "changes": [
-      "Wydanie nowej wersji poprawkowej."
+      "📈 Potężna aktualizacja Analityki: dodaliśmy wyliczanie poziomu tkanki tłuszczowej (BF%), indeksu FFMI i WHR, wraz z interpretacją Twojej formy!",
+      "📊 Wykresy historii: śledź swoje postępy na eleganckim wykresie słupkowym."
     ]
   },
   {
