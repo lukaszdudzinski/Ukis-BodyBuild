@@ -4,6 +4,7 @@ import { TrainingUI } from './modules/ui/TrainingUI.js';
 import { SettingsUI } from './modules/ui/SettingsUI.js';
 import { HistoryUI } from './modules/ui/HistoryUI.js';
 import { AnalyticsUI } from './modules/ui/AnalyticsUI.js';
+import { DietUI } from './modules/ui/DietUI.js';
 import { DatabaseManager } from './modules/db/DatabaseManager.js';
 
 // Expose for E2E testing
@@ -18,6 +19,7 @@ const initApp = () => {
     SettingsUI.init();
     HistoryUI.init();
     AnalyticsUI.init();
+    DietUI.init();
 
     console.log("Uki's BodyBuild Initialized (Module System)");
 };

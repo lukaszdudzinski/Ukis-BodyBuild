@@ -193,6 +193,27 @@
                             <button id="profile-wallpaper-remove" class="action-button" style="display: none; background-color: #ff4444; border-color: #ff4444; width: 100%; margin-top: 10px; padding: 10px;">Usuń tapetę</button>
                         </div>
                     </div>
+                    
+                    <!-- Diet Settings Section -->
+                    <div class="diet-settings-section" style="background: rgba(0,0,0,0.4); padding: 15px; border-radius: 8px; border: 1px solid #FF9800; margin-bottom: 20px;">
+                        <h4 style="margin-top: 0; color: #FF9800;">Dieta i AI</h4>
+                        
+                        <div style="margin-bottom: 15px;">
+                            <label style="display: block; margin-bottom: 5px; color: #ccc;">Cel Kaloryczny (TDEE):</label>
+                            <select id="diet-goal-select" style="width: 100%; padding: 10px; border-radius: 4px; border: 1px solid #FF9800; background: #222; color: #fff;">
+                                <option value="maintenance">Utrzymanie wagi (Maintenance)</option>
+                                <option value="cut">Redukcja (-500 kcal)</option>
+                                <option value="bulk">Budowa masy (+300 kcal)</option>
+                            </select>
+                            <p style="font-size: 0.8em; color: #888; margin-top: 5px;">Aplikacja wyliczy Twoje zapotrzebowanie ze wzoru Mifflin-St Jeor na podstawie wagi i wzrostu.</p>
+                        </div>
+
+                        <div style="margin-bottom: 15px;">
+                            <label style="display: block; margin-bottom: 5px; color: #ccc;">Adres URL Serwera AI (Bramkarz):</label>
+                            <input type="url" id="diet-worker-url" placeholder="https://uki-dieta...workers.dev" style="width: 100%; padding: 10px; border-radius: 4px; border: 1px solid #FF9800; background: #222; color: #fff; box-sizing: border-box;">
+                            <p style="font-size: 0.8em; color: #888; margin-top: 5px;">Służy do automatycznego wyliczania kalorii ze zdjęć przez Twój prywatny serwer Cloudflare.</p>
+                        </div>
+                    </div>
                     <div class="settings-toggle-row"><label for="glass-toggle">Efekt Szklany (Liquid
                             Glass)</label><label class="theme-switch" for="glass-toggle"><input type="checkbox"
                                 id="glass-toggle" /><span class="slider round"></span></label></div>

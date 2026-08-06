@@ -34,6 +34,28 @@ export const SettingsUI = {
 
         SettingsUI.initTheme();
         SettingsUI.initProfile();
+        SettingsUI.initDietSettings();
+    },
+
+    initDietSettings: () => {
+        const goalSelect = document.getElementById('diet-goal-select');
+        const workerUrlInput = document.getElementById('diet-worker-url');
+
+        if (goalSelect) {
+            const savedGoal = localStorage.getItem('dietGoal') || 'maintenance';
+            goalSelect.value = savedGoal;
+            goalSelect.addEventListener('change', (e) => {
+                localStorage.setItem('dietGoal', e.target.value);
+            });
+        }
+
+        if (workerUrlInput) {
+            const savedUrl = localStorage.getItem('dietWorkerUrl') || '';
+            workerUrlInput.value = savedUrl;
+            workerUrlInput.addEventListener('input', (e) => {
+                localStorage.setItem('dietWorkerUrl', e.target.value);
+            });
+        }
     },
 
     initTheme: () => {
