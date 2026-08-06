@@ -772,35 +772,55 @@ body.view-mode-tiles .app-wrapper {
     display: grid;
     grid-template-columns: repeat(7, 1fr);
     gap: 5px;
+    width: 100%;
+    box-sizing: border-box;
 }
 
 .calendar-day-header {
     text-align: center;
     font-weight: bold;
     color: #00BFFF;
-    padding: 10px 0;
-    font-size: 0.9em;
+    padding: 8px 0;
+    font-size: 0.85em;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .calendar-day {
     background: rgba(255, 255, 255, 0.05);
     border-radius: 8px;
-    padding: 5px; /* Reduced from 10px to fit on small screens */
-    min-height: auto; /* Reset to let aspect-ratio do its job */
+    padding: 5px; 
+    min-height: 50px; 
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
     position: relative;
     border: 1px solid rgba(255, 255, 255, 0.1);
     transition: background-color 0.2s;
+    box-sizing: border-box;
+    cursor: pointer;
+    font-size: 0.9em;
 }
 
-@media (max-width: 768px) {
+@media (max-width: 390px) {
+    .calendar-grid {
+        gap: 3px;
+    }
     .calendar-day {
-        min-height: 60px;
-        padding: 5px;
+        min-height: 45px;
+        padding: 3px;
+        border-radius: 6px;
+        font-size: 0.85em;
+    }
+    .calendar-day-header {
+        font-size: 0.75em;
     }
 }
 
 .calendar-day.empty {
-    opacity: 0.3;
+    opacity: 0.1;
+    pointer-events: none;
 }
 
 .calendar-day.today {
