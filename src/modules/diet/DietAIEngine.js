@@ -1,7 +1,7 @@
 export const DietAIEngine = {
     analyzeImage: async (base64Image) => {
-        // Z LocalStorage pobieramy URL do naszego Workera Cloudflare
-        const workerUrl = localStorage.getItem('dietWorkerUrl');
+        // Z LocalStorage pobieramy URL do naszego Workera Cloudflare (lub używamy domyślnego dla wszystkich klientów)
+        const workerUrl = localStorage.getItem('dietWorkerUrl') || 'https://uki-dieta.lukasz-dudzinski.workers.dev';
         
         if (!workerUrl) {
             throw new Error("Brak skonfigurowanego adresu serwera (Workera Cloudflare) w Ustawieniach!");
