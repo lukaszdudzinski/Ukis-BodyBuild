@@ -60,7 +60,7 @@ export const ChangelogUI = {
         if (overlay) overlay.style.display = 'flex';
         
         try {
-            const res = await fetch(\`CHANGELOG.json?t=\${new Date().getTime()}\`);
+            const res = await fetch(`CHANGELOG.json?t=${new Date().getTime()}`);
             const data = await res.json();
             
             let updatesToShow = [];
@@ -81,13 +81,13 @@ export const ChangelogUI = {
             if (updatesToShow && updatesToShow.length > 0 && updatesToShow[0]) {
                 html += '<div style="display: flex; flex-direction: column; gap: 20px;">';
                 updatesToShow.forEach((log) => {
-                    html += \`<div>\`;
-                    html += \`<h4 style="margin: 0 0 10px 0; color: #fff;">Wersja \${log.version} <span style="color: #666; font-size: 0.8em; font-weight: normal;">(\${log.date})</span></h4>\`;
-                    html += \`<ul style="margin: 0; padding-left: 20px; color: #aaa;">\`;
+                    html += `<div>`;
+                    html += `<h4 style="margin: 0 0 10px 0; color: #fff;">Wersja ${log.version} <span style="color: #666; font-size: 0.8em; font-weight: normal;">(${log.date})</span></h4>`;
+                    html += `<ul style="margin: 0; padding-left: 20px; color: #aaa;">`;
                     log.changes.forEach(change => {
-                        html += \`<li style="margin-bottom: 6px;">\${change}</li>\`;
+                        html += `<li style="margin-bottom: 6px;">${change}</li>`;
                     });
-                    html += \`</ul></div>\`;
+                    html += `</ul></div>`;
                 });
                 html += '</div>';
             } else {
