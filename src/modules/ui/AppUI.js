@@ -1,4 +1,4 @@
-export const APP_VERSION = 'v.2026.8.7.13'; // <-- TEN NUMER ZMIENIAMY PRZY KAŻDEJ AKTUALIZACJI
+export const APP_VERSION = 'v.2026.8.7.14'; // <-- TEN NUMER ZMIENIAMY PRZY KAŻDEJ AKTUALIZACJI
 
 export const AppUI = {
     init: () => {
@@ -26,7 +26,7 @@ export const AppUI = {
                     const btn = document.getElementById('changelog-update-now-btn');
                     if(btn) btn.style.display = 'none'; // Nie ma po co pokazywać przycisku 'Zaktualizuj' po starcie.
                     
-                    window.showChangelogModal(lastSeen || 'v.0.0.0');
+                    window.showChangelogModal(lastSeen ? lastSeen : 'latest_only');
                 }, 800);
             }
         }

@@ -343,20 +343,20 @@
                 const res = await fetch(`CHANGELOG.json?t=${new Date().getTime()}`);
                 const data = await res.json();
                 
-                // Jeśli nie podano starej wersji, używamy obecnej APP_VERSION
-                const compareVer = compareVersionStr || window.APP_VERSION || 'v.0.0.0';
-
-                // Funkcja pomocnicza do porównywania wersji 
-                const parseVersion = (v) => {
-                    const parts = v.replace('v.', '').split('.').map(n => parseInt(n, 10) || 0);
-                    return (parts[0] * 10000000000) + (parts[1] * 100000000) + (parts[2] * 1000000) + (parts[3] || 0);
-                };
-                
-                const compareScore = parseVersion(compareVer);
-                const newerUpdates = data.filter(log => parseVersion(log.version) > compareScore);
-                
-                // Jeśli nie było nowszych zmian, po prostu pokazujemy ostatnią najnowszą zmianę
-                const updatesToShow = newerUpdates.length > 0 ? newerUpdates : [data[0]];
+                let updatesToShow = [];
+                if (compareVersionStr === 'latest_only') {
+                    // Świeża instalacja / migracja z wersji bez zapisu: pokazujemy tylko najnowszą (pierwszą) aktualizację.
+                    updatesToShow = data.length > 0 ? [data[0]] : [];
+                } else {
+                    const compareVer = compareVersionStr || window.APP_VERSION || 'v.0.0.0';
+                    const parseVersion = (v) => {
+                        const parts = v.replace('v.', '').split('.').map(n => parseInt(n, 10) || 0);
+                        return (parts[0] * 10000000000) + (parts[1] * 100000000) + (parts[2] * 1000000) + (parts[3] || 0);
+                    };
+                    const compareScore = parseVersion(compareVer);
+                    const newerUpdates = data.filter(log => parseVersion(log.version) > compareScore);
+                    updatesToShow = newerUpdates.length > 0 ? newerUpdates : [data[0]];
+                }
                 
                 let html = '';
                 if (updatesToShow && updatesToShow.length > 0 && updatesToShow[0]) {
