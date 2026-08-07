@@ -1,5 +1,12 @@
 [
   {
+    "version": "v.2026.8.7.16",
+    "date": "2026-08-07",
+    "changes": [
+      "🛠️ drobne zmiany w aplikacji (test logów v.16)"
+    ]
+  },
+  {
     "version": "v.2026.8.7.10",
     "date": "2026-08-07",
     "changes": [
