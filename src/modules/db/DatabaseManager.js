@@ -290,6 +290,24 @@ export const DatabaseManager = {
         });
     },
 
+    getDietLogsHistory: async (days = 30) => {
+        await DatabaseManager.init();
+        const records = [];
+        const cutoffDate = new Date();
+        cutoffDate.setDate(cutoffDate.getDate() - days);
+        const cutoffStr = cutoffDate.toISOString().split('T')[0];
+
+        db.exec({
+            sql: `SELECT date, SUM(calories) as total_calories FROM diet_logs WHERE date >= ? GROUP BY date ORDER BY date ASC`,
+            bind: [cutoffStr],
+            rowMode: 'object',
+            callback: function (row) {
+                records.push(row);
+            }
+        });
+        return records;
+    },
+
     exportDatabase: async () => {
         await DatabaseManager.init();
         const measurements = await DatabaseManager.getMeasurements();
