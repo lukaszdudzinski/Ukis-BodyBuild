@@ -4,7 +4,8 @@ test.describe('Uki BodyBuild E2E', () => {
     
     test('Powinien poprawnie załadować aplikację i wstrzyknąć komponenty', async ({ page }) => {
         // Assume the dev server is running on localhost:8080
-        await page.goto('http://localhost:8080/');
+        await page.addInitScript(() => window.localStorage.setItem('tutorial_global_v21', 'true'));
+    await page.goto('http://localhost:8080/');
 
         // Check if welcome screen is visible
         await expect(page.locator('#welcome-screen')).toBeVisible();
@@ -19,7 +20,8 @@ test.describe('Uki BodyBuild E2E', () => {
     });
 
     test('Powinien pozwalać na wpisanie wagi', async ({ page }) => {
-        await page.goto('http://localhost:8080/');
+        await page.addInitScript(() => window.localStorage.setItem('tutorial_global_v21', 'true'));
+    await page.goto('http://localhost:8080/');
         await page.click('text="Pomiary Ciała"');
         
         // Fill the weight

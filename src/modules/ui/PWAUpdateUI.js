@@ -44,13 +44,19 @@ export const PWAUpdateUI = {
         document.body.insertAdjacentHTML('beforeend', html);
     },
 
-    doPwaUpdate: () => {
+    doPwaUpdate: async () => {
         if (PWAUpdateUI.pwaWorker) {
             PWAUpdateUI.pwaWorker.postMessage('SKIP_WAITING');
-            // Fallback: jeśli controllerchange nie odpali się samo, wymuś po 1 sekundzie
-            setTimeout(() => window.location.reload(), 1000);
+            setTimeout(() => window.location.reload(true), 1000);
         } else {
-            window.location.reload();
+            // Twarde czyszczenie jeśli nie złapaliśmy nowego workera
+            if ('serviceWorker' in navigator) {
+                const regs = await navigator.serviceWorker.getRegistrations();
+                for (let reg of regs) {
+                    await reg.unregister();
+                }
+            }
+            window.location.reload(true);
         }
     },
 
@@ -122,6 +128,9 @@ export const PWAUpdateUI = {
                         const data = await res.json();
                         const serverVersion = data[0].version;
                         if (window.APP_VERSION && serverVersion !== window.APP_VERSION) {
+                            // Pokazujemy baner nawet bez instancji instalującego się workera,
+                            // po kliknięciu go, twardy reset usunie stare workery i pobierze nową wersję.
+                            PWAUpdateUI.showUpdateBanner(registration.waiting); 
                             registration.update();
                         }
                     } catch(e) {}

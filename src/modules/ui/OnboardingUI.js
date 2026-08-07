@@ -213,7 +213,6 @@ export const OnboardingUI = {
                 document.getElementById('tour-text').textContent = step.text;
 
                 // Pozycja Tooltipa
-                const rect = target.getBoundingClientRect();
                 let top = rect.bottom + 15 + window.scrollY;
                 let left = rect.left + (rect.width / 2) - 150; // 300px width
 

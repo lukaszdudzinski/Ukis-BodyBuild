@@ -1,7 +1,8 @@
 const { test, expect } = require('@playwright/test');
 
 test('Sprawdzenie poprawnego usuwania sesji treningowych z bazy PWA', async ({ page }) => {
-  await page.goto('/');
+  await page.addInitScript(() => window.localStorage.setItem('tutorial_global_v21', 'true'));
+    await page.goto('/');
 
   await page.waitForTimeout(1000); 
 

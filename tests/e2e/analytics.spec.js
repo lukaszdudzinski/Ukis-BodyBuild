@@ -4,6 +4,7 @@ test.describe('Advanced Analytics Module', () => {
   test('should display FFMI, WHR and BF% when all measurements are provided', async ({ page }) => {
     // We mock localStorage and IndexedDB in a real scenario, but since playwright loads the actual page,
     // we can inject measurements directly into the IndexedDB/OPFS via page.evaluate
+    await page.addInitScript(() => window.localStorage.setItem('tutorial_global_v21', 'true'));
     await page.goto('http://127.0.0.1:8080'); // Assuming local server is running on 8080 during tests
 
     // Wait for App UI to load
@@ -57,6 +58,7 @@ test.describe('Advanced Analytics Module', () => {
   });
 
   test('should display missing data warning when neck is not provided', async ({ page }) => {
+    await page.addInitScript(() => window.localStorage.setItem('tutorial_global_v21', 'true'));
     await page.goto('http://127.0.0.1:8080');
 
     await page.evaluate(async () => {
