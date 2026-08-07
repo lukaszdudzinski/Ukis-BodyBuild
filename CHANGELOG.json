@@ -1,5 +1,14 @@
 [
   {
+    "version": "v.2026.8.7.21",
+    "date": "2026-08-07",
+    "changes": [
+      "🔥 Krytyczna poprawka aktualizatora PWA. Wymuszono usunięcie błędnych skryptów z pamięci, co odblokowuje instalację przyszłych aktualizacji bez pętli komunikatów.",
+      "✨ Elegancja dla treningu: Superserie zostały zebrane w jeden, podświetlany 'Blok Łączony' dla lepszej widoczności w trakcie ćwiczeń.",
+      "🧠 Trening bez ciężaru: Ćwiczenia typu podciąganie, pompki, brzuszki, deska od teraz nie krzyczą o podanie ilości kilogramów (możesz to pole zostawić puste)."
+    ]
+  },
+  {
     "version": "v.2026.8.7.20",
     "date": "2026-08-07",
     "changes": [
