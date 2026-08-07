@@ -144,6 +144,7 @@ export const DietUI = {
         `;
     },
 
+    bindEvents: () => {
         const cameraInput = document.getElementById('diet-camera-input');
         if (cameraInput) {
             cameraInput.addEventListener('change', DietUI.handleImageAttach);
