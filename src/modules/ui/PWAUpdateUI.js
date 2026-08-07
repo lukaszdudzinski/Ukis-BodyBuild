@@ -4,6 +4,21 @@ export const PWAUpdateUI = {
     init: () => {
         if (!('serviceWorker' in navigator)) return;
         
+        // CLEANUP: Usuń zepsute service workery z poprzednich błędnych rejestracji
+        navigator.serviceWorker.getRegistrations().then(registrations => {
+            let needsReload = false;
+            for (let reg of registrations) {
+                if (reg.active && reg.active.scriptURL.includes('?update=')) {
+                    reg.unregister();
+                    needsReload = true;
+                }
+            }
+            if (needsReload) {
+                // Odczekaj chwilę i odśwież by system załadował czysty stan
+                setTimeout(() => window.location.reload(), 500);
+            }
+        });
+
         PWAUpdateUI.injectBannerHTML();
         PWAUpdateUI.bindEvents();
         PWAUpdateUI.registerAndMonitor();
@@ -31,6 +46,8 @@ export const PWAUpdateUI = {
     doPwaUpdate: () => {
         if (PWAUpdateUI.pwaWorker) {
             PWAUpdateUI.pwaWorker.postMessage('SKIP_WAITING');
+            // Fallback: jeśli controllerchange nie odpali się samo, wymuś po 1 sekundzie
+            setTimeout(() => window.location.reload(), 1000);
         } else {
             window.location.reload();
         }
