@@ -1,5 +1,13 @@
 [
   {
+    "version": "v.2026.8.7.22",
+    "date": "2026-08-07",
+    "changes": [
+      "🎓 Nowy i ulepszony interaktywny Samouczek w stylu 'Liquid Glass' z pełnymi informacjami o wszystkich najważniejszych modułach, w tym o Diecie!",
+      "🗑️ Naprawiono błąd, który powodował brak reakcji na przycisk 'Usuń' w widoku kalendarza treningowego."
+    ]
+  },
+  {
     "version": "v.2026.8.7.21",
     "date": "2026-08-07",
     "changes": [
