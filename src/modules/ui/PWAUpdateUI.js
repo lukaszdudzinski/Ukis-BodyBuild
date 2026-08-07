@@ -64,8 +64,8 @@ export const PWAUpdateUI = {
     },
 
     registerAndMonitor: () => {
-        // Cache Busting Registration
-        navigator.serviceWorker.register('sw.js?update=' + Date.now())
+        // Standard Registration (PWA handles updates automatically based on byte-diff of sw.js)
+        navigator.serviceWorker.register('sw.js')
             .then(registration => {
                 console.log('PWA Service Worker Registered (Cache-Busted)');
 

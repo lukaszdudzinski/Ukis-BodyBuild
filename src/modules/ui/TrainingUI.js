@@ -503,14 +503,28 @@ export const TrainingUI = {
         const weightInput = document.getElementById(`weight-${exerciseId}`);
         const repsInput = document.getElementById(`reps-${exerciseId}`);
 
-        if (!weightInput.value || !repsInput.value) {
-            alert("Podaj ciężar i ilość powtórzeń!");
-            return;
+        const bodyweightKeywords = ['brzuch', 'brzuski', 'podciąganie', 'pompki', 'plank', 'deska'];
+        const isBodyweight = exercise.name && bodyweightKeywords.some(kw => exercise.name.toLowerCase().includes(kw));
+
+        let wVal = weightInput.value;
+        let rVal = repsInput.value;
+
+        if (isBodyweight) {
+            if (!rVal) {
+                alert("Podaj ilość powtórzeń!");
+                return;
+            }
+            if (!wVal) wVal = "0";
+        } else {
+            if (!wVal || !rVal) {
+                alert("Podaj ciężar i ilość powtórzeń!");
+                return;
+            }
         }
 
         exercise.sets.push({
-            weight: parseFloat(weightInput.value),
-            reps: parseInt(repsInput.value, 10),
+            weight: parseFloat(wVal),
+            reps: parseInt(rVal, 10),
             type: isDropset ? 'dropset' : 'normal'
         });
 
@@ -619,14 +633,38 @@ export const TrainingUI = {
             `;
         };
 
-        currentTraining.exercises.forEach((ex) => {
+        let inSupersetGroup = false;
+
+        currentTraining.exercises.forEach((ex, index) => {
+            const nextEx = currentTraining.exercises[index + 1];
+            const isMainForSuperset = nextEx && nextEx.type === 'superset';
+
+            if (isMainForSuperset && ex.type !== 'superset') {
+                // Rozpoczynamy elegancki blok łączony
+                html += `<div style="background: rgba(233, 30, 99, 0.03); border: 2px solid #E91E63; border-radius: 12px; padding: 15px; margin-bottom: 20px; box-shadow: 0 4px 15px rgba(233, 30, 99, 0.15); position: relative;">`;
+                html += `<div style="position: absolute; top: -12px; left: 50%; transform: translateX(-50%); background: #111; color: #E91E63; padding: 0 15px; font-size: 0.8em; font-weight: bold; text-transform: uppercase; letter-spacing: 2px; border: 1px solid #E91E63; border-radius: 20px;">Blok Łączony</div>`;
+                inSupersetGroup = true;
+            }
+
             if (ex.type === 'superset') {
+                if (inSupersetGroup) {
+                    // Dodajemy ładny łącznik z ikoną
+                    html += `<div style="display: flex; justify-content: center; margin: -10px 0 15px 0;">
+                                <div style="background: #E91E63; width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.2em; box-shadow: 0 0 10px #E91E63; z-index: 2;">🔗</div>
+                             </div>`;
+                }
+                
                 html += `
-                    <div style="background: linear-gradient(145deg, #2a0815, #1a050d); border: 2px solid #E91E63; padding: 15px; border-radius: 8px; margin-bottom: 15px; box-shadow: 0 4px 15px rgba(233, 30, 99, 0.2);">
-                        <h4 style="color: #E91E63; margin-top: 0; margin-bottom: 15px; text-align: center; text-transform: uppercase; font-size: 0.9em; letter-spacing: 1px;">🔗 Superseria</h4>
+                    <div style="background: linear-gradient(145deg, #2a0815, #1a050d); border: 1px solid rgba(233, 30, 99, 0.5); padding: 15px; border-radius: 8px; margin-bottom: ${inSupersetGroup ? '0' : '15px'}; box-shadow: inset 0 0 10px rgba(0,0,0,0.5);">
+                        <h4 style="color: #E91E63; margin-top: 0; margin-bottom: 15px; text-align: center; text-transform: uppercase; font-size: 0.9em; letter-spacing: 1px;">Superseria Dodatkowa</h4>
                         ${ex.exercises.map(nestedEx => renderExerciseForm(nestedEx, true)).join('')}
                     </div>
                 `;
+                
+                if (inSupersetGroup) {
+                    html += `</div>`; // Zamykamy główny blok superserii
+                    inSupersetGroup = false;
+                }
             } else {
                 html += renderExerciseForm(ex, false);
             }
