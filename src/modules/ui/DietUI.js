@@ -62,10 +62,11 @@ export const DietUI = {
                     <label style="color: #ccc; font-size: 0.9em; display: block; margin-bottom: 10px; font-weight: bold;">Co dzisiaj jadłeś?</label>
                     
                     <div style="position: relative; margin-bottom: 15px;">
-                        <textarea id="diet-context-input" placeholder="Napisz lub podyktuj... (np. Jajecznica z 3 jaj)" style="width: 100%; padding: 12px; padding-right: 45px; border-radius: 8px; border: 1px solid #555; background: #1a1a1a; color: #fff; font-size: 1em; resize: none; box-sizing: border-box;" rows="3"></textarea>
+                        <textarea id="diet-context-input" placeholder="Napisz lub podyktuj... (np. Jajecznica z 3 jaj)" style="width: 100%; padding: 12px; padding-right: 85px; border-radius: 8px; border: 1px solid #555; background: #1a1a1a; color: #fff; font-size: 1em; resize: none; box-sizing: border-box;" rows="3"></textarea>
                         
-                        <label id="diet-attach-btn" style="position: absolute; right: 10px; bottom: 15px; cursor: pointer; color: #FF9800; font-size: 1.5em; padding: 5px; background: rgba(0,0,0,0.5); border-radius: 5px;">
-                            📸
+                        <label id="diet-attach-btn" style="position: absolute; right: 8px; bottom: 12px; cursor: pointer; color: #FF9800; background: rgba(255,152,0,0.15); border: 1px solid #FF9800; border-radius: 8px; padding: 8px 10px; display: flex; flex-direction: column; align-items: center; justify-content: center; box-shadow: 0 2px 8px rgba(0,0,0,0.4); transition: transform 0.2s;">
+                            <span style="font-size: 1.8em; line-height: 1; margin-bottom: 4px;">📸</span>
+                            <span style="font-size: 0.6em; font-weight: bold; color: #FF9800; text-transform: uppercase; letter-spacing: 0.5px; white-space: nowrap;">Zrób fotę</span>
                             <input type="file" id="diet-camera-input" accept="image/*" capture="environment" style="display: none;">
                         </label>
                     </div>
