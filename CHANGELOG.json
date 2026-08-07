@@ -1,5 +1,26 @@
 [
   {
+    "version": "v.2026.8.7.18",
+    "date": "2026-08-07",
+    "changes": [
+      "⚙️ Kompletny refaktor kodu: Przeniesienie mechaniki okien oraz systemu aktualizacji PWA do szybkich modułów zewnętrznych.",
+      "🚀 Agresywne zmuszanie pamięci podręcznej (Safari / iOS / Edge) do szybkiego aktualizowania aplikacji bez opóźnień!"
+    ]
+  },
+  {
+    "version": "v.2026.8.7.17",
+    "date": "2026-08-07",
+    "changes": [
+      "💪 Inteligentna analiza Tonażu: od teraz pompki i podciągania wliczają masę Twojego ciała do przerzuconego ciężaru!",
+      "📸 Możliwość dodania do 3 zdjęć z treningu (dostępne tuż przed zakończeniem sesji).",
+      "📤 Zdjęcia treningowe są automatycznie ustawiane jako tło przy udostępnianiu treningu!",
+      "⌚ Dane ze Smartwatcha: Dodano pola Kalorii i Średniego Tętna.",
+      "⏱️ Osobny Stoper start/stop dla ćwiczeń typu Cardio.",
+      "🗣️ Trener Edward: odzywa się co 15 minut podczas aktywnego treningu.",
+      "🛠️ Nowy panel diagnostyczny w 'Ustawieniach' i naprawa błędu crashowania superserii."
+    ]
+  },
+  {
     "version": "v.2026.8.7.16",
     "date": "2026-08-07",
     "changes": [

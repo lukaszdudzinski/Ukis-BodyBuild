@@ -82,16 +82,48 @@ export const AnalyticsUI = {
         } else {
             // Calculate total volume for each training
             const workoutsWithVolume = trainings.map(t => {
-                const vol = t.exercises.reduce((sum, ex) => {
-                    return sum + ex.sets.reduce((sSum, set) => sSum + (set.weight * set.reps), 0);
-                }, 0);
-                return { date: new Date(t.date), volume: vol };
+                let vol = 0;
+                let volBody = 0;
+                let volMachine = 0;
+
+                t.exercises.forEach(ex => {
+                    const exName = ex.name ? ex.name.toLowerCase() : '';
+                    const isBodyweight65 = exName.includes('pompk');
+                    const isBodyweight100 = exName.includes('podciąg') || exName.includes('drąż') || exName.includes('brzuszk') || exName.includes('wspięcia');
+                    
+                    if (ex.sets) {
+                        ex.sets.forEach(set => {
+                            let weightForVolume = set.weight;
+                            if (isBodyweight65) {
+                                weightForVolume += (measurements.length > 0 ? (measurements[0].weight * 0.65) : 0);
+                            } else if (isBodyweight100) {
+                                weightForVolume += (measurements.length > 0 ? measurements[0].weight : 0);
+                            }
+                            
+                            const setTonnage = weightForVolume * set.reps;
+                            vol += setTonnage;
+                            if (isBodyweight65 || isBodyweight100) {
+                                volBody += setTonnage;
+                            } else {
+                                volMachine += setTonnage;
+                            }
+                        });
+                    }
+                });
+                return { date: new Date(t.date), volume: vol, volBody, volMachine };
             });
 
             // Sort by date descending
             workoutsWithVolume.sort((a, b) => b.date - a.date);
             
-            workoutsWithVolume.forEach(w => totalVolume += w.volume);
+            let totalVolBody = 0;
+            let totalVolMachine = 0;
+
+            workoutsWithVolume.forEach(w => {
+                totalVolume += w.volume;
+                totalVolBody += w.volBody;
+                totalVolMachine += w.volMachine;
+            });
 
             const thisMonth = new Date().getMonth();
             const thisYear = new Date().getFullYear();
@@ -102,13 +134,17 @@ export const AnalyticsUI = {
 
             analyticsContentHtml = `
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 25px;">
-                    <div style="background: rgba(0,0,0,0.5); border: 1px solid #00BFFF; padding: 15px; border-radius: 8px; text-align: center;">
+                    <div style="background: rgba(0,0,0,0.5); border: 1px solid #00BFFF; padding: 15px; border-radius: 8px; text-align: center; grid-column: span 2;">
                         <div style="font-size: 2em; color: #00BFFF; font-weight: bold; margin-bottom: 5px;">${totalWorkouts}</div>
                         <div style="font-size: 0.8em; color: #aaa; text-transform: uppercase;">Wszystkich Treningów</div>
                     </div>
-                    <div style="background: rgba(0,0,0,0.5); border: 1px solid #00BFFF; padding: 15px; border-radius: 8px; text-align: center;">
-                        <div style="font-size: 1.5em; color: #00BFFF; font-weight: bold; margin-bottom: 5px;">${totalVolume} kg</div>
-                        <div style="font-size: 0.8em; color: #aaa; text-transform: uppercase;">Przerzucony Ciężar</div>
+                    <div style="background: rgba(0,0,0,0.5); border: 1px solid #E91E63; padding: 15px; border-radius: 8px; text-align: center;">
+                        <div style="font-size: 1.5em; color: #E91E63; font-weight: bold; margin-bottom: 5px;">${Math.round(totalVolMachine)} kg</div>
+                        <div style="font-size: 0.7em; color: #aaa; text-transform: uppercase;">Tonaż Żelastwa</div>
+                    </div>
+                    <div style="background: rgba(0,0,0,0.5); border: 1px solid #2ECC71; padding: 15px; border-radius: 8px; text-align: center;">
+                        <div style="font-size: 1.5em; color: #2ECC71; font-weight: bold; margin-bottom: 5px;">${Math.round(totalVolBody)} kg</div>
+                        <div style="font-size: 0.7em; color: #aaa; text-transform: uppercase;">Tonaż Ciała <span style="cursor:help;" title="Liczone automatycznie na podstawie wagi użytkownika">ℹ️</span></div>
                     </div>
                 </div>
                 

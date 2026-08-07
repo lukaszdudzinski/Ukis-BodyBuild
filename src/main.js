@@ -8,6 +8,8 @@ import { DietUI } from './modules/ui/DietUI.js';
 import { OnboardingUI } from './modules/ui/OnboardingUI.js';
 import { ChatUI } from './modules/ui/ChatUI.js';
 import { DatabaseManager } from './modules/db/DatabaseManager.js';
+import { PWAUpdateUI } from './modules/ui/PWAUpdateUI.js';
+import { ChangelogUI } from './modules/ui/ChangelogUI.js';
 
 // Expose for E2E testing and PWA updater
 window.DatabaseManager = DatabaseManager;
@@ -25,6 +27,8 @@ const initApp = () => {
     DietUI.init();
     OnboardingUI.init();
     ChatUI.init();
+    ChangelogUI.init();
+    PWAUpdateUI.init();
 
     console.log("Uki's BodyBuild Initialized (Module System)");
 };

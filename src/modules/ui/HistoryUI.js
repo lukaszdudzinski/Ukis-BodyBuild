@@ -92,7 +92,7 @@ export const HistoryUI = {
                                 `).join('')}
                             </div>
                             
-                            <button onclick='window.HistoryUI.shareTraining(${JSON.stringify(rec.date)}, ${totalVolume}, ${rec.exercises.length})' class="action-button" style="background-color: #3b5998; border-color: #3b5998; color: white; width: 100%; margin-top: 15px;">
+                            <button onclick="window.HistoryUI.shareTraining('${rec.id}')" class="action-button" style="background-color: #3b5998; border-color: #3b5998; color: white; width: 100%; margin-top: 15px;">
                                 📤 Udostępnij Trening
                             </button>
                         </div>
@@ -106,7 +106,17 @@ export const HistoryUI = {
         container.innerHTML = html;
     },
 
-    shareTraining: async (dateStr, totalVolume, exercisesCount) => {
+    shareTraining: async (trainingId) => {
+        const records = await DatabaseManager.getTrainings();
+        const rec = records.find(r => r.id === trainingId);
+        if (!rec) return;
+
+        const totalVolume = rec.exercises.reduce((sum, ex) => {
+            return sum + ex.sets.reduce((sSum, set) => sSum + (set.weight * set.reps), 0);
+        }, 0);
+        const exercisesCount = rec.exercises.length;
+        const dateStr = rec.date;
+
         const gender = localStorage.getItem('uki-bodybuild-gender') || 'male';
         const finishedText = gender === 'female' ? 'ukończyłam' : 'ukończyłem';
         const didText = gender === 'female' ? 'Zrobiłam' : 'Zrobiłem';
@@ -129,7 +139,9 @@ export const HistoryUI = {
                 { label: 'Liczba ćwiczeń', value: String(exercisesCount) }
             ];
 
-            await ShareUtils.generateAndShareImage("Mój Trening", statsList, avatar, nickname, textToShare);
+            const socialPhoto = (rec.socialPhotos && rec.socialPhotos.length > 0) ? rec.socialPhotos[0] : null;
+
+            await ShareUtils.generateAndShareImage("Mój Trening", statsList, avatar, nickname, textToShare, socialPhoto);
             
         } catch (error) {
             console.log('Błąd podczas udostępniania:', error);

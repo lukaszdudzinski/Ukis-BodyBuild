@@ -256,9 +256,9 @@ export const TrainingUI = {
         if (confirm("Czy na pewno chcesz bezpowrotnie usunąć ten trening?")) {
             await DatabaseManager.deleteTraining(id);
             TrainingUI.initCalendar(); 
-            // Odświeżamy widok po usunięciu (np panel historii na dole)
-            if (typeof TrainingUI.loadRecentTraining === 'function') {
-                TrainingUI.loadRecentTraining();
+            // Odświeżamy widok po usunięciu
+            if (typeof TrainingUI.loadHistoryAndCalendar === 'function') {
+                TrainingUI.loadHistoryAndCalendar();
             }
         }
     },
@@ -284,10 +284,26 @@ export const TrainingUI = {
     },
 
     updateTimer: () => {
-        if (!currentTraining.startTime || currentTraining.isPaused) return;
+        if (!currentTraining || currentTraining.isPaused) return;
+
         const now = Date.now();
-        const diffSeconds = Math.floor((now - currentTraining.startTime - currentTraining.totalPausedTime) / 1000);
-        document.getElementById('training-timer').innerText = TrainingUI.formatTime(diffSeconds);
+        const duration = Math.floor((now - currentTraining.startTime - currentTraining.totalPausedTime) / 1000);
+        
+        // Coach Edward AI
+        if (duration === 900 || duration === 1800 || duration === 2700) {
+            try {
+                if ('speechSynthesis' in window) {
+                    const msg = new SpeechSynthesisUtterance("Jak Ci idzie? Ćwicz, a nie siedzisz w telefonie!");
+                    msg.lang = 'pl-PL';
+                    const voices = window.speechSynthesis.getVoices();
+                    const maleVoice = voices.find(v => v.lang.includes('pl') && v.name.toLowerCase().includes('male'));
+                    if (maleVoice) msg.voice = maleVoice;
+                    window.speechSynthesis.speak(msg);
+                }
+            } catch(e) {}
+        }
+
+        document.getElementById('training-timer').innerText = TrainingUI.formatTime(duration);
     },
 
     togglePause: () => {
@@ -353,7 +369,9 @@ export const TrainingUI = {
             name: '',
             isPaused: false,
             pauseStartTime: null,
-            totalPausedTime: 0
+            totalPausedTime: 0,
+            socialPhotos: [],
+            smartwatch: { calories: null, hr: null }
         };
         
         const nameInput = document.getElementById('training-name-input');
@@ -435,6 +453,49 @@ export const TrainingUI = {
         }
     },
 
+    handleCopyCheckbox: (exerciseId, checked) => {
+        window.TrainingUI.updateExerciseField(exerciseId, 'autoCopy', checked);
+        if (checked) {
+            const exercise = TrainingUI.getExerciseById(exerciseId);
+            if (exercise && exercise.sets && exercise.sets.length > 0) {
+                const lastSet = exercise.sets[exercise.sets.length - 1];
+                const w = document.getElementById(`weight-${exerciseId}`);
+                const r = document.getElementById(`reps-${exerciseId}`);
+                if (w) w.value = lastSet.weight;
+                if (r) r.value = lastSet.reps;
+            }
+        }
+    },
+
+    startCardio: (exerciseId) => {
+        const exercise = TrainingUI.getExerciseById(exerciseId);
+        if (!exercise) return;
+        if (!exercise.cardioSeconds) exercise.cardioSeconds = 0;
+        if (exercise.cardioInterval) return; // already running
+
+        exercise.cardioInterval = setInterval(() => {
+            exercise.cardioSeconds++;
+            const display = document.getElementById(`cardio-display-${exerciseId}`);
+            if (display) {
+                display.innerText = window.TrainingUI.formatTime(exercise.cardioSeconds);
+            }
+            // Zapisujemy na żywo w minutach by backend chwycił
+            exercise.duration_minutes = Math.round(exercise.cardioSeconds / 60);
+        }, 1000);
+        
+        document.getElementById(`cardio-btn-start-${exerciseId}`).style.opacity = '0.5';
+        document.getElementById(`cardio-btn-stop-${exerciseId}`).style.opacity = '1';
+    },
+
+    stopCardio: (exerciseId) => {
+        const exercise = TrainingUI.getExerciseById(exerciseId);
+        if (!exercise || !exercise.cardioInterval) return;
+        clearInterval(exercise.cardioInterval);
+        exercise.cardioInterval = null;
+        document.getElementById(`cardio-btn-start-${exerciseId}`).style.opacity = '1';
+        document.getElementById(`cardio-btn-stop-${exerciseId}`).style.opacity = '0.5';
+    },
+
     addSet: (exerciseId, isDropset = false) => {
         const exercise = TrainingUI.getExerciseById(exerciseId);
         if (!exercise) return;
@@ -464,7 +525,6 @@ export const TrainingUI = {
                 if(r) r.value = repsInput.value;
             }, 50);
         } else {
-            // clear them
             setTimeout(() => {
                 const w = document.getElementById(`weight-${exerciseId}`);
                 const r = document.getElementById(`reps-${exerciseId}`);
@@ -493,10 +553,15 @@ export const TrainingUI = {
         const renderExerciseForm = (ex, isNested = false) => {
             let exerciseDetailsHtml = '';
             if (ex.type === 'cardio') {
+                const cTime = ex.cardioSeconds || (ex.duration_minutes ? ex.duration_minutes * 60 : 0);
                 exerciseDetailsHtml = `
                     <div style="margin-top: 15px; text-align: center;">
-                        <label style="color: #ccc; font-size: 0.9em;">Czas trwania (minuty):</label><br>
-                        <input type="number" id="cardio-time-${ex.id}" value="${ex.duration_minutes || ''}" onchange="window.TrainingUI.updateExerciseField('${ex.id}', 'duration_minutes', this.value)" placeholder="np. 30" style="width: 100%; max-width: 200px; padding: 10px; border-radius: 4px; border: 1px solid #444; background: #222; color: #fff; font-size: 1.2em; text-align: center; margin-top: 5px;" inputmode="numeric">
+                        <label style="color: #ccc; font-size: 0.9em;">Czas trwania Cardio (Stoper):</label><br>
+                        <div style="font-size: 2.2em; color: #00BFFF; margin: 10px 0; font-family: monospace;" id="cardio-display-${ex.id}">${window.TrainingUI.formatTime(cTime)}</div>
+                        <div style="display: flex; gap: 10px; justify-content: center;">
+                            <button id="cardio-btn-start-${ex.id}" onclick="window.TrainingUI.startCardio('${ex.id}')" style="background: #2ECC71; color: white; border: none; padding: 10px 20px; border-radius: 4px; font-weight: bold; cursor: pointer; ${ex.cardioInterval ? 'opacity: 0.5;' : ''}">▶ Start</button>
+                            <button id="cardio-btn-stop-${ex.id}" onclick="window.TrainingUI.stopCardio('${ex.id}')" style="background: #E74C3C; color: white; border: none; padding: 10px 20px; border-radius: 4px; font-weight: bold; cursor: pointer; ${!ex.cardioInterval ? 'opacity: 0.5;' : ''}">⏹ Stop</button>
+                        </div>
                     </div>
                 `;
             } else {
@@ -516,18 +581,18 @@ export const TrainingUI = {
                     </div>
 
                     <div style="display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-top: 15px;">
-                        <input type="number" id="weight-${ex.id}" placeholder="kg" style="min-width: 60px; flex: 1; padding: 10px; border-radius: 4px; border: 1px solid #444; background: #222; color: #fff; font-size: 1em; text-align: center; box-sizing: border-box;" inputmode="decimal">
-                        <span style="color: #aaa; font-weight: bold;">X</span>
-                        <input type="number" id="reps-${ex.id}" placeholder="powt" style="min-width: 60px; flex: 1; padding: 10px; border-radius: 4px; border: 1px solid #444; background: #222; color: #fff; font-size: 1em; text-align: center; box-sizing: border-box;" inputmode="numeric">
+                        <input type="number" id="weight-${ex.id}" placeholder="kg" style="min-width: 60px; flex: 1; padding: 12px; border-radius: 4px; border: 1px solid #444; background: #222; color: #fff; font-size: 1.25em; text-align: center; box-sizing: border-box;" inputmode="decimal">
+                        <span style="color: #aaa; font-weight: bold; font-size: 1.25em;">X</span>
+                        <input type="number" id="reps-${ex.id}" placeholder="powt" style="min-width: 60px; flex: 1; padding: 12px; border-radius: 4px; border: 1px solid #444; background: #222; color: #fff; font-size: 1.25em; text-align: center; box-sizing: border-box;" inputmode="numeric">
                     </div>
                     <div style="display: flex; gap: 10px; margin-top: 10px;">
-                        <button onclick="window.TrainingUI.addSet('${ex.id}', false)" style="background: #00BFFF; color: #fff; border: none; padding: 10px; border-radius: 4px; cursor: pointer; flex: 1; font-weight: bold; box-sizing: border-box;">+ Seria</button>
-                        <button onclick="window.TrainingUI.addSet('${ex.id}', true)" style="background: #FF9800; color: #fff; border: none; padding: 10px; border-radius: 4px; cursor: pointer; flex: 1; font-weight: bold; box-sizing: border-box;">🔥 Dropset</button>
+                        <button onclick="window.TrainingUI.addSet('${ex.id}', false)" style="background: #00BFFF; color: #fff; border: none; padding: 12px; border-radius: 4px; cursor: pointer; flex: 1; font-weight: bold; font-size: 1.1em; box-sizing: border-box;">+ Seria</button>
+                        <button onclick="window.TrainingUI.addSet('${ex.id}', true)" style="background: #FF9800; color: #fff; border: none; padding: 12px; border-radius: 4px; cursor: pointer; flex: 1; font-weight: bold; font-size: 1.1em; box-sizing: border-box;">🔥 Dropset</button>
                     </div>
                     <div style="margin-top: 10px; text-align: center;">
-                        <label style="color: #ccc; font-size: 0.85em; display: inline-flex; align-items: center; gap: 8px; cursor: pointer;">
-                            <input type="checkbox" onchange="window.TrainingUI.updateExerciseField('${ex.id}', 'autoCopy', this.checked)" ${ex.autoCopy ? 'checked' : ''} style="width: 16px; height: 16px;">
-                            Kopiuj ciężar do następnej serii
+                        <label style="color: #ccc; font-size: 0.9em; display: inline-flex; align-items: center; gap: 8px; cursor: pointer;">
+                            <input type="checkbox" onchange="window.TrainingUI.handleCopyCheckbox('${ex.id}', this.checked)" ${ex.autoCopy ? 'checked' : ''} style="width: 18px; height: 18px;">
+                            Skopiuj dane z poprzedniej serii
                         </label>
                     </div>
                 `;
@@ -535,9 +600,9 @@ export const TrainingUI = {
             
             return `
                 <div style="background-color: ${isNested ? 'rgba(0,0,0,0.2)' : '#1e1e1e'}; border: 1px solid ${isNested ? '#E91E63' : '#333'}; padding: 15px; border-radius: 8px; margin-bottom: 15px;">
-                    <div style="display: flex; gap: 10px;">
-                        <input type="text" class="exercise-name-input" placeholder="Nazwa ćwiczenia (np. Wyciskanie)" value="${ex.name}" onchange="window.TrainingUI.updateExerciseField('${ex.id}', 'name', this.value)" style="display: block; width: 100%; padding: 10px; margin-bottom: 10px; border-radius: 4px; border: 1px solid ${isNested ? '#E91E63' : '#00BFFF'}; background: #222; color: #fff; font-size: 1em; box-sizing: border-box; text-align: center;">
-                        <select onchange="window.TrainingUI.updateExerciseField('${ex.id}', 'type', this.value); window.TrainingUI.renderCurrentExercises();" style="display: block; width: 100%; padding: 10px; border-radius: 4px; border: 1px solid ${isNested ? '#E91E63' : '#00BFFF'}; background: #222; color: #fff; font-size: 1em; box-sizing: border-box; text-align: center;">
+                    <div style="margin-bottom: 15px;">
+                        <input type="text" class="exercise-name-input" placeholder="Nazwa ćwiczenia (np. Wyciskanie)" value="${ex.name}" onchange="window.TrainingUI.updateExerciseField('${ex.id}', 'name', this.value)" style="display: block; width: 100%; padding: 15px; margin-bottom: 10px; border-radius: 6px; border: 1px solid ${isNested ? '#E91E63' : '#00BFFF'}; background: #222; color: #fff; font-size: 1.1em; box-sizing: border-box; text-align: center;">
+                        <select onchange="window.TrainingUI.updateExerciseField('${ex.id}', 'type', this.value); window.TrainingUI.renderCurrentExercises();" style="display: block; width: 100%; padding: 15px; border-radius: 6px; border: 1px solid ${isNested ? '#E91E63' : '#00BFFF'}; background: #222; color: #fff; font-size: 1.1em; box-sizing: border-box; text-align: center;">
                             <option value="strength" ${ex.type === 'strength' ? 'selected' : ''}>Siłowe</option>
                             <option value="cardio" ${ex.type === 'cardio' ? 'selected' : ''}>Cardio</option>
                         </select>
@@ -557,7 +622,7 @@ export const TrainingUI = {
         currentTraining.exercises.forEach((ex) => {
             if (ex.type === 'superset') {
                 html += `
-                    <div style="background: linear-gradient(145deg, #2a0815, #1a050d); border: 1px solid #E91E63; padding: 15px; border-radius: 8px; margin-bottom: 15px; box-shadow: 0 4px 15px rgba(233, 30, 99, 0.2);">
+                    <div style="background: linear-gradient(145deg, #2a0815, #1a050d); border: 2px solid #E91E63; padding: 15px; border-radius: 8px; margin-bottom: 15px; box-shadow: 0 4px 15px rgba(233, 30, 99, 0.2);">
                         <h4 style="color: #E91E63; margin-top: 0; margin-bottom: 15px; text-align: center; text-transform: uppercase; font-size: 0.9em; letter-spacing: 1px;">🔗 Superseria</h4>
                         ${ex.exercises.map(nestedEx => renderExerciseForm(nestedEx, true)).join('')}
                     </div>
@@ -570,20 +635,84 @@ export const TrainingUI = {
         list.innerHTML = html;
     },
 
+    compressImage: (file, callback) => {
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onload = event => {
+            const img = new Image();
+            img.src = event.target.result;
+            img.onload = () => {
+                const canvas = document.createElement('canvas');
+                const MAX_WIDTH = 800; // Kompresja do 800px żeby nie zapchać bazy Storage
+                let scaleSize = 1;
+                if (img.width > MAX_WIDTH) scaleSize = MAX_WIDTH / img.width;
+                canvas.width = img.width * scaleSize;
+                canvas.height = img.height * scaleSize;
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+                callback(canvas.toDataURL('image/jpeg', 0.65)); // 65% quality
+            }
+        };
+    },
+
     handleMachinePhoto: (event, exerciseId) => {
         const file = event.target.files[0];
         if (!file) return;
-
-        const reader = new FileReader();
-        reader.onload = (e) => {
+        TrainingUI.compressImage(file, (compressedDataUrl) => {
             const exercise = TrainingUI.getExerciseById(exerciseId);
             if (exercise) {
-                // Compress image? To save space, we should ideally compress, but let's use DataURL for now.
-                exercise.machinePhoto = e.target.result;
+                exercise.machinePhoto = compressedDataUrl;
                 TrainingUI.renderCurrentExercises();
             }
-        };
-        reader.readAsDataURL(file);
+        });
+    },
+
+    handleTrainingPhoto: (event) => {
+        const file = event.target.files[0];
+        if (!file) return;
+        if (!currentTraining.socialPhotos) currentTraining.socialPhotos = [];
+        if (currentTraining.socialPhotos.length >= 3) {
+            alert("Możesz dodać maksymalnie 3 zdjęcia z treningu!");
+            return;
+        }
+
+        TrainingUI.compressImage(file, (compressedDataUrl) => {
+            currentTraining.socialPhotos.push(compressedDataUrl);
+            TrainingUI.renderTrainingPhotos();
+        });
+    },
+
+    removeTrainingPhoto: (index) => {
+        if(currentTraining.socialPhotos) {
+            currentTraining.socialPhotos.splice(index, 1);
+            TrainingUI.renderTrainingPhotos();
+        }
+    },
+
+    renderTrainingPhotos: () => {
+        const container = document.getElementById('training-photos-container');
+        if(!container) return;
+        let html = '';
+        const photos = currentTraining.socialPhotos || [];
+        
+        photos.forEach((photo, idx) => {
+            html += `
+                <div style="position: relative; width: 80px; height: 100px;">
+                    <img src="${photo}" style="width: 100%; height: 100%; object-fit: cover; border-radius: 6px; border: 1px solid #00BFFF;">
+                    <button onclick="window.TrainingUI.removeTrainingPhoto(${idx})" style="position: absolute; top: -5px; right: -5px; background: red; color: white; border: none; border-radius: 50%; width: 20px; height: 20px; cursor: pointer; font-weight: bold; font-size: 12px; display: flex; align-items: center; justify-content: center;">x</button>
+                </div>
+            `;
+        });
+
+        if (photos.length < 3) {
+            html += `
+                <label style="display: flex; flex-direction: column; justify-content: center; align-items: center; width: 80px; height: 100px; border: 1px dashed #00BFFF; border-radius: 6px; cursor: pointer; background: rgba(0, 191, 255, 0.1);">
+                    <span style="font-size: 1.5em; color: #00BFFF;">+</span>
+                    <input type="file" accept="image/*" style="display: none;" onchange="window.TrainingUI.handleTrainingPhoto(event)">
+                </label>
+            `;
+        }
+        container.innerHTML = html;
     },
 
     finishTraining: async () => {
@@ -598,11 +727,21 @@ export const TrainingUI = {
 
             const duration = Math.floor((Date.now() - currentTraining.startTime - currentTraining.totalPausedTime) / 1000);
             
-            // Filter out empty exercises
-            const validExercises = currentTraining.exercises.filter(ex => ex.name.trim() !== '' || ex.sets.length > 0);
+            // Filter out empty exercises, supporting nested supersets without throwing TypeError
+            const validExercises = currentTraining.exercises.filter(ex => {
+                if (ex.type === 'superset' && Array.isArray(ex.exercises)) {
+                    return ex.exercises.some(subEx => (subEx.name && subEx.name.trim() !== '') || (subEx.sets && subEx.sets.length > 0));
+                }
+                return (ex.name && ex.name.trim() !== '') || (ex.sets && ex.sets.length > 0);
+            });
 
             const nameInput = document.getElementById('training-name-input');
             const trainingName = nameInput ? nameInput.value.trim() : '';
+
+            const calInput = document.getElementById('smartwatch-calories');
+            const hrInput = document.getElementById('smartwatch-hr');
+            if (calInput && calInput.value) currentTraining.smartwatch.calories = parseInt(calInput.value, 10);
+            if (hrInput && hrInput.value) currentTraining.smartwatch.hr = parseInt(hrInput.value, 10);
 
             try {
                 if (currentTraining.id) {
@@ -611,14 +750,18 @@ export const TrainingUI = {
                         date: currentTraining.date,
                         duration_seconds: duration,
                         exercises: validExercises,
-                        name: trainingName
+                        name: trainingName,
+                        socialPhotos: currentTraining.socialPhotos,
+                        smartwatch: currentTraining.smartwatch
                     });
                 } else {
                     await DatabaseManager.addTraining({
                         date: currentTraining.date,
                         duration_seconds: duration,
                         exercises: validExercises,
-                        name: trainingName
+                        name: trainingName,
+                        socialPhotos: currentTraining.socialPhotos,
+                        smartwatch: currentTraining.smartwatch
                     });
                 }
                 alert("Trening zapisany pomyślnie!");

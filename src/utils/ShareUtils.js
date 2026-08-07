@@ -1,5 +1,5 @@
 export const ShareUtils = {
-    generateAndShareImage: async (title, statsList, avatarBase64, nickname, customMessage) => {
+    generateAndShareImage: async (title, statsList, avatarBase64, nickname, customMessage, backgroundBase64 = null) => {
         return new Promise(async (resolve, reject) => {
             const canvas = document.createElement('canvas');
             const ctx = canvas.getContext('2d');
@@ -8,9 +8,36 @@ export const ShareUtils = {
             canvas.width = 1080;
             canvas.height = 1080;
             
+            // Helper to load image
+            const loadImage = (src) => {
+                return new Promise((res, rej) => {
+                    const img = new Image();
+                    img.onload = () => res(img);
+                    img.onerror = () => rej(new Error('Failed to load image'));
+                    img.src = src;
+                });
+            };
+
             // Draw background
-            ctx.fillStyle = '#1e1e1e';
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            if (backgroundBase64) {
+                try {
+                    const bgImg = await loadImage(backgroundBase64);
+                    // Fill and cover
+                    const scale = Math.max(canvas.width / bgImg.width, canvas.height / bgImg.height);
+                    const x = (canvas.width / 2) - (bgImg.width / 2) * scale;
+                    const y = (canvas.height / 2) - (bgImg.height / 2) * scale;
+                    ctx.drawImage(bgImg, x, y, bgImg.width * scale, bgImg.height * scale);
+                    // Darken filter
+                    ctx.fillStyle = 'rgba(0, 0, 0, 0.75)';
+                    ctx.fillRect(0, 0, canvas.width, canvas.height);
+                } catch(e) {
+                    ctx.fillStyle = '#1e1e1e';
+                    ctx.fillRect(0, 0, canvas.width, canvas.height);
+                }
+            } else {
+                ctx.fillStyle = '#1e1e1e';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+            }
 
             // Helper to load image
             const loadImage = (src) => {

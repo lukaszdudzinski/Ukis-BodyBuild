@@ -62,6 +62,33 @@ export const TrainingComponent = {
                     </div>
                 </div>
 
+                <!-- Social Media Photos -->
+                <div class="form-full-width" style="margin-top: 20px; background: rgba(0,0,0,0.3); padding: 15px; border-radius: 8px; border: 1px solid #00BFFF;">
+                    <h4 style="color: #00BFFF; margin-bottom: 10px; text-align: center;">📸 Zdjęcia z treningu</h4>
+                    <p style="color: #aaa; font-size: 0.8em; text-align: center; margin-bottom: 10px;">Dodaj foty by wleciały jako tło w Raportach Progresu!</p>
+                    <div style="display: flex; gap: 10px; justify-content: center; flex-wrap: wrap;" id="training-photos-container">
+                        <label style="display: flex; flex-direction: column; justify-content: center; align-items: center; width: 80px; height: 100px; border: 1px dashed #00BFFF; border-radius: 6px; cursor: pointer; background: rgba(0, 191, 255, 0.1);">
+                            <span style="font-size: 1.5em; color: #00BFFF;">+</span>
+                            <input type="file" accept="image/*" style="display: none;" onchange="window.TrainingUI.handleTrainingPhoto(event)">
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Smartwatch Data -->
+                <div class="form-full-width" style="margin-top: 20px; background: rgba(0,0,0,0.3); padding: 15px; border-radius: 8px; border: 1px solid #E91E63;">
+                    <h4 style="color: #E91E63; margin-bottom: 15px; text-align: center;">⌚ Dane ze smartwatcha</h4>
+                    <div style="display: flex; gap: 10px;">
+                        <div style="flex: 1; text-align: center;">
+                            <label style="color: #ccc; font-size: 0.85em;">Kalorie Aktywności</label>
+                            <input type="number" id="smartwatch-calories" placeholder="kcal" style="width: 100%; padding: 10px; border-radius: 4px; border: 1px solid #444; background: #222; color: #fff; font-size: 1.1em; text-align: center; margin-top: 5px;" inputmode="numeric">
+                        </div>
+                        <div style="flex: 1; text-align: center;">
+                            <label style="color: #ccc; font-size: 0.85em;">Średnie Tętno</label>
+                            <input type="number" id="smartwatch-hr" placeholder="bpm" style="width: 100%; padding: 10px; border-radius: 4px; border: 1px solid #444; background: #222; color: #fff; font-size: 1.1em; text-align: center; margin-top: 5px;" inputmode="numeric">
+                        </div>
+                    </div>
+                </div>
+
                 <div class="form-full-width" style="margin-top: 30px;">
                     <button type="button" id="pause-training-btn" class="action-button" style="width: 100%; margin-bottom: 10px; background-color: #f39c12; border-color: #f39c12; color: #fff;">⏸ Pauza</button>
                     <button type="button" id="finish-training-btn" class="action-button" style="width: 100%; background-color: #ff4444; border-color: #ff4444;">⏹ Zakończ Trening</button>

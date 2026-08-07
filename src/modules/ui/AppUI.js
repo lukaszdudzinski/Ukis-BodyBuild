@@ -1,4 +1,23 @@
-export const APP_VERSION = 'v.2026.8.7.16'; // <-- TEN NUMER ZMIENIAMY PRZY KAŻDEJ AKTUALIZACJI
+export const APP_VERSION = 'v.2026.8.7.18'; // <-- TEN NUMER ZMIENIAMY PRZY KAŻDEJ AKTUALIZACJI
+
+window.onerror = function(message, source, lineno, colno, error) {
+    let errs = [];
+    try {
+        const stored = localStorage.getItem('uki-errors');
+        if (stored) errs = JSON.parse(stored);
+    } catch(e) {}
+    errs.push({
+        time: new Date().toISOString(),
+        msg: message,
+        src: source,
+        line: lineno,
+        col: colno,
+        stack: error ? error.stack : ''
+    });
+    if(errs.length > 50) errs = errs.slice(errs.length - 50);
+    localStorage.setItem('uki-errors', JSON.stringify(errs));
+    return false; 
+};
 
 export const AppUI = {
     init: () => {

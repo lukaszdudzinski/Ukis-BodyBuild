@@ -21,6 +21,14 @@ export const SettingsUI = {
                 <div class="form-full-width" style="margin-bottom: 20px;">
                     <button id="reset-tutorial-btn" class="action-button" style="width: 100%; margin-bottom: 10px; background-color: #FF9800; border-color: #FF9800; color: #fff;">🔄 Zobacz ponownie powitanie (Reset)</button>
                 </div>
+                <h4 style="margin-top: 20px; color: #ff4444;">Narzędzia Diagnostyczne</h4>
+                <div class="form-full-width" style="margin-bottom: 20px;">
+                    <p style="color: #aaa; font-size: 0.85em; text-align: center;">Skopiuj poniższe logi w razie problemów z aplikacją i wyślij zgłoszenie.</p>
+                    <textarea id="error-logs-area" readonly style="width: 100%; height: 100px; padding: 10px; border-radius: 4px; border: 1px solid #444; background: #222; color: #00BFFF; font-size: 0.85em; margin-bottom: 10px; font-family: monospace;"></textarea>
+                    <button id="copy-errors-btn" class="action-button" style="width: 100%; background-color: #444; border-color: #555; color: #fff;">📋 Skopiuj do zgłoszenia serwisowego</button>
+                    <button id="clear-errors-btn" class="action-button" style="width: 100%; background-color: transparent; border: 1px solid #ff4444; color: #ff4444; margin-top: 10px;">🗑️ Wyczyść logi</button>
+                    <div style="text-align: center; margin-top: 10px; color: #666; font-size: 0.8em;">Wersja App: <span id="settings-app-version">Oczekiwanie...</span></div>
+                </div>
             `;
             settingsPanel.insertBefore(dataSection, document.getElementById('settings-pwa-guide'));
         }
@@ -43,6 +51,33 @@ export const SettingsUI = {
                 alert("Powitanie zostało zresetowane! Przejdź do głównego ekranu lub odśwież stronę.");
                 if (window.OnboardingUI) window.OnboardingUI.init();
             });
+        }
+
+        const errArea = document.getElementById('error-logs-area');
+        if (errArea) {
+            const errs = localStorage.getItem('uki-errors');
+            errArea.value = errs ? errs : 'Brak zarejestrowanych błędów :)';
+        }
+
+        const copyErrBtn = document.getElementById('copy-errors-btn');
+        if (copyErrBtn) {
+            copyErrBtn.addEventListener('click', () => {
+                if (errArea) {
+                    navigator.clipboard.writeText(errArea.value).then(() => alert('Logi skopiowane! Dziękujemy za zgłoszenie.'));
+                }
+            });
+        }
+        const clearErrBtn = document.getElementById('clear-errors-btn');
+        if (clearErrBtn) {
+            clearErrBtn.addEventListener('click', () => {
+                localStorage.removeItem('uki-errors');
+                if (errArea) errArea.value = 'Brak zarejestrowanych błędów :)';
+            });
+        }
+        
+        const appVerSpan = document.getElementById('settings-app-version');
+        if (appVerSpan && window.APP_VERSION) {
+            appVerSpan.innerText = window.APP_VERSION;
         }
 
         SettingsUI.initTheme();
