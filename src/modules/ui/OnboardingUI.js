@@ -197,18 +197,18 @@ export const OnboardingUI = {
                 const holeBottom = rect.bottom + pad;
 
                 // Magia wycinania okienka w czarnym tle
-                overlay.style.clipPath = \`polygon(
+                overlay.style.clipPath = `polygon(
                     0% 0%, 
                     0% 100%, 
-                    \${holeLeft}px 100%, 
-                    \${holeLeft}px \${holeTop}px, 
-                    \${holeRight}px \${holeTop}px, 
-                    \${holeRight}px \${holeBottom}px, 
-                    \${holeLeft}px \${holeBottom}px, 
-                    \${holeLeft}px 100%, 
+                    ${holeLeft}px 100%, 
+                    ${holeLeft}px ${holeTop}px, 
+                    ${holeRight}px ${holeTop}px, 
+                    ${holeRight}px ${holeBottom}px, 
+                    ${holeLeft}px ${holeBottom}px, 
+                    ${holeLeft}px 100%, 
                     100% 100%, 
                     100% 0%
-                )\`;
+                )`;
 
                 document.getElementById('tour-text').textContent = step.text;
 

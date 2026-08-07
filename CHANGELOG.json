@@ -1,5 +1,13 @@
 [
   {
+    "version": "v.2026.8.7.25",
+    "date": "2026-08-07",
+    "changes": [
+      "🔥 Błyskawiczny Hotfix: Naprawiono błąd 'SyntaxError' zablokowania aplikacji podczas ładowania samouczka.",
+      "📱 Poprawiono układ graficzny ('Średnie Tętno' wychodzące poza ekran) w widoku dodawania parametrów ze smartwatcha dla mniejszych ekranów."
+    ]
+  },
+  {
     "version": "v.2026.8.7.24",
     "date": "2026-08-07",
     "changes": [

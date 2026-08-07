@@ -80,11 +80,11 @@ export const TrainingComponent = {
                     <div style="display: flex; gap: 10px;">
                         <div style="flex: 1; text-align: center;">
                             <label style="color: #ccc; font-size: 0.85em;">Kalorie Aktywności</label>
-                            <input type="number" id="smartwatch-calories" placeholder="kcal" style="width: 100%; padding: 10px; border-radius: 4px; border: 1px solid #444; background: #222; color: #fff; font-size: 1.1em; text-align: center; margin-top: 5px;" inputmode="numeric">
+                            <input type="number" id="smartwatch-calories" placeholder="kcal" style="width: 100%; padding: 10px; border-radius: 4px; border: 1px solid #444; background: #222; color: #fff; font-size: 1.1em; text-align: center; margin-top: 5px; box-sizing: border-box;" inputmode="numeric">
                         </div>
                         <div style="flex: 1; text-align: center;">
                             <label style="color: #ccc; font-size: 0.85em;">Średnie Tętno</label>
-                            <input type="number" id="smartwatch-hr" placeholder="bpm" style="width: 100%; padding: 10px; border-radius: 4px; border: 1px solid #444; background: #222; color: #fff; font-size: 1.1em; text-align: center; margin-top: 5px;" inputmode="numeric">
+                            <input type="number" id="smartwatch-hr" placeholder="bpm" style="width: 100%; padding: 10px; border-radius: 4px; border: 1px solid #444; background: #222; color: #fff; font-size: 1.1em; text-align: center; margin-top: 5px; box-sizing: border-box;" inputmode="numeric">
                         </div>
                     </div>
                 </div>
