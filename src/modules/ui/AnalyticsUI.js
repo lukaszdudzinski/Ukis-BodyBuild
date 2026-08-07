@@ -361,15 +361,14 @@ export const AnalyticsUI = {
         const gender = localStorage.getItem('uki-bodybuild-gender') || 'male';
         const didText = gender === 'female' ? 'zrobiłam' : 'zrobiłem';
         const liftedText = gender === 'female' ? 'przerzuciłam' : 'przerzuciłem';
-        const textToShare = `W tym miesiącu ${didText} ${monthWorkouts} treningów i ${liftedText} ${monthVolume} kg! 🔥 Buduję formę z Uki's BodyBuild! 💪`;
+        const textToShare = `W tym miesiącu ${didText} ${monthWorkouts} treningów i ${liftedText} ${monthVolume} kg! 🔥 Buduję formę z Uki's BodyBuild! 💪 Dołącz do nas: https://lukaszdudzinski.github.io/Ukis-BodyBuild/`;
         try {
             // Fetch avatar and nickname from settings
             const settingsStr = localStorage.getItem('uki_bodybuild_settings');
-            let avatar = null;
+            let avatar = localStorage.getItem('uki-bodybuild-avatar') || null;
             let nickname = 'BodyBuilder';
             if (settingsStr) {
                 const settings = JSON.parse(settingsStr);
-                avatar = settings.avatar || null;
                 nickname = settings.nickname || 'BodyBuilder';
             }
 
