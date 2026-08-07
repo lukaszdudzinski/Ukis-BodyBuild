@@ -29,7 +29,7 @@ export const ChatUI = {
                 <!-- Chat Window -->
                 <div id="edward-chat-window" style="
                     position: fixed;
-                    bottom: 90px;
+                    bottom: 20px;
                     right: 20px;
                     width: 350px;
                     max-width: calc(100vw - 40px);
@@ -131,11 +131,15 @@ export const ChatUI = {
         toggleBtn.addEventListener('click', () => {
             const isHidden = chatWindow.style.display === 'none' || chatWindow.style.display === '';
             chatWindow.style.display = isHidden ? 'flex' : 'none';
-            if (isHidden) input.focus();
+            if (isHidden) {
+                input.focus();
+                toggleBtn.style.display = 'none';
+            }
         });
 
         closeBtn.addEventListener('click', () => {
             chatWindow.style.display = 'none';
+            toggleBtn.style.display = 'flex';
         });
 
         sendBtn.addEventListener('click', ChatUI.sendMessage);

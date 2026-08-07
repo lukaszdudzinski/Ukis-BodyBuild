@@ -1,5 +1,12 @@
 [
   {
+    "version": "v.2026.8.7.07",
+    "date": "2026-08-07",
+    "changes": [
+      "🎨 Szlify interfejsu (UX/UI)! Ikona wywołująca Edwarda chowa się inteligentnie po rozpoczęciu czatu, udostępniając maksymalną możliwą przestrzeń na ekranie Twojego smartfona. Rozmowy są teraz znacznie czystsze i wyraźniejsze!"
+    ]
+  },
+  {
     "version": "v.2026.8.7.06",
     "date": "2026-08-07",
     "changes": [
