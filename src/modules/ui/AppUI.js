@@ -1,4 +1,4 @@
-export const APP_VERSION = 'v.2026.8.7.12'; // <-- TEN NUMER ZMIENIAMY PRZY KAŻDEJ AKTUALIZACJI
+export const APP_VERSION = 'v.2026.8.7.13'; // <-- TEN NUMER ZMIENIAMY PRZY KAŻDEJ AKTUALIZACJI
 
 export const AppUI = {
     init: () => {
@@ -14,6 +14,22 @@ export const AppUI = {
         versionDisplays.forEach(el => {
             el.textContent = APP_VERSION;
         });
+
+        // CHANGELOG AUTO-SHOW LOGIC
+        const lastSeen = localStorage.getItem('uki-bodybuild-last-version');
+        if (lastSeen !== APP_VERSION) {
+            localStorage.setItem('uki-bodybuild-last-version', APP_VERSION);
+            
+            // Pokaż changelog jeśli ktoś ma starszą wersję (lub wchodzi 1-szy raz)
+            if (window.showChangelogModal) {
+                setTimeout(() => {
+                    const btn = document.getElementById('changelog-update-now-btn');
+                    if(btn) btn.style.display = 'none'; // Nie ma po co pokazywać przycisku 'Zaktualizuj' po starcie.
+                    
+                    window.showChangelogModal(lastSeen || 'v.0.0.0');
+                }, 800);
+            }
+        }
 
         // Setup Nickname Welcome
         AppUI.updateWelcomeMessage();

@@ -335,32 +335,31 @@
         document.getElementById('pwa-update-btn-refresh').addEventListener('click', doPwaUpdate);
         document.getElementById('changelog-update-now-btn').addEventListener('click', doPwaUpdate);
 
-        // Fetch and show changelog
-        document.getElementById('pwa-update-btn-changelog').addEventListener('click', async () => {
+        // Wystawienie funkcji globalnej do wzywania z dowolnego miejsca
+        window.showChangelogModal = async (compareVersionStr) => {
             document.getElementById('changelog-modal-overlay').style.display = 'flex';
-            document.getElementById('changelog-update-now-btn').style.display = 'block';
             
             try {
                 const res = await fetch(`CHANGELOG.json?t=${new Date().getTime()}`);
                 const data = await res.json();
                 
-                const currentAppVersion = window.APP_VERSION || 'v.0.0.0';
+                // Jeśli nie podano starej wersji, używamy obecnej APP_VERSION
+                const compareVer = compareVersionStr || window.APP_VERSION || 'v.0.0.0';
 
-                // Funkcja pomocnicza do porównywania wersji (np. v.2026.8.6.01 vs v.2026.8.5.13)
+                // Funkcja pomocnicza do porównywania wersji 
                 const parseVersion = (v) => {
-                    const parts = v.replace('v.', '').split('.').map(n => parseInt(n, 10));
+                    const parts = v.replace('v.', '').split('.').map(n => parseInt(n, 10) || 0);
                     return (parts[0] * 10000000000) + (parts[1] * 100000000) + (parts[2] * 1000000) + (parts[3] || 0);
                 };
                 
-                const currentScore = parseVersion(currentAppVersion);
-                const newerUpdates = data.filter(log => parseVersion(log.version) > currentScore);
+                const compareScore = parseVersion(compareVer);
+                const newerUpdates = data.filter(log => parseVersion(log.version) > compareScore);
                 
-                // Jeśli jakimś cudem tablica nowszych jest pusta (np. ktoś ręcznie otworzył modal), pokażmy wszystkie
-                const updatesToShow = newerUpdates.length > 0 ? newerUpdates : data;
+                // Jeśli nie było nowszych zmian, po prostu pokazujemy ostatnią najnowszą zmianę
+                const updatesToShow = newerUpdates.length > 0 ? newerUpdates : [data[0]];
                 
                 let html = '';
-
-                if (updatesToShow.length > 0) {
+                if (updatesToShow && updatesToShow.length > 0 && updatesToShow[0]) {
                     html += '<div style="display: flex; flex-direction: column; gap: 20px;">';
                     updatesToShow.forEach((log) => {
                         html += `<div>`;
@@ -380,6 +379,12 @@
             } catch(e) {
                 document.getElementById('changelog-content').innerHTML = "Nie udało się załadować listy zmian.";
             }
+        };
+
+        // Fetch and show changelog from the update banner
+        document.getElementById('pwa-update-btn-changelog').addEventListener('click', () => {
+            document.getElementById('changelog-update-now-btn').style.display = 'block';
+            window.showChangelogModal(window.APP_VERSION);
         });
 
         document.getElementById('changelog-close-btn').addEventListener('click', () => {
