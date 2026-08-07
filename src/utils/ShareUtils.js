@@ -37,32 +37,20 @@ export const ShareUtils = {
             ctx.fillStyle = '#ffffff';
             ctx.font = 'bold 80px Arial';
             ctx.textAlign = 'center';
-            ctx.fillText(title, canvas.width / 2, 260);
+            ctx.fillText(title, canvas.width / 2, 240);
             
-            // Draw Stats
-            ctx.font = 'bold 50px Arial';
-            let y = 430;
-            statsList.forEach(stat => {
-                ctx.fillStyle = '#aaa';
-                ctx.fillText(stat.label, canvas.width / 2, y);
-                ctx.fillStyle = stat.color || '#2ECC71';
-                ctx.fillText(stat.value, canvas.width / 2, y + 60);
-                y += 180;
-            });
-            
-            // Draw Avatar and Nickname (Footer)
+            // Draw Avatar and Nickname w połowie by wyśrodkować
             const drawFooter = () => {
                 ctx.fillStyle = '#ffffff';
                 ctx.font = 'bold 45px Arial';
                 ctx.textAlign = 'right';
-                const nickText = nickname || "BodyBuilder";
-                ctx.fillText(nickText, canvas.width - 150, canvas.height - 110);
+                // Nie rysujemy nicka na dole z boku
                 
                 // Add encouragement text
                 ctx.fillStyle = '#00BFFF';
                 ctx.font = 'italic 35px Arial';
                 ctx.textAlign = 'center';
-                ctx.fillText("Trenuj z Uki's BodyBuild - Dołącz do nas!", canvas.width / 2, canvas.height - 40);
+                ctx.fillText("UkiBodyBuild (Kliknij w link poniżej by dołączyć!)", canvas.width / 2, canvas.height - 40);
                 
                 // convert canvas to blob and share
                 canvas.toBlob(async (blob) => {
@@ -99,16 +87,28 @@ export const ShareUtils = {
                     const avatarImg = await loadImage(avatarBase64);
                     ctx.save();
                     ctx.beginPath();
-                    ctx.arc(canvas.width - 90, canvas.height - 130, 60, 0, Math.PI * 2, true);
+                    // Awatar wysrodkowany pod Raport Progresu, czyli (canvas.width/2), (Y np. 340)
+                    ctx.arc(canvas.width / 2, 360, 60, 0, Math.PI * 2, true);
                     ctx.closePath();
                     ctx.clip();
-                    ctx.drawImage(avatarImg, canvas.width - 150, canvas.height - 190, 120, 120);
+                    ctx.drawImage(avatarImg, canvas.width / 2 - 60, 300, 120, 120);
                     ctx.restore();
                 } catch (e) {
                     console.log('Brak / Błąd avatara', e);
                 }
             }
             
+            // Draw Stats - Przesuwamy Statsy niżej z powodu avatara (np z 430 na 500)
+            ctx.font = 'bold 50px Arial';
+            let y = 530;
+            statsList.forEach(stat => {
+                ctx.fillStyle = '#aaa';
+                ctx.fillText(stat.label, canvas.width / 2, y);
+                ctx.fillStyle = stat.color || '#2ECC71';
+                ctx.fillText(stat.value, canvas.width / 2, y + 60);
+                y += 160;
+            });
+
             drawFooter();
         });
     }

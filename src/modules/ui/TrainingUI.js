@@ -255,7 +255,11 @@ export const TrainingUI = {
     deleteTraining: async (id) => {
         if (confirm("Czy na pewno chcesz bezpowrotnie usunąć ten trening?")) {
             await DatabaseManager.deleteTraining(id);
-            TrainingUI.initCalendar(); // Odświeżamy widok po usunięciu
+            TrainingUI.initCalendar(); 
+            // Odświeżamy widok po usunięciu (np panel historii na dole)
+            if (typeof TrainingUI.loadRecentTraining === 'function') {
+                TrainingUI.loadRecentTraining();
+            }
         }
     },
 

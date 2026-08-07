@@ -6,6 +6,9 @@ export const AppUI = {
         AppUI.initMobileMenu();
         AppUI.initPWA();
         
+        // Expose do global scope dla index.html
+        window.APP_VERSION = APP_VERSION;
+
         // Update version displays
         const versionDisplays = document.querySelectorAll('.version-info, .app-version-display');
         versionDisplays.forEach(el => {
