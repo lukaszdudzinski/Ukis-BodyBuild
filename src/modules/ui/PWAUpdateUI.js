@@ -2,6 +2,7 @@ export const PWAUpdateUI = {
     pwaWorker: null,
     
     init: () => {
+        window.PWAUpdateUI = PWAUpdateUI;
         if (!('serviceWorker' in navigator)) return;
         
         // CLEANUP: Usuń zepsute service workery z poprzednich błędnych rejestracji

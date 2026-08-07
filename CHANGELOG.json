@@ -1,5 +1,13 @@
 [
   {
+    "version": "v.2026.8.7.23",
+    "date": "2026-08-07",
+    "changes": [
+      "🛠️ Naprawiono ucinanie się dymków z samouczkiem na ekranach telefonów poprzez precyzyjne wyśrodkowanie okienek.",
+      "🛠️ Zaktualizowano przycisk 'Zaktualizuj' w panelu 'Co nowego?' - teraz od razu prawidłowo instaluje PWA (wcześniej jedynie odświeżał widok)."
+    ]
+  },
+  {
     "version": "v.2026.8.7.22",
     "date": "2026-08-07",
     "changes": [

@@ -198,11 +198,11 @@ export const OnboardingUI = {
                 // Pozycja Tooltipa
                 const rect = target.getBoundingClientRect();
                 let top = rect.bottom + 15 + window.scrollY;
-                let left = rect.left + (rect.width / 2) - 140;
+                let left = rect.left + (rect.width / 2) - 150; // 300px width
 
                 // Zabezpieczenie przed ucięciem
                 if (left < 10) left = 10;
-                if (left + 280 > window.innerWidth - 10) left = window.innerWidth - 290;
+                if (left + 300 > window.innerWidth - 10) left = window.innerWidth - 310;
                 if (top + 150 > window.innerHeight + window.scrollY) {
                     top = rect.top - 150 + window.scrollY; // Rysuj nad
                 }
