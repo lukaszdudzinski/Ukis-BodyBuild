@@ -1,5 +1,12 @@
 [
   {
+    "version": "v.2026.8.7.09",
+    "date": "2026-08-07",
+    "changes": [
+      "✨ Perfekcja tkwi w detalach! Wyrównaliśmy wizualnie przyciski kontynuacji i usuwania treningów, by interfejs cieszył oko jeszcze bardziej w każdej rozdzielczości."
+    ]
+  },
+  {
     "version": "v.2026.8.7.08",
     "date": "2026-08-07",
     "changes": [
