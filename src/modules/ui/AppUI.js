@@ -1,4 +1,4 @@
-export const APP_VERSION = 'v.2026.8.7.14'; // <-- TEN NUMER ZMIENIAMY PRZY KAŻDEJ AKTUALIZACJI
+export const APP_VERSION = 'v.2026.8.7.15'; // <-- TEN NUMER ZMIENIAMY PRZY KAŻDEJ AKTUALIZACJI
 
 export const AppUI = {
     init: () => {
@@ -20,13 +20,34 @@ export const AppUI = {
         if (lastSeen !== APP_VERSION) {
             localStorage.setItem('uki-bodybuild-last-version', APP_VERSION);
             
-            // Pokaż changelog jeśli ktoś ma starszą wersję (lub wchodzi 1-szy raz)
             if (window.showChangelogModal) {
-                setTimeout(() => {
+                setTimeout(async () => {
                     const btn = document.getElementById('changelog-update-now-btn');
-                    if(btn) btn.style.display = 'none'; // Nie ma po co pokazywać przycisku 'Zaktualizuj' po starcie.
+                    if (btn) btn.style.display = 'none';
                     
-                    window.showChangelogModal(lastSeen ? lastSeen : 'latest_only');
+                    let compareVersion = lastSeen;
+                    
+                    // Inteligentne wykrywanie z Cache w przypadku migracji / braku lastSeen
+                    if (!compareVersion && 'caches' in window) {
+                        try {
+                            const cacheNames = await caches.keys();
+                            const ukiCaches = cacheNames.filter(c => c.startsWith('ukis-bodybuild-v.'));
+                            if (ukiCaches.length > 0) {
+                                const oldVersions = ukiCaches
+                                    .map(c => c.replace('ukis-bodybuild-', ''))
+                                    .filter(v => v !== APP_VERSION)
+                                    .sort();
+                                
+                                if (oldVersions.length > 0) {
+                                    compareVersion = oldVersions[oldVersions.length - 1]; // Najnowsza stara
+                                }
+                            }
+                        } catch(e) {
+                            console.log("Brak dostępu do cache", e);
+                        }
+                    }
+                    
+                    window.showChangelogModal(compareVersion ? compareVersion : 'latest_only');
                 }, 800);
             }
         }
