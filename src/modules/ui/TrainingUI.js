@@ -177,8 +177,9 @@ export const TrainingUI = {
                             ${nameDisplay}
                             <span style="font-size: 0.9em;">Czas treningu: ${TrainingUI.formatTime(existingTraining.duration_seconds)}</span><br>
                             <span style="font-size: 0.8em; color: #888;">Liczba ćwiczeń: ${existingTraining.exercises.length}</span>
-                            <div style="margin-top: 10px;">
-                                <button onclick="window.TrainingUI.continueTraining(${existingTraining.id})" class="action-button pulse" style="width: 100%; background-color: #2ECC71; border-color: #2ECC71; color: #fff; font-size: 0.9em; padding: 8px;">▶ Kontynuuj ten trening</button>
+                            <div style="margin-top: 10px; display: flex; gap: 8px;">
+                                <button onclick="window.TrainingUI.continueTraining(${existingTraining.id})" class="action-button pulse" style="flex: 1; background-color: #2ECC71; border-color: #2ECC71; color: #fff; font-size: 0.9em; padding: 8px;">▶ Kontynuuj</button>
+                                <button onclick="window.TrainingUI.deleteTraining(${existingTraining.id})" class="action-button" style="background-color: rgba(231, 76, 60, 0.1); border-color: rgba(231, 76, 60, 0.3); color: #E74C3C; font-size: 0.9em; padding: 8px;">🗑 Usuń</button>
                             </div>
                         </div>
                     `;
@@ -249,7 +250,13 @@ export const TrainingUI = {
         
         // Scroll to panel
         panel.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        panel.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    },
+
+    deleteTraining: async (id) => {
+        if (confirm("Czy na pewno chcesz bezpowrotnie usunąć ten trening?")) {
+            await DatabaseManager.deleteTraining(id);
+            TrainingUI.initCalendar(); // Odświeżamy widok po usunięciu
+        }
     },
 
     toggleHistoryPreview: (idx) => {

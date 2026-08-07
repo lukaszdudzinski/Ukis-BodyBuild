@@ -202,6 +202,14 @@ export const DatabaseManager = {
         return records;
     },
 
+    deleteTraining: async (id) => {
+        await DatabaseManager.init();
+        db.exec({
+            sql: `DELETE FROM trainings WHERE id = ?`,
+            bind: [id]
+        });
+    },
+
     getMeasurements: async () => {
         await DatabaseManager.init();
         const records = [];
