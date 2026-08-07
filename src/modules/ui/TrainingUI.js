@@ -256,7 +256,7 @@ export const TrainingUI = {
         if (confirm("Czy na pewno chcesz bezpowrotnie usunąć ten trening?")) {
             await DatabaseManager.deleteTraining(id);
             if (typeof TrainingUI.loadHistoryAndCalendar === 'function') {
-                TrainingUI.loadHistoryAndCalendar();
+                await TrainingUI.loadHistoryAndCalendar();
             }
         }
     },
