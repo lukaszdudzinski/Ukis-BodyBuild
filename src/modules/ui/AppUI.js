@@ -1,4 +1,4 @@
-export const APP_VERSION = 'v.2026.8.7.23'; // <-- TEN NUMER ZMIENIAMY PRZY KAŻDEJ AKTUALIZACJI
+export const APP_VERSION = 'v.2026.8.7.24'; // <-- TEN NUMER ZMIENIAMY PRZY KAŻDEJ AKTUALIZACJI
 
 window.onerror = function(message, source, lineno, colno, error) {
     let errs = [];

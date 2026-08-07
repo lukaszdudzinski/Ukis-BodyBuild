@@ -180,18 +180,35 @@ export const OnboardingUI = {
                     target.blur();
                 }
 
-                target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                target.scrollIntoView({ block: 'center' }); // Removed smooth scroll so bounding box is instantly correct
                 
-                // Highlight target
+                // Highlight target - zamiast z-index, wycinamy "dziurę" w czarnym tle!
                 target.classList.add('tour-highlight');
-                target.style.zIndex = '10006';
                 
                 // Fallback dla elementów które nie mogą mieć pointer-events (żeby użytkownik nie klikał przypadkiem)
                 target.style.pointerEvents = 'none';
                 
-                if (window.getComputedStyle(target).position === 'static') {
-                    target.style.position = 'relative';
-                }
+                // Pozycja elementu dla wycięcia okienka
+                const rect = target.getBoundingClientRect();
+                const pad = 8;
+                const holeTop = rect.top - pad;
+                const holeLeft = rect.left - pad;
+                const holeRight = rect.right + pad;
+                const holeBottom = rect.bottom + pad;
+
+                // Magia wycinania okienka w czarnym tle
+                overlay.style.clipPath = \`polygon(
+                    0% 0%, 
+                    0% 100%, 
+                    \${holeLeft}px 100%, 
+                    \${holeLeft}px \${holeTop}px, 
+                    \${holeRight}px \${holeTop}px, 
+                    \${holeRight}px \${holeBottom}px, 
+                    \${holeLeft}px \${holeBottom}px, 
+                    \${holeLeft}px 100%, 
+                    100% 100%, 
+                    100% 0%
+                )\`;
 
                 document.getElementById('tour-text').textContent = step.text;
 
