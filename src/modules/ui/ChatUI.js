@@ -99,6 +99,7 @@ export const ChatUI = {
                             background: #222;
                             color: white;
                             outline: none;
+                            font-size: 16px;
                         ">
                         <button id="edward-chat-send" style="
                             background: #00BFFF;

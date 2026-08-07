@@ -1,5 +1,12 @@
 [
   {
+    "version": "v.2026.8.7.05",
+    "date": "2026-08-07",
+    "changes": [
+      "📱 Zoptymalizowaliśmy pływające okno Trenera Edwarda pod telefony (iOS/Android)! Koniec z niepotrzebnie przybliżającym się ekranem podczas pisania na wirtualnej klawiaturze."
+    ]
+  },
+  {
     "version": "v.2026.8.7.04",
     "date": "2026-08-07",
     "changes": [
