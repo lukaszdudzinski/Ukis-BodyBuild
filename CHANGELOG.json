@@ -1,22 +1,14 @@
 [
   {
-    "version": "v.2026.8.7.19",
+    "version": "v.2026.8.7.20",
     "date": "2026-08-07",
     "changes": [
-      "🚑 Gorąca łatka: System wstał z martwych! Usunięcie błędu krytycznego, który wyciszył kafelki nawigacji."
+      "🚑 Hotfix (x2): Usunięcie krytycznych błędów blokujących Kafelki Nawigacyjne.",
+      "🎓 Nowość: Dodano Interaktywny Samouczek oprowadzający po systemie, zbudowany w czystym JS!"
     ]
   },
   {
     "version": "v.2026.8.7.18",
-    "date": "2026-08-07",
-    "changes": [
-      "⚙️ Kompletny refaktor kodu: Przeniesienie mechaniki okien oraz systemu aktualizacji PWA do szybkich modułów zewnętrznych.",
-      "🚀 Agresywne zmuszanie pamięci podręcznej (Safari / iOS / Edge) do szybkiego aktualizowania aplikacji bez opóźnień!",
-      "🎓 Nowość: Dodano Interaktywny Samouczek oprowadzający nowych (i stałych) użytkowników po systemie, zbudowany w czystym JS!"
-    ]
-  },
-  {
-    "version": "v.2026.8.7.17",
     "date": "2026-08-07",
     "changes": [
       "💪 Inteligentna analiza Tonażu: od teraz pompki i podciągania wliczają masę Twojego ciała do przerzuconego ciężaru!",
