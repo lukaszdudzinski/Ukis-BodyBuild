@@ -1,5 +1,14 @@
 [
   {
+    "version": "v.2026.8.7.26",
+    "date": "2026-08-07",
+    "changes": [
+      "🔥 Naprawa mechanizmu aktualizacji PWA: Baner 'Co nowego?' będzie się teraz pojawiał znacznie skuteczniej i bez pętli.",
+      "🛠️ Rozwiązano problem z zablokowaniem aplikacji (błąd ładowania ekranu) dla nowych użytkowników wywołany przez samouczek.",
+      "🤖 Wdrożono środowisko testowe Playwright zapobiegające podobnym awariom w przyszłości."
+    ]
+  },
+  {
     "version": "v.2026.8.7.25",
     "date": "2026-08-07",
     "changes": [
