@@ -1,5 +1,12 @@
 [
   {
+    "version": "v.2026.8.7.08",
+    "date": "2026-08-07",
+    "changes": [
+      "📡 Połączenie z centralą przywrócone! Usunęliśmy przeszkodę wymagającą ręcznej konfiguracji połączeń sieciowych z Cloudflare. Edward odpala się natychmiast, z użyciem dedykowanego tunelu!"
+    ]
+  },
+  {
     "version": "v.2026.8.7.07",
     "date": "2026-08-07",
     "changes": [

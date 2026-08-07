@@ -201,8 +201,8 @@ export const ChatUI = {
         input.value = '';
         ChatUI.appendMessage(text, 'user');
         
-        // Ensure URL is configured
-        let workerUrl = localStorage.getItem('dietWorkerUrl');
+        // Ensure URL is configured or use default fallback
+        let workerUrl = localStorage.getItem('dietWorkerUrl') || 'https://uki-dieta.lukasz-dudzinski.workers.dev';
         if (!workerUrl) {
             ChatUI.appendMessage("Musisz najpierw skonfigurować URL do chmury AI (Cloudflare Worker) w zakładce Profil i Ustawienia!", 'edward');
             return;
