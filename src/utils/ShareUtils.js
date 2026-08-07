@@ -39,15 +39,7 @@ export const ShareUtils = {
                 ctx.fillRect(0, 0, canvas.width, canvas.height);
             }
 
-            // Helper to load image
-            const loadImage = (src) => {
-                return new Promise((res, rej) => {
-                    const img = new Image();
-                    img.onload = () => res(img);
-                    img.onerror = () => rej(new Error('Failed to load image'));
-                    img.src = src;
-                });
-            };
+            // Draw header / logo area
             
             // Draw header / logo area
             try {
