@@ -1,4 +1,4 @@
-export const APP_VERSION = 'v.2026.8.7.26'; // <-- TEN NUMER ZMIENIAMY PRZY KAŻDEJ AKTUALIZACJI
+export const APP_VERSION = 'v.2026.8.7.28'; // <-- TEN NUMER ZMIENIAMY PRZY KAŻDEJ AKTUALIZACJI
 
 window.onerror = function(message, source, lineno, colno, error) {
     let errs = [];
@@ -141,6 +141,10 @@ export const AppUI = {
             });
 
             document.dispatchEvent(new CustomEvent('tabChanged', { detail: { tab: tabId } }));
+
+            if (window.OnboardingUI && window.OnboardingUI.checkContextualTutorial) {
+                window.OnboardingUI.checkContextualTutorial(tabId);
+            }
 
             // Mobile Home Button Logic (Show everywhere EXCEPT welcome screen)
             if (tilesHomeBtn) {

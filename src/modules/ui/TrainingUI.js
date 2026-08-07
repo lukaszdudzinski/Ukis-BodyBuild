@@ -801,6 +801,24 @@ export const TrainingUI = {
                     });
                 }
                 alert("Trening zapisany pomyślnie!");
+
+                // Trener Edward AI - Gratulacje
+                setTimeout(async () => {
+                    if (window.ChatUI && window.DatabaseManager) {
+                        try {
+                            const trainings = await window.DatabaseManager.getTrainings();
+                            const count = trainings.length;
+                            if (count === 1) {
+                                window.ChatUI.showContextualBubble("Świetna robota z pierwszym treningiem! Oby tak dalej! 💪", true);
+                            } else if (count % 7 === 0) {
+                                window.ChatUI.showContextualBubble(`Niesamowite! Masz już na koncie ${count} treningów! Konsekwencja to klucz do sukcesu! 🏆`, true);
+                            } else if (Math.random() > 0.7) {
+                                window.ChatUI.showContextualBubble("Dobra robota dzisiaj! Odpocznij, zjedz coś zdrowego i wracaj silniejszy! 🚀", true);
+                            }
+                        } catch(e) { console.error(e) }
+                    }
+                }, 1500);
+
             } catch (err) {
                 console.error("Error saving training:", err);
                 alert("Błąd zapisu treningu!");

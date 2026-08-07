@@ -148,6 +148,73 @@ export const ChatUI = {
         });
     },
 
+    showContextualBubble: (message, clickable = true) => {
+        let bubble = document.getElementById('edward-contextual-bubble');
+        if (bubble) bubble.remove();
+
+        const toggleBtn = document.getElementById('edward-chat-toggle');
+        // Jeśli okno czatu jest otwarte, nie pokazujemy dymka tylko wrzucamy wiadomość
+        if (!toggleBtn || toggleBtn.style.display === 'none') {
+            ChatUI.appendMessage(message, 'edward');
+            return;
+        }
+
+        bubble = document.createElement('div');
+        bubble.id = 'edward-contextual-bubble';
+        
+        // Responsywne style
+        bubble.style.cssText = `
+            position: fixed;
+            bottom: 90px;
+            right: 20px;
+            background: rgba(40, 40, 40, 0.95);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid #00BFFF;
+            color: white;
+            padding: 12px 18px;
+            border-radius: 20px;
+            border-bottom-right-radius: 5px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+            z-index: 999;
+            max-width: 280px;
+            font-size: 0.95em;
+            line-height: 1.4;
+            opacity: 0;
+            transform: translateY(20px) scale(0.95);
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            cursor: ${clickable ? 'pointer' : 'default'};
+        `;
+        
+        bubble.innerHTML = message;
+        document.body.appendChild(bubble);
+
+        // Animacja wejścia
+        requestAnimationFrame(() => {
+            bubble.style.opacity = '1';
+            bubble.style.transform = 'translateY(0) scale(1)';
+        });
+
+        if (clickable) {
+            bubble.addEventListener('click', () => {
+                bubble.style.opacity = '0';
+                bubble.style.transform = 'translateY(10px) scale(0.95)';
+                setTimeout(() => bubble.remove(), 400);
+                toggleBtn.click(); // Otwórz czat
+                ChatUI.appendMessage(message, 'edward'); // Dodaj do historii
+            });
+        }
+
+        // Automatyczne zniknięcie po 8 sekundach jeśli nie kliknięto
+        setTimeout(() => {
+            if (document.getElementById('edward-contextual-bubble')) {
+                bubble.style.opacity = '0';
+                bubble.style.transform = 'translateY(10px) scale(0.95)';
+                setTimeout(() => bubble.remove(), 400);
+            }
+        }, 8000);
+    },
+
     appendMessage: (text, sender) => {
         const messagesDiv = document.getElementById('edward-chat-messages');
         const isUser = sender === 'user';

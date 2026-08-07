@@ -8,7 +8,7 @@ test.describe('Training and History Flow', () => {
 
   test('should create a training session and verify it appears in history', async ({ page }) => {
     // 1. Go to Training Tab
-    await page.click('text=Trening');
+    await page.click('#tile-training');
 
     // Wait for the calendar to render and click "Dodaj nową sesję treningową"
     await page.click('text=Dodaj nową sesję treningową');

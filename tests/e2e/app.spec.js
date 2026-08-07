@@ -41,19 +41,20 @@ test.describe('Uki BodyBuild App - PWA and UI', () => {
     
     // Klikamy w boczny panel -> Trening
     // Jeśli to mobile, trzeba otworzyć menu, ale robimy test pod desktop
-    await page.click('.sidebar-nav a[data-tab="training-panel"]');
+    await page.click('.sidebar-nav a[data-tab="training-dashboard"]');
     
     // Sprawdzamy czy przełączyło na panel treningu
-    await expect(page.locator('#training-panel')).toHaveClass(/active-tab/);
-    await expect(page.locator('#training-panel')).toBeVisible();
+    await expect(page.locator('#training-dashboard')).toHaveClass(/active-tab/);
+    await expect(page.locator('#training-dashboard')).toBeVisible();
 
     // Klikamy -> Pomiary Ciała
-    await page.click('.sidebar-nav a[data-tab="measurements-panel"]');
-    await expect(page.locator('#measurements-panel')).toHaveClass(/active-tab/);
-    await expect(page.locator('#measurements-panel')).toBeVisible();
+    await page.click('.sidebar-nav a[data-tab="measurements-dashboard"]');
+    await expect(page.locator('#measurements-dashboard')).toHaveClass(/active-tab/);
+    await expect(page.locator('#measurements-dashboard')).toBeVisible();
   });
 
   test('Samouczek uruchamia się i pozwala się zamknąć', async ({ page }) => {
+    await page.addInitScript(() => window.localStorage.setItem('tutorial_global_v21', 'true'));
     await page.goto('/');
     
     // Otwórz ustawienia

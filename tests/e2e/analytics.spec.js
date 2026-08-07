@@ -8,7 +8,7 @@ test.describe('Advanced Analytics Module', () => {
     await page.goto('http://127.0.0.1:8080'); // Assuming local server is running on 8080 during tests
 
     // Wait for App UI to load
-    await page.waitForSelector('.app-container');
+    await page.waitForSelector('.app-wrapper');
 
     // Inject mock data into DatabaseManager
     await page.evaluate(async () => {
@@ -30,7 +30,7 @@ test.describe('Advanced Analytics Module', () => {
     });
 
     // Navigate to Analytics Tab
-    await page.click('button[onclick="window.AppUI.switchTab(\'analytics-dashboard\')"]');
+    await page.click('a[data-tab="analytics-dashboard"]');
     
     // Wait for the analytics to render
     await page.waitForSelector('#analytics-content h4', { state: 'visible' });
@@ -78,7 +78,7 @@ test.describe('Advanced Analytics Module', () => {
     });
 
     // Navigate to Analytics Tab
-    await page.click('button[onclick="window.AppUI.switchTab(\'analytics-dashboard\')"]');
+    await page.click('a[data-tab="analytics-dashboard"]');
     
     // Check for missing data warning
     const missingWarning = await page.locator('text=Brak danych do wyliczenia BF%').isVisible();
