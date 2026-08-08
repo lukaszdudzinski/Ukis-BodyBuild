@@ -1,5 +1,15 @@
 [
   {
+    "version": "v.2026.8.8.03",
+    "date": "2026-08-08",
+    "changes": [
+      "🎨 Szlify Graficzne: Poprawiliśmy zawijanie tekstów w Analizie Progresu. Nawet najmniejsze ekrany telefonów bezbłędnie wyświetlają teraz opisy stref (np. Atletyczna)! 📱",
+      "🖼️ Własna Tapeta: Usunęliśmy gęstą mgłę z tła! Teraz wrzucając własną fotkę jako tapetę, cieszysz się jej widokiem w pełnej krasie za wszystkimi kafelkami.",
+      "📖 Księga Uki'ego (Help): Instrukcja obsługi została gigantycznie rozbudowana! Każdy kafelek, każda opcja ma tam teraz swój zabawny i treściwy opis. Żaden ficzer Ci nie umknie!",
+      "📸 Gotowi na Insta: Twój system udostępniania statystyk na Social Media działa doskonale, ustawiając Twoje fotki z treningu jako epickie tło z mrocznym filtrem. Szpanuj formą bez przeszkód!"
+    ]
+  },
+  {
     "version": "v.2026.8.8.02",
     "date": "2026-08-08",
     "changes": [

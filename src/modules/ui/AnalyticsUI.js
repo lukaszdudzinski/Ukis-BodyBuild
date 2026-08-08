@@ -528,14 +528,14 @@ export const AnalyticsUI = {
                         ${barsHtml}
                     </div>
                     <!-- Pointer -->
-                    <div style="position: absolute; left: ${pointerPct}%; top: 12px; transform: translateX(-50%); text-align: center;">
+                    <div style="position: absolute; left: ${pointerPct}%; top: 12px; transform: translateX(-50%); text-align: center; z-index: 2;">
                         <div style="width: 0; height: 0; border-left: 8px solid transparent; border-right: 8px solid transparent; border-bottom: 10px solid #fff; margin: 0 auto;"></div>
                         <strong style="color: #fff; background: #000; padding: 3px 8px; border-radius: 4px; display: inline-block; margin-top: 4px; font-size: 1.1em; border: 1px solid ${color};">${Number(value).toFixed(2)}</strong>
                     </div>
                 </div>
 
-                <div style="display: flex; justify-content: space-between; font-size: 0.75em; color: #888; margin-top: -10px; margin-bottom: 20px;">
-                    ${ranges.map(r => `<span style="color: ${r.color};">${r.label}</span>`).join('')}
+                <div style="display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; font-size: 0.7em; color: #888; margin-top: 15px; margin-bottom: 20px; line-height: 1.2;">
+                    ${ranges.map(r => `<span style="color: ${r.color}; margin: 2px;">${r.label}</span>`).join('')}
                 </div>
 
                 <button onclick="document.getElementById('analytics-info-modal').style.opacity='0'; setTimeout(()=>document.getElementById('analytics-info-modal').style.display='none', 300);" style="width: 100%; background: #333; color: #fff; border: 1px solid #555; padding: 12px; border-radius: 6px; font-weight: bold; font-size: 1.1em; cursor: pointer;">Zrozumiałem</button>
