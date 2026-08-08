@@ -287,11 +287,26 @@ export const TrainingUI = {
         const now = Date.now();
         const duration = Math.floor((now - currentTraining.startTime - currentTraining.totalPausedTime) / 1000);
         
-        // Coach Edward AI
-        if (duration === 900 || duration === 1800 || duration === 2700) {
+        // Coach Edward AI co 15 min (900s)
+        const edwardInterval = 900;
+        if (duration > 0 && Math.floor(duration / edwardInterval) > (currentTraining.lastEdwardIndex || 0)) {
+            currentTraining.lastEdwardIndex = Math.floor(duration / edwardInterval);
+            
+            const messages = [
+                "Jak Ci idzie? Ćwicz, a nie siedzisz w telefonie!",
+                "Jedziesz! Pamiętaj o oddechu!",
+                "Nie odpuszczaj, to buduje charakter!",
+                "Czas na kolejną serię. Pokaż na co Cię stać!"
+            ];
+            const msgText = messages[Math.floor(Math.random() * messages.length)];
+
+            if (window.ChatUI) {
+                window.ChatUI.showContextualBubble(`⏱ ${msgText}`, true);
+            }
+
             try {
                 if ('speechSynthesis' in window) {
-                    const msg = new SpeechSynthesisUtterance("Jak Ci idzie? Ćwicz, a nie siedzisz w telefonie!");
+                    const msg = new SpeechSynthesisUtterance(msgText);
                     msg.lang = 'pl-PL';
                     const voices = window.speechSynthesis.getVoices();
                     const maleVoice = voices.find(v => v.lang.includes('pl') && v.name.toLowerCase().includes('male'));
@@ -418,6 +433,13 @@ export const TrainingUI = {
                 inputs[inputs.length - 1].scrollIntoView({ behavior: 'smooth', block: 'center' });
             }
         }, 100);
+    },
+    toggleSign: (inputId) => {
+        const el = document.getElementById(inputId);
+        if(el) {
+            let val = parseFloat(el.value || '0');
+            el.value = (val * -1).toString();
+        }
     },
 
     addSuperset: () => {
@@ -593,7 +615,12 @@ export const TrainingUI = {
                     </div>
 
                     <div style="display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-top: 15px;">
-                        <input type="number" id="weight-${ex.id}" placeholder="kg" style="min-width: 60px; flex: 1; padding: 12px; border-radius: 4px; border: 1px solid #444; background: #222; color: #fff; font-size: 1.25em; text-align: center; box-sizing: border-box;" inputmode="decimal">
+                        <div style="display: flex; flex: 1; min-width: 80px; gap: 5px;">
+                            ${(ex.name && ['brzuch', 'brzuski', 'podciąganie', 'pompki', 'plank', 'deska'].some(kw => ex.name.toLowerCase().includes(kw))) ? 
+                            `<button onclick="window.TrainingUI.toggleSign('weight-${ex.id}')" style="background: #444; color: #fff; border: none; padding: 12px; border-radius: 4px; font-weight: bold; cursor: pointer; border: 1px solid #666;" title="Zmień ciężar na ujemny (odciążenie z gum)">+/-</button>` 
+                            : ''}
+                            <input type="${(ex.name && ['brzuch', 'brzuski', 'podciąganie', 'pompki', 'plank', 'deska'].some(kw => ex.name.toLowerCase().includes(kw))) ? 'text' : 'number'}" id="weight-${ex.id}" placeholder="kg" style="flex: 1; min-width: 40px; padding: 12px; border-radius: 4px; border: 1px solid #444; background: #222; color: #fff; font-size: 1.25em; text-align: center; box-sizing: border-box;" inputmode="decimal">
+                        </div>
                         <span style="color: #aaa; font-weight: bold; font-size: 1.25em;">X</span>
                         <input type="number" id="reps-${ex.id}" placeholder="powt" style="min-width: 60px; flex: 1; padding: 12px; border-radius: 4px; border: 1px solid #444; background: #222; color: #fff; font-size: 1.25em; text-align: center; box-sizing: border-box;" inputmode="numeric">
                     </div>
@@ -761,14 +788,22 @@ export const TrainingUI = {
                 currentTraining.totalPausedTime += (Date.now() - currentTraining.pauseStartTime);
             }
 
-            const duration = Math.floor((Date.now() - currentTraining.startTime - currentTraining.totalPausedTime) / 1000);
+            let duration = Math.floor((Date.now() - currentTraining.startTime - currentTraining.totalPausedTime) / 1000);
+            
+            const manualDurationInput = document.getElementById('manual-training-duration');
+            if (manualDurationInput && manualDurationInput.value) {
+                const min = parseInt(manualDurationInput.value, 10);
+                if (!isNaN(min) && min > 0) {
+                    duration = min * 60; // override via smartwatch/user
+                }
+            }
             
             // Filter out empty exercises, supporting nested supersets without throwing TypeError
             const validExercises = currentTraining.exercises.filter(ex => {
                 if (ex.type === 'superset' && Array.isArray(ex.exercises)) {
-                    return ex.exercises.some(subEx => (subEx.name && subEx.name.trim() !== '') || (subEx.sets && subEx.sets.length > 0));
+                    return ex.exercises.some(subEx => (subEx.name && subEx.name.trim() !== '') || (Array.isArray(subEx.sets) && subEx.sets.length > 0));
                 }
-                return (ex.name && ex.name.trim() !== '') || (ex.sets && ex.sets.length > 0);
+                return (ex.name && ex.name.trim() !== '') || (Array.isArray(ex.sets) && ex.sets.length > 0);
             });
 
             const nameInput = document.getElementById('training-name-input');
@@ -821,6 +856,7 @@ export const TrainingUI = {
 
             } catch (err) {
                 console.error("Error saving training:", err);
+                if (window.ukiLogError) window.ukiLogError("Błąd podczas zapisu w finishTraining", err ? err.stack || err.toString() : '');
                 alert("Błąd zapisu treningu!");
             }
 

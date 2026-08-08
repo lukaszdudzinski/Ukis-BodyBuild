@@ -78,24 +78,25 @@ export const DatabaseManager = {
             );
         `);
         
-        // Ensure name column exists (for backward compatibility if table was created before)
         try {
             db.exec(`ALTER TABLE trainings ADD COLUMN name TEXT;`);
-        } catch(e) {
-            // Ignore error if column already exists
-        }
+        } catch(e) {}
+
+        try {
+            db.exec(`ALTER TABLE trainings ADD COLUMN social_photos_json TEXT;`);
+        } catch(e) {}
+
+        try {
+            db.exec(`ALTER TABLE trainings ADD COLUMN smartwatch_json TEXT;`);
+        } catch(e) {}
 
         try {
             db.exec(`ALTER TABLE measurements ADD COLUMN height REAL;`);
-        } catch(e) {
-            // Ignore error if column already exists
-        }
+        } catch(e) {}
 
         try {
             db.exec(`ALTER TABLE measurements ADD COLUMN neck REAL;`);
-        } catch(e) {
-            // Ignore error if column already exists
-        }
+        } catch(e) {}
 
         // Dieta (Diet Logs)
         db.exec(`
@@ -149,12 +150,14 @@ export const DatabaseManager = {
         await DatabaseManager.init();
         
         db.exec({
-            sql: `INSERT INTO trainings (date, duration_seconds, exercises_json, name) VALUES (?, ?, ?, ?)`,
+            sql: `INSERT INTO trainings (date, duration_seconds, exercises_json, name, social_photos_json, smartwatch_json) VALUES (?, ?, ?, ?, ?, ?)`,
             bind: [
                 data.date, 
                 data.duration_seconds, 
                 JSON.stringify(data.exercises),
-                data.name || ''
+                data.name || '',
+                data.socialPhotos ? JSON.stringify(data.socialPhotos) : null,
+                data.smartwatch ? JSON.stringify(data.smartwatch) : null
             ]
         });
         
@@ -174,11 +177,13 @@ export const DatabaseManager = {
         await DatabaseManager.init();
         
         db.exec({
-            sql: `UPDATE trainings SET duration_seconds = ?, exercises_json = ?, name = ? WHERE id = ?`,
+            sql: `UPDATE trainings SET duration_seconds = ?, exercises_json = ?, name = ?, social_photos_json = ?, smartwatch_json = ? WHERE id = ?`,
             bind: [
                 data.duration_seconds, 
                 JSON.stringify(data.exercises),
                 data.name || '',
+                data.socialPhotos ? JSON.stringify(data.socialPhotos) : null,
+                data.smartwatch ? JSON.stringify(data.smartwatch) : null,
                 data.id
             ]
         });
@@ -195,7 +200,9 @@ export const DatabaseManager = {
             callback: function (row) {
                 records.push({
                     ...row,
-                    exercises: JSON.parse(row.exercises_json)
+                    exercises: JSON.parse(row.exercises_json),
+                    socialPhotos: row.social_photos_json ? JSON.parse(row.social_photos_json) : [],
+                    smartwatch: row.smartwatch_json ? JSON.parse(row.smartwatch_json) : { calories: null, hr: null }
                 });
             }
         });

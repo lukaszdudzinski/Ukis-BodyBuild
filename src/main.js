@@ -9,6 +9,25 @@ import { OnboardingUI } from './modules/ui/OnboardingUI.js';
 import { ChatUI } from './modules/ui/ChatUI.js';
 import { DatabaseManager } from './modules/db/DatabaseManager.js';
 import { ChangelogUI } from './modules/ui/ChangelogUI.js';
+window.ukiLogError = (msg, stack) => {
+    let logs = [];
+    try { logs = JSON.parse(localStorage.getItem('uki_error_logs') || '[]'); } catch(e) {}
+    logs.unshift({ time: new Date().toISOString(), msg, stack });
+    if(logs.length > 50) logs.length = 50;
+    localStorage.setItem('uki_error_logs', JSON.stringify(logs));
+};
+
+window.onerror = function(message, source, lineno, colno, error) {
+    const stack = error ? error.stack : '';
+    window.ukiLogError(`Global Error: ${message} at ${source}:${lineno}:${colno}`, stack);
+    return false;
+};
+
+window.addEventListener('unhandledrejection', function(event) {
+    const msg = event.reason ? event.reason.message || event.reason : 'Unhandled Promise Rejection';
+    const stack = event.reason ? event.reason.stack || '' : '';
+    window.ukiLogError(`Promise Rejection: ${msg}`, stack);
+});
 
 // Expose for E2E testing and PWA updater
 window.DatabaseManager = DatabaseManager;

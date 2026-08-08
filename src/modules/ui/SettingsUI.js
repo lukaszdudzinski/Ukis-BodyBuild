@@ -55,8 +55,22 @@ export const SettingsUI = {
 
         const errArea = document.getElementById('error-logs-area');
         if (errArea) {
-            const errs = localStorage.getItem('uki-errors');
-            errArea.value = errs ? errs : 'Brak zarejestrowanych błędów :)';
+            const renderLogs = () => {
+                try {
+                    const logs = JSON.parse(localStorage.getItem('uki_error_logs') || '[]');
+                    if (logs.length === 0) {
+                        errArea.value = 'Brak zarejestrowanych błędów :)';
+                    } else {
+                        errArea.value = logs.map(l => `[${l.time}]\nMSG: ${l.msg}\nSTACK: ${l.stack}`).join('\n\n-----------------\n\n');
+                    }
+                } catch(e) {
+                    errArea.value = 'Błąd odczytu logów!';
+                }
+            };
+            renderLogs();
+            
+            // Allow refreshing
+            errArea.addEventListener('focus', renderLogs);
         }
 
         const copyErrBtn = document.getElementById('copy-errors-btn');
@@ -70,7 +84,7 @@ export const SettingsUI = {
         const clearErrBtn = document.getElementById('clear-errors-btn');
         if (clearErrBtn) {
             clearErrBtn.addEventListener('click', () => {
-                localStorage.removeItem('uki-errors');
+                localStorage.removeItem('uki_error_logs');
                 if (errArea) errArea.value = 'Brak zarejestrowanych błędów :)';
             });
         }
@@ -164,7 +178,7 @@ export const SettingsUI = {
         const reminderSelect = document.getElementById('profile-reminder-select');
 
         // Load saved values
-        const savedNick = localStorage.getItem('uki-bodybuild-nick');
+        const savedNick = localStorage.getItem('userNick');
         const savedAvatar = localStorage.getItem('uki-bodybuild-avatar');
         
         if (savedNick && nickInput) {
@@ -193,8 +207,9 @@ export const SettingsUI = {
         if (nickInput) {
             nickInput.addEventListener('input', (e) => {
                 const val = e.target.value.trim();
-                localStorage.setItem('uki-bodybuild-nick', val);
+                localStorage.setItem('userNick', val);
                 SettingsUI.applyProfileNick(val);
+                document.dispatchEvent(new Event('nickUpdated'));
             });
         }
 
@@ -221,14 +236,24 @@ export const SettingsUI = {
             wallpaperUpload.addEventListener('change', (e) => {
                 const file = e.target.files[0];
                 if (file) {
-                    const reader = new FileReader();
-                    reader.onload = (event) => {
-                        const base64 = event.target.result;
-                        localStorage.setItem('uki-bodybuild-wallpaper', base64);
-                        SettingsUI.applyWallpaper();
-                        if (wallpaperRemove) wallpaperRemove.style.display = 'block';
+                    const saveWallpaper = (base64) => {
+                        try {
+                            localStorage.setItem('uki-bodybuild-wallpaper', base64);
+                            SettingsUI.applyWallpaper();
+                            if (wallpaperRemove) wallpaperRemove.style.display = 'block';
+                        } catch(err) {
+                            if (window.ukiLogError) window.ukiLogError('Wallpaper save error', err.toString());
+                            alert('Błąd zapisu tapety. Zdjęcie jest zbyt duże dla lokalnej bazy przeglądarki.');
+                        }
                     };
-                    reader.readAsDataURL(file);
+
+                    if (window.TrainingUI && window.TrainingUI.compressImage) {
+                        window.TrainingUI.compressImage(file, saveWallpaper);
+                    } else {
+                        const reader = new FileReader();
+                        reader.onload = (event) => saveWallpaper(event.target.result);
+                        reader.readAsDataURL(file);
+                    }
                 }
             });
         }

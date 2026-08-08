@@ -225,8 +225,9 @@ export const AnalyticsUI = {
                     }
 
                     bfHtml = `
-                        <div style="background: rgba(0,0,0,0.5); border: 1px solid #00BFFF; padding: 15px; border-radius: 8px; margin-bottom: 15px;">
+                        <div style="background: rgba(0,0,0,0.5); border: 1px solid #00BFFF; padding: 15px; border-radius: 8px; margin-bottom: 15px; position: relative;">
                             <strong style="color: #00BFFF; font-size: 1.2em;">Szacunkowy BF%</strong>
+                            <button onclick="alert('BF% (Body Fat) to procentowa zawartość tkanki tłuszczowej.\\n\\nMężczyźni:\\n< 6%: Startowa forma (Ekstremalnie niski)\\n6-14%: Atletyczna\\n14-18%: Fitness\\n18-25%: Przeciętna\\n> 25%: Podwyższona\\n\\nKobiety:\\n< 14%: Startowa forma\\n14-21%: Atletyczna\\n21-25%: Fitness\\n25-32%: Przeciętna\\n> 32%: Podwyższona')" style="position: absolute; right: 15px; top: 15px; background: none; border: none; color: #00BFFF; font-size: 1.2em; cursor: pointer;">ℹ️</button>
                             <div style="font-size: 2em; font-weight: bold; margin: 10px 0;">${bf.toFixed(1)} %</div>
                             <p style="margin: 0; font-size: 0.9em; font-weight: bold; color: #fff;">${bfText}</p>
                             <p style="margin: 5px 0 0 0; font-size: 0.8em; color: #aaa;">Tkanka tłuszczowa wg wzoru US Navy</p>
@@ -264,8 +265,9 @@ export const AnalyticsUI = {
                     }
 
                     ffmiHtml = `
-                        <div style="background: rgba(0,0,0,0.5); border: 1px solid #2ECC71; padding: 15px; border-radius: 8px; margin-bottom: 15px;">
+                        <div style="background: rgba(0,0,0,0.5); border: 1px solid #2ECC71; padding: 15px; border-radius: 8px; margin-bottom: 15px; position: relative;">
                             <strong style="color: #2ECC71; font-size: 1.2em;">FFMI (Index Beztłuszczowy)</strong>
+                            <button onclick="alert('FFMI to wskaźnik masy mięśniowej.\\n\\nMężczyźni:\\n< 18: Poniżej przeciętnej\\n18-20: Przeciętna muskulatura\\n20-22: Dobra (Wysportowany)\\n22-25: Doskonała\\n> 25: Genetyczna elita / wspomaganie\\n\\nKobiety:\\n< 15: Poniżej przeciętnej\\n15-17: Przeciętna muskulatura\\n17-19: Dobra (Wysportowana)\\n19-21: Doskonała\\n> 21: Genetyczna elita')" style="position: absolute; right: 15px; top: 15px; background: none; border: none; color: #2ECC71; font-size: 1.2em; cursor: pointer;">ℹ️</button>
                             <div style="font-size: 2em; font-weight: bold; margin: 10px 0;">${normalizedFfmi.toFixed(1)}</div>
                             <p style="margin: 0; font-size: 0.9em; font-weight: bold; color: #fff;">${ffmiText}</p>
                             <p style="margin: 5px 0 0 0; font-size: 0.8em; color: #aaa;">Wskaźnik suchej masy mięśniowej</p>
@@ -289,8 +291,9 @@ export const AnalyticsUI = {
                     }
 
                     whrHtml = `
-                        <div style="background: rgba(0,0,0,0.5); border: 1px solid #9B59B6; padding: 15px; border-radius: 8px; margin-bottom: 15px;">
+                        <div style="background: rgba(0,0,0,0.5); border: 1px solid #9B59B6; padding: 15px; border-radius: 8px; margin-bottom: 15px; position: relative;">
                             <strong style="color: #9B59B6; font-size: 1.2em;">WHR (Talia-Biodra)</strong>
+                            <button onclick="alert('WHR (Waist-to-Hip Ratio) to wskaźnik proporcji obwodu talii do bioder.\\n\\nMężczyźni:\\n< 0.90: Zdrowe proporcje (Niskie ryzyko)\\n0.90 - 1.0: Umiarkowane ryzyko\\n> 1.0: Typ jabłka (Podwyższone ryzyko otyłości brzusznej)\\n\\nKobiety:\\n< 0.80: Zdrowe proporcje (Niskie ryzyko)\\n0.80 - 0.85: Umiarkowane ryzyko\\n> 0.85: Typ jabłka (Podwyższone ryzyko)')" style="position: absolute; right: 15px; top: 15px; background: none; border: none; color: #9B59B6; font-size: 1.2em; cursor: pointer;">ℹ️</button>
                             <div style="font-size: 2em; font-weight: bold; margin: 10px 0;">${whr.toFixed(2)}</div>
                             <p style="margin: 0; font-size: 0.9em; font-weight: bold; color: #fff;">${whrText}</p>
                             <p style="margin: 5px 0 0 0; font-size: 0.8em; color: #aaa;">Proporcje sylwetki</p>

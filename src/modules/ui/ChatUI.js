@@ -205,14 +205,14 @@ export const ChatUI = {
             });
         }
 
-        // Automatyczne zniknięcie po 8 sekundach jeśli nie kliknięto
+        // Automatyczne zniknięcie po 15 sekundach jeśli nie kliknięto
         setTimeout(() => {
             if (document.getElementById('edward-contextual-bubble')) {
                 bubble.style.opacity = '0';
                 bubble.style.transform = 'translateY(10px) scale(0.95)';
                 setTimeout(() => bubble.remove(), 400);
             }
-        }, 8000);
+        }, 15000);
     },
 
     appendMessage: (text, sender) => {

@@ -2,6 +2,8 @@ import { DatabaseManager } from '../db/DatabaseManager.js';
 import { DietAIEngine } from '../diet/DietAIEngine.js';
 
 export const DietUI = {
+    attachedImages: [],
+
     init: async () => {
         const dashboard = document.getElementById('diet-dashboard');
         if (!dashboard) return;
@@ -67,14 +69,12 @@ export const DietUI = {
                         <label id="diet-attach-btn" style="position: absolute; right: 8px; bottom: 12px; cursor: pointer; color: #FF9800; background: rgba(255,152,0,0.15); border: 1px solid #FF9800; border-radius: 8px; padding: 8px 10px; display: flex; flex-direction: column; align-items: center; justify-content: center; box-shadow: 0 2px 8px rgba(0,0,0,0.4); transition: transform 0.2s;">
                             <span style="font-size: 1.8em; line-height: 1; margin-bottom: 4px;">📸</span>
                             <span style="font-size: 0.6em; font-weight: bold; color: #FF9800; text-transform: uppercase; letter-spacing: 0.5px; white-space: nowrap;">Zrób fotę</span>
-                            <input type="file" id="diet-camera-input" accept="image/*" capture="environment" style="display: none;">
+                            <input type="file" id="diet-camera-input" accept="image/*" capture="environment" multiple style="display: none;">
                         </label>
                     </div>
 
-                    <div id="diet-image-preview-container" style="display: none; position: relative; margin-bottom: 15px; text-align: left;">
-                        <img id="diet-image-preview" src="" style="width: 70px; height: 70px; object-fit: cover; border-radius: 5px; border: 1px solid #555; display: inline-block;">
-                        <button id="diet-remove-image-btn" style="position: absolute; top: -5px; left: 55px; background: #F44336; color: white; border: none; border-radius: 50%; width: 22px; height: 22px; font-size: 12px; cursor: pointer; font-weight: bold;">×</button>
-                        <span style="display: inline-block; vertical-align: top; margin-left: 10px; font-size: 0.85em; color: #aaa; margin-top: 5px;">Zdjęcie gotowe do analizy</span>
+                    <div id="diet-image-preview-container" style="display: none; flex-wrap: wrap; gap: 10px; margin-bottom: 15px; text-align: left;">
+                        <!-- JS generated miniatures -->
                     </div>
 
                     <button id="diet-analyze-btn" class="action-button pulse" style="width: 100%; background: linear-gradient(135deg, #FF9800, #F44336); border: none; padding: 15px; border-radius: 25px; font-size: 1.05em; font-weight: bold; cursor: pointer; color: #fff; box-shadow: 0 4px 15px rgba(255, 152, 0, 0.4);">
@@ -322,46 +322,92 @@ export const DietUI = {
         }
     },
 
-    handleImageAttach: async (e) => {
-        const file = e.target.files[0];
-        if (!file) return;
+    renderImagePreviews: () => {
+        const previewContainer = document.getElementById('diet-image-preview-container');
+        if (!previewContainer) return;
         
-        try {
-            const base64 = await DietUI.resizeAndToBase64(file);
-            const previewContainer = document.getElementById('diet-image-preview-container');
-            const previewImg = document.getElementById('diet-image-preview');
+        previewContainer.innerHTML = '';
+        if (DietUI.attachedImages.length > 0) {
+            previewContainer.style.display = 'flex';
+            DietUI.attachedImages.forEach((base64, index) => {
+                const wrapper = document.createElement('div');
+                wrapper.style.position = 'relative';
+                
+                const img = document.createElement('img');
+                img.src = base64;
+                img.style.width = '70px';
+                img.style.height = '70px';
+                img.style.objectFit = 'cover';
+                img.style.borderRadius = '5px';
+                img.style.border = '1px solid #555';
+                
+                const removeBtn = document.createElement('button');
+                removeBtn.innerHTML = '×';
+                removeBtn.style.position = 'absolute';
+                removeBtn.style.top = '-5px';
+                removeBtn.style.right = '-5px';
+                removeBtn.style.background = '#F44336';
+                removeBtn.style.color = 'white';
+                removeBtn.style.border = 'none';
+                removeBtn.style.borderRadius = '50%';
+                removeBtn.style.width = '22px';
+                removeBtn.style.height = '22px';
+                removeBtn.style.fontSize = '12px';
+                removeBtn.style.cursor = 'pointer';
+                removeBtn.style.fontWeight = 'bold';
+                removeBtn.onclick = () => DietUI.removeAttachedImage(index);
+                
+                wrapper.appendChild(img);
+                wrapper.appendChild(removeBtn);
+                previewContainer.appendChild(wrapper);
+            });
             
-            if (previewContainer && previewImg) {
-                previewImg.src = base64;
-                previewContainer.style.display = 'block';
-            }
-        } catch (error) {
-            alert('Błąd podczas ładowania zdjęcia: ' + error.message);
+            const hint = document.createElement('span');
+            hint.style.display = 'inline-block';
+            hint.style.alignSelf = 'center';
+            hint.style.marginLeft = '10px';
+            hint.style.fontSize = '0.85em';
+            hint.style.color = '#aaa';
+            hint.textContent = `Zdjęć: ${DietUI.attachedImages.length}/3`;
+            previewContainer.appendChild(hint);
+        } else {
+            previewContainer.style.display = 'none';
         }
     },
 
-    removeAttachedImage: () => {
-        const previewContainer = document.getElementById('diet-image-preview-container');
-        const previewImg = document.getElementById('diet-image-preview');
-        const cameraInput = document.getElementById('diet-camera-input');
+    handleImageAttach: async (e) => {
+        const files = Array.from(e.target.files);
+        if (!files.length) return;
         
-        if (previewContainer && previewImg) {
-            previewImg.src = '';
-            previewContainer.style.display = 'none';
+        try {
+            for (const file of files) {
+                if (DietUI.attachedImages.length >= 3) {
+                    alert('Możesz dodać maksymalnie 3 zdjęcia posiłku na raz.');
+                    break;
+                }
+                const base64 = await DietUI.resizeAndToBase64(file);
+                DietUI.attachedImages.push(base64);
+            }
+            DietUI.renderImagePreviews();
+        } catch (error) {
+            alert('Błąd podczas ładowania zdjęcia: ' + error.message);
         }
-        if (cameraInput) {
-            cameraInput.value = '';
-        }
+        
+        // Reset input tak by można było wgrać te same zdjęcia ponownie po usunięciu
+        const cameraInput = document.getElementById('diet-camera-input');
+        if (cameraInput) cameraInput.value = '';
+    },
+
+    removeAttachedImage: (index) => {
+        DietUI.attachedImages.splice(index, 1);
+        DietUI.renderImagePreviews();
     },
 
     handleAnalyze: async () => {
         const contextInput = document.getElementById('diet-context-input');
         const contextText = contextInput ? contextInput.value.trim() : '';
         
-        const previewImg = document.getElementById('diet-image-preview');
-        const base64 = (previewImg && previewImg.src && previewImg.src.startsWith('data:image')) ? previewImg.src : null;
-
-        if (!contextText && !base64) {
+        if (!contextText && DietUI.attachedImages.length === 0) {
             alert('Napisz opis posiłku lub załącz zdjęcie!');
             return;
         }
@@ -373,7 +419,7 @@ export const DietUI = {
         if (analyzeBtn) analyzeBtn.style.display = 'none';
 
         try {
-            const result = await DietAIEngine.analyzeImage(base64, contextText);
+            const result = await DietAIEngine.analyzeImage(DietUI.attachedImages, contextText);
             
             const today = new Date().toISOString().split('T')[0];
             await DatabaseManager.addDietLog({
@@ -387,12 +433,14 @@ export const DietUI = {
             });
 
             if (contextInput) contextInput.value = '';
-            DietUI.removeAttachedImage();
+            DietUI.attachedImages = [];
+            DietUI.renderImagePreviews();
             
             alert(`Dodano: ${result.food_name} (${result.calories} kcal)`);
             DietUI.loadTodayData();
 
         } catch (error) {
+            if (window.ukiLogError) window.ukiLogError('DietAI Error', error.toString());
             alert(error.message);
         } finally {
             if (loading) loading.style.display = 'none';
