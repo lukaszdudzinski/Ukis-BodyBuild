@@ -331,8 +331,8 @@ export const SettingsUI = {
     applyWallpaper: () => {
         const base64 = localStorage.getItem('uki-bodybuild-wallpaper');
         if (base64) {
-            // Apply to body with a dark overlay using pseudo-element or just linear-gradient (reduced opacity so image is visible)
-            document.body.style.backgroundImage = `linear-gradient(rgba(18, 18, 18, 0.4), rgba(18, 18, 18, 0.6)), url(${base64})`;
+            // Apply to body without dark overlay to show full image
+            document.body.style.backgroundImage = `url(${base64})`;
             document.body.style.backgroundSize = 'cover';
             document.body.style.backgroundAttachment = 'fixed';
             document.body.style.backgroundPosition = 'center';

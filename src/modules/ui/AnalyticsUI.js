@@ -518,13 +518,13 @@ export const AnalyticsUI = {
         const pointerPct = Math.max(0, Math.min(100, ((value - minVal) / totalSpan) * 100));
 
         modal.innerHTML = `
-            <div style="background: #1e1e1e; padding: 25px; border-radius: 12px; width: 100%; max-width: 400px; border-top: 5px solid ${color}; box-shadow: 0 10px 30px rgba(0,0,0,0.8); position: relative;">
+            <div style="background: #1e1e1e; padding: 25px; border-radius: 12px; width: 100%; max-width: 400px; border-top: 5px solid ${color}; box-shadow: 0 10px 30px rgba(0,0,0,0.8); position: relative; box-sizing: border-box;">
                 <h3 style="color: ${color}; margin-top: 0; font-size: 1.4em;">${title}</h3>
                 <p style="color: #ddd; font-size: 0.95em; line-height: 1.5; margin-bottom: 25px;">${desc}</p>
                 
                 <div style="position: relative; height: 30px; margin-bottom: 30px;">
                     <!-- The Gauge -->
-                    <div style="display: flex; height: 16px; border-radius: 8px; overflow: hidden; width: 100%; box-shadow: inset 0 2px 4px rgba(0,0,0,0.5);">
+                    <div style="display: flex; height: 16px; border-radius: 8px; overflow: hidden; width: 100%; box-sizing: border-box; box-shadow: inset 0 2px 4px rgba(0,0,0,0.5);">
                         ${barsHtml}
                     </div>
                     <!-- Pointer -->
@@ -534,7 +534,7 @@ export const AnalyticsUI = {
                     </div>
                 </div>
 
-                <div style="display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; font-size: 0.7em; color: #888; margin-top: 15px; margin-bottom: 20px; line-height: 1.2;">
+                <div style="display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; font-size: 0.85em; color: #888; margin-top: 15px; margin-bottom: 20px; line-height: 1.3;">
                     ${ranges.map(r => `<span style="color: ${r.color}; margin: 2px;">${r.label}</span>`).join('')}
                 </div>
 
