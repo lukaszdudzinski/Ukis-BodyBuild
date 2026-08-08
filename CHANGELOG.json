@@ -1,10 +1,18 @@
 [
   {
+    "version": "v.2026.8.9.02",
+    "date": "2026-08-09",
+    "changes": [
+      "🎯 Idealne Wyśrodkowanie: Okna w Analizie Progresu na telefonach nie uciekają już do prawej krawędzi. Zrozumieliśmy aluzję - wielki przycisk 'Zrozumiałem' zamieniliśmy na smuklejszy i zgrabniejszy przycisk 'Zamknij'.",
+      "💎 Krystaliczna Tapeta: Efekt matowego szkła (blur) został całkowicie usunięty dla własnych tapet. Teraz Twoje zdjęcie jest ostre jak brzytwa i idealnie czytelne prosto pod kafelkami aplikacji!"
+    ]
+  },
+  {
     "version": "v.2026.8.9.01",
     "date": "2026-08-09",
     "changes": [
-      "📱 Skalowanie bez granic: Okna i wykresy w Analizie Progresu dopasowują się teraz idealnie do każdej wielkości ekranu, a opisy stref dostały większą i czytelniejszą czcionkę!",
-      "🖼️ Nieskazitelna Tapeta: Usunęliśmy filtr przyciemniający całkowicie! Od teraz Twoja wrzucona tapeta prezentuje się na pełnej ostrości i w 100% kolorach tuż pod kafelkami aplikacji."
+      "🎯 Idealne Wyśrodkowanie: Okna w Analizie Progresu na telefonach nie uciekają już do prawej krawędzi. Zrozumieliśmy aluzję - wielki przycisk \"Zrozumiałem\" zamieniliśmy na smuklejszy i zgrabniejszy przycisk \"Zamknij\".",
+      "💎 Krystaliczna Tapeta: Efekt matowego szkła (blur) został zdjęty dla własnych tapet. Teraz Twoje zdjęcie jest ostre jak brzytwa i idealnie czytelne prosto pod kafelkami aplikacji!"
     ]
   },
   {

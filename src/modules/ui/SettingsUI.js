@@ -336,12 +336,14 @@ export const SettingsUI = {
             document.body.style.backgroundSize = 'cover';
             document.body.style.backgroundAttachment = 'fixed';
             document.body.style.backgroundPosition = 'center';
+            document.body.classList.add('has-custom-wallpaper');
         } else {
             // Reset to default
             document.body.style.backgroundImage = '';
             document.body.style.backgroundSize = '';
             document.body.style.backgroundAttachment = '';
             document.body.style.backgroundPosition = '';
+            document.body.classList.remove('has-custom-wallpaper');
         }
     },
 

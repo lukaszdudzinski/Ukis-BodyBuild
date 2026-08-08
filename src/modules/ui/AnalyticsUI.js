@@ -433,7 +433,7 @@ export const AnalyticsUI = {
         if (!modal) {
             modal = document.createElement('div');
             modal.id = 'analytics-info-modal';
-            modal.style.cssText = 'position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 9999; display: flex; justify-content: center; align-items: center; padding: 20px; backdrop-filter: blur(5px); flex-direction: column; opacity: 0; transition: opacity 0.3s;';
+            modal.style.cssText = 'position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 9999; display: flex; justify-content: center; align-items: center; padding: 20px; box-sizing: border-box; backdrop-filter: blur(5px); flex-direction: column; opacity: 0; transition: opacity 0.3s;';
             document.body.appendChild(modal);
         }
 
@@ -538,7 +538,9 @@ export const AnalyticsUI = {
                     ${ranges.map(r => `<span style="color: ${r.color}; margin: 2px;">${r.label}</span>`).join('')}
                 </div>
 
-                <button onclick="document.getElementById('analytics-info-modal').style.opacity='0'; setTimeout(()=>document.getElementById('analytics-info-modal').style.display='none', 300);" style="width: 100%; background: #333; color: #fff; border: 1px solid #555; padding: 12px; border-radius: 6px; font-weight: bold; font-size: 1.1em; cursor: pointer;">Zrozumiałem</button>
+                <div style="text-align: center;">
+                    <button onclick="document.getElementById('analytics-info-modal').style.opacity='0'; setTimeout(()=>document.getElementById('analytics-info-modal').style.display='none', 300);" style="background: #333; color: #fff; border: 1px solid #555; padding: 10px 30px; border-radius: 6px; font-weight: bold; font-size: 1em; cursor: pointer; display: inline-block;">Zamknij</button>
+                </div>
             </div>
         `;
 
