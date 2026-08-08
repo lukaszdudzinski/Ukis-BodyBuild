@@ -1,0 +1,151 @@
+# Instructions
+
+- Following Playwright test failed.
+- Explain why, be concise, respect Playwright best practices.
+- Provide a snippet of code with the fix, if possible.
+
+# Test info
+
+- Name: training.spec.js >> Training Workflow >> Should navigate to training and open session form
+- Location: tests/e2e/training.spec.js:6:9
+
+# Error details
+
+```
+Test timeout of 30000ms exceeded.
+```
+
+```
+Error: locator.click: Test timeout of 30000ms exceeded.
+Call log:
+  - waiting for locator('.calendar-day:not(.empty)').filter({ hasText: /^15$/ })
+
+```
+
+# Page snapshot
+
+```yaml
+- generic [ref=f1e1]:
+  - generic [ref=f1e2]:
+    - navigation [ref=f1e3]:
+      - generic "Powrót do ekranu startowego" [ref=f1e4] [cursor=pointer]:
+        - img "Logo" [ref=f1e5]
+        - heading "Uki's BodyBuild" [level=1] [ref=f1e6]
+      - list [ref=f1e7]:
+        - listitem [ref=f1e8]:
+          - link "Pulpit Główny" [ref=f1e9] [cursor=pointer]:
+            - /url: "#"
+        - listitem [ref=f1e10]:
+          - link "Pomiary Ciała" [ref=f1e11] [cursor=pointer]:
+            - /url: "#"
+        - listitem [ref=f1e12]:
+          - link "Trening" [active] [ref=f1e13] [cursor=pointer]:
+            - /url: "#"
+        - listitem [ref=f1e14]:
+          - link "Historia Treningów" [ref=f1e15] [cursor=pointer]:
+            - /url: "#"
+        - listitem [ref=f1e16]:
+          - link "Analiza Progresu" [ref=f1e17] [cursor=pointer]:
+            - /url: "#"
+        - listitem [ref=f1e18]:
+          - link "Dieta i Żywienie" [ref=f1e19] [cursor=pointer]:
+            - /url: "#"
+        - listitem [ref=f1e20]:
+          - link "Profil i Ustawienia" [ref=f1e21] [cursor=pointer]:
+            - /url: "#"
+      - generic [ref=f1e22]:
+        - link [ref=f1e24] [cursor=pointer]:
+          - /url: https://suppi.pl/ukidives
+          - text: ☕ Podoba Ci się to narzędzie?
+          - strong [ref=f1e25]: Postaw mi kawę!
+        - generic [ref=f1e26]: v.2026.8.8.01
+    - main [ref=f1e27]:
+      - generic [ref=f1e29]:
+        - generic [ref=f1e30]:
+          - heading "Trening" [level=2] [ref=f1e31]
+          - paragraph [ref=f1e32]: Zaplanuj i wykonuj treningi
+        - generic [ref=f1e33]:
+          - generic [ref=f1e34]:
+            - button "◀" [ref=f1e35] [cursor=pointer]
+            - heading "Sierpień 2026" [level=3] [ref=f1e36]
+            - button "▶" [ref=f1e37] [cursor=pointer]
+          - generic [ref=f1e38]:
+            - generic [ref=f1e39]: Pn
+            - generic [ref=f1e40]: Wt
+            - generic [ref=f1e41]: Śr
+            - generic [ref=f1e42]: Cz
+            - generic [ref=f1e43]: Pt
+            - generic [ref=f1e44]: So
+            - generic [ref=f1e45]: Nd
+            - generic [ref=f1e46] [cursor=pointer]: "1"
+            - generic [ref=f1e47] [cursor=pointer]: "2"
+            - generic [ref=f1e48] [cursor=pointer]: "3"
+            - generic [ref=f1e49] [cursor=pointer]: "4"
+            - generic [ref=f1e50] [cursor=pointer]: "5"
+            - generic [ref=f1e51] [cursor=pointer]: "6"
+            - generic [ref=f1e52] [cursor=pointer]: "7"
+            - generic [ref=f1e53] [cursor=pointer]: "8"
+            - generic [ref=f1e54] [cursor=pointer]: "9"
+            - generic [ref=f1e55] [cursor=pointer]: "10"
+            - generic [ref=f1e56] [cursor=pointer]: "11"
+            - generic [ref=f1e57] [cursor=pointer]: "12"
+            - generic [ref=f1e58] [cursor=pointer]: "13"
+            - generic [ref=f1e59] [cursor=pointer]: "14"
+            - generic [ref=f1e60] [cursor=pointer]: "15"
+            - generic [ref=f1e61] [cursor=pointer]: "16"
+            - generic [ref=f1e62] [cursor=pointer]: "17"
+            - generic [ref=f1e63] [cursor=pointer]: "18"
+            - generic [ref=f1e64] [cursor=pointer]: "19"
+            - generic [ref=f1e65] [cursor=pointer]: "20"
+            - generic [ref=f1e66] [cursor=pointer]: "21"
+            - generic [ref=f1e67] [cursor=pointer]: "22"
+            - generic [ref=f1e68] [cursor=pointer]: "23"
+            - generic [ref=f1e69] [cursor=pointer]: "24"
+            - generic [ref=f1e70] [cursor=pointer]: "25"
+            - generic [ref=f1e71] [cursor=pointer]: "26"
+            - generic [ref=f1e72] [cursor=pointer]: "27"
+            - generic [ref=f1e73] [cursor=pointer]: "28"
+            - generic [ref=f1e74] [cursor=pointer]: "29"
+            - generic [ref=f1e75] [cursor=pointer]: "30"
+            - generic [ref=f1e76] [cursor=pointer]: "31"
+          - generic [ref=f1e77]:
+            - 'heading "Opcje dla: 2026-08-08" [level=4] [ref=f1e78]'
+            - generic [ref=f1e79]:
+              - button "➕ Dodaj nową sesję treningową" [ref=f1e80] [cursor=pointer]
+              - generic [ref=f1e81]:
+                - heading "📋 Skopiuj sesję treningową:" [level=5] [ref=f1e82]
+                - paragraph [ref=f1e83]: Brak sesji w historii do skopiowania.
+  - text: ✕
+  - button "🤖" [ref=f1e84] [cursor=pointer]
+```
+
+# Test source
+
+```ts
+  1  | export class TrainingPage {
+  2  |     constructor(page) {
+  3  |         this.page = page;
+  4  |         this.startNewSessionBtn = page.locator('#start-new-session-btn');
+  5  |         this.trainingNameInput = page.locator('#training-name-input');
+  6  |         this.addExerciseBtn = page.locator('#add-exercise-to-plan-btn');
+  7  |         this.finishTrainingBtn = page.locator('#finish-training-btn');
+  8  |         this.pauseBtn = page.locator('#pause-training-btn');
+  9  |     }
+  10 | 
+  11 |     async selectDay(dayNumber) {
+  12 |         // Find a day cell in the calendar with the text
+  13 |         const dayCell = this.page.locator(`.calendar-day:not(.empty)`, { hasText: new RegExp(`^${dayNumber}$`) });
+> 14 |         await dayCell.click();
+     |                       ^ Error: locator.click: Test timeout of 30000ms exceeded.
+  15 |     }
+  16 | 
+  17 |     async startNewSession() {
+  18 |         await this.startNewSessionBtn.click();
+  19 |     }
+  20 | 
+  21 |     async setTrainingName(name) {
+  22 |         await this.trainingNameInput.fill(name);
+  23 |     }
+  24 | }
+  25 | 
+```

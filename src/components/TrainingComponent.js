@@ -47,9 +47,16 @@ export const TrainingComponent = {
                 
                 <div style="background: rgba(0,0,0,0.5); padding: 15px; border-radius: 8px; border: 1px solid #00BFFF; text-align: center; margin-bottom: 20px;">
                     <h3 style="margin: 0; color: #00BFFF; margin-bottom: 10px;">Czas trwania: <span id="training-timer">00:00:00</span></h3>
-                    <div style="display: flex; align-items: center; justify-content: center; gap: 10px;">
-                        <label style="color: #ccc; font-size: 0.85em;">Wpisz ręcznie (minuty):</label>
-                        <input type="number" id="manual-training-duration" placeholder="Brak" style="width: 80px; padding: 8px; border-radius: 4px; border: 1px solid #444; background: #222; color: #fff; text-align: center;" inputmode="numeric">
+                    <div style="display: flex; flex-direction: column; align-items: center; gap: 10px;">
+                        <label style="display: flex; align-items: center; gap: 8px; color: #ccc; font-size: 0.9em; cursor: pointer;">
+                            <input type="checkbox" id="manual-duration-toggle" onchange="document.getElementById('manual-duration-inputs').style.display = this.checked ? 'flex' : 'none'" style="cursor: pointer;">
+                            Wpisz czas treningu ręcznie
+                        </label>
+                        <div id="manual-duration-inputs" style="display: none; align-items: center; gap: 5px;">
+                            <input type="number" id="manual-training-hours" placeholder="00" min="0" max="23" style="width: 50px; padding: 8px; border-radius: 4px; border: 1px solid #444; background: #222; color: #fff; text-align: center;" inputmode="numeric">
+                            <span style="color: #888; font-weight: bold;">:</span>
+                            <input type="number" id="manual-training-minutes" placeholder="00" min="0" max="59" style="width: 50px; padding: 8px; border-radius: 4px; border: 1px solid #444; background: #222; color: #fff; text-align: center;" inputmode="numeric">
+                        </div>
                     </div>
                 </div>
 

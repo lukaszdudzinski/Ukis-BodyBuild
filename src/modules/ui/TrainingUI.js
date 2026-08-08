@@ -523,7 +523,7 @@ export const TrainingUI = {
         const weightInput = document.getElementById(`weight-${exerciseId}`);
         const repsInput = document.getElementById(`reps-${exerciseId}`);
 
-        const bodyweightKeywords = ['brzuch', 'brzuski', 'podciąganie', 'pompki', 'plank', 'deska'];
+        const bodyweightKeywords = ['brzuch', 'brzus', 'podciąg', 'podciag', 'pompk', 'plank', 'deska', 'drąż', 'draz'];
         const isBodyweight = exercise.name && bodyweightKeywords.some(kw => exercise.name.toLowerCase().includes(kw));
 
         let wVal = weightInput.value;
@@ -616,10 +616,10 @@ export const TrainingUI = {
 
                     <div style="display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-top: 15px;">
                         <div style="display: flex; flex: 1; min-width: 80px; gap: 5px;">
-                            ${(ex.name && ['brzuch', 'brzuski', 'podciąganie', 'pompki', 'plank', 'deska'].some(kw => ex.name.toLowerCase().includes(kw))) ? 
+                            ${(ex.name && ['brzuch', 'brzus', 'podciąg', 'podciag', 'pompk', 'plank', 'deska', 'drąż', 'draz'].some(kw => ex.name.toLowerCase().includes(kw))) ? 
                             `<button onclick="window.TrainingUI.toggleSign('weight-${ex.id}')" style="background: #444; color: #fff; border: none; padding: 12px; border-radius: 4px; font-weight: bold; cursor: pointer; border: 1px solid #666;" title="Zmień ciężar na ujemny (odciążenie z gum)">+/-</button>` 
                             : ''}
-                            <input type="${(ex.name && ['brzuch', 'brzuski', 'podciąganie', 'pompki', 'plank', 'deska'].some(kw => ex.name.toLowerCase().includes(kw))) ? 'text' : 'number'}" id="weight-${ex.id}" placeholder="kg" style="flex: 1; min-width: 40px; padding: 12px; border-radius: 4px; border: 1px solid #444; background: #222; color: #fff; font-size: 1.25em; text-align: center; box-sizing: border-box;" inputmode="decimal">
+                            <input type="${(ex.name && ['brzuch', 'brzus', 'podciąg', 'podciag', 'pompk', 'plank', 'deska', 'drąż', 'draz'].some(kw => ex.name.toLowerCase().includes(kw))) ? 'text' : 'number'}" id="weight-${ex.id}" placeholder="kg" style="flex: 1; min-width: 40px; padding: 12px; border-radius: 4px; border: 1px solid #444; background: #222; color: #fff; font-size: 1.25em; text-align: center; box-sizing: border-box;" inputmode="decimal">
                         </div>
                         <span style="color: #aaa; font-weight: bold; font-size: 1.25em;">X</span>
                         <input type="number" id="reps-${ex.id}" placeholder="powt" style="min-width: 60px; flex: 1; padding: 12px; border-radius: 4px; border: 1px solid #444; background: #222; color: #fff; font-size: 1.25em; text-align: center; box-sizing: border-box;" inputmode="numeric">
@@ -640,7 +640,7 @@ export const TrainingUI = {
             return `
                 <div style="background-color: ${isNested ? 'rgba(0,0,0,0.2)' : '#1e1e1e'}; border: 1px solid ${isNested ? '#E91E63' : '#333'}; padding: 15px; border-radius: 8px; margin-bottom: 15px;">
                     <div style="margin-bottom: 15px;">
-                        <input type="text" class="exercise-name-input" placeholder="Nazwa ćwiczenia (np. Wyciskanie)" value="${ex.name}" onchange="window.TrainingUI.updateExerciseField('${ex.id}', 'name', this.value)" style="display: block; width: 100%; padding: 15px; margin-bottom: 10px; border-radius: 6px; border: 1px solid ${isNested ? '#E91E63' : '#00BFFF'}; background: #222; color: #fff; font-size: 1.1em; box-sizing: border-box; text-align: center;">
+                        <input type="text" class="exercise-name-input" placeholder="Nazwa ćwiczenia (np. Wyciskanie)" value="${ex.name}" onchange="window.TrainingUI.updateExerciseField('${ex.id}', 'name', this.value); window.TrainingUI.renderCurrentExercises();" style="display: block; width: 100%; padding: 15px; margin-bottom: 10px; border-radius: 6px; border: 1px solid ${isNested ? '#E91E63' : '#00BFFF'}; background: #222; color: #fff; font-size: 1.1em; box-sizing: border-box; text-align: center;">
                         <select onchange="window.TrainingUI.updateExerciseField('${ex.id}', 'type', this.value); window.TrainingUI.renderCurrentExercises();" style="display: block; width: 100%; padding: 15px; border-radius: 6px; border: 1px solid ${isNested ? '#E91E63' : '#00BFFF'}; background: #222; color: #fff; font-size: 1.1em; box-sizing: border-box; text-align: center;">
                             <option value="strength" ${ex.type === 'strength' ? 'selected' : ''}>Siłowe</option>
                             <option value="cardio" ${ex.type === 'cardio' ? 'selected' : ''}>Cardio</option>
@@ -790,11 +790,14 @@ export const TrainingUI = {
 
             let duration = Math.floor((Date.now() - currentTraining.startTime - currentTraining.totalPausedTime) / 1000);
             
-            const manualDurationInput = document.getElementById('manual-training-duration');
-            if (manualDurationInput && manualDurationInput.value) {
-                const min = parseInt(manualDurationInput.value, 10);
-                if (!isNaN(min) && min > 0) {
-                    duration = min * 60; // override via smartwatch/user
+            const manualToggle = document.getElementById('manual-duration-toggle');
+            if (manualToggle && manualToggle.checked) {
+                const hoursInput = document.getElementById('manual-training-hours');
+                const minutesInput = document.getElementById('manual-training-minutes');
+                const hrs = hoursInput ? parseInt(hoursInput.value, 10) || 0 : 0;
+                const mins = minutesInput ? parseInt(minutesInput.value, 10) || 0 : 0;
+                if (hrs > 0 || mins > 0) {
+                    duration = (hrs * 3600) + (mins * 60);
                 }
             }
             

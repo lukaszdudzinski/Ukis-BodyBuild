@@ -7,7 +7,7 @@ test.describe('Training Save Bug', () => {
     
     // Zresetuj localStorage żeby pominąć onboarding jeśli jest
     await page.evaluate(() => {
-      localStorage.setItem('tutorial_global', 'done');
+      localStorage.setItem('tutorial_global_v22', 'true');
       localStorage.setItem('userNick', 'Test');
     });
     await page.reload();

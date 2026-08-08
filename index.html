@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Uki's BodyBuild</title>
-    <meta name="app-version" content="v.2026.8.8.01">
+    <meta name="app-version" content="v.2026.8.8.02">
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="game_styles.css">
     <link rel="manifest" href="manifest.json">
@@ -270,6 +270,46 @@
                             <span>Wersja Aplikacji</span>
                             <span class="app-version-display"
                                 style="font-weight: bold; color: #00BFFF;">Loading...</span>
+                        </div>
+                        
+                        <!-- Ultimate Help Guide Section -->
+                        <div class="install-guide-section" id="settings-help-guide" style="margin-top: 25px; border-color: #00BFFF;">
+                            <div class="install-guide-header"
+                                onclick="this.classList.toggle('active-header'); document.getElementById('help-guide-content').classList.toggle('expanded'); document.getElementById('help-toggle-icon').style.transform = document.getElementById('help-guide-content').classList.contains('expanded') ? 'rotate(180deg)' : 'rotate(0deg)'">
+                                <h4 style="color: #00BFFF;">🧠 Instrukcja Obsługi (Help)</h4>
+                                <span id="help-toggle-icon" class="toggle-icon" style="color: #00BFFF;">▼</span>
+                            </div>
+                            <div id="help-guide-content" class="install-guide-content">
+                                <p style="font-weight: bold; font-size: 1.1em; margin-bottom: 15px;">Witaj w Uki's BodyBuild! 🚀 Czas zrobić formę życia!</p>
+                                
+                                <h5 style="color: #00BFFF; margin-top: 15px;">🏋️ Treningi i Ćwiczenia</h5>
+                                <ul style="padding-left: 20px; line-height: 1.6; color: #ddd;">
+                                    <li><strong>Ćwiczenia Podstawowe:</strong> Kliknij "Rozpocznij Trening". Dodaj ćwiczenie. Wpisz nazwę, dodaj kilogramy i powtórzenia. Po każdym secie kliknij <strong>+ Seria</strong>. Proste? Proste! 💪</li>
+                                    <li><strong>Podciąganie, Pompki, Brzuszki:</strong> Jeśli w nazwie ćwiczenia użyjesz takich słów jak <em>podciąganie, pompki, brzuch, drążek</em> - apka automatycznie zamieni pole ciężaru z numerycznego na tekstowe! Pojawi się też magiczny przycisk <strong>+/-</strong>. Chcesz odjąć 20kg bo używasz gumy? Klikasz <strong>+/-</strong> i masz <strong>-20kg</strong>! 🎈</li>
+                                    <li><strong>🔥 Dropsety:</strong> Zrobiłeś serię, nie masz już siły, ale zdejmujesz ciężar i robisz dalej? Kliknij <strong>🔥 Dropset</strong> zamiast "+ Seria". Zostanie on ładnie wcięty i oznaczony na pomarańczowo pod główną serią. Piekło dla mięśni! 😈</li>
+                                    <li><strong>🔗 Superserie:</strong> Chcesz połączyć dwa ćwiczenia bez przerwy? Zmień typ drugiego ćwiczenia (w dropdownie) na "Superseria". Zostaną one połączone elegancką różową ramką "Blok Łączony".</li>
+                                </ul>
+
+                                <h5 style="color: #00BFFF; margin-top: 15px;">📸 Zdjęcia i Tapeta</h5>
+                                <ul style="padding-left: 20px; line-height: 1.6; color: #ddd;">
+                                    <li><strong>Zrób zdjęcie maszyny:</strong> Zapominasz jak ustawić siodełko? Przy każdym ćwiczeniu masz opcję zrobienia fotki maszyny. Zapisze się ona w Twoim treningu! 📷</li>
+                                    <li><strong>Twoja własna tapeta:</strong> Chcesz widzieć Arnolda w tle za każdym razem jak włączasz apkę? W głównym menu wejdź w Ustawienia i wrzuć swoje zdjęcie (najlepiej pionowe). Apka sama skompresuje je na ładne, przyciemnione tło! 🖼️</li>
+                                </ul>
+
+                                <h5 style="color: #00BFFF; margin-top: 15px;">🤖 Sztuczna Inteligencja (Dieta i Edward)</h5>
+                                <ul style="padding-left: 20px; line-height: 1.6; color: #ddd;">
+                                    <li><strong>Gadatliwy Trener Edward:</strong> Nasz asystent AI czuwa nad Tobą w trakcie i po treningu. Jeśli za długo odpoczywasz w głównym menu, Edward da Ci motywacyjnego kopa! 🦾</li>
+                                    <li><strong>Dieta AI:</strong> W sekcji "Dieta i Żywienie" możesz teraz wrzucić do <strong>3 zdjęć posiłku</strong> naraz! Nasze serwery zjedzą te zdjęcia i wyplują Ci dokładne makro. Pamiętaj tylko o poprawnym skonfigurowaniu adresu serwera (zakładka Dieta i AI wyżej). 🥗🍔</li>
+                                </ul>
+
+                                <h5 style="color: #00BFFF; margin-top: 15px;">⌚ Integracja ze Smartwatchem i Czas</h5>
+                                <ul style="padding-left: 20px; line-height: 1.6; color: #ddd;">
+                                    <li><strong>Ręczny czas treningu:</strong> Zapomniałeś kliknąć "Start"? Przed zapisaniem treningu po prostu zaznacz pole "Wpisz czas ręcznie" i podaj godziny/minuty. Uratowane! ⏱️</li>
+                                    <li><strong>Kalorie z Zegarka:</strong> Przed zapisem wpisz kalorie i tętno ze swojego Apple Watcha/Garmina do odpowiednich pól. Wyświetlą się potem w pięknych historiach. 🔥</li>
+                                </ul>
+
+                                <p style="margin-top: 15px; color: #aaa; font-size: 0.9em; text-align: center;">Nie ma wymówek, czas na trening! 🏆</p>
+                            </div>
                         </div>
                     </div>
                 </div>

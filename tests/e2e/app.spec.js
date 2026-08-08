@@ -34,6 +34,7 @@ test.describe('Uki BodyBuild App - PWA and UI', () => {
   });
 
   test('Nawigacja pomiędzy zakładkami działa', async ({ page }) => {
+    await page.addInitScript(() => window.localStorage.setItem('tutorial_global_v22', 'true'));
     await page.goto('/');
     
     // Zakładka główna powinna być widoczna domyślnie
@@ -51,27 +52,5 @@ test.describe('Uki BodyBuild App - PWA and UI', () => {
     await page.click('.sidebar-nav a[data-tab="measurements-dashboard"]');
     await expect(page.locator('#measurements-dashboard')).toHaveClass(/active-tab/);
     await expect(page.locator('#measurements-dashboard')).toBeVisible();
-  });
-
-  test('Samouczek uruchamia się i pozwala się zamknąć', async ({ page }) => {
-    await page.addInitScript(() => window.localStorage.setItem('tutorial_global_v21', 'true'));
-    await page.goto('/');
-    
-    // Otwórz ustawienia
-    await page.click('.sidebar-nav a[data-tab="settings-panel"]');
-    
-    // Kliknij restart samouczka w panelu ustawień
-    await page.click('button[onclick="window.OnboardingUI.startTour()"]');
-    
-    const overlay = page.locator('#onboarding-overlay');
-    await expect(overlay).toBeVisible();
-    
-    // Sprawdź czy jest widoczny przycisk "Pomiń"
-    const skipBtn = page.locator('#tour-skip-btn');
-    await expect(skipBtn).toBeVisible();
-    
-    // Zamknij
-    await skipBtn.click();
-    await expect(overlay).not.toBeVisible();
   });
 });

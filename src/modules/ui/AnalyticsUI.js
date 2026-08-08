@@ -227,7 +227,7 @@ export const AnalyticsUI = {
                     bfHtml = `
                         <div style="background: rgba(0,0,0,0.5); border: 1px solid #00BFFF; padding: 15px; border-radius: 8px; margin-bottom: 15px; position: relative;">
                             <strong style="color: #00BFFF; font-size: 1.2em;">Szacunkowy BF%</strong>
-                            <button onclick="alert('BF% (Body Fat) to procentowa zawartość tkanki tłuszczowej.\\n\\nMężczyźni:\\n< 6%: Startowa forma (Ekstremalnie niski)\\n6-14%: Atletyczna\\n14-18%: Fitness\\n18-25%: Przeciętna\\n> 25%: Podwyższona\\n\\nKobiety:\\n< 14%: Startowa forma\\n14-21%: Atletyczna\\n21-25%: Fitness\\n25-32%: Przeciętna\\n> 32%: Podwyższona')" style="position: absolute; right: 15px; top: 15px; background: none; border: none; color: #00BFFF; font-size: 1.2em; cursor: pointer;">ℹ️</button>
+                            <button onclick="window.AnalyticsUI.showInfoModal('bf', ${bf})" style="position: absolute; right: 15px; top: 15px; background: none; border: none; color: #00BFFF; font-size: 1.2em; cursor: pointer;">ℹ️</button>
                             <div style="font-size: 2em; font-weight: bold; margin: 10px 0;">${bf.toFixed(1)} %</div>
                             <p style="margin: 0; font-size: 0.9em; font-weight: bold; color: #fff;">${bfText}</p>
                             <p style="margin: 5px 0 0 0; font-size: 0.8em; color: #aaa;">Tkanka tłuszczowa wg wzoru US Navy</p>
@@ -267,7 +267,7 @@ export const AnalyticsUI = {
                     ffmiHtml = `
                         <div style="background: rgba(0,0,0,0.5); border: 1px solid #2ECC71; padding: 15px; border-radius: 8px; margin-bottom: 15px; position: relative;">
                             <strong style="color: #2ECC71; font-size: 1.2em;">FFMI (Index Beztłuszczowy)</strong>
-                            <button onclick="alert('FFMI to wskaźnik masy mięśniowej.\\n\\nMężczyźni:\\n< 18: Poniżej przeciętnej\\n18-20: Przeciętna muskulatura\\n20-22: Dobra (Wysportowany)\\n22-25: Doskonała\\n> 25: Genetyczna elita / wspomaganie\\n\\nKobiety:\\n< 15: Poniżej przeciętnej\\n15-17: Przeciętna muskulatura\\n17-19: Dobra (Wysportowana)\\n19-21: Doskonała\\n> 21: Genetyczna elita')" style="position: absolute; right: 15px; top: 15px; background: none; border: none; color: #2ECC71; font-size: 1.2em; cursor: pointer;">ℹ️</button>
+                            <button onclick="window.AnalyticsUI.showInfoModal('ffmi', ${normalizedFfmi})" style="position: absolute; right: 15px; top: 15px; background: none; border: none; color: #2ECC71; font-size: 1.2em; cursor: pointer;">ℹ️</button>
                             <div style="font-size: 2em; font-weight: bold; margin: 10px 0;">${normalizedFfmi.toFixed(1)}</div>
                             <p style="margin: 0; font-size: 0.9em; font-weight: bold; color: #fff;">${ffmiText}</p>
                             <p style="margin: 5px 0 0 0; font-size: 0.8em; color: #aaa;">Wskaźnik suchej masy mięśniowej</p>
@@ -293,7 +293,7 @@ export const AnalyticsUI = {
                     whrHtml = `
                         <div style="background: rgba(0,0,0,0.5); border: 1px solid #9B59B6; padding: 15px; border-radius: 8px; margin-bottom: 15px; position: relative;">
                             <strong style="color: #9B59B6; font-size: 1.2em;">WHR (Talia-Biodra)</strong>
-                            <button onclick="alert('WHR (Waist-to-Hip Ratio) to wskaźnik proporcji obwodu talii do bioder.\\n\\nMężczyźni:\\n< 0.90: Zdrowe proporcje (Niskie ryzyko)\\n0.90 - 1.0: Umiarkowane ryzyko\\n> 1.0: Typ jabłka (Podwyższone ryzyko otyłości brzusznej)\\n\\nKobiety:\\n< 0.80: Zdrowe proporcje (Niskie ryzyko)\\n0.80 - 0.85: Umiarkowane ryzyko\\n> 0.85: Typ jabłka (Podwyższone ryzyko)')" style="position: absolute; right: 15px; top: 15px; background: none; border: none; color: #9B59B6; font-size: 1.2em; cursor: pointer;">ℹ️</button>
+                            <button onclick="window.AnalyticsUI.showInfoModal('whr', ${whr})" style="position: absolute; right: 15px; top: 15px; background: none; border: none; color: #9B59B6; font-size: 1.2em; cursor: pointer;">ℹ️</button>
                             <div style="font-size: 2em; font-weight: bold; margin: 10px 0;">${whr.toFixed(2)}</div>
                             <p style="margin: 0; font-size: 0.9em; font-weight: bold; color: #fff;">${whrText}</p>
                             <p style="margin: 5px 0 0 0; font-size: 0.8em; color: #aaa;">Proporcje sylwetki</p>
@@ -426,6 +426,124 @@ export const AnalyticsUI = {
                 .then(() => alert("Twój progres został skopiowany do schowka! Możesz go wkleić na Facebooku lub Instagramie."))
                 .catch(err => console.error("Błąd kopiowania", err));
         }
+    },
+
+    showInfoModal: (type, value) => {
+        let modal = document.getElementById('analytics-info-modal');
+        if (!modal) {
+            modal = document.createElement('div');
+            modal.id = 'analytics-info-modal';
+            modal.style.cssText = 'position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 9999; display: flex; justify-content: center; align-items: center; padding: 20px; backdrop-filter: blur(5px); flex-direction: column; opacity: 0; transition: opacity 0.3s;';
+            document.body.appendChild(modal);
+        }
+
+        const gender = localStorage.getItem('uki-bodybuild-gender') || 'male';
+        let title, color, desc, ranges, minVal, maxVal;
+
+        if (type === 'bf') {
+            title = 'Szacunkowy BF% (Tkanka Tłuszczowa)';
+            color = '#00BFFF';
+            desc = 'BF% obrazuje jak dużą część Twojej masy stanowi tłuszcz. Utrzymanie go w ryzach zmniejsza ryzyko chorób układu krążenia i cukrzycy typu 2. Zbyt niski poziom również jest niezdrowy i może zaburzać gospodarkę hormonalną!';
+            if (gender === 'male') {
+                ranges = [
+                    { label: 'Startowa', max: 6, color: '#e74c3c' },
+                    { label: 'Atletyczna', max: 14, color: '#3498db' },
+                    { label: 'Fitness', max: 18, color: '#2ecc71' },
+                    { label: 'Przeciętna', max: 25, color: '#f1c40f' },
+                    { label: 'Wysoka', max: 40, color: '#e67e22' }
+                ];
+            } else {
+                ranges = [
+                    { label: 'Startowa', max: 14, color: '#e74c3c' },
+                    { label: 'Atletyczna', max: 21, color: '#3498db' },
+                    { label: 'Fitness', max: 25, color: '#2ecc71' },
+                    { label: 'Przeciętna', max: 32, color: '#f1c40f' },
+                    { label: 'Wysoka', max: 45, color: '#e67e22' }
+                ];
+            }
+            minVal = 2; maxVal = ranges[ranges.length-1].max;
+        } else if (type === 'ffmi') {
+            title = 'FFMI (Index Beztłuszczowy)';
+            color = '#2ECC71';
+            desc = 'FFMI to miernik czystej masy mięśniowej niezależny od wzrostu. Im wyższy, tym jesteś bardziej muskularny. Dobrze rozwinięta tkanka mięśniowa to pancerz ochronny stawów, lepszy metabolizm i wyższa wrażliwość insulinowa!';
+            if (gender === 'male') {
+                ranges = [
+                    { label: 'Niska', max: 18, color: '#f1c40f' },
+                    { label: 'Przeciętna', max: 20, color: '#3498db' },
+                    { label: 'Dobra', max: 22, color: '#2ecc71' },
+                    { label: 'Doskonała', max: 25, color: '#9b59b6' },
+                    { label: 'Elita', max: 30, color: '#e74c3c' }
+                ];
+            } else {
+                ranges = [
+                    { label: 'Niska', max: 15, color: '#f1c40f' },
+                    { label: 'Przeciętna', max: 17, color: '#3498db' },
+                    { label: 'Dobra', max: 19, color: '#2ecc71' },
+                    { label: 'Doskonała', max: 21, color: '#9b59b6' },
+                    { label: 'Elita', max: 26, color: '#e74c3c' }
+                ];
+            }
+            minVal = 13; maxVal = ranges[ranges.length-1].max;
+        } else if (type === 'whr') {
+            title = 'WHR (Talia do Bioder)';
+            color = '#9B59B6';
+            desc = 'WHR określa typ sylwetki (jabłko vs gruszka). Typ "jabłka" oznacza gromadzenie tłuszczu wokół narządów wewnętrznych (tłuszcz wisceralny), co drastycznie podnosi ryzyko zawałów, zatorów oraz zespołu metabolicznego!';
+            if (gender === 'male') {
+                ranges = [
+                    { label: 'Zdrowo', max: 0.90, color: '#2ecc71' },
+                    { label: 'Umiark.', max: 1.0, color: '#f1c40f' },
+                    { label: 'Ryzyko', max: 1.3, color: '#e74c3c' }
+                ];
+            } else {
+                ranges = [
+                    { label: 'Zdrowo', max: 0.80, color: '#2ecc71' },
+                    { label: 'Umiark.', max: 0.85, color: '#f1c40f' },
+                    { label: 'Ryzyko', max: 1.2, color: '#e74c3c' }
+                ];
+            }
+            minVal = 0.6; maxVal = ranges[ranges.length-1].max;
+        }
+
+        // Generate bars
+        let currentPos = minVal;
+        const totalSpan = maxVal - minVal;
+        let barsHtml = '';
+        ranges.forEach(r => {
+            const span = r.max - currentPos;
+            const pct = (span / totalSpan) * 100;
+            barsHtml += `<div style="width: ${pct}%; background: ${r.color}; height: 100%; border-right: 1px solid rgba(0,0,0,0.3);" title="${r.label}"></div>`;
+            currentPos = r.max;
+        });
+
+        const pointerPct = Math.max(0, Math.min(100, ((value - minVal) / totalSpan) * 100));
+
+        modal.innerHTML = `
+            <div style="background: #1e1e1e; padding: 25px; border-radius: 12px; width: 100%; max-width: 400px; border-top: 5px solid ${color}; box-shadow: 0 10px 30px rgba(0,0,0,0.8); position: relative;">
+                <h3 style="color: ${color}; margin-top: 0; font-size: 1.4em;">${title}</h3>
+                <p style="color: #ddd; font-size: 0.95em; line-height: 1.5; margin-bottom: 25px;">${desc}</p>
+                
+                <div style="position: relative; height: 30px; margin-bottom: 30px;">
+                    <!-- The Gauge -->
+                    <div style="display: flex; height: 16px; border-radius: 8px; overflow: hidden; width: 100%; box-shadow: inset 0 2px 4px rgba(0,0,0,0.5);">
+                        ${barsHtml}
+                    </div>
+                    <!-- Pointer -->
+                    <div style="position: absolute; left: ${pointerPct}%; top: 12px; transform: translateX(-50%); text-align: center;">
+                        <div style="width: 0; height: 0; border-left: 8px solid transparent; border-right: 8px solid transparent; border-bottom: 10px solid #fff; margin: 0 auto;"></div>
+                        <strong style="color: #fff; background: #000; padding: 3px 8px; border-radius: 4px; display: inline-block; margin-top: 4px; font-size: 1.1em; border: 1px solid ${color};">${Number(value).toFixed(2)}</strong>
+                    </div>
+                </div>
+
+                <div style="display: flex; justify-content: space-between; font-size: 0.75em; color: #888; margin-top: -10px; margin-bottom: 20px;">
+                    ${ranges.map(r => `<span style="color: ${r.color};">${r.label}</span>`).join('')}
+                </div>
+
+                <button onclick="document.getElementById('analytics-info-modal').style.opacity='0'; setTimeout(()=>document.getElementById('analytics-info-modal').style.display='none', 300);" style="width: 100%; background: #333; color: #fff; border: 1px solid #555; padding: 12px; border-radius: 6px; font-weight: bold; font-size: 1.1em; cursor: pointer;">Zrozumiałem</button>
+            </div>
+        `;
+
+        modal.style.display = 'flex';
+        setTimeout(() => modal.style.opacity = '1', 10);
     }
 };
 

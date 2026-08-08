@@ -8,6 +8,7 @@ test.describe('Training Workflow', () => {
         const trainingPage = new TrainingPage(page);
 
         // Given I am on the home page
+        await page.addInitScript(() => window.localStorage.setItem('tutorial_global_v22', 'true'));
         await dashboard.navigate();
 
         // When I click on Training tile

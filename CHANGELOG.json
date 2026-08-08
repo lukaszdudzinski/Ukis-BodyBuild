@@ -1,5 +1,15 @@
 [
   {
+    "version": "v.2026.8.8.02",
+    "date": "2026-08-08",
+    "changes": [
+      "📊 Analityka Progresu: Całkowicie przebudowaliśmy analitykę! Zapomnij o nudnych powiadomieniach - witajcie piękne, kolorowe wskaźniki (gauge bars) pokazujące Twój poziom!",
+      "🧠 Instrukcja Obsługi: Dodaliśmy w Ustawieniach potężną dawkę wiedzy! Znajdziesz tam zabawną instrukcję pełną wskazówek i ukrytych ficzerów.",
+      "🧮 Magiczny Minus: Poprawiliśmy działanie przycisku +/- dla ćwiczeń z ciężarem własnym. Nieważne czy wpiszesz 'podciąganie' z polskimi znakami czy bez - system to wychwyci!",
+      "⏱️ Precyzyjny Czas Treningu: Ręczne wpisywanie czasu treningu podzieliliśmy na przejrzyste godziny i minuty. Pełna kontrola nad Twoimi danymi!"
+    ]
+  },
+  {
     "version": "v.2026.8.8.01",
     "date": "2026-08-08",
     "changes": [

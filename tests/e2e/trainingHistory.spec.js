@@ -2,7 +2,7 @@ const { test, expect } = require('@playwright/test');
 
 test.describe('Training and History Flow', () => {
   test.beforeEach(async ({ page }) => {
-    await page.addInitScript(() => window.localStorage.setItem('tutorial_global_v21', 'true'));
+    await page.addInitScript(() => window.localStorage.setItem('tutorial_global_v22', 'true'));
     await page.goto('/');
   });
 
