@@ -1,5 +1,14 @@
 # Rejestr Konwersacji (Wewnętrzna Jira)
 
+## Konwersacja (Obecna): 81d8d0fa-789f-443c-980e-de49ed502d2f
+- **Temat**: ROADMAPA - Faza 3: Zaawansowana Analityka, Personalizacja i Atlas Mięśni.
+- **Kluczowe Zmiany**:
+  - Wdrożenie systemu Szablonów Treningowych (Zapisz / Załaduj szablon).
+  - Dodanie kalkulatora 1RM do każdej wpisywanej serii oraz śledzenia Personal Records (PR) z reakcjami Trenera Edwarda.
+  - Wprowadzenie prostej Mapy Ciała (Atlasu Mięśni) analizującej zmęczenie partii po treningach z ostatnich 48h.
+  - Aktualizacja PWA do wersji `v.2026.8.9.08` zgodnie ze "Złotą Zasadą Aktualizacji".
+
+
 Ten plik służy do śledzenia historii konwersacji z agentami. Pozwala to na zachowanie pełnego kontekstu i powrót do poprzednich sesji, aby zrozumieć, jakie zmiany zostały wprowadzone.
 
 ## Konwersacja: 4840560b-3145-4499-997e-1311d07ebf4a
