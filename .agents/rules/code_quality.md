@@ -28,3 +28,7 @@ Wprowadzenie nowej zmiennej do obiektu (np. `smartwatch` w `currentTraining`) mu
 
 ## 4. Code Review (Zasada Podwójnego Sprawdzenia)
 Przy grubszych fazach projektu (np. Faza 3), główny Agent programujący ma obowiązek przed pushem na produkcję przywołać Subagenta (np. `invoke_subagent` z rolą `Code Reviewer`), aby ten niezależnym "okiem" przejrzał krytyczne fragmenty kodu pod kątem potencjalnych błędów, luk w logice i standardów PWA.
+
+## 5. Bezwzględna Weryfikacja Git (Anti-Czeski Błąd)
+Zabrania się wykonywania komendy `git commit` bez uprzedniego, bezwzględnego zweryfikowania stanu plików (np. przez `git status`).
+Agent MUSI upewnić się, że wszystkie pliki biorące udział w aktualizacji (szczególnie `index.html`, `CHANGELOG.json` oraz `sw.js`) zostały prawidłowo dodane do stage'a (`git add ...`). Pominięcie któregokolwiek z tych plików prowadzi do katastrofalnej w skutkach "Pętli Aktualizacji" u użytkowników.
