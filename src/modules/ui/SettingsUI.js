@@ -94,6 +94,32 @@ export const SettingsUI = {
             appVerSpan.innerText = window.APP_VERSION;
         }
 
+        // PWA Hard Reset Button
+        const hardResetBtn = document.getElementById('pwa-hard-reset-btn');
+        if (hardResetBtn) {
+            hardResetBtn.addEventListener('click', async () => {
+                const confirmed = confirm("Czy na pewno chcesz wykonać Twardy Reset? To naprawi problemy z aktualizacjami usuwając przestarzały kod, Twoje statystyki w SQLite pozostaną bezpieczne!");
+                if (confirmed) {
+                    try {
+                        if ('serviceWorker' in navigator) {
+                            const regs = await navigator.serviceWorker.getRegistrations();
+                            for (let reg of regs) {
+                                await reg.unregister();
+                            }
+                        }
+                        if ('caches' in window) {
+                            const keys = await caches.keys();
+                            await Promise.all(keys.map(k => caches.delete(k)));
+                        }
+                        alert("Cache i Service Worker wyczyszczone. Za chwilę nastąpi restart do najnowszej wersji!");
+                        window.location.reload(true);
+                    } catch (err) {
+                        alert("Błąd podczas resetu: " + err.message);
+                    }
+                }
+            });
+        }
+
         SettingsUI.initTheme();
         SettingsUI.initProfile();
         SettingsUI.initDietSettings();
