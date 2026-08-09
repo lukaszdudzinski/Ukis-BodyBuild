@@ -46,6 +46,16 @@ export const TrainingUI = {
             finishBtn.addEventListener('click', TrainingUI.finishTraining);
         }
 
+        const saveTemplateBtn = document.getElementById('save-as-template-btn');
+        if (saveTemplateBtn) {
+            saveTemplateBtn.addEventListener('click', TrainingUI.saveAsTemplate);
+        }
+
+        const loadTemplateBtn = document.getElementById('load-template-session-btn');
+        if (loadTemplateBtn) {
+            loadTemplateBtn.addEventListener('click', TrainingUI.loadTemplatesDialog);
+        }
+
         const pauseBtn = document.getElementById('pause-training-btn');
         if (pauseBtn) {
             pauseBtn.addEventListener('click', TrainingUI.togglePause);
@@ -104,6 +114,161 @@ export const TrainingUI = {
                 }
             }
         }, 500);
+    },
+
+    getTemplates: () => {
+        try {
+            const templates = localStorage.getItem('uki_workout_templates');
+            return templates ? JSON.parse(templates) : [];
+        } catch (e) {
+            console.error("Error reading templates", e);
+            return [];
+        }
+    },
+
+    saveAsTemplate: () => {
+        if (!currentTraining || !currentTraining.exercises || currentTraining.exercises.length === 0) {
+            if (window.ChatUI) window.ChatUI.showContextualBubble("Hej, nie masz żadnych ćwiczeń żeby zapisać szablon! Dodaj coś najpierw. 😅");
+            else alert("Dodaj ćwiczenia przed zapisaniem szablonu.");
+            return;
+        }
+
+        const templateName = prompt("Podaj nazwę szablonu (np. 'Push Wtorek'):");
+        if (!templateName || templateName.trim() === '') return;
+
+        // Clone current training and remove specific data
+        const template = {
+            id: Date.now(),
+            name: templateName.trim(),
+            type: currentTraining.type || 'strength',
+            exercises: currentTraining.exercises.map(ex => {
+                const newEx = { ...ex, cardioInterval: null };
+                // Keep the structure but reset weights/reps? Or maybe keep them as baseline. Let's keep them as baseline.
+                return newEx;
+            })
+        };
+
+        const templates = TrainingUI.getTemplates();
+        templates.push(template);
+        localStorage.setItem('uki_workout_templates', JSON.stringify(templates));
+        
+        if (window.ChatUI) window.ChatUI.showContextualBubble(`Elegancko! Szablon "${template.name}" zapisany. 💪 Możesz go załadować przy kolejnym treningu.`);
+        else alert(`Szablon "${template.name}" został zapisany.`);
+    },
+
+    loadTemplatesDialog: () => {
+        const templates = TrainingUI.getTemplates();
+        if (templates.length === 0) {
+            if (window.ChatUI) window.ChatUI.showContextualBubble("Nie masz jeszcze żadnych zapisanych szablonów. Zapisz jakiś podczas treningu! 📝");
+            else alert("Brak zapisanych szablonów.");
+            return;
+        }
+
+        let html = `
+            <div id="templates-modal-overlay" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 10000; display: flex; justify-content: center; align-items: center; padding: 20px; box-sizing: border-box;">
+                <div style="background: #222; border: 1px solid #FF9800; border-radius: 12px; width: 100%; max-width: 500px; max-height: 80vh; overflow-y: auto; padding: 20px;">
+                    <h3 style="color: #FF9800; margin-top: 0;">Załaduj Szablon</h3>
+                    <p style="color: #ccc; font-size: 0.9em; margin-bottom: 20px;">Wybierz jeden z zapisanych szablonów by od razu zacząć trening:</p>
+                    <div style="display: flex; flex-direction: column; gap: 10px;">
+        `;
+
+        templates.forEach(t => {
+            html += `
+                <div style="background: #333; padding: 15px; border-radius: 8px; border: 1px solid #444; display: flex; justify-content: space-between; align-items: center;">
+                    <div>
+                        <strong style="color: #00BFFF;">${t.name}</strong><br>
+                        <span style="font-size: 0.8em; color: #888;">Typ: ${t.type}, Ćwiczeń: ${t.exercises && t.exercises.length ? t.exercises.length : 0}</span>
+                    </div>
+                    <div style="display: flex; gap: 5px;">
+                        <button onclick="window.TrainingUI.startFromTemplate(${t.id})" class="action-button" style="background: #2ECC71; border-color: #2ECC71; color: #fff; padding: 8px 12px;">▶ Wybierz</button>
+                        <button onclick="window.TrainingUI.deleteTemplate(${t.id})" class="action-button" style="background: rgba(231, 76, 60, 0.2); border-color: transparent; color: #E74C3C; padding: 8px 12px;">🗑</button>
+                    </div>
+                </div>
+            `;
+        });
+
+        html += `
+                    </div>
+                    <button onclick="document.getElementById('templates-modal-overlay').remove()" class="action-button" style="width: 100%; margin-top: 20px; background: #555; border-color: #555; color: #fff;">Anuluj</button>
+                </div>
+            </div>
+        `;
+
+        const existingModal = document.getElementById('templates-modal-overlay');
+        if (existingModal) existingModal.remove();
+        document.body.insertAdjacentHTML('beforeend', html);
+    },
+
+    deleteTemplate: (id) => {
+        if (confirm("Na pewno usunąć ten szablon?")) {
+            let templates = TrainingUI.getTemplates();
+            templates = templates.filter(t => t.id !== id);
+            localStorage.setItem('uki_workout_templates', JSON.stringify(templates));
+            const modal = document.getElementById('templates-modal-overlay');
+            if (modal) modal.remove();
+            TrainingUI.loadTemplatesDialog(); // Refresh
+        }
+    },
+
+    startFromTemplate: (templateId) => {
+        const modal = document.getElementById('templates-modal-overlay');
+        if (modal) modal.remove();
+
+        const templates = TrainingUI.getTemplates();
+        const template = templates.find(t => t.id === templateId);
+        if (!template) return;
+
+        // Initialize new session from template
+        document.getElementById('training-calendar-view').style.display = 'none';
+        document.getElementById('active-training-view').style.display = 'block';
+
+        currentTraining = {
+            date: selectedDate, // Use selected day instead of today!
+            startTime: Date.now(),
+            timerInterval: null,
+            exercises: JSON.parse(JSON.stringify(template.exercises || [])), // deep copy
+            name: template.name,
+            type: template.type || 'strength',
+            isPaused: false,
+            pauseStartTime: null,
+            totalPausedTime: 0
+        };
+
+        const nameInput = document.getElementById('training-name-input');
+        if (nameInput) nameInput.value = currentTraining.name || '';
+        
+        const typeSelect = document.getElementById('training-type-select');
+        if (typeSelect) {
+            typeSelect.value = currentTraining.type;
+            if (typeof window.TrainingUI.handleTypeChange === 'function') {
+                window.TrainingUI.handleTypeChange(currentTraining.type);
+            }
+        }
+
+        const manualToggle = document.getElementById('manual-duration-toggle');
+        if (manualToggle) manualToggle.checked = false;
+        const manualInputs = document.getElementById('manual-duration-inputs');
+        if (manualInputs) manualInputs.style.display = 'none';
+
+        const calInput = document.getElementById('smartwatch-calories');
+        const hrInput = document.getElementById('smartwatch-hr');
+        if (calInput) calInput.value = '';
+        if (hrInput) hrInput.value = '';
+
+        const pauseBtn = document.getElementById('pause-training-btn');
+        if(pauseBtn) {
+            pauseBtn.innerHTML = '⏸ Pauza';
+            pauseBtn.style.backgroundColor = '#f39c12';
+            pauseBtn.style.borderColor = '#f39c12';
+        }
+
+        TrainingUI.renderCurrentExercises();
+        currentTraining.timerInterval = setInterval(TrainingUI.updateTimer, 1000);
+        TrainingUI.saveDraft();
+        
+        if (window.ChatUI) {
+            window.ChatUI.showContextualBubble("Ogień z kurwami! 🔥 Szablon załadowany, zegar tyka!", true);
+        }
     },
 
     saveDraft: () => {
@@ -678,11 +843,51 @@ export const TrainingUI = {
             }
         }
 
-        exercise.sets.push({
+        const newSet = {
             weight: parseFloat(wVal),
             reps: parseInt(rVal, 10),
             type: isDropset ? 'dropset' : 'normal'
-        });
+        };
+        
+        // 1RM & PR Logic
+        if (!isBodyweight && newSet.weight > 0 && newSet.reps > 0) {
+            const current1RM = newSet.weight * (1 + (newSet.reps / 30));
+            let maxHistorical1RM = 0;
+            
+            if (exercise.name && allTrainingsCache) {
+                const exNameLower = exercise.name.toLowerCase().trim();
+                allTrainingsCache.forEach(t => {
+                    if (t.exercises) {
+                        t.exercises.forEach(e => {
+                            if (e.name && e.name.toLowerCase().trim() === exNameLower && e.sets) {
+                                e.sets.forEach(s => {
+                                    const s1RM = s.weight * (1 + (s.reps / 30));
+                                    if (s1RM > maxHistorical1RM) maxHistorical1RM = s1RM;
+                                });
+                            }
+                        });
+                    }
+                });
+            }
+            
+            // Check within current training as well, in case they did multiple sets today
+            exercise.sets.forEach(s => {
+                const s1RM = s.weight * (1 + (s.reps / 30));
+                if (s1RM > maxHistorical1RM) maxHistorical1RM = s1RM;
+            });
+            
+            if (current1RM > maxHistorical1RM && maxHistorical1RM > 0) {
+                newSet.isPR = true;
+                if (window.ChatUI) {
+                    window.ChatUI.showContextualBubble(`🏆 O kurwa, nowy rekord (PR)! 1RM wyjebało poza skale! Jesteś dzikiem! 🐗🔥`);
+                }
+            } else if (maxHistorical1RM === 0) {
+                // First time doing this exercise or no history
+                newSet.isPR = true; // First baseline is technically a PR, but maybe we don't spam
+            }
+        }
+
+        exercise.sets.push(newSet);
 
         TrainingUI.renderCurrentExercises();
 
@@ -744,9 +949,22 @@ export const TrainingUI = {
                                 if (!isDropset) seriesCount++;
                                 const style = isDropset ? 'padding: 6px 0 6px 20px; border-bottom: 1px dashed rgba(255,152,0,0.3); font-size: 0.95em; color: #ccc; border-left: 3px solid #FF9800;' : 'padding: 8px 0; border-bottom: 1px solid rgba(0,191,255,0.2); font-size: 1em;';
                                 const prefix = isDropset ? '↳ 🔥 Dropset:' : `Seria ${seriesCount}:`;
+                                
+                                let prBadge = '';
+                                let ormText = '';
+                                if (!ex.type || ex.type === 'strength') {
+                                    if (set.isPR) {
+                                        prBadge = `<span style="font-size: 0.8em; background: #FFD700; color: #000; padding: 2px 6px; border-radius: 4px; font-weight: bold; margin-left: 8px; box-shadow: 0 0 8px rgba(255, 215, 0, 0.6); animation: pulse 1s infinite;">🏆 PR!</span>`;
+                                    }
+                                    if (set.weight > 0 && set.reps > 0) {
+                                        const orm = Math.round(set.weight * (1 + (set.reps / 30)));
+                                        ormText = `<span style="font-size: 0.75em; color: #888; margin-left: 8px;">(1RM: ~${orm} kg)</span>`;
+                                    }
+                                }
+
                                 return `
-                                    <div style="display: flex; justify-content: space-between; ${style}">
-                                        <span>${prefix} <strong style="color: ${isDropset ? '#FF9800' : '#00BFFF'};">${set.weight} kg</strong> x <strong>${set.reps} powt.</strong></span>
+                                    <div style="display: flex; justify-content: space-between; align-items: center; ${style}">
+                                        <span>${prefix} <strong style="color: ${isDropset ? '#FF9800' : '#00BFFF'};">${set.weight} kg</strong> x <strong>${set.reps} powt.</strong> ${prBadge} ${ormText}</span>
                                         <button onclick="window.TrainingUI.removeSet('${ex.id}', ${i})" style="background: transparent; border: none; color: #ff4444; font-size: 1.2em; cursor: pointer;">&times;</button>
                                     </div>
                                 `;

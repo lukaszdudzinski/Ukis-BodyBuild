@@ -174,6 +174,73 @@ export const AnalyticsUI = {
             }
         } // End of trainings if/else block
 
+        // --- MUSCLE ATLAS (Regeneration) ---
+        let muscleAtlasHtml = '<h4 style="color: #00BFFF; border-bottom: 1px solid rgba(0,191,255,0.2); padding-bottom: 5px; margin-bottom: 15px; margin-top: 25px;">Regeneracja i Atlas Mięśni</h4>';
+        
+        if (trainings.length === 0) {
+            muscleAtlasHtml += '<p style="color: #888;">Brak danych treningowych do analizy regeneracji.</p>';
+        } else {
+            const now = Date.now();
+            const last48h = now - (48 * 60 * 60 * 1000);
+            
+            const recentTrainings = trainings.filter(t => {
+                const tTime = t.startTime || new Date(t.date).getTime();
+                return tTime > last48h;
+            });
+
+            const muscles = {
+                chest: { name: 'Klatka Piersiowa', keywords: ['klat', 'wycisk', 'rozpięt', 'pompk'], status: 'green' },
+                back: { name: 'Plecy', keywords: ['plec', 'wiosł', 'drąż', 'martw', 'szrug', 'podciąg'], status: 'green' },
+                legs: { name: 'Nogi', keywords: ['nog', 'przys', 'wykrok', 'suwn', 'łyd'], status: 'green' },
+                shoulders: { name: 'Barki', keywords: ['bark', 'żołnierz', 'unoszen'], status: 'green' },
+                arms: { name: 'Ramiona (Bic/Tric)', keywords: ['bic', 'tric', 'uginan', 'francusk'], status: 'green' },
+                core: { name: 'Brzuch', keywords: ['brzuch', 'plank', 'desk', 'brzus'], status: 'green' }
+            };
+
+            recentTrainings.forEach(t => {
+                if (t.exercises) {
+                    t.exercises.forEach(ex => {
+                        const exName = ex.name ? ex.name.toLowerCase() : '';
+                        Object.keys(muscles).forEach(key => {
+                            if (muscles[key].keywords.some(kw => exName.includes(kw))) {
+                                muscles[key].status = 'red';
+                            }
+                        });
+                    });
+                }
+            });
+
+            let atlasCards = '';
+            let tiredCount = 0;
+            
+            Object.keys(muscles).forEach(key => {
+                const m = muscles[key];
+                if (m.status === 'red') tiredCount++;
+                const bg = m.status === 'red' ? 'rgba(231, 76, 60, 0.1)' : 'rgba(46, 204, 113, 0.1)';
+                const border = m.status === 'red' ? '#E74C3C' : '#2ECC71';
+                const icon = m.status === 'red' ? '🔴 Zmęczone' : '🟢 Zregenerowane';
+                
+                atlasCards += `
+                    <div style="background: ${bg}; border: 1px solid ${border}; padding: 10px; border-radius: 8px; text-align: center; display: flex; flex-direction: column; justify-content: center;">
+                        <strong style="color: #fff; font-size: 0.9em; margin-bottom: 5px;">${m.name}</strong>
+                        <span style="font-size: 0.8em; color: ${border}; font-weight: bold;">${icon}</span>
+                    </div>
+                `;
+            });
+
+            muscleAtlasHtml += `
+                <div style="background: rgba(0,0,0,0.3); padding: 15px; border-radius: 8px; border: 1px solid #00BFFF; margin-bottom: 20px;">
+                    <p style="margin: 0 0 15px 0; font-size: 0.9em; color: #ccc;">Analiza na podstawie treningów z ostatnich 48 godzin. Partie oznaczone na czerwono potrzebują jeszcze odpoczynku przed kolejnym ostrym treningiem!</p>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                        ${atlasCards}
+                    </div>
+                    ${tiredCount > 3 ? '<p style="color: #ff9800; font-size: 0.9em; margin: 15px 0 0 0; font-weight: bold; text-align: center;">Trener Edward radzi: "Zluzuj trochę gacie, przetrenowałeś pół ciała! Dzisiaj zrób cardio albo odpocznij."</p>' : ''}
+                </div>
+            `;
+        }
+        
+        analyticsContentHtml += muscleAtlasHtml;
+
         // 3. Advanced Analytics (FFMI, WHR, BF%)
             let advancedHtml = '<h4 style="color: #00BFFF; border-bottom: 1px solid rgba(0,191,255,0.2); padding-bottom: 5px; margin-bottom: 15px; margin-top: 25px;">Analiza składu ciała</h4>';
             
