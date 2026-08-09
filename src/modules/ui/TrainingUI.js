@@ -1248,6 +1248,12 @@ export const TrainingUI = {
                     });
                 }
                 
+                if (window.AchievementsSystem) {
+                    window.AchievementsSystem.checkPostTrainingAchievements({
+                        exercises: exercisesToSave
+                    });
+                }
+                
                 TrainingUI.clearDraft(); // Czyścimy brudnopis po sukcesie
                 alert("Trening zapisany pomyślnie!");
                 

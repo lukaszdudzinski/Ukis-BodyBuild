@@ -33,12 +33,28 @@ export const DiagnosticsUI = {
             
             <div style="background: rgba(0,0,0,0.3); padding: 15px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.2);">
                 <h3 style="color: #eee; margin-top: 0;">Pamięć Podręczna</h3>
-                <p style="font-size: 0.9em; color: #ccc;">Odświeża całą bazę ćwiczeń i systemowych ustawień bez dotykania zapisów treningowych.</p>
+                <p style="font-size: 0.9em; color: #ccc;">Użyj tej opcji <b>tylko wtedy, gdy zaciął się interfejs</b> (np. nie ładuje się awatar, źle działa motyw lub zablokował się samouczek). Zresetuje ona wyłącznie podręczne ustawienia wyglądu. <b>Twoja historia treningów i atlas ćwiczeń są w pełni bezpieczne!</b></p>
                 <button id="db-clear-local-btn" style="width: 100%; padding: 10px; background: #444; color: #eee; border: 1px solid #666; border-radius: 5px; cursor: pointer; margin-top: 10px;">
                     Wyczyść tylko LocalStorage
                 </button>
             </div>
+            
+            <div style="background: rgba(0,0,0,0.3); padding: 15px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.2); margin-top: 20px;">
+                <h3 style="color: #eee; margin-top: 0;">Logi Błędów Aplikacji</h3>
+                <textarea id="diagnostics-error-area" readonly style="width: 100%; height: 100px; background: #111; color: #ff4444; border: 1px solid #333; padding: 10px; border-radius: 4px; font-family: monospace; resize: none; margin-bottom: 10px;"></textarea>
+                <div style="display: flex; gap: 10px; margin-bottom: 10px;">
+                    <button id="copy-errors-btn" style="flex: 1; padding: 10px; background: #444; color: #eee; border: 1px solid #666; border-radius: 5px; cursor: pointer;">Kopiuj Logi</button>
+                    <button id="share-errors-btn" style="flex: 1; padding: 10px; background: #00BFFF; color: #fff; border: 1px solid #00BFFF; border-radius: 5px; cursor: pointer;">Udostępnij Logi</button>
+                </div>
+                <button id="clear-errors-btn" style="width: 100%; padding: 10px; background: #444; color: #eee; border: 1px solid #666; border-radius: 5px; cursor: pointer;">Wyczyść Logi</button>
+            </div>
         `;
+
+        const errArea = document.getElementById('diagnostics-error-area');
+        if (errArea) {
+            const logs = localStorage.getItem('uki_error_logs');
+            errArea.value = logs ? logs : 'Brak zarejestrowanych błędów :)';
+        }
 
         DiagnosticsUI.bindEvents();
     },
@@ -115,6 +131,52 @@ export const DiagnosticsUI = {
                     alert("Zrobione. Aplikacja się odświeży.");
                     window.location.reload();
                 }
+            });
+        }
+
+        // Błędy
+        const copyErrs = document.getElementById('copy-errors-btn');
+        if (copyErrs) {
+            copyErrs.addEventListener('click', () => {
+                const logs = localStorage.getItem('uki_error_logs');
+                if (logs) {
+                    navigator.clipboard.writeText(logs).then(() => {
+                        alert("Logi skopiowane do schowka.");
+                    }).catch(() => {
+                        alert("Brak dostępu do schowka. Skopiuj tekst ręcznie.");
+                    });
+                }
+            });
+        }
+
+        const shareErrs = document.getElementById('share-errors-btn');
+        if (shareErrs) {
+            shareErrs.addEventListener('click', () => {
+                const logs = localStorage.getItem('uki_error_logs');
+                if (!logs) {
+                    alert("Brak błędów do udostępnienia.");
+                    return;
+                }
+                const text = "Logi błędów Uki's BodyBuild:\n\n" + logs;
+                if (navigator.share) {
+                    navigator.share({
+                        title: 'Logi błędów aplikacji',
+                        text: text
+                    }).catch(err => {
+                        console.log("Share failed:", err);
+                    });
+                } else {
+                    window.location.href = `mailto:?subject=Uki%20BodyBuild%20Logi&body=${encodeURIComponent(text)}`;
+                }
+            });
+        }
+
+        const clearErrs = document.getElementById('clear-errors-btn');
+        const errArea = document.getElementById('diagnostics-error-area');
+        if (clearErrs) {
+            clearErrs.addEventListener('click', () => {
+                localStorage.removeItem('uki_error_logs');
+                if (errArea) errArea.value = 'Brak zarejestrowanych błędów :)';
             });
         }
     }

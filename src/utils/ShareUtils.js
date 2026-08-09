@@ -96,7 +96,8 @@ export const ShareUtils = {
                         a.href = URL.createObjectURL(blob);
                         a.download = 'progress.png';
                         a.click();
-                        resolve(false);
+                        // Wymuszamy błąd, aby aktywować fallback tekstowy (kopiowanie opisu) na urządzeniach bez natywnego udostępniania
+                        reject(new Error("Udostępnianie natywne nie jest wspierane na tym urządzeniu. Zrzut został pobrany."));
                     }
                 }, 'image/png');
             };

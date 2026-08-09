@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="description" content="Aplikacja dla dzików, by uki. Dźwigaj i rośnij!">
     <title>Uki's BodyBuild</title>
-    <meta name="app-version" content="v.2026.8.9.11">
+    <meta name="app-version" content="v.2026.8.9.12">
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="game_styles.css">
     <link rel="manifest" href="manifest.json">
@@ -53,6 +53,7 @@
                 <li><a href="#" data-tab="history-dashboard">Historia Treningów</a></li>
                 <li><a href="#" data-tab="analytics-dashboard">Analiza Progresu</a></li>
                 <li><a href="#" data-tab="diet-dashboard">Dieta i Żywienie</a></li>
+                <li><a href="#" data-tab="diagnostics-dashboard">Diagnostyka</a></li>
                 <li><a href="#" data-tab="settings-panel">Profil i Ustawienia</a></li>
             </ul>
 
@@ -166,7 +167,12 @@
                     </div>
                 </div>
 
+                <div id="diagnostics-dashboard" class="tab-content" style="display: none;">
+                    <div id="diagnostics-content-wrapper"></div>
+                </div>
+
                 <div id="settings-panel" class="tab-content">
+                    <div class="settings-container">
                     <h3>Ustawienia i Profil</h3>
 
                     <!-- Profile Section -->
@@ -189,6 +195,16 @@
                             <label style="display: block; margin-bottom: 5px; color: #ccc;">Twój Nick:</label>
                             <input type="text" id="profile-nick-input" placeholder="Wpisz swój nick..." style="width: 100%; padding: 10px; border-radius: 4px; border: 1px solid #00BFFF; background: #222; color: #fff; box-sizing: border-box;">
                         </div>
+
+                        <div style="margin-bottom: 20px;">
+                            <h5 style="color: #FFD700; border-bottom: 1px solid rgba(255,215,0,0.2); padding-bottom: 5px; margin-bottom: 5px;">🏆 Twoje Odznaki</h5>
+                            <p style="font-size: 0.8em; color: #ccc; margin: 0 0 10px 0;">Odznaki to nagrody za Twoje osiągnięcia treningowe. Trenuj ciężko, aby zdobyć je wszystkie!</p>
+                            <div id="settings-badges-container" style="display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 15px;">
+                                <!-- Rendered by JS -->
+                            </div>
+                            <button onclick="if(window.SettingsUI) window.SettingsUI.shareBadges()" class="action-button" style="background-color: #3b5998; border-color: #3b5998; color: white; width: 100%; padding: 8px;">📤 Pochwal się odznakami</button>
+                        </div>
+
 
                         <div style="margin-bottom: 15px;">
                             <label style="display: block; margin-bottom: 5px; color: #ccc;">Tapeta Aplikacji:</label>
@@ -232,12 +248,6 @@
                         </div>
                     </div>
                     
-                    <!-- Advanced Recovery Section -->
-                    <div style="background: rgba(255, 68, 68, 0.1); border: 1px solid #ff4444; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
-                        <h4 style="margin-top: 0; color: #ff4444;">🔧 Ratunek (Hard Reset)</h4>
-                        <p style="font-size: 0.85em; color: #ddd; margin-bottom: 10px;">Jeśli aplikacja nie chce się zaktualizować lub zawiesiła się na starej wersji, użyj tego przycisku. <strong>Twoje treningi i postępy NIE zostaną usunięte.</strong></p>
-                        <button id="pwa-hard-reset-btn" class="action-button" style="background-color: #ff4444; border-color: #ff4444; width: 100%; padding: 10px; font-weight: bold; color: white;">Twardy Reset (Wyczyść Cache Appki)</button>
-                    </div>
                     
                     <div class="settings-toggle-row"><label for="glass-toggle">Efekt Szklany (Liquid
                             Glass)</label><label class="theme-switch" for="glass-toggle"><input type="checkbox"

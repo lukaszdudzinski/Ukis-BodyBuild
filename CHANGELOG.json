@@ -1,5 +1,14 @@
 [
   {
+    "version": "v.2026.8.9.12",
+    "date": "2026-08-09",
+    "changes": [
+      "🐛 Naprawiono pustą kartę Diagnostyki (brakujący HTML i renderowanie logów).",
+      "🐛 Naprawiono błąd przy udostępnianiu treningów z widoku Historii (brak przypisania do obiektu window).",
+      "🔥 Przygotowania pod wdrożenie Fazy 4."
+    ]
+  },
+  {
     "version": "v.2026.8.9.11",
     "date": "2026-08-09",
     "changes": [

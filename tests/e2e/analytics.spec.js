@@ -36,7 +36,7 @@ test.describe('Advanced Analytics Module', () => {
     await page.waitForSelector('#analytics-content h4', { state: 'visible' });
 
     // Verify Advanced Analytics section exists
-    const advancedTitle = await page.locator('text=Zaawansowana Analityka').isVisible();
+    const advancedTitle = await page.locator('text=Analiza składu ciała').isVisible();
     expect(advancedTitle).toBeTruthy();
 
     // Verify BF% is calculated (US Navy formula)
@@ -60,6 +60,9 @@ test.describe('Advanced Analytics Module', () => {
   test('should display missing data warning when neck is not provided', async ({ page }) => {
     await page.addInitScript(() => window.localStorage.setItem('tutorial_global_v22', 'true'));
     await page.goto('http://127.0.0.1:8080');
+
+    // Wait for App UI to load
+    await page.waitForSelector('.app-wrapper');
 
     await page.evaluate(async () => {
       const mockData = {

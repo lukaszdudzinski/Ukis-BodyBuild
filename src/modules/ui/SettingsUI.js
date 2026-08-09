@@ -15,7 +15,12 @@ export const SettingsUI = {
                     <button id="reset-tutorial-btn" class="action-button" style="width: 100%; margin-bottom: 10px; background-color: #FF9800; border-color: #FF9800; color: #fff;">🔄 Zobacz ponownie powitanie (Reset)</button>
                 </div>
             `;
-            settingsPanel.insertBefore(dataSection, document.getElementById('settings-pwa-guide'));
+            const pwaGuide = document.getElementById('settings-pwa-guide');
+            if (pwaGuide && pwaGuide.parentNode) {
+                pwaGuide.parentNode.insertBefore(dataSection, pwaGuide);
+            } else {
+                settingsPanel.appendChild(dataSection);
+            }
         }
 
         const resetTutorialBtn = document.getElementById('reset-tutorial-btn');
@@ -25,21 +30,6 @@ export const SettingsUI = {
                 localStorage.removeItem('userNick');
                 alert("Powitanie zostało zresetowane! Przejdź do głównego ekranu lub odśwież stronę.");
                 if (window.OnboardingUI) window.OnboardingUI.init();
-            });
-        }
-        const copyErrBtn = document.getElementById('copy-errors-btn');
-        if (copyErrBtn) {
-            copyErrBtn.addEventListener('click', () => {
-                if (errArea) {
-                    navigator.clipboard.writeText(errArea.value).then(() => alert('Logi skopiowane! Dziękujemy za zgłoszenie.'));
-                }
-            });
-        }
-        const clearErrBtn = document.getElementById('clear-errors-btn');
-        if (clearErrBtn) {
-            clearErrBtn.addEventListener('click', () => {
-                localStorage.removeItem('uki_error_logs');
-                if (errArea) errArea.value = 'Brak zarejestrowanych błędów :)';
             });
         }
         
@@ -53,6 +43,78 @@ export const SettingsUI = {
         SettingsUI.initTheme();
         SettingsUI.initProfile();
         SettingsUI.initDietSettings();
+        
+        SettingsUI.renderBadges();
+    },
+
+    renderBadges: () => {
+        const container = document.getElementById('settings-badges-container');
+        if (!container) return;
+
+        if (!window.AchievementsSystem) return;
+
+        const earnedIds = window.AchievementsSystem.getEarnedAchievements();
+        const allDefs = window.AchievementsSystem.achievementsDef;
+        let html = '';
+
+        for (const key in allDefs) {
+            const def = allDefs[key];
+            const isEarned = earnedIds.includes(def.id);
+            
+            if (isEarned) {
+                html += `
+                    <div style="background: rgba(255,215,0,0.1); border: 1px solid #FFD700; border-radius: 8px; padding: 10px; width: 80px; text-align: center; cursor: help;" title="${def.description}">
+                        <div style="font-size: 2em; margin-bottom: 5px;">${def.icon}</div>
+                        <div style="font-size: 0.65em; font-weight: bold; color: #FFD700; line-height: 1.1;">${def.title}</div>
+                    </div>
+                `;
+            } else {
+                html += `
+                    <div style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; padding: 10px; width: 80px; text-align: center; opacity: 0.4; filter: grayscale(100%); cursor: help;" title="${def.description}">
+                        <div style="font-size: 2em; margin-bottom: 5px;">${def.icon}</div>
+                        <div style="font-size: 0.65em; font-weight: bold; color: #aaa; line-height: 1.1;">${def.title}</div>
+                    </div>
+                `;
+            }
+        }
+        
+        if(Object.keys(allDefs).length === 0) {
+            html = '<div style="color: #888; font-size: 0.9em;">Brak zdefiniowanych odznak.</div>';
+        }
+        
+        container.innerHTML = html;
+    },
+
+    shareBadges: () => {
+        if (!window.AchievementsSystem) return;
+        const earnedIds = window.AchievementsSystem.getEarnedAchievements();
+        const allDefs = window.AchievementsSystem.achievementsDef;
+        
+        let earnedCount = earnedIds.length;
+        if (earnedCount === 0) {
+            alert("Nie zdobyłeś jeszcze żadnej odznaki! Zrób trening i wróć tutaj.");
+            return;
+        }
+
+        let badgesText = earnedIds.map(id => {
+            const def = allDefs[id];
+            return def ? `${def.icon} ${def.title}` : '';
+        }).filter(b => b).join(', ');
+
+        const textToShare = `Zdobyłem ${earnedCount} odznak w Uki's BodyBuild! 🏆 Moja kolekcja: ${badgesText}. 💪 Dołącz i bij rekordy: https://lukaszdudzinski.github.io/Ukis-BodyBuild/`;
+
+        try {
+            if (navigator.share) {
+                navigator.share({
+                    title: "Moje Odznaki Uki's BodyBuild",
+                    text: textToShare
+                }).catch(err => console.log("Share canceled", err));
+            } else {
+                window.prompt("Skopiuj swoje osiągnięcia (Ctrl+C / Cmd+C):", textToShare);
+            }
+        } catch (error) {
+            window.prompt("Skopiuj swoje osiągnięcia (Ctrl+C / Cmd+C):", textToShare);
+        }
     },
 
     initDietSettings: () => {

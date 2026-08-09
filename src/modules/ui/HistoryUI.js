@@ -146,10 +146,12 @@ export const HistoryUI = {
             
         } catch (error) {
             console.log('Błąd podczas udostępniania:', error);
-            // Fallback: Copy to clipboard
-            navigator.clipboard.writeText(textToShare)
-                .then(() => alert("Szczegóły treningu skopiowane do schowka!"))
-                .catch(err => console.error("Błąd kopiowania", err));
+            // Fallback: Copy to clipboard using prompt if writeText fails due to lack of focus
+            try {
+                window.prompt("Udostępnianie graficzne niedostępne na tym urządzeniu. Skopiuj swój wynik poniżej (Ctrl+C / Cmd+C):", textToShare);
+            } catch(e) {
+                console.error("Fallback również zawiódł", e);
+            }
         }
     }
 };

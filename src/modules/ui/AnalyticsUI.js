@@ -148,7 +148,8 @@ export const AnalyticsUI = {
                     </div>
                 </div>
                 
-                <h4 style="color: #00BFFF; border-bottom: 1px solid rgba(0,191,255,0.2); padding-bottom: 5px; margin-bottom: 15px;">Aktywność w tym miesiącu</h4>
+                
+                <h4 style="color: #00BFFF; border-bottom: 1px solid rgba(0,191,255,0.2); padding-bottom: 5px; margin-bottom: 15px;">Zaawansowana Analityka (PRO)</h4>
                 
                 <div style="background: rgba(255,255,255,0.05); padding: 15px; border-radius: 8px; margin-bottom: 20px;">
                     <p style="margin: 0 0 10px 0; font-size: 1.1em; color: #fff;">Zrobiłeś <strong>${thisMonthWorkouts.length}</strong> treningów, podnosząc łącznie <strong>${thisMonthVolume} kg</strong>!</p>
@@ -156,18 +157,45 @@ export const AnalyticsUI = {
                         ? '<p style="color: #2ECC71; margin: 0; font-weight: bold;">🔥 Jesteś prawdziwą bestią! Świetna robota!</p>' 
                         : '<p style="color: #00BFFF; margin: 0;">💪 Każdy kilogram przybliża Cię do celu. Nie przestawaj!</p>'}
                 </div>
+                
+                <h5 style="color: #FFD700; margin-top: 15px; margin-bottom: 5px;">📈 Progres Objętości (Ostatnie 10 treningów)</h5>
+                <p style="font-size: 0.8em; color: #ccc; margin: 0 0 10px 0;">Wykres obrazuje całkowity ciężar (objętość) przerzucony na przestrzeni ostatnich dziesięciu sesji. Wyższe słupki oznaczają mocniejszy trening!</p>
+                <div style="display: flex; align-items: flex-end; gap: 8px; height: 160px; padding: 10px 10px 30px 10px; background: rgba(0,0,0,0.4); border: 1px solid #FFD700; border-radius: 8px; overflow-x: auto; margin-bottom: 25px;">
+                    ${workoutsWithVolume.slice(0,10).reverse().map(w => {
+                        const maxVol = Math.max(...workoutsWithVolume.slice(0,10).map(wo => wo.volume)) || 1;
+                        const heightPct = Math.min(100, Math.max(5, (w.volume / maxVol) * 100));
+                        const dateShort = new Date(w.date).toLocaleDateString('pl-PL', {day:'numeric', month:'short'});
+                        return `
+                            <div style="display: flex; flex-direction: column; align-items: center; min-width: 40px; position: relative;">
+                                <div style="font-size: 0.7em; color: #FFD700; margin-bottom: 5px; font-weight: bold;">${Math.round(w.volume)}k</div>
+                                <div style="width: 30px; height: ${heightPct}%; background: linear-gradient(0deg, rgba(255,215,0,0.8) 0%, rgba(255,152,0,1) 100%); border-radius: 4px 4px 0 0; min-height: 5px; max-height: 120px; transition: height 0.5s ease-in-out;"></div>
+                                <div style="font-size: 0.65em; color: #aaa; margin-top: 8px; transform: rotate(-45deg); transform-origin: top left; white-space: nowrap;">${dateShort}</div>
+                            </div>
+                        `;
+                    }).join('')}
+                </div>
             `;
             
             // Highlight of recent progress (simplistic comparison of last 2 workouts)
             if (workoutsWithVolume.length >= 2) {
                 const diff = workoutsWithVolume[0].volume - workoutsWithVolume[1].volume;
-                const trendIcon = diff > 0 ? '📈' : (diff < 0 ? '📉' : '➖');
-                const trendColor = diff > 0 ? '#2ECC71' : (diff < 0 ? '#ff4444' : '#aaa');
-                const trendText = diff > 0 ? `Zwiększyłeś objętość o ${Math.abs(diff)} kg w porównaniu do poprzedniej sesji! Rewelacja!` : `Odpocznij jeśli trzeba. Ważna jest technika!`;
+                let trendIcon = '➖';
+                let trendColor = '#aaa';
+                let trendText = `Utrzymujesz dokładnie ten sam poziom obciążenia (różnica: ${diff} kg). Stabilność też jest ważna!`;
+                
+                if (diff > 0) {
+                    trendIcon = '📈';
+                    trendColor = '#2ECC71';
+                    trendText = `Zwiększyłeś objętość o ${Math.abs(diff)} kg w porównaniu do poprzedniej sesji! Rewelacja!`;
+                } else if (diff < 0) {
+                    trendIcon = '📉';
+                    trendColor = '#ff4444';
+                    trendText = `Tym razem ${Math.abs(diff)} kg mniej niż ostatnio. Odpocznij jeśli trzeba, ważna jest technika!`;
+                }
                 
                 analyticsContentHtml += `
                     <div style="background: rgba(0,0,0,0.3); border: 1px solid ${trendColor}; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
-                        <strong style="color: ${trendColor};">${trendIcon} Progres z ostatniej sesji</strong>
+                        <strong style="color: ${trendColor};">${trendIcon} Porównanie z poprzednią sesją</strong>
                         <p style="margin: 5px 0 0 0; font-size: 0.9em; color: #ccc;">${trendText}</p>
                     </div>
                 `;
@@ -488,10 +516,13 @@ export const AnalyticsUI = {
             
         } catch (error) {
             console.log('Błąd podczas udostępniania:', error);
-            // Fallback: Copy to clipboard
-            navigator.clipboard.writeText(textToShare)
-                .then(() => alert("Twój progres został skopiowany do schowka! Możesz go wkleić na Facebooku lub Instagramie."))
-                .catch(err => console.error("Błąd kopiowania", err));
+            // Fallback: Copy to clipboard using prompt if writeText fails due to lack of focus
+            try {
+                // Skuteczny fallback pozwalający zignorować błąd fokusu (prompt zatrzymuje wątek i prosi użyszkodnika o skopiowanie)
+                window.prompt("Udostępnianie graficzne niedostępne na tym urządzeniu. Skopiuj swój wynik poniżej (Ctrl+C / Cmd+C):", textToShare);
+            } catch(e) {
+                console.error("Fallback również zawiódł", e);
+            }
         }
     },
 

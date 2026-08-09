@@ -10,6 +10,7 @@ import { ChatUI } from './modules/ui/ChatUI.js';
 import { DatabaseManager } from './modules/db/DatabaseManager.js';
 import { ChangelogUI } from './modules/ui/ChangelogUI.js';
 import { DiagnosticsUI } from './modules/ui/DiagnosticsUI.js';
+import { AchievementsSystem } from './modules/gamification/AchievementsSystem.js';
 window.ukiLogError = (msg, stack) => {
     let logs = [];
     try { logs = JSON.parse(localStorage.getItem('uki_error_logs') || '[]'); } catch(e) {}
