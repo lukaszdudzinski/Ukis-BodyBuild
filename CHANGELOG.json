@@ -3,7 +3,11 @@
     "version": "v.2026.8.9.05",
     "date": "2026-08-09",
     "changes": [
-      "Wydanie nowej wersji poprawkowej."
+      "💪 Ewolucja Treningów: Wprowadziliśmy długo wyczekiwany podział na Trening Siłowy, Cardio oraz Zajęcia Zorganizowane! Aplikacja sama dostosuje interfejs do tego, co właśnie ćwiczysz.",
+      "🚴‍♂️ Gotowi na zajęcia: Wybierz z gotowej listy takie sztosy jak Tabata, HYROX, Les Mills CORE, Pośladki i Brzuch czy Rowery/Spinning, a jeśli brakuje Twoich - wpisz je ręcznie jednym kliknięciem!",
+      "🎶 Muzyka pod ręką: Do głównego panelu pod stoperem dodaliśmy skróty odpalszające Spotify i YT Music. Muza i pompa w jednym miejscu!",
+      "📱 Inteligentny Edward: Twój osobisty asystent nie śpi! Jeśli zminimalizujesz aplikację by odpisać na SMS-a, po powrocie Edward szybko doliczy czas i pogoni Cię do dalszej pracy nad formą!",
+      "🛠️ Żelazna Baza Danych: Załataliśmy lukę, przez którą specyficznie mierzone czasy z Cardio (i wartości NaN) potrafiły wysadzić zapis. Twoja baza SQLite jest teraz kuloodporna!"
     ]
   },
   {
