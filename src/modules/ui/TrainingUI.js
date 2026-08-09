@@ -77,6 +77,73 @@ export const TrainingUI = {
         });
 
         TrainingUI.loadHistoryAndCalendar();
+        
+        // Draft check
+        setTimeout(() => {
+            const draft = TrainingUI.loadDraft();
+            if (draft && (!currentTraining || !currentTraining.timerInterval)) {
+                if (confirm("Wykryto niezapisany trening (draft) z poprzedniej sesji. Czy chcesz go przywrócić? Jeśli klikniesz Anuluj, zostanie on usunięty.")) {
+                    TrainingUI.restoreDraft(draft);
+                } else {
+                    TrainingUI.clearDraft();
+                }
+            }
+        }, 500);
+    },
+
+    saveDraft: () => {
+        if (!currentTraining || !currentTraining.startTime) return;
+        // Kopiujemy obiekt by nie zepsuć setIntervals
+        const draftCopy = { ...currentTraining, timerInterval: null };
+        if (draftCopy.exercises) {
+            draftCopy.exercises = draftCopy.exercises.map(ex => ({ ...ex, cardioInterval: null }));
+        }
+        try {
+            localStorage.setItem('uki_active_training_draft', JSON.stringify(draftCopy));
+        } catch(e) {
+            console.warn("Nie udało się zapisać draftu treningu", e);
+        }
+    },
+
+    loadDraft: () => {
+        try {
+            const draft = localStorage.getItem('uki_active_training_draft');
+            if (draft) return JSON.parse(draft);
+        } catch(e) {}
+        return null;
+    },
+
+    clearDraft: () => {
+        localStorage.removeItem('uki_active_training_draft');
+    },
+
+    restoreDraft: (draft) => {
+        document.getElementById('training-calendar-view').style.display = 'none';
+        document.getElementById('active-training-view').style.display = 'block';
+        
+        currentTraining = draft;
+        
+        const nameInput = document.getElementById('training-name-input');
+        if (nameInput) nameInput.value = currentTraining.name || '';
+        
+        TrainingUI.renderCurrentExercises();
+        if (currentTraining.socialPhotos && currentTraining.socialPhotos.length > 0) {
+            TrainingUI.renderTrainingPhotos();
+        }
+        
+        // Zawsze zakładamy że był zablokowany/zatrzymany przy przywracaniu, dajemy pause
+        if (!currentTraining.isPaused) {
+            currentTraining.isPaused = true;
+            currentTraining.pauseStartTime = Date.now();
+            const pauseBtn = document.getElementById('pause-training-btn');
+            if(pauseBtn) {
+                pauseBtn.innerHTML = '▶ Wznów';
+                pauseBtn.style.backgroundColor = '#2ECC71';
+                pauseBtn.style.borderColor = '#2ECC71';
+            }
+        }
+        
+        currentTraining.timerInterval = setInterval(TrainingUI.updateTimer, 1000);
     },
 
     loadHistoryAndCalendar: async () => {
@@ -601,17 +668,21 @@ export const TrainingUI = {
             } else {
                 exerciseDetailsHtml = `
                     <div style="margin-bottom: 10px;">
-                        ${(ex.sets || []).map((set, i) => {
-                            const isDropset = set.type === 'dropset';
-                            const style = isDropset ? 'padding: 6px 0 6px 20px; border-bottom: 1px dashed rgba(255,152,0,0.3); font-size: 0.95em; color: #ccc; border-left: 3px solid #FF9800;' : 'padding: 8px 0; border-bottom: 1px solid rgba(0,191,255,0.2); font-size: 1em;';
-                            const prefix = isDropset ? '↳ 🔥 Dropset:' : `Seria ${i + 1}:`;
-                            return `
-                                <div style="display: flex; justify-content: space-between; ${style}">
-                                    <span>${prefix} <strong style="color: ${isDropset ? '#FF9800' : '#00BFFF'};">${set.weight} kg</strong> x <strong>${set.reps} powt.</strong></span>
-                                    <button onclick="window.TrainingUI.removeSet('${ex.id}', ${i})" style="background: transparent; border: none; color: #ff4444; font-size: 1.2em; cursor: pointer;">&times;</button>
-                                </div>
-                            `;
-                        }).join('')}
+                        ${(() => {
+                            let seriesCount = 0;
+                            return (ex.sets || []).map((set, i) => {
+                                const isDropset = set.type === 'dropset';
+                                if (!isDropset) seriesCount++;
+                                const style = isDropset ? 'padding: 6px 0 6px 20px; border-bottom: 1px dashed rgba(255,152,0,0.3); font-size: 0.95em; color: #ccc; border-left: 3px solid #FF9800;' : 'padding: 8px 0; border-bottom: 1px solid rgba(0,191,255,0.2); font-size: 1em;';
+                                const prefix = isDropset ? '↳ 🔥 Dropset:' : `Seria ${seriesCount}:`;
+                                return `
+                                    <div style="display: flex; justify-content: space-between; ${style}">
+                                        <span>${prefix} <strong style="color: ${isDropset ? '#FF9800' : '#00BFFF'};">${set.weight} kg</strong> x <strong>${set.reps} powt.</strong></span>
+                                        <button onclick="window.TrainingUI.removeSet('${ex.id}', ${i})" style="background: transparent; border: none; color: #ff4444; font-size: 1.2em; cursor: pointer;">&times;</button>
+                                    </div>
+                                `;
+                            }).join('');
+                        })()}
                     </div>
 
                     <div style="display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-top: 15px;">
@@ -696,6 +767,7 @@ export const TrainingUI = {
         });
         
         list.innerHTML = html;
+        TrainingUI.saveDraft();
     },
 
     compressImage: (file, callback) => {
@@ -838,6 +910,8 @@ export const TrainingUI = {
                         smartwatch: currentTraining.smartwatch
                     });
                 }
+                
+                TrainingUI.clearDraft(); // Czyścimy brudnopis po sukcesie
                 alert("Trening zapisany pomyślnie!");
 
                 // Trener Edward AI - Gratulacje
@@ -859,8 +933,25 @@ export const TrainingUI = {
 
             } catch (err) {
                 console.error("Error saving training:", err);
-                if (window.ukiLogError) window.ukiLogError("Błąd podczas zapisu w finishTraining", err ? err.stack || err.toString() : '');
-                alert("Błąd zapisu treningu!");
+                
+                // Awaryjne zrzucenie treningu do logów i pliku lokalnego
+                try {
+                    localStorage.setItem('uki_active_training_draft', JSON.stringify({
+                        ...currentTraining, 
+                        isCrashRecovery: true,
+                        crashError: err.toString()
+                    }));
+                } catch(e) {}
+                
+                if (window.ukiLogError) {
+                    window.ukiLogError("KRYTYCZNY Błąd podczas zapisu w finishTraining", err ? err.stack || err.toString() : '');
+                } else {
+                    // Fallback jeśli ukiLogError nie istnieje
+                    console.error("KRYTYCZNY Błąd:", err);
+                }
+                
+                alert("Wystąpił błąd podczas zapisywania treningu! Bez obaw - twoje dane zostały zrzucone jako kopia zapasowa do pamięci i będziesz mógł je przywrócić po odświeżeniu aplikacji.");
+                return; // Przerwij żeby nie znikał ekran (nie przełączaj widoków)
             }
 
             document.getElementById('active-training-view').style.display = 'none';
