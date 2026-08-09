@@ -7,6 +7,7 @@
 3. **Zarządzanie Kontekstem**: Pamiętaj, aby pilnować długości konwersacji. Bądź asertywny i sam informuj Użytkownika, kiedy konwersacja staje się zbyt długa i skomplikowana. Zawsze zaoferuj wtedy sporządzenie pełnego podsumowania prac i zaktualizowanie pliku `PROJECT_STATE.md`, aby płynnie przenieść kontekst do nowej sesji.
 4. **Plik `index.html`**: Aplikacja nie korzysta ze standardowych ładowań stron z serwera, ładujemy wszystko na żywo z jednego pliku `index.html`. Utrzymuj jego czystość wynosząc wielkie logiki do zewnętrznych małych modułów w `/src/modules/ui/*.js`.
 5. **Filozofia UX (Interaktywność)**: Zgodnie z wytycznymi, interfejs ma być nowoczesny (Gradienty, Liquid Glass). Użytkownik ceni piękne i eleganckie rzeczy (jak np. w najnowszym Samouczku).
+6. **Rejestr Konwersacji (Wewnętrzna Jira)**: Na koniec każdej fazy/konwersacji Agent MUSI uaktualnić plik `.agents/CONVERSATIONS_JIRA.md`, dopisując ID swojej konwersacji oraz zwięzłe podsumowanie wykonanych prac i wdrożonych założeń. Po uaktualnieniu Jiry, Agent musi przygotować "paczkę informacyjną" (prompt przekazania) dla następnego Agenta, zawierającą m.in. ID właśnie zakończonej konwersacji, aby zachować ciągłość prac na Roadmapie.
 
 ## Prace zrealizowane w najnowszych iteracjach (do v.2026.8.7.28):
 - **Wdrożenie inteligentnych reakcji "Trenera Edwarda"**: Trener reaguje dymkami kontekstowymi po zakończeniu pierwszego oraz co siódmego treningu, a także przypomina o regeneracji.
