@@ -1,5 +1,13 @@
 [
   {
+    "version": "v.2026.8.9.07",
+    "date": "2026-08-09",
+    "changes": [
+      "🛡️ Potężniejszy Brudnopis: Twój Draft zapamiętuje teraz absolutnie wszystko - od ćwiczeń, przez ręcznie wpisany czas, po kalorie ze smartwatcha i nazwę treningu! Nic nie zginie.",
+      "🔍 Koniec z irytującym przybliżaniem: Zablokowaliśmy automatyczne powiększanie ekranu (zoom) na urządzeniach iOS podczas wpisywania danych z palca."
+    ]
+  },
+  {
     "version": "v.2026.8.9.06",
     "date": "2026-08-09",
     "changes": [

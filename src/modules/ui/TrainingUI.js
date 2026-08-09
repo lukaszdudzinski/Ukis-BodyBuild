@@ -113,6 +113,29 @@ export const TrainingUI = {
         if (draftCopy.exercises) {
             draftCopy.exercises = draftCopy.exercises.map(ex => ({ ...ex, cardioInterval: null }));
         }
+
+        const nameInput = document.getElementById('training-name-input');
+        if (nameInput) draftCopy.name = nameInput.value;
+
+        const manualToggle = document.getElementById('manual-duration-toggle');
+        const hoursInput = document.getElementById('manual-training-hours');
+        const minutesInput = document.getElementById('manual-training-minutes');
+        if (manualToggle && manualToggle.checked) {
+            draftCopy.manualTime = {
+                hours: hoursInput ? hoursInput.value : '',
+                minutes: minutesInput ? minutesInput.value : ''
+            };
+        }
+
+        const calInput = document.getElementById('smartwatch-calories');
+        const hrInput = document.getElementById('smartwatch-hr');
+        if ((calInput && calInput.value) || (hrInput && hrInput.value)) {
+            draftCopy.smartwatch = {
+                calories: calInput ? calInput.value : '',
+                hr: hrInput ? hrInput.value : ''
+            };
+        }
+
         try {
             localStorage.setItem('uki_active_training_draft', JSON.stringify(draftCopy));
         } catch(e) {
@@ -144,6 +167,26 @@ export const TrainingUI = {
         TrainingUI.renderCurrentExercises();
         if (currentTraining.socialPhotos && currentTraining.socialPhotos.length > 0) {
             TrainingUI.renderTrainingPhotos();
+        }
+
+        if (currentTraining.manualTime) {
+            const manualToggle = document.getElementById('manual-duration-toggle');
+            if (manualToggle && !manualToggle.checked) {
+                manualToggle.checked = true;
+                const manualContainer = document.getElementById('manual-duration-inputs');
+                if (manualContainer) manualContainer.style.display = 'flex';
+            }
+            const hoursInput = document.getElementById('manual-training-hours');
+            const minutesInput = document.getElementById('manual-training-minutes');
+            if (hoursInput && currentTraining.manualTime.hours) hoursInput.value = currentTraining.manualTime.hours;
+            if (minutesInput && currentTraining.manualTime.minutes) minutesInput.value = currentTraining.manualTime.minutes;
+        }
+
+        if (currentTraining.smartwatch) {
+            const calInput = document.getElementById('smartwatch-calories');
+            const hrInput = document.getElementById('smartwatch-hr');
+            if (calInput && currentTraining.smartwatch.calories) calInput.value = currentTraining.smartwatch.calories;
+            if (hrInput && currentTraining.smartwatch.hr) hrInput.value = currentTraining.smartwatch.hr;
         }
         
         // Zawsze zakładamy że był zablokowany/zatrzymany przy przywracaniu, dajemy pause
