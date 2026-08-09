@@ -1,5 +1,13 @@
 [
   {
+    "version": "v.2026.8.9.09",
+    "date": "2026-08-09",
+    "changes": [
+      "🚨 HOTFIX KRYTYCZNY: Naprawiono błąd układu graficznego, który powodował wyrzucenie Profilu i Ustawień na główny ekran, ukrywając Awatar i Nick. Twoje statystyki są całkowicie bezpieczne i wracają na swoje miejsce!",
+      "🐞 Ostateczne zsynchronizowanie wersji, aby Przycisk Paniki w końcu u każdego działał. Przepraszamy za usterki, lecimy dalej z formą!"
+    ]
+  },
+  {
     "version": "v.2026.8.9.08",
     "date": "2026-08-09",
     "changes": [
