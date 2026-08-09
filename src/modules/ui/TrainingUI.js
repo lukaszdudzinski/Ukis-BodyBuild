@@ -946,8 +946,11 @@ export const TrainingUI = {
 
             const calInput = document.getElementById('smartwatch-calories');
             const hrInput = document.getElementById('smartwatch-hr');
-            if (calInput && calInput.value) currentTraining.smartwatch.calories = parseInt(calInput.value, 10);
-            if (hrInput && hrInput.value) currentTraining.smartwatch.hr = parseInt(hrInput.value, 10);
+            if ((calInput && calInput.value) || (hrInput && hrInput.value)) {
+                if (!currentTraining.smartwatch) currentTraining.smartwatch = {};
+                if (calInput && calInput.value) currentTraining.smartwatch.calories = parseInt(calInput.value, 10);
+                if (hrInput && hrInput.value) currentTraining.smartwatch.hr = parseInt(hrInput.value, 10);
+            }
 
             // Safety cleanup for cardioIntervals to avoid circular reference crashes in DB storage
             currentTraining.exercises.forEach(ex => {
