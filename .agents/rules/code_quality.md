@@ -32,3 +32,7 @@ Przy grubszych fazach projektu (np. Faza 3), główny Agent programujący ma obo
 ## 5. Bezwzględna Weryfikacja Git (Anti-Czeski Błąd)
 Zabrania się wykonywania komendy `git commit` bez uprzedniego, bezwzględnego zweryfikowania stanu plików (np. przez `git status`).
 Agent MUSI upewnić się, że wszystkie pliki biorące udział w aktualizacji (szczególnie `index.html`, `CHANGELOG.json` oraz `sw.js`) zostały prawidłowo dodane do stage'a (`git add ...`). Pominięcie któregokolwiek z tych plików prowadzi do katastrofalnej w skutkach "Pętli Aktualizacji" u użytkowników.
+
+## 6. Obowiązkowe Testy E2E (Playwright) przed każdym Commitem
+Agent ma ABSOLUTNY ZAKAZ commitowania oraz wgrywania kodu na serwer bez uprzedniego uruchomienia i zweryfikowania testów E2E.
+Przed każdym `git commit` i `git push`, należy wykonać polecenie `npx playwright test` i upewnić się, że wszystkie kluczowe ścieżki użytkownika (workflow) przechodzą bez błędu. Złamanie tej zasady grozi wysadzeniem aplikacji na produkcji! Jeśli testy wykażą błędy związane z sandboxem (np. problem ze sterownikiem Chromium), Agent powinien uruchomić je omijając sandbox (`BypassSandbox: true`) lub poprosić o zgodę użytkownika na ominięcie środowiska testowego, ale **nie wolno mu zignorować etapu testowania**.
