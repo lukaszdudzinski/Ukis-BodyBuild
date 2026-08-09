@@ -1,4 +1,4 @@
-const CACHE_NAME = 'ukis-bodybuild-v.2026.8.9.02';
+const CACHE_NAME = 'ukis-bodybuild-v.2026.8.9.03';
 // Core assets that MUST be cached immediately
 const CORE_ASSETS = [
     './',
@@ -12,7 +12,7 @@ const CORE_ASSETS = [
 self.addEventListener('install', (e) => {
     e.waitUntil(
         caches.open(CACHE_NAME).then((cache) => {
-            return cache.addAll(CORE_ASSETS);
+            return Promise.all(CORE_ASSETS.map(url => fetch(new Request(url + '?_t=' + Date.now(), { cache: 'no-store' })).then(r => { if(!r.ok) throw new Error('Fetch failed'); return cache.put(new Request(url), r); })));
         })
     );
 });
