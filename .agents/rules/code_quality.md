@@ -7,11 +7,13 @@ description: Rygorystyczne zasady jakości kodu, aktualizacji PWA (Cache) oraz p
 Ten plik zawiera krytyczne wytyczne wynikające z wcześniejszych awarii na produkcji (Cache Trap oraz błędy typu 'undefined is not an object'). Każdy Agent pracujący nad projektem **Musi** bezwzględnie przestrzegać poniższych zasad.
 
 ## 1. Złota Zasada Aktualizacji PWA (Anti-Cache Trap)
-Aktualizacja aplikacji PWA nie polega jedynie na wgraniu plików na serwer. Przeglądarki agresywnie buforują pliki, dlatego każdy proces publikacji (Deploy) **wymaga** synchronicznej aktualizacji wersji w trzech miejscach.
-Podczas wypuszczania nowej wersji, Agent MUSI zaktualizować wersję (np. z `v.1.0` na `v.1.1`) w:
+Aktualizacja aplikacji PWA nie polega jedynie na wgraniu plików na serwer. Przeglądarki agresywnie buforują pliki, dlatego każdy proces publikacji (Deploy) **wymaga** synchronicznej aktualizacji wersji we WSZYSTKICH czterech miejscach.
+Podczas wypuszczania nowej wersji (nawet małego HOTFIXA), Agent MUSI podbić wersję na nową (np. z `v.1.0` na `v.1.1` - zakazuje się używania tego samego numeru co w zepsutej wersji) w:
 - `CHANGELOG.json` (Dodanie nowego wpisu na samej górze).
 - `index.html` (Aktualizacja w tagu `<meta name="app-version" content="...">`).
 - `sw.js` (Aktualizacja zmiennej `const CACHE_NAME = 'ukis-bodybuild-v...';` - **KRYTYCZNE**, bez tego nowa wersja nie przebije się przez Service Workera).
+- `src/modules/ui/AppUI.js` (Aktualizacja stałej `export const APP_VERSION = '...';`).
+Jeśli zapomnisz o którymkolwiek z tych plików (np. AppUI.js), ryzykujesz cichą awarią zwaną "Cache Trap", gdzie serwer odrzuci aktualizację uważając ją za starą.
 
 ## 2. Programowanie Defensywne (Ochrona przed 'Undefined')
 W aplikacjach Vanilla JS bez ścisłego typowania (TypeScript), obiekty często są mutowane lub odbudowywane z LocalStorage/bazy danych.

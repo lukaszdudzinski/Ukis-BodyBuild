@@ -90,7 +90,6 @@ export const HistoryUI = {
                                         </div>
                                     </div>
                                 `).join('')}
-                            </div>
                             
                             <button onclick="window.HistoryUI.shareTraining('${rec.id}')" class="action-button" style="background-color: #3b5998; border-color: #3b5998; color: white; width: 100%; margin-top: 15px;">
                                 📤 Udostępnij Trening

@@ -54,7 +54,7 @@ Error: page.evaluate: TypeError: Cannot read properties of undefined (reading 'e
           - /url: https://suppi.pl/ukidives
           - text: ☕ Podoba Ci się to narzędzie?
           - strong [ref=f1e25]: Postaw mi kawę!
-        - generic [ref=f1e26]: v.2026.8.9.08
+        - generic [ref=f1e26]: v.2026.8.9.09
     - main [ref=f1e27]:
       - generic [ref=f1e29]:
         - generic [ref=f1e30]:
