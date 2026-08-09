@@ -17,3 +17,12 @@ Ten plik służy do śledzenia historii konwersacji z agentami. Pozwala to na za
   - Naprawa krytycznego błędu zapisu złożonych treningów.
   - Automatyczny "brudnopis" (Draft) treningu w localStorage.
   - Poprawa numeracji serii dla Drop Setów.
+
+## Konwersacja: 0a0a9070-1497-438f-a739-aa25e79273b7
+- **Temat**: ROADMAPA - Faza 2: Podział treningów, zajęcia zorganizowane, asystent na zablokowanym ekranie.
+- **Kluczowe Zmiany**:
+  - Poprawa błędu zapisu treningów (ochrona SQLite przed `NaN` oraz naprawa interwałów).
+  - Wdrożenie 3 typów treningów: Siłowy, Cardio, Zajęcia Zorganizowane.
+  - Słownik zajęć zorganizowanych (Tabata, Les Mills, HYROX itp.).
+  - Trener Edward uruchamia się przy wybudzaniu aplikacji (wymuszanie licznika).
+  - Przyciski muzyki Spotify i YouTube Music w panelu treningu.

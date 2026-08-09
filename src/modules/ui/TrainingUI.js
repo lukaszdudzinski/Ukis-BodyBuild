@@ -7,6 +7,7 @@ let currentTraining = {
     timerInterval: null,
     exercises: [],
     name: '',
+    type: 'strength',
     isPaused: false,
     pauseStartTime: null,
     totalPausedTime: 0
@@ -61,6 +62,20 @@ export const TrainingUI = {
             currentMonth--;
             if (currentMonth < 0) { currentMonth = 11; currentYear--; }
             TrainingUI.renderCalendar();
+        });
+
+        // Smart Assistant - Trainer Edward visibility check
+        document.addEventListener('visibilitychange', () => {
+            if (document.visibilityState === 'visible') {
+                if (currentTraining && currentTraining.startTime && !currentTraining.isPaused && document.getElementById('active-training-view').style.display !== 'none') {
+                    // Update timer immediately
+                    TrainingUI.updateTimer();
+                    // Show bubble
+                    if (window.ChatUI) {
+                        window.ChatUI.showContextualBubble("Trenuj, a nie siedzisz w telefonie! 📱💪", true);
+                    }
+                }
+            }
         });
         
         const nextMonthBtn = document.getElementById('cal-next-month');
@@ -447,17 +462,28 @@ export const TrainingUI = {
             startTime: Date.now(),
             exercises: [],
             name: '',
+            type: 'strength',
             isPaused: false,
             pauseStartTime: null,
             totalPausedTime: 0,
             socialPhotos: [],
             smartwatch: { calories: null, hr: null }
         };
+
+        const typeSelect = document.getElementById('training-type-select');
+        if (typeSelect) typeSelect.value = 'strength';
+        TrainingUI.handleTypeChange('strength');
         
         const nameInput = document.getElementById('training-name-input');
         if (nameInput) {
             nameInput.value = '';
+            setTimeout(() => nameInput.focus(), 50);
         }
+
+        const smartwatchHr = document.getElementById('smartwatch-hr');
+        const smartwatchCal = document.getElementById('smartwatch-calories');
+        if(smartwatchHr) smartwatchHr.value = '';
+        if(smartwatchCal) smartwatchCal.value = '';
 
         if (copyFromIndex !== null && allTrainingsCache[copyFromIndex]) {
             const rec = allTrainingsCache[copyFromIndex];
@@ -850,6 +876,40 @@ export const TrainingUI = {
         container.innerHTML = html;
     },
 
+    handleTypeChange: (type) => {
+        if (!currentTraining) return;
+        currentTraining.type = type;
+        const exercisesContainer = document.getElementById('exercises-container-section');
+        const classContainer = document.getElementById('class-type-container');
+        
+        if (type === 'strength') {
+            exercisesContainer.style.display = 'block';
+            classContainer.style.display = 'none';
+        } else if (type === 'cardio') {
+            exercisesContainer.style.display = 'none';
+            classContainer.style.display = 'none';
+        } else if (type === 'class') {
+            exercisesContainer.style.display = 'none';
+            classContainer.style.display = 'block';
+        }
+    },
+
+    handleClassChange: (className) => {
+        if (!currentTraining) return;
+        if (className === 'custom') {
+            const customName = prompt("Wpisz nazwę zajęć:");
+            if (customName) {
+                currentTraining.name = customName;
+                const nameInput = document.getElementById('training-name-input');
+                if (nameInput) nameInput.value = customName;
+            }
+        } else {
+            currentTraining.name = className;
+            const nameInput = document.getElementById('training-name-input');
+            if (nameInput) nameInput.value = className;
+        }
+    },
+
     finishTraining: async () => {
         if(confirm("Czy na pewno chcesz zakończyć i zapisać ten trening?")) {
             if (currentTraining.timerInterval) {
@@ -889,14 +949,26 @@ export const TrainingUI = {
             if (calInput && calInput.value) currentTraining.smartwatch.calories = parseInt(calInput.value, 10);
             if (hrInput && hrInput.value) currentTraining.smartwatch.hr = parseInt(hrInput.value, 10);
 
+            // Safety cleanup for cardioIntervals to avoid circular reference crashes in DB storage
+            currentTraining.exercises.forEach(ex => {
+                if (ex.cardioInterval) {
+                    clearInterval(ex.cardioInterval);
+                    delete ex.cardioInterval;
+                }
+            });
+
+            // Ensure exercises_json doesn't break if validExercises is empty
+            const exercisesToSave = validExercises.length > 0 ? validExercises : [];
+
             try {
                 if (currentTraining.id) {
                     await DatabaseManager.updateTraining({
                         id: currentTraining.id,
                         date: currentTraining.date,
                         duration_seconds: duration,
-                        exercises: validExercises,
+                        exercises: exercisesToSave,
                         name: trainingName,
+                        type: currentTraining.type || 'strength',
                         socialPhotos: currentTraining.socialPhotos,
                         smartwatch: currentTraining.smartwatch
                     });
@@ -904,8 +976,9 @@ export const TrainingUI = {
                     await DatabaseManager.addTraining({
                         date: currentTraining.date,
                         duration_seconds: duration,
-                        exercises: validExercises,
+                        exercises: exercisesToSave,
                         name: trainingName,
+                        type: currentTraining.type || 'strength',
                         socialPhotos: currentTraining.socialPhotos,
                         smartwatch: currentTraining.smartwatch
                     });
@@ -913,6 +986,11 @@ export const TrainingUI = {
                 
                 TrainingUI.clearDraft(); // Czyścimy brudnopis po sukcesie
                 alert("Trening zapisany pomyślnie!");
+                
+                // Hide active view and show calendar
+                document.getElementById('active-training-view').style.display = 'none';
+                document.getElementById('training-calendar-view').style.display = 'block';
+                TrainingUI.renderCalendar();
 
                 // Trener Edward AI - Gratulacje
                 setTimeout(async () => {

@@ -83,6 +83,10 @@ export const DatabaseManager = {
         } catch(e) {}
 
         try {
+            db.exec(`ALTER TABLE trainings ADD COLUMN type TEXT;`);
+        } catch(e) {}
+
+        try {
             db.exec(`ALTER TABLE trainings ADD COLUMN social_photos_json TEXT;`);
         } catch(e) {}
 
@@ -150,12 +154,13 @@ export const DatabaseManager = {
         await DatabaseManager.init();
         
         db.exec({
-            sql: `INSERT INTO trainings (date, duration_seconds, exercises_json, name, social_photos_json, smartwatch_json) VALUES (?, ?, ?, ?, ?, ?)`,
+            sql: `INSERT INTO trainings (date, duration_seconds, exercises_json, name, type, social_photos_json, smartwatch_json) VALUES (?, ?, ?, ?, ?, ?, ?)`,
             bind: [
                 data.date, 
-                data.duration_seconds, 
+                isNaN(data.duration_seconds) ? 0 : data.duration_seconds, 
                 JSON.stringify(data.exercises),
                 data.name || '',
+                data.type || 'strength',
                 data.socialPhotos ? JSON.stringify(data.socialPhotos) : null,
                 data.smartwatch ? JSON.stringify(data.smartwatch) : null
             ]
@@ -177,11 +182,12 @@ export const DatabaseManager = {
         await DatabaseManager.init();
         
         db.exec({
-            sql: `UPDATE trainings SET duration_seconds = ?, exercises_json = ?, name = ?, social_photos_json = ?, smartwatch_json = ? WHERE id = ?`,
+            sql: `UPDATE trainings SET duration_seconds = ?, exercises_json = ?, name = ?, type = ?, social_photos_json = ?, smartwatch_json = ? WHERE id = ?`,
             bind: [
-                data.duration_seconds, 
+                isNaN(data.duration_seconds) ? 0 : data.duration_seconds, 
                 JSON.stringify(data.exercises),
                 data.name || '',
+                data.type || 'strength',
                 data.socialPhotos ? JSON.stringify(data.socialPhotos) : null,
                 data.smartwatch ? JSON.stringify(data.smartwatch) : null,
                 data.id

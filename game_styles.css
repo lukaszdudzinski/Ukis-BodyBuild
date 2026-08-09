@@ -41,6 +41,33 @@
     background-color: rgba(0, 0, 0, 0.7);
 }
 
+.action-button:active {
+    transform: scale(0.95);
+    background-color: #555;
+}
+
+select.training-select {
+    width: 100%;
+    padding: 10px;
+    margin-top: 10px;
+    background-color: #2a2a2a;
+    color: #fff;
+    border: 1px solid #00BFFF;
+    border-radius: 6px;
+    font-size: 1rem;
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    background-image: url('data:image/svg+xml;utf8,<svg fill="%2300BFFF" height="24" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg"><path d="M7 10l5 5 5-5z"/></svg>');
+    background-repeat: no-repeat;
+    background-position: right 10px center;
+    cursor: pointer;
+}
+select.training-select:focus {
+    outline: none;
+    box-shadow: 0 0 5px #00BFFF;
+}
+
 /* Specific Start Screen with Background Image */
 #game-start-screen {
     background-image: url('img/river_game_title.png');

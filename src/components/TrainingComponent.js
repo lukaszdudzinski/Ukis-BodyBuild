@@ -44,6 +44,27 @@ export const TrainingComponent = {
                 <div style="margin-bottom: 15px;">
                     <input type="text" id="training-name-input" placeholder="NAZWA Treningu (opcjonalnie)" style="width: 100%; padding: 12px; border-radius: 4px; border: 1px solid #ff4444; background: #222; color: #ff4444; font-size: 1.1em; text-align: center; box-sizing: border-box;">
                 </div>
+
+                <div style="margin-bottom: 15px;">
+                    <select id="training-type-select" class="training-select" onchange="window.TrainingUI.handleTypeChange(this.value)">
+                        <option value="strength" selected>Trening Siłowy</option>
+                        <option value="cardio">Cardio</option>
+                        <option value="class">Zajęcia Zorganizowane</option>
+                    </select>
+                </div>
+                
+                <div id="class-type-container" style="display: none; margin-bottom: 15px;">
+                    <select id="class-type-select" class="training-select" onchange="window.TrainingUI.handleClassChange(this.value)">
+                        <option value="" disabled selected>Wybierz zajęcia...</option>
+                        <option value="Tabata">Tabata</option>
+                        <option value="Les Mills CORE">Les Mills CORE (płaski brzuch)</option>
+                        <option value="Les Mills BODYPUMP">Les Mills BODYPUMP Heavy</option>
+                        <option value="Pośladki i Brzuch">Pośladki i Brzuch</option>
+                        <option value="HYROX">HYROX</option>
+                        <option value="Rowery / Spinning">Rowery / Spinning</option>
+                        <option value="custom">Własne (wpisz poniżej)</option>
+                    </select>
+                </div>
                 
                 <div style="background: rgba(0,0,0,0.5); padding: 15px; border-radius: 8px; border: 1px solid #00BFFF; text-align: center; margin-bottom: 20px;">
                     <h3 style="margin: 0; color: #00BFFF; margin-bottom: 10px;">Czas trwania: <span id="training-timer">00:00:00</span></h3>
@@ -60,8 +81,13 @@ export const TrainingComponent = {
                     </div>
                 </div>
 
-                <div class="form-full-width">
-                    <h4 style="color: #00BFFF; margin-bottom: 10px; border-bottom: 1px solid rgba(0,191,255,0.2); padding-bottom: 5px;">Bieżący Trening</h4>
+                <div style="display: flex; gap: 10px; justify-content: center; margin-bottom: 20px;">
+                    <button type="button" class="action-button" style="background-color: #1DB954; border-color: #1DB954; color: #000; font-weight: bold; padding: 8px 15px; border-radius: 20px;" onclick="window.open('https://open.spotify.com/', '_blank')">🎵 Spotify</button>
+                    <button type="button" class="action-button" style="background-color: #FF0000; border-color: #FF0000; color: #fff; font-weight: bold; padding: 8px 15px; border-radius: 20px;" onclick="window.open('https://music.youtube.com/', '_blank')">🎶 YT Music</button>
+                </div>
+
+                <div class="form-full-width" id="exercises-container-section">
+                    <h4 style="color: #00BFFF; margin-bottom: 10px; border-bottom: 1px solid rgba(0,191,255,0.2); padding-bottom: 5px;">Bieżące ćwiczenia</h4>
                     
                     <div id="current-exercises-list">
                         <!-- Populated by JS with Exercise Blocks -->
