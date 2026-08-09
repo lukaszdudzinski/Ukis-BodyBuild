@@ -4,10 +4,11 @@ test.describe('Training Types UI', () => {
   test('should show and hide exercises container based on training type', async ({ page }) => {
     // We mock the DB init to not fail if OPFS is weird in headless
     // We can just rely on the static HTML for this UI test.
+    await page.addInitScript(() => window.localStorage.setItem('tutorial_global_v22', 'true'));
     await page.goto('http://127.0.0.1:8080/');
 
     // Click the Training tile to go to Training dashboard
-    await page.click('#tile-training');
+    await page.click('a[data-tab="training-dashboard"]');
 
     // Wait for the calendar view to be visible
     await page.waitForSelector('#training-calendar-view', { state: 'visible' });

@@ -23,6 +23,8 @@
                     // Odczekaj chwilę i odśwież by system załadował czysty stan
                     setTimeout(() => window.location.reload(true), 500);
                 }
+            }).catch(e => {
+                console.warn("getRegistrations failed (often due to testing in file://):", e);
             });
 
             window.PWAUpdateUI.injectBannerHTML();
@@ -52,7 +54,11 @@
         doPwaUpdate: async () => {
             if (window.PWAUpdateUI.pwaWorker) {
                 window.PWAUpdateUI.pwaWorker.postMessage('SKIP_WAITING');
-                setTimeout(() => window.location.reload(true), 1000);
+                setTimeout(async () => {
+                    const keys = await caches.keys();
+                    await Promise.all(keys.map(k => caches.delete(k)));
+                    window.location.reload(true);
+                }, 1000);
             } else {
                 // Twarde czyszczenie jeśli nie złapaliśmy nowego workera
                 if ('serviceWorker' in navigator) {
@@ -61,6 +67,8 @@
                         await reg.unregister();
                     }
                 }
+                const keys = await caches.keys();
+                await Promise.all(keys.map(k => caches.delete(k)));
                 window.location.reload(true);
             }
         },

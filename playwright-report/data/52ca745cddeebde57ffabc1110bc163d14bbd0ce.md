@@ -6,8 +6,8 @@
 
 # Test info
 
-- Name: training.spec.js >> Training Workflow >> Should navigate to training and open session form
-- Location: tests/e2e/training.spec.js:6:9
+- Name: training-save.spec.js >> Training Save Bug >> should save training with 4 dropsets and a superset
+- Location: tests/e2e/training-save.spec.js:4:3
 
 # Error details
 
@@ -16,9 +16,9 @@ Test timeout of 30000ms exceeded.
 ```
 
 ```
-Error: locator.click: Test timeout of 30000ms exceeded.
+Error: page.click: Test timeout of 30000ms exceeded.
 Call log:
-  - waiting for locator('.calendar-day:not(.empty)').filter({ hasText: /^15$/ })
+  - waiting for locator('#start-new-training-btn')
 
 ```
 
@@ -58,7 +58,7 @@ Call log:
           - /url: https://suppi.pl/ukidives
           - text: ☕ Podoba Ci się to narzędzie?
           - strong [ref=f1e25]: Postaw mi kawę!
-        - generic [ref=f1e26]: v.2026.8.9.09
+        - generic [ref=f1e26]: v.2026.8.9.11
     - main [ref=f1e27]:
       - generic [ref=f1e29]:
         - generic [ref=f1e30]:
@@ -123,30 +123,58 @@ Call log:
 # Test source
 
 ```ts
-  1  | export class TrainingPage {
-  2  |     constructor(page) {
-  3  |         this.page = page;
-  4  |         this.startNewSessionBtn = page.locator('#start-new-session-btn');
-  5  |         this.trainingNameInput = page.locator('#training-name-input');
-  6  |         this.addExerciseBtn = page.locator('#add-exercise-to-plan-btn');
-  7  |         this.finishTrainingBtn = page.locator('#finish-training-btn');
-  8  |         this.pauseBtn = page.locator('#pause-training-btn');
-  9  |     }
+  1  | const { test, expect } = require('@playwright/test');
+  2  | 
+  3  | test.describe('Training Save Bug', () => {
+  4  |   test('should save training with 4 dropsets and a superset', async ({ page }) => {
+  5  |     // Zresetuj localStorage żeby pominąć onboarding jeśli jest
+  6  |     await page.addInitScript(() => {
+  7  |       window.localStorage.setItem('tutorial_global_v22', 'true');
+  8  |       window.localStorage.setItem('userNick', 'Test');
+  9  |     });
   10 | 
-  11 |     async selectDay(dayNumber) {
-  12 |         // Find a day cell in the calendar with the text
-  13 |         const dayCell = this.page.locator(`.calendar-day:not(.empty)`, { hasText: new RegExp(`^${dayNumber}$`) });
-> 14 |         await dayCell.click();
-     |                       ^ Error: locator.click: Test timeout of 30000ms exceeded.
-  15 |     }
-  16 | 
-  17 |     async startNewSession() {
-  18 |         await this.startNewSessionBtn.click();
-  19 |     }
-  20 | 
-  21 |     async setTrainingName(name) {
-  22 |         await this.trainingNameInput.fill(name);
-  23 |     }
-  24 | }
-  25 | 
+  11 |     // 1. Otwarcie aplikacji
+  12 |     await page.goto('http://localhost:8080');
+  13 | 
+  14 |     // Wejście w trening
+  15 |     await page.click('a[data-tab="training-dashboard"]');
+  16 |     
+  17 |     // Rozpoczęcie nowego treningu
+> 18 |     await page.click('#start-new-training-btn');
+     |                ^ Error: page.click: Test timeout of 30000ms exceeded.
+  19 |     
+  20 |     // Dodanie nazwy ćwiczenia dla pierwszego
+  21 |     await page.fill('.exercise-name-input', 'Wyciskanie');
+  22 |     
+  23 |     // Wpisanie wagi i powt dla pierwszej serii (normalnej)
+  24 |     const weightInputs = await page.$$('input[id^="weight-"]');
+  25 |     const repsInputs = await page.$$('input[id^="reps-"]');
+  26 |     
+  27 |     await weightInputs[0].fill('100');
+  28 |     await repsInputs[0].fill('10');
+  29 |     await page.click('button:has-text("+ Seria")');
+  30 |     
+  31 |     // Dodanie 4 dropsetów
+  32 |     for(let i = 0; i < 4; i++) {
+  33 |       await weightInputs[0].fill((90 - i*10).toString());
+  34 |       await repsInputs[0].fill('8');
+  35 |       await page.click('button:has-text("🔥 Dropset")');
+  36 |     }
+  37 |     
+  38 |     // Dodanie superserii
+  39 |     await page.click('#add-superset-to-plan-btn');
+  40 |     
+  41 |     // Zakończenie i zapis
+  42 |     // Akceptacja alertu (confirm) i ewentualnego alertu sukcesu
+  43 |     page.on('dialog', async dialog => {
+  44 |       await dialog.accept();
+  45 |     });
+  46 |     
+  47 |     await page.click('#finish-training-btn');
+  48 |     
+  49 |     // Weryfikacja że przeszło (zobaczymy widok kalendarza i historii)
+  50 |     await expect(page.locator('#training-calendar-view')).toBeVisible({ timeout: 5000 });
+  51 |   });
+  52 | });
+  53 | 
 ```

@@ -3,10 +3,11 @@ const { test, expect } = require('@playwright/test');
 test.describe('Złożony scenariusz zapisu treningu z draftem', () => {
   test('Powinien zapisać trening z dropsetami, superseriami, cardio i czasem ręcznym bez utraty danych', async ({ page }) => {
     // Navigate to the app (assuming it's served locally during tests)
+    await page.addInitScript(() => window.localStorage.setItem('tutorial_global_v22', 'true'));
     await page.goto('/');
 
     // Wait for the app to load
-    await page.waitForSelector('text=Start');
+    await page.waitForSelector('.app-wrapper');
 
     // Go to Training tab
     await page.click('a[data-tab="training-dashboard"]');

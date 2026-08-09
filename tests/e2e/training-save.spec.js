@@ -2,18 +2,17 @@ const { test, expect } = require('@playwright/test');
 
 test.describe('Training Save Bug', () => {
   test('should save training with 4 dropsets and a superset', async ({ page }) => {
+    // Zresetuj localStorage żeby pominąć onboarding jeśli jest
+    await page.addInitScript(() => {
+      window.localStorage.setItem('tutorial_global_v22', 'true');
+      window.localStorage.setItem('userNick', 'Test');
+    });
+
     // 1. Otwarcie aplikacji
     await page.goto('http://localhost:8080');
-    
-    // Zresetuj localStorage żeby pominąć onboarding jeśli jest
-    await page.evaluate(() => {
-      localStorage.setItem('tutorial_global_v22', 'true');
-      localStorage.setItem('userNick', 'Test');
-    });
-    await page.reload();
 
     // Wejście w trening
-    await page.click('a[data-tab="training"]');
+    await page.click('a[data-tab="training-dashboard"]');
     
     // Rozpoczęcie nowego treningu
     await page.click('#start-new-training-btn');

@@ -9,6 +9,7 @@ import { OnboardingUI } from './modules/ui/OnboardingUI.js';
 import { ChatUI } from './modules/ui/ChatUI.js';
 import { DatabaseManager } from './modules/db/DatabaseManager.js';
 import { ChangelogUI } from './modules/ui/ChangelogUI.js';
+import { DiagnosticsUI } from './modules/ui/DiagnosticsUI.js';
 window.ukiLogError = (msg, stack) => {
     let logs = [];
     try { logs = JSON.parse(localStorage.getItem('uki_error_logs') || '[]'); } catch(e) {}
@@ -46,6 +47,7 @@ const initApp = () => {
     OnboardingUI.init();
     ChatUI.init();
     ChangelogUI.init();
+    DiagnosticsUI.init();
 
     console.log("Uki's BodyBuild Initialized (Module System)");
 };

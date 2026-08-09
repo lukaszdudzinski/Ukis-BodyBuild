@@ -12,16 +12,13 @@
 # Error details
 
 ```
-Error: page.evaluate: TypeError: Cannot read properties of undefined (reading 'exec')
-    at eval (eval at evaluate (:311:30), <anonymous>:2:33)
-    at UtilityScript.evaluate (<anonymous>:313:16)
-    at UtilityScript.<anonymous> (<anonymous>:1:44)
+Error: page.evaluate: Execution context was destroyed, most likely because of a navigation
 ```
 
 # Page snapshot
 
 ```yaml
-- generic [ref=f1e1]:
+- generic [active] [ref=f1e1]:
   - generic [ref=f1e2]:
     - navigation [ref=f1e3]:
       - generic "Powrót do ekranu startowego" [ref=f1e4] [cursor=pointer]:
@@ -41,7 +38,7 @@ Error: page.evaluate: TypeError: Cannot read properties of undefined (reading 'e
           - link "Historia Treningów" [ref=f1e15] [cursor=pointer]:
             - /url: "#"
         - listitem [ref=f1e16]:
-          - link "Analiza Progresu" [active] [ref=f1e17] [cursor=pointer]:
+          - link "Analiza Progresu" [ref=f1e17] [cursor=pointer]:
             - /url: "#"
         - listitem [ref=f1e18]:
           - link "Dieta i Żywienie" [ref=f1e19] [cursor=pointer]:
@@ -54,33 +51,114 @@ Error: page.evaluate: TypeError: Cannot read properties of undefined (reading 'e
           - /url: https://suppi.pl/ukidives
           - text: ☕ Podoba Ci się to narzędzie?
           - strong [ref=f1e25]: Postaw mi kawę!
-        - generic [ref=f1e26]: v.2026.8.9.09
+        - generic [ref=f1e26]: v.2026.8.9.11
     - main [ref=f1e27]:
-      - generic [ref=f1e29]:
-        - generic [ref=f1e30]:
-          - heading "Analiza Progresu" [level=2] [ref=f1e31]
-          - paragraph [ref=f1e32]: Wykresy i statystyki
-        - generic [ref=f1e33]:
-          - generic [ref=f1e34]:
-            - strong [ref=f1e35]: Pomiary pod kontrolą ✅
-            - paragraph [ref=f1e36]: Ostatni pomiar robiłeś 3 dni temu. Trzymaj tak dalej!
-          - paragraph [ref=f1e37]: Za mało danych treningowych do przeprowadzenia analizy.
-          - heading "Regeneracja i Atlas Mięśni" [level=4] [ref=f1e38]
-          - paragraph [ref=f1e39]: Brak danych treningowych do analizy regeneracji.
-          - heading "Analiza składu ciała" [level=4] [ref=f1e40]
-          - generic [ref=f1e41]:
-            - generic [ref=f1e42]:
-              - strong [ref=f1e43]: Brak danych do wyliczenia BF%
-              - paragraph [ref=f1e44]: "Uzupełnij: Szyja w zakładce Pomiary Ciała."
-            - generic [ref=f1e45]:
-              - strong [ref=f1e46]: WHR (Talia-Biodra)
-              - button "ℹ️" [ref=f1e47] [cursor=pointer]
-              - generic [ref=f1e48]: "0.89"
-              - paragraph [ref=f1e49]: Zdrowe proporcje (Niskie ryzyko)
-              - paragraph [ref=f1e50]: Proporcje sylwetki
-          - generic [ref=f1e51]:
-            - button "📤 Udostępnij swój progres" [ref=f1e52] [cursor=pointer]
-            - paragraph [ref=f1e53]: Pochwal się na Facebooku lub Instagramie!
+      - generic [ref=f1e30] [cursor=pointer]:
+        - img "Logo" [ref=f1e31]
+        - heading "Uki's BodyBuild" [level=2] [ref=f1e32]
+        - paragraph [ref=f1e33]: Wybierz narzędzie z menu
   - text: ✕
-  - button "🤖" [ref=f1e54] [cursor=pointer]
+  - button "🤖" [ref=f1e34] [cursor=pointer]
+```
+
+# Test source
+
+```ts
+  1  | const { test, expect } = require('@playwright/test');
+  2  | 
+  3  | test.describe('Advanced Analytics Module', () => {
+  4  |   test('should display FFMI, WHR and BF% when all measurements are provided', async ({ page }) => {
+  5  |     // We mock localStorage and IndexedDB in a real scenario, but since playwright loads the actual page,
+  6  |     // we can inject measurements directly into the IndexedDB/OPFS via page.evaluate
+  7  |     await page.addInitScript(() => window.localStorage.setItem('tutorial_global_v22', 'true'));
+  8  |     await page.goto('http://127.0.0.1:8080'); // Assuming local server is running on 8080 during tests
+  9  | 
+  10 |     // Wait for App UI to load
+  11 |     await page.waitForSelector('.app-wrapper');
+  12 | 
+  13 |     // Inject mock data into DatabaseManager
+  14 |     await page.evaluate(async () => {
+  15 |       // Mock some measurement data
+  16 |       const mockData = {
+  17 |         date: '2026-08-06',
+  18 |         weight: 80.0,
+  19 |         height: 180,
+  20 |         neck: 38.0,
+  21 |         waist: 85.0,
+  22 |         hips: 95.0,
+  23 |         chest: 105.0,
+  24 |         thigh: 60.0,
+  25 |         biceps: 38.0,
+  26 |         photo: null
+  27 |       };
+  28 |       
+  29 |       await window.DatabaseManager.addMeasurement(mockData);
+  30 |     });
+  31 | 
+  32 |     // Navigate to Analytics Tab
+  33 |     await page.click('a[data-tab="analytics-dashboard"]');
+  34 |     
+  35 |     // Wait for the analytics to render
+  36 |     await page.waitForSelector('#analytics-content h4', { state: 'visible' });
+  37 | 
+  38 |     // Verify Advanced Analytics section exists
+  39 |     const advancedTitle = await page.locator('text=Zaawansowana Analityka').isVisible();
+  40 |     expect(advancedTitle).toBeTruthy();
+  41 | 
+  42 |     // Verify BF% is calculated (US Navy formula)
+  43 |     const bfTitle = await page.locator('text=Szacunkowy BF%').isVisible();
+  44 |     expect(bfTitle).toBeTruthy();
+  45 | 
+  46 |     // Verify FFMI is calculated
+  47 |     const ffmiTitle = await page.locator('text=FFMI (Index Beztłuszczowy)').isVisible();
+  48 |     expect(ffmiTitle).toBeTruthy();
+  49 | 
+  50 |     // Verify WHR is calculated
+  51 |     const whrTitle = await page.locator('text=WHR (Talia-Biodra)').isVisible();
+  52 |     expect(whrTitle).toBeTruthy();
+  53 | 
+  54 |     // Clean up
+  55 |     await page.evaluate(async () => {
+  56 |       window.DatabaseManager.db.exec("DELETE FROM measurements");
+  57 |     });
+  58 |   });
+  59 | 
+  60 |   test('should display missing data warning when neck is not provided', async ({ page }) => {
+  61 |     await page.addInitScript(() => window.localStorage.setItem('tutorial_global_v22', 'true'));
+  62 |     await page.goto('http://127.0.0.1:8080');
+  63 | 
+> 64 |     await page.evaluate(async () => {
+     |                ^ Error: page.evaluate: Execution context was destroyed, most likely because of a navigation
+  65 |       const mockData = {
+  66 |         date: '2026-08-06',
+  67 |         weight: 80.0,
+  68 |         height: 180,
+  69 |         // neck is missing
+  70 |         waist: 85.0,
+  71 |         hips: 95.0,
+  72 |         chest: 105.0,
+  73 |         thigh: 60.0,
+  74 |         biceps: 38.0,
+  75 |         photo: null
+  76 |       };
+  77 |       await window.DatabaseManager.addMeasurement(mockData);
+  78 |     });
+  79 | 
+  80 |     // Navigate to Analytics Tab
+  81 |     await page.click('a[data-tab="analytics-dashboard"]');
+  82 |     
+  83 |     // Check for missing data warning
+  84 |     const missingWarning = await page.locator('text=Brak danych do wyliczenia BF%').isVisible();
+  85 |     expect(missingWarning).toBeTruthy();
+  86 | 
+  87 |     const missingNeckText = await page.locator('text=Uzupełnij: Szyja').isVisible();
+  88 |     expect(missingNeckText).toBeTruthy();
+  89 | 
+  90 |     // Clean up
+  91 |     await page.evaluate(async () => {
+  92 |       window.DatabaseManager.db.exec("DELETE FROM measurements");
+  93 |     });
+  94 |   });
+  95 | });
+  96 | 
 ```

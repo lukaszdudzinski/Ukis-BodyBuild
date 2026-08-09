@@ -1,5 +1,13 @@
 [
   {
+    "version": "v.2026.8.9.11",
+    "date": "2026-08-09",
+    "changes": [
+      "🛠️ Nowy Moduł Diagnostyki: Całkowicie wyizolowaliśmy funkcje techniczne (Eksport Bazy, Twardy Reset, Logi) do nowej, bezpiecznej zakładki na Ekranie Głównym.",
+      "🛡️ Poprawki stabilności: ChatUI już nie zawiesza okna przy otwieraniu szablonów w tle, a PWA Updater agresywniej czyści pamięć podręczną by pobrać najnowszą wersję."
+    ]
+  },
+  {
     "version": "v.2026.8.9.10",
     "date": "2026-08-09",
     "changes": [

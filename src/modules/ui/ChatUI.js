@@ -154,8 +154,12 @@ export const ChatUI = {
 
         const toggleBtn = document.getElementById('edward-chat-toggle');
         // Jeśli okno czatu jest otwarte, nie pokazujemy dymka tylko wrzucamy wiadomość
-        if (!toggleBtn || toggleBtn.style.display === 'none') {
+        if (toggleBtn && toggleBtn.style.display === 'none') {
             ChatUI.appendMessage(message, 'edward');
+            return;
+        }
+        if (!toggleBtn) {
+            console.warn("ChatUI nie jest zainicjowany. Dymek zignorowany.");
             return;
         }
 

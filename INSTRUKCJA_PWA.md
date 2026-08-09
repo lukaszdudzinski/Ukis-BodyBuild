@@ -37,3 +37,20 @@ Wejdź na powyższy link ze swojego telefonu.
 *   🌊 **Działanie Offline**: Aplikacja uruchomi się nawet na środku jeziora bez zasięgu.
 *   🚀 **Pełny Ekran**: Brak paska adresu przeglądarki.
 *   📱 **Ikonka**: Aplikacja ma własną ikonę na pulpicie telefonu.
+
+## 4. Dodatkowe funkcje i zastosowanie biznesowe (Aktualizacja Faza 3)
+
+### Szablony Ćwiczeń
+Umożliwiają zapisywanie ulubionych zestawów treningowych. Zamiast za każdym razem dodawać 5 tych samych ćwiczeń ręcznie, użytkownik wybiera szablon i natychmiast przechodzi do treningu. Skraca to czas obsługi telefonu na siłowni i pozwala skupić się na dźwiganiu.
+
+### Atlas Mięśni / Mapa Ciała (Muscle Atlas)
+Wizualne narzędzie pozwalające wybrać partię mięśniową (np. klatka, plecy), co automatycznie filtruje listę ćwiczeń. Zastosowanie biznesowe: edukacja początkujących i szybsza nawigacja po ogromnej bazie ćwiczeń.
+
+### Kalkulator 1RM (One Rep Max)
+Służy do wyliczania ciężaru maksymalnego na podstawie ciężaru roboczego i ilości powtórzeń (wzór Epleya). Pozwala użytkownikom bezpiecznie szacować możliwości na nowe rekordy życiowe (PR), bez ryzyka kontuzji przy sprawdzaniu "na żywo".
+
+### Moduł Diagnostyki (Kafel "Diagnostyka")
+Przeniesiony z Ustawień specjalny hub techniczny zawierający:
+- **Twardy Reset PWA (Przycisk Paniki)**: Jeśli aplikacja zablokuje się w pętli PWA Cache (tzw. Cache Trap) i nie widzi nowej wersji mimo odświeżania - ten przycisk wymusza usunięcie ukrytych plików Service Workera. **Twoje treningi i postępy są bezpieczne**.
+- **Eksport/Import Danych**: Generowanie pliku JSON ze wszystkimi Twoimi postępami. Pozwala na zrobienie bezpiecznej kopii zapasowej przed zmianą telefonu lub czyszczeniem przeglądarki.
+- **Wyczyszczenie LocalStorage**: Narzędzie naprawcze odświeżające bazę ćwiczeń (jeśli nowe ćwiczenia od trenera się nie ładują). Wymaga jedynie ponownego wpisania Nicku.

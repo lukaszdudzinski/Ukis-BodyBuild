@@ -7,8 +7,9 @@ test.describe('Training and History Flow', () => {
   });
 
   test('should create a training session and verify it appears in history', async ({ page }) => {
+    await page.addInitScript(() => window.localStorage.setItem('tutorial_global_v22', 'true'));
     // 1. Go to Training Tab
-    await page.click('#tile-training');
+    await page.click('a[data-tab="training-dashboard"]');
 
     // Wait for the calendar to render and click "Dodaj nową sesję treningową"
     await page.click('text=Dodaj nową sesję treningową');

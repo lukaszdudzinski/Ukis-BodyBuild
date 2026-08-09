@@ -7,40 +7,15 @@ export const SettingsUI = {
         if (!settingsPanel) return;
 
         // Add Data Management section if it doesn't exist
-        if (!document.getElementById('db-export-btn')) {
+        if (!document.getElementById('reset-tutorial-btn')) {
             const dataSection = document.createElement('div');
             dataSection.innerHTML = `
-                <h4 style="margin-top: 20px;">Zarządzanie Danymi</h4>
-                <div class="form-full-width" style="margin-bottom: 20px;">
-                    <button id="db-export-btn" class="action-button" style="width: 100%; margin-bottom: 10px; background-color: #2196F3; border-color: #2196F3;">💾 Eksportuj Bazę (JSON)</button>
-                    <label for="db-import-file" class="action-button" style="width: 100%; display: block; text-align: center; background-color: #333; border-color: #555; cursor: pointer; padding: 10px; border-radius: 5px;">
-                        📂 Importuj Bazę (JSON)
-                    </label>
-                    <input type="file" id="db-import-file" accept=".json" style="display: none;">
-                </div>
+                <h4 style="margin-top: 20px;">Pomoc i Samouczek</h4>
                 <div class="form-full-width" style="margin-bottom: 20px;">
                     <button id="reset-tutorial-btn" class="action-button" style="width: 100%; margin-bottom: 10px; background-color: #FF9800; border-color: #FF9800; color: #fff;">🔄 Zobacz ponownie powitanie (Reset)</button>
                 </div>
-                <h4 style="margin-top: 20px; color: #ff4444;">Narzędzia Diagnostyczne</h4>
-                <div class="form-full-width" style="margin-bottom: 20px;">
-                    <p style="color: #aaa; font-size: 0.85em; text-align: center;">Skopiuj poniższe logi w razie problemów z aplikacją i wyślij zgłoszenie.</p>
-                    <textarea id="error-logs-area" readonly style="width: 100%; height: 100px; padding: 10px; border-radius: 4px; border: 1px solid #444; background: #222; color: #00BFFF; font-size: 0.85em; margin-bottom: 10px; font-family: monospace;"></textarea>
-                    <button id="copy-errors-btn" class="action-button" style="width: 100%; background-color: #444; border-color: #555; color: #fff;">📋 Skopiuj do zgłoszenia serwisowego</button>
-                    <button id="clear-errors-btn" class="action-button" style="width: 100%; background-color: transparent; border: 1px solid #ff4444; color: #ff4444; margin-top: 10px;">🗑️ Wyczyść logi</button>
-                    <div style="text-align: center; margin-top: 10px; color: #666; font-size: 0.8em;">Wersja App: <span id="settings-app-version">Oczekiwanie...</span></div>
-                </div>
             `;
             settingsPanel.insertBefore(dataSection, document.getElementById('settings-pwa-guide'));
-        }
-
-        const exportBtn = document.getElementById('db-export-btn');
-        if (exportBtn) {
-            exportBtn.addEventListener('click', SettingsUI.handleExport);
-        }
-
-        const importInput = document.getElementById('db-import-file');
-        if (importInput) {
-            importInput.addEventListener('change', SettingsUI.handleImport);
         }
 
         const resetTutorialBtn = document.getElementById('reset-tutorial-btn');
@@ -52,27 +27,6 @@ export const SettingsUI = {
                 if (window.OnboardingUI) window.OnboardingUI.init();
             });
         }
-
-        const errArea = document.getElementById('error-logs-area');
-        if (errArea) {
-            const renderLogs = () => {
-                try {
-                    const logs = JSON.parse(localStorage.getItem('uki_error_logs') || '[]');
-                    if (logs.length === 0) {
-                        errArea.value = 'Brak zarejestrowanych błędów :)';
-                    } else {
-                        errArea.value = logs.map(l => `[${l.time}]\nMSG: ${l.msg}\nSTACK: ${l.stack}`).join('\n\n-----------------\n\n');
-                    }
-                } catch(e) {
-                    errArea.value = 'Błąd odczytu logów!';
-                }
-            };
-            renderLogs();
-            
-            // Allow refreshing
-            errArea.addEventListener('focus', renderLogs);
-        }
-
         const copyErrBtn = document.getElementById('copy-errors-btn');
         if (copyErrBtn) {
             copyErrBtn.addEventListener('click', () => {
@@ -94,31 +48,7 @@ export const SettingsUI = {
             appVerSpan.innerText = window.APP_VERSION;
         }
 
-        // PWA Hard Reset Button
-        const hardResetBtn = document.getElementById('pwa-hard-reset-btn');
-        if (hardResetBtn) {
-            hardResetBtn.addEventListener('click', async () => {
-                const confirmed = confirm("Czy na pewno chcesz wykonać Twardy Reset? To naprawi problemy z aktualizacjami usuwając przestarzały kod, Twoje statystyki w SQLite pozostaną bezpieczne!");
-                if (confirmed) {
-                    try {
-                        if ('serviceWorker' in navigator) {
-                            const regs = await navigator.serviceWorker.getRegistrations();
-                            for (let reg of regs) {
-                                await reg.unregister();
-                            }
-                        }
-                        if ('caches' in window) {
-                            const keys = await caches.keys();
-                            await Promise.all(keys.map(k => caches.delete(k)));
-                        }
-                        alert("Cache i Service Worker wyczyszczone. Za chwilę nastąpi restart do najnowszej wersji!");
-                        window.location.reload(true);
-                    } catch (err) {
-                        alert("Błąd podczas resetu: " + err.message);
-                    }
-                }
-            });
-        }
+        // SettingsUI logic cleaned up
 
         SettingsUI.initTheme();
         SettingsUI.initProfile();
