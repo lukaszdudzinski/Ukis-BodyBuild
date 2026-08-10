@@ -116,6 +116,17 @@ export const DatabaseManager = {
                 created_at DATETIME DEFAULT CURRENT_TIMESTAMP
             );
         `);
+
+        // AI Analyses History
+        db.exec(`
+            CREATE TABLE IF NOT EXISTS ai_analyses (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                date TEXT NOT NULL,
+                type TEXT NOT NULL,
+                content TEXT NOT NULL,
+                created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+            );
+        `);
     },
 
     addMeasurement: async (data) => {
@@ -369,5 +380,47 @@ export const DatabaseManager = {
             console.error("Błąd podczas importu bazy:", e);
             return false;
         }
+    },
+
+    getDietLogsByDateRange: async (startDate, endDate) => {
+        await DatabaseManager.init();
+        let query = `SELECT * FROM diet_logs WHERE date >= ? AND date <= ? ORDER BY date DESC, created_at DESC`;
+        const res = db.exec({
+            sql: query,
+            bind: [startDate, endDate],
+            rowMode: 'object'
+        });
+        return res.length > 0 ? res[0] : [];
+    },
+
+    // --- AI Analyses ---
+    saveAiAnalysis: async (type, content) => {
+        await DatabaseManager.init();
+        const dateStr = new Date().toISOString().split('T')[0];
+        db.exec({
+            sql: `INSERT INTO ai_analyses (date, type, content) VALUES (?, ?, ?)`,
+            bind: [dateStr, type, content]
+        });
+        const timestamp = new Date().getTime();
+        localStorage.setItem('uki_last_ai_analysis', timestamp.toString());
+    },
+
+    getAiAnalyses: async () => {
+        await DatabaseManager.init();
+        const res = db.exec({
+            sql: `SELECT * FROM ai_analyses ORDER BY created_at DESC`,
+            rowMode: 'object'
+        });
+        return res.length > 0 ? res[0] : [];
+    },
+
+    deleteAiAnalysis: async (id) => {
+        await DatabaseManager.init();
+        db.exec({
+            sql: `DELETE FROM ai_analyses WHERE id = ?`,
+            bind: [id]
+        });
     }
 };
+
+window.DatabaseManager = DatabaseManager;

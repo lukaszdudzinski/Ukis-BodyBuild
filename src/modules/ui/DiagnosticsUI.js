@@ -17,8 +17,8 @@ export const DiagnosticsUI = {
                 <h3 style="color: #FF9800; margin-top: 0;">Eksport / Import Danych</h3>
                 <p style="font-size: 0.9em; color: #ccc;">Zapisz swoje dane do pliku na urządzeniu lub wgraj z powrotem. Zalecane przed Twardym Resetem.</p>
                 <div style="display: flex; gap: 10px; margin-top: 15px;">
-                    <button id="db-export-btn" style="flex: 1; padding: 10px; background: #222; border: 1px solid #00BFFF; color: #00BFFF; border-radius: 5px; cursor: pointer;">Zrób Kopię (Export)</button>
-                    <button id="db-import-btn" style="flex: 1; padding: 10px; background: #222; border: 1px solid #FF9800; color: #FF9800; border-radius: 5px; cursor: pointer;">Wgraj Kopię (Import)</button>
+                    <button id="db-export-btn" style="flex: 1; padding: 13px 10px; background: #222; border: 1px solid #00BFFF; color: #00BFFF; border-radius: 5px; cursor: pointer; font-size: 1em; font-weight: bold; text-align: center;">Zrób Kopię (Export)</button>
+                    <button id="db-import-btn" style="flex: 1; padding: 13px 10px; background: #222; border: 1px solid #FF9800; color: #FF9800; border-radius: 5px; cursor: pointer; font-size: 1em; font-weight: bold; text-align: center;">Wgraj Kopię (Import)</button>
                     <input type="file" id="db-import-file" accept=".json" style="display: none;">
                 </div>
             </div>
@@ -26,34 +26,43 @@ export const DiagnosticsUI = {
             <div style="background: rgba(231,76,60,0.1); padding: 15px; border-radius: 8px; border: 1px solid #E74C3C; margin-bottom: 20px;">
                 <h3 style="color: #E74C3C; margin-top: 0;">Przycisk Paniki (Twardy Reset PWA)</h3>
                 <p style="font-size: 0.9em; color: #ccc;">Użyj tylko wtedy, gdy aplikacja przestała się aktualizować lub "utknęła" na starej wersji. <b>Konta i statystyki są bezpieczne</b> (baza SQLite nie jest usuwana).</p>
-                <button id="pwa-hard-reset-btn" style="width: 100%; padding: 12px; font-weight: bold; font-size: 1.1em; background: #E74C3C; color: white; border: none; border-radius: 8px; cursor: pointer; margin-top: 15px;">
+                <button id="pwa-hard-reset-btn" style="width: 100%; padding: 13px; font-weight: bold; font-size: 1em; background: #E74C3C; color: white; border: none; border-radius: 8px; cursor: pointer; margin-top: 15px; text-align: center;">
                     ⚠️ WYKONAJ TWARDY RESET APLIKACJI
                 </button>
             </div>
             
-            <div style="background: rgba(0,0,0,0.3); padding: 15px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.2);">
+            <div style="background: rgba(0,0,0,0.3); padding: 15px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.2); margin-bottom: 20px;">
                 <h3 style="color: #eee; margin-top: 0;">Pamięć Podręczna</h3>
                 <p style="font-size: 0.9em; color: #ccc;">Użyj tej opcji <b>tylko wtedy, gdy zaciął się interfejs</b> (np. nie ładuje się awatar, źle działa motyw lub zablokował się samouczek). Zresetuje ona wyłącznie podręczne ustawienia wyglądu. <b>Twoja historia treningów i atlas ćwiczeń są w pełni bezpieczne!</b></p>
-                <button id="db-clear-local-btn" style="width: 100%; padding: 10px; background: #444; color: #eee; border: 1px solid #666; border-radius: 5px; cursor: pointer; margin-top: 10px;">
+                <button id="db-clear-local-btn" style="width: 100%; padding: 13px; background: #444; color: #eee; border: 1px solid #666; border-radius: 5px; cursor: pointer; margin-top: 10px; font-size: 1em; font-weight: bold; text-align: center;">
                     Wyczyść tylko LocalStorage
                 </button>
             </div>
             
-            <div style="background: rgba(0,0,0,0.3); padding: 15px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.2); margin-top: 20px;">
-                <h3 style="color: #eee; margin-top: 0;">Logi Błędów Aplikacji</h3>
-                <textarea id="diagnostics-error-area" readonly style="width: 100%; height: 100px; background: #111; color: #ff4444; border: 1px solid #333; padding: 10px; border-radius: 4px; font-family: monospace; resize: none; margin-bottom: 10px;"></textarea>
-                <div style="display: flex; gap: 10px; margin-bottom: 10px;">
-                    <button id="copy-errors-btn" style="flex: 1; padding: 10px; background: #444; color: #eee; border: 1px solid #666; border-radius: 5px; cursor: pointer;">Kopiuj Logi</button>
-                    <button id="share-errors-btn" style="flex: 1; padding: 10px; background: #00BFFF; color: #fff; border: 1px solid #00BFFF; border-radius: 5px; cursor: pointer;">Udostępnij Logi</button>
+            <div style="background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+                <h3 style="margin-top: 0; color: #fff;">Logi Błędów Aplikacji dla Pomocy Technicznej</h3>
+                <div id="diagnostics-logs-container" style="background: #111; color: #00BFFF; font-family: monospace; font-size: 0.9em; padding: 12px; border-radius: 6px; min-height: 150px; max-height: 300px; overflow-y: auto; margin: 12px 0; word-break: break-all; white-space: pre-wrap; box-sizing: border-box; width: 100%;">
+                    Ładowanie logów...
                 </div>
-                <button id="clear-errors-btn" style="width: 100%; padding: 10px; background: #444; color: #eee; border: 1px solid #666; border-radius: 5px; cursor: pointer;">Wyczyść Logi</button>
+                
+                <div style="display: flex; gap: 10px; margin-bottom: 10px;">
+                    <button id="copy-errors-btn" style="flex: 1; padding: 13px 10px; background: rgba(255,255,255,0.1); color: #fff; border: 1px solid rgba(255,255,255,0.2); border-radius: 4px; font-weight: bold; cursor: pointer; font-size: 1em; text-align: center;">
+                        Kopiuj Logi
+                    </button>
+                    <button id="share-errors-btn" style="flex: 1; padding: 13px 10px; background: #00BFFF; color: #000; border: none; border-radius: 4px; font-weight: bold; cursor: pointer; font-size: 1em; text-align: center;">
+                        Udostępnij Logi
+                    </button>
+                </div>
+                <button id="clear-errors-btn" style="width: 100%; padding: 13px; background: rgba(255,255,255,0.05); color: #aaa; border: 1px solid rgba(255,255,255,0.1); border-radius: 4px; cursor: pointer; font-size: 1em; font-weight: bold; text-align: center;">
+                    Wyczyść Logi
+                </button>
             </div>
         `;
 
-        const errArea = document.getElementById('diagnostics-error-area');
-        if (errArea) {
+        const logsContainer = document.getElementById('diagnostics-logs-container');
+        if (logsContainer) {
             const logs = localStorage.getItem('uki_error_logs');
-            errArea.value = logs ? logs : 'Brak zarejestrowanych błędów :)';
+            logsContainer.innerText = logs ? logs : 'Brak zarejestrowanych błędów :)';
         }
 
         DiagnosticsUI.bindEvents();
@@ -172,11 +181,11 @@ export const DiagnosticsUI = {
         }
 
         const clearErrs = document.getElementById('clear-errors-btn');
-        const errArea = document.getElementById('diagnostics-error-area');
+        const logsContainer = document.getElementById('diagnostics-logs-container');
         if (clearErrs) {
             clearErrs.addEventListener('click', () => {
                 localStorage.removeItem('uki_error_logs');
-                if (errArea) errArea.value = 'Brak zarejestrowanych błędów :)';
+                if (logsContainer) logsContainer.innerText = 'Brak zarejestrowanych błędów :)';
             });
         }
     }

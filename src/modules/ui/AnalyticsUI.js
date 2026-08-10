@@ -158,20 +158,24 @@ export const AnalyticsUI = {
                         : '<p style="color: #00BFFF; margin: 0;">💪 Każdy kilogram przybliża Cię do celu. Nie przestawaj!</p>'}
                 </div>
                 
-                <h5 style="color: #FFD700; margin-top: 15px; margin-bottom: 5px;">📈 Progres Objętości (Ostatnie 10 treningów)</h5>
-                <p style="font-size: 0.8em; color: #ccc; margin: 0 0 10px 0;">Wykres obrazuje całkowity ciężar (objętość) przerzucony na przestrzeni ostatnich dziesięciu sesji. Wyższe słupki oznaczają mocniejszy trening!</p>
-                <div style="display: flex; align-items: flex-end; gap: 8px; height: 160px; padding: 10px 10px 30px 10px; background: rgba(0,0,0,0.4); border: 1px solid #FFD700; border-radius: 8px; overflow-x: auto; margin-bottom: 25px;">
+                <h5 style="color: #FFD700; margin-top: 15px; margin-bottom: 5px;">📈 Ostatnie 10 sesji treningowych</h5>
+                <p style="font-size: 0.8em; color: #aaa; margin: 0 0 12px 0;">Pasek pokazuje względną objętość sesji (im szerszy, tym mocniejszy trening).</p>
+                <div style="display: flex; flex-direction: column; gap: 8px; margin-bottom: 25px;">
                     ${workoutsWithVolume.slice(0,10).reverse().map(w => {
                         const maxVol = Math.max(...workoutsWithVolume.slice(0,10).map(wo => wo.volume)) || 1;
-                        const heightPct = Math.min(100, Math.max(5, (w.volume / maxVol) * 100));
-                        const dateShort = new Date(w.date).toLocaleDateString('pl-PL', {day:'numeric', month:'short'});
-                        return `
-                            <div style="display: flex; flex-direction: column; align-items: center; min-width: 40px; position: relative;">
-                                <div style="font-size: 0.7em; color: #FFD700; margin-bottom: 5px; font-weight: bold;">${Math.round(w.volume)}k</div>
-                                <div style="width: 30px; height: ${heightPct}%; background: linear-gradient(0deg, rgba(255,215,0,0.8) 0%, rgba(255,152,0,1) 100%); border-radius: 4px 4px 0 0; min-height: 5px; max-height: 120px; transition: height 0.5s ease-in-out;"></div>
-                                <div style="font-size: 0.65em; color: #aaa; margin-top: 8px; transform: rotate(-45deg); transform-origin: top left; white-space: nowrap;">${dateShort}</div>
-                            </div>
-                        `;
+                        const barPct = Math.min(100, Math.max(4, Math.round((w.volume / maxVol) * 100)));
+                        const dateStr = new Date(w.date).toLocaleDateString('pl-PL', {weekday:'short', day:'numeric', month:'short'});
+                        const displayVol = w.volume >= 1000 ? (w.volume/1000).toFixed(1) + ' t' : Math.round(w.volume) + ' kg';
+                        const barColor = barPct >= 80 ? '#2ECC71' : barPct >= 50 ? '#FFD700' : '#FF9800';
+                        return '<div style="background: rgba(255,255,255,0.04); border-radius: 6px; padding: 8px 12px;">'
+                            + '<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">'
+                            + '<span style="font-size: 0.85em; color: #ccc;">' + dateStr + '</span>'
+                            + '<span style="font-size: 0.85em; color: ' + barColor + '; font-weight: bold;">' + displayVol + '</span>'
+                            + '</div>'
+                            + '<div style="background: rgba(255,255,255,0.08); border-radius: 3px; height: 6px; overflow: hidden;">'
+                            + '<div style="height: 100%; width: ' + barPct + '%; background: ' + barColor + '; border-radius: 3px; transition: width 0.6s ease;"></div>'
+                            + '</div>'
+                            + '</div>';
                     }).join('')}
                 </div>
             `;

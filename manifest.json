@@ -1,6 +1,6 @@
 {
     "name": "Uki's BodyBuild",
-    "short_name": "UkiBodyBuild",
+    "short_name": "Uki's BodyBuild",
     "description": "Profesjonalne narzędzie do monitorowania postępów sylwetkowych.",
     "start_url": "./index.html",
     "display": "standalone",

@@ -20,6 +20,7 @@ export const HistoryUI = {
     loadHistory: async () => {
         try {
             const records = await DatabaseManager.getTrainings();
+            window._cachedTrainingsHistory = records;
             HistoryUI.renderHistoryList(records);
         } catch (err) {
             console.error("Error loading training history:", err);
@@ -107,9 +108,14 @@ export const HistoryUI = {
     },
 
     shareTraining: async (trainingId) => {
-        const records = await DatabaseManager.getTrainings();
+        // Zamiast robić await na DB (co na iOS może zgubić uprawnienie do navigator.share ze względu na czas oczekiwania), szukamy w pamięci:
+        const records = window._cachedTrainingsHistory || [];
         const rec = records.find(r => r.id === trainingId);
-        if (!rec) return;
+        
+        if (!rec) {
+            alert("Błąd: Nie znaleziono treningu w pamięci. Odśwież stronę i spróbuj ponownie.");
+            return;
+        }
 
         const totalVolume = rec.exercises.reduce((sum, ex) => {
             if (!ex.sets) return sum;

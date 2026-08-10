@@ -1,23 +1,6 @@
-export const APP_VERSION = 'v2026.8.9.14'; // <-- TEN NUMER ZMIENIAMY PRZY KAŻDEJ AKTUALIZACJI
+export const APP_VERSION = 'v2026.8.10.02'; // Fix: photo btn layout, AI validation, dashboard version, burger removed
 
-window.onerror = function(message, source, lineno, colno, error) {
-    let errs = [];
-    try {
-        const stored = localStorage.getItem('uki-errors');
-        if (stored) errs = JSON.parse(stored);
-    } catch(e) {}
-    errs.push({
-        time: new Date().toISOString(),
-        msg: message,
-        src: source,
-        line: lineno,
-        col: colno,
-        stack: error ? error.stack : ''
-    });
-    if(errs.length > 50) errs = errs.slice(errs.length - 50);
-    localStorage.setItem('uki-errors', JSON.stringify(errs));
-    return false; 
-};
+// Obsługa błędów globalnych — zdefiniowana w main.js (klucz: uki_error_logs)
 
 export const AppUI = {
     init: () => {
@@ -28,8 +11,8 @@ export const AppUI = {
         // Expose do global scope dla index.html
         window.APP_VERSION = APP_VERSION;
 
-        // Update version displays
-        const versionDisplays = document.querySelectorAll('.version-info, .app-version-display');
+        // Update version displays (sidebar + dashboard)
+        const versionDisplays = document.querySelectorAll('.version-info, .app-version-display, #dashboard-version');
         versionDisplays.forEach(el => {
             el.textContent = APP_VERSION;
         });

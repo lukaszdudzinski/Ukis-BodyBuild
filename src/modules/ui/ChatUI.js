@@ -282,12 +282,24 @@ export const ChatUI = {
         ChatUI.showTyping();
 
         try {
+            // Wstrzyknięcie kontekstu najnowszej analizy AI (żeby Edward pamiętał co radził)
+            let finalPrompt = text;
+            try {
+                if (window.DatabaseManager) {
+                    const analyses = await window.DatabaseManager.getAiAnalyses();
+                    if (analyses && analyses.length > 0) {
+                        const lastAnalysis = analyses[0];
+                        finalPrompt = '[Ukryty Systemowy Kontekst: Użytkownik otrzymał niedawno audyt AI (' + lastAnalysis.date + '), brzmiał on następująco (skrót): ' + lastAnalysis.content.substring(0, 400) + '...]\n\nPytanie użytkownika: ' + text;
+                    }
+                }
+            } catch(e) { console.warn("Nie udało się pobrać historii analiz do kontekstu chatu."); }
+
             const response = await fetch(workerUrl, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
                     imageBase64: null,
-                    contextText: text,
+                    contextText: finalPrompt,
                     action: "chat" // Tells worker to use Chat prompt
                 })
             });

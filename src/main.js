@@ -11,6 +11,7 @@ import { DatabaseManager } from './modules/db/DatabaseManager.js';
 import { ChangelogUI } from './modules/ui/ChangelogUI.js';
 import { DiagnosticsUI } from './modules/ui/DiagnosticsUI.js';
 import { AchievementsSystem } from './modules/gamification/AchievementsSystem.js';
+import { AiAnalyticsUI } from './modules/ui/AiAnalyticsUI.js';
 window.ukiLogError = (msg, stack) => {
     let logs = [];
     try { logs = JSON.parse(localStorage.getItem('uki_error_logs') || '[]'); } catch(e) {}
@@ -34,6 +35,7 @@ window.addEventListener('unhandledrejection', function(event) {
 // Expose for E2E testing and PWA updater
 window.DatabaseManager = DatabaseManager;
 window.APP_VERSION = APP_VERSION;
+window.AiAnalyticsUI = AiAnalyticsUI;
 
 // Initialize Application
 const initApp = () => {
@@ -49,6 +51,14 @@ const initApp = () => {
     ChatUI.init();
     ChangelogUI.init();
     DiagnosticsUI.init();
+
+    // AI Analytics — renders on tab open
+    document.addEventListener('tabChanged', (e) => {
+        if (e.detail && e.detail.tab === 'ai-analytics-dashboard') {
+            const container = document.getElementById('ai-analytics-content');
+            if (container) AiAnalyticsUI.render(container);
+        }
+    });
 
     console.log("Uki's BodyBuild Initialized (Module System)");
 };

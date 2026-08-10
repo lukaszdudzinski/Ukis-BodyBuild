@@ -85,7 +85,7 @@ export const SettingsUI = {
         container.innerHTML = html;
     },
 
-    shareBadges: () => {
+    shareBadges: async () => {
         if (!window.AchievementsSystem) return;
         const earnedIds = window.AchievementsSystem.getEarnedAchievements();
         const allDefs = window.AchievementsSystem.achievementsDef;
@@ -103,16 +103,22 @@ export const SettingsUI = {
 
         const textToShare = `Zdobyłem ${earnedCount} odznak w Uki's BodyBuild! 🏆 Moja kolekcja: ${badgesText}. 💪 Dołącz i bij rekordy: https://lukaszdudzinski.github.io/Ukis-BodyBuild/`;
 
+        const statsList = [
+            { label: 'Zdobyte odznaki', value: String(earnedCount), color: '#FFD700' },
+            { label: 'Kolekcja', value: badgesText.substring(0, 30) + (badgesText.length > 30 ? '...' : '') }
+        ];
+
+        const avatar = localStorage.getItem('uki-bodybuild-avatar') || null;
+        const nickname = (JSON.parse(localStorage.getItem('uki_bodybuild_settings') || '{}')).nickname || 'BodyBuilder';
+
         try {
-            if (navigator.share) {
-                navigator.share({
-                    title: "Moje Odznaki Uki's BodyBuild",
-                    text: textToShare
-                }).catch(err => console.log("Share canceled", err));
+            if (window.ShareUtils) {
+                await window.ShareUtils.generateAndShareImage("Moje Odznaki", statsList, avatar, nickname, textToShare);
             } else {
-                window.prompt("Skopiuj swoje osiągnięcia (Ctrl+C / Cmd+C):", textToShare);
+                throw new Error("Brak ShareUtils");
             }
         } catch (error) {
+            console.log("Share error:", error);
             window.prompt("Skopiuj swoje osiągnięcia (Ctrl+C / Cmd+C):", textToShare);
         }
     },

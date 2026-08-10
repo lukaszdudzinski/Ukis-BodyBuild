@@ -63,11 +63,11 @@ export const DietUI = {
                 <div style="background: rgba(255,255,255,0.05); padding: 15px; border-radius: 12px; border: 1px solid #FF9800; text-align: center;">
                     <label style="color: #ccc; font-size: 0.9em; display: block; margin-bottom: 10px; font-weight: bold;">Co dzisiaj jadłeś?</label>
                     
-                    <div style="position: relative; margin-bottom: 15px;">
-                        <textarea id="diet-context-input" placeholder="Napisz lub podyktuj... (np. Jajecznica z 3 jaj)" style="width: 100%; padding: 12px; padding-right: 85px; border-radius: 8px; border: 1px solid #555; background: #1a1a1a; color: #fff; font-size: 1em; resize: none; box-sizing: border-box;" rows="3"></textarea>
+                    <div style="display: flex; gap: 10px; margin-bottom: 15px; align-items: stretch;">
+                        <textarea id="diet-context-input" placeholder="Napisz lub podyktuj... (np. Jajecznica z 3 jaj)" style="flex: 1; padding: 12px; border-radius: 8px; border: 1px solid #555; background: #1a1a1a; color: #fff; font-size: 1em; resize: none; box-sizing: border-box; min-height: 80px;" rows="3"></textarea>
                         
-                        <label id="diet-attach-btn" style="position: absolute; right: 8px; bottom: 12px; cursor: pointer; color: #FF9800; background: rgba(255,152,0,0.15); border: 1px solid #FF9800; border-radius: 8px; padding: 8px 10px; display: flex; flex-direction: column; align-items: center; justify-content: center; box-shadow: 0 2px 8px rgba(0,0,0,0.4); transition: transform 0.2s;">
-                            <span style="font-size: 1.8em; line-height: 1; margin-bottom: 4px;">📸</span>
+                        <label id="diet-attach-btn" style="cursor: pointer; color: #FF9800; background: rgba(255,152,0,0.12); border: 1px solid #FF9800; border-radius: 8px; padding: 10px 12px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; box-shadow: 0 2px 8px rgba(0,0,0,0.4); transition: transform 0.2s; min-width: 72px; flex-shrink: 0;">
+                            <span style="font-size: 1.8em; line-height: 1;">📸</span>
                             <span style="font-size: 0.6em; font-weight: bold; color: #FF9800; text-transform: uppercase; letter-spacing: 0.5px; white-space: nowrap;">Zrób fotę</span>
                             <input type="file" id="diet-camera-input" accept="image/*" capture="environment" multiple style="display: none;">
                         </label>

@@ -28,12 +28,7 @@
 
     <div class="app-wrapper">
 
-        <div class="mobile-header">
-            <button id="mobile-menu-toggle" aria-label="Otwórz menu">
-                <span></span>
-                <span></span>
-                <span></span>
-            </button>
+        <div class="mobile-header" onclick="switchTab('welcome-screen')" style="cursor: pointer;" title="Powrót do pulpitu">
             <img src="img/logo.png" alt="Logo" class="logo-img">
             <h2>Uki's BodyBuild</h2>
         </div>
@@ -88,47 +83,59 @@
                         <p>Wybierz narzędzie z menu</p>
                     </div>
                     
-                    <!-- Dashboard Grid (Smart View: Hidden on Desktop, Visible on Mobile via CSS) -->
+                    <!-- Dashboard Grid -->
                     <div class="dashboard-grid">
-                        <!-- BodyBuild Tiles -->
-                        <div id="tile-measurements" class="dashboard-card" onclick="switchTab('measurements-dashboard')">
-                            <h4>Pomiary Ciała</h4>
-                            <p>Waga i obwody</p>
-                        </div>
+                        <!-- Wiersz 1: Trening + Historia -->
                         <div id="tile-training" class="dashboard-card" onclick="switchTab('training-dashboard')">
-                            <h4>Trening</h4>
+                            <h4>🏋️ Trening</h4>
                             <p>Kalendarz i logi</p>
                         </div>
                         <div id="tile-history" class="dashboard-card" onclick="switchTab('history-dashboard')">
-                            <h4>Historia Treningów</h4>
+                            <h4>📚 Historia Treningów</h4>
                             <p>Twoje poprzednie sesje</p>
                         </div>
+
+                        <!-- Wiersz 2: Pomiary + Analiza -->
+                        <div id="tile-measurements" class="dashboard-card" onclick="switchTab('measurements-dashboard')">
+                            <h4>📏 Pomiary Ciała</h4>
+                            <p>Waga i obwody</p>
+                        </div>
                         <div id="tile-analytics" class="dashboard-card" onclick="switchTab('analytics-dashboard')">
-                            <h4>Analiza Progresu</h4>
+                            <h4>📈 Analiza Progresu</h4>
                             <p>Wykresy i statystyki</p>
                         </div>
+
+                        <!-- Wiersz 3: Dieta + Profil -->
                         <div id="tile-diet" class="dashboard-card" onclick="switchTab('diet-dashboard')">
-                            <h4>Dieta i Żywienie</h4>
+                            <h4>🥗 Dieta i Żywienie</h4>
                             <p>Podgląd i plany</p>
                         </div>
                         <div id="tile-settings" class="dashboard-card" onclick="switchTab('settings-panel')">
-                            <h4>Profil i Ustawienia</h4>
+                            <h4>👤 Profil i Ustawienia</h4>
                             <p>Preferencje konta</p>
                         </div>
 
-                        <!-- Special Row: Coffee & SOS (Bottom) -->
-                        <div class="tile-special-row">
-                            <div class="dashboard-card tile-coffee"
-                                onclick="window.open('https://suppi.pl/ukidives', '_blank')" style="min-height: 120px; height: auto; padding: 20px 15px;">
-                                <h4 style="color: #4CAF50; text-shadow: 0 0 10px rgba(76, 175, 80, 0.6);">☕ Postaw Kawę
-                                </h4>
-                                <p style="margin-top: 5px;">Wsparcie projektu</p>
-                            </div>
-                            <div id="tile-diagnostics" class="dashboard-card" onclick="switchTab('diagnostics-dashboard')" style="min-height: 120px; height: auto; padding: 20px 15px;">
-                                <h4 style="color: #E74C3C; text-shadow: 0 0 10px rgba(231, 76, 60, 0.6);">🛠️ Diagnostyka</h4>
-                                <p style="margin-top: 5px;">Ratunek i dane</p>
-                            </div>
+                        <!-- Wiersz 4: Analizy AI + Diagnostyka -->
+                        <div id="tile-ai-analytics" class="dashboard-card" onclick="switchTab('ai-analytics-dashboard')" style="border-color: #FF9800; background: linear-gradient(135deg, rgba(255,152,0,0.15) 0%, rgba(0,0,0,0.5) 100%);">
+                            <h4 style="color: #FF9800; text-shadow: 0 0 10px rgba(255,152,0,0.5);">🤖 Analizy AI</h4>
+                            <p>Trener Edward analizuje</p>
                         </div>
+                        <div id="tile-diagnostics" class="dashboard-card" onclick="switchTab('diagnostics-dashboard')">
+                            <h4 style="color: #E74C3C; text-shadow: 0 0 10px rgba(231,76,60,0.6);">🛠️ Diagnostyka</h4>
+                            <p>Ratunek i dane</p>
+                        </div>
+
+                        <!-- Wiersz 5: Postaw Kawę — pełna szerokość gdy nieparzysta liczba kafelków -->
+                        <div class="dashboard-card tile-coffee tile-full-width"
+                            onclick="window.open('https://suppi.pl/ukidives', '_blank')">
+                            <h4 style="color: #4CAF50; text-shadow: 0 0 10px rgba(76,175,80,0.6);">☕ Postaw Kawę</h4>
+                            <p>Wsparcie projektu</p>
+                        </div>
+                    </div>
+
+                    <!-- Numer wersji pod kafelkami -->
+                    <div id="dashboard-version" style="text-align: center; padding: 12px 0 20px 0; color: #444; font-size: 0.75em; letter-spacing: 0.5px;">
+                        Loading...
                     </div>
                 </div>
 
@@ -157,6 +164,16 @@
                     </div>
                     <div id="analytics-content" style="margin-top: 20px;">
                         <!-- Populated by AnalyticsUI.js -->
+                    </div>
+                </div>
+
+                <div id="ai-analytics-dashboard" class="tab-content" style="display: none;">
+                    <div class="view-header">
+                        <h2 style="color: #FF9800;">🤖 Analizy AI</h2>
+                        <p style="color: #aaa;">Trener Edward analizuje Twoje dane</p>
+                    </div>
+                    <div id="ai-analytics-content" style="margin-top: 20px;">
+                        <!-- Populated by AiAnalyticsUI.js -->
                     </div>
                 </div>
 
@@ -393,6 +410,9 @@
     -->
 
     <script src="pwa-updater.js"></script>
+    <script type="module" src="src/modules/diet/DietAIEngine.js"></script>
+    <script type="module" src="src/modules/ui/DietUI.js"></script>
+
     <script type="module" src="src/main.js"></script>
     <script type="module" src="src/version_check.js"></script>
 
