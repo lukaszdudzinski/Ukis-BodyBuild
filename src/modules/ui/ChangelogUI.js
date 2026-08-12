@@ -69,7 +69,7 @@ export const ChangelogUI = {
             } else {
                 const compareVer = compareVersionStr || window.APP_VERSION || 'v.0.0.0';
                 const parseVersion = (v) => {
-                    const parts = v.replace('v.', '').split('.').map(n => parseInt(n, 10) || 0);
+                    const parts = v.replace(/^v\.?/, '').split('.').map(n => parseInt(n, 10) || 0);
                     return (parts[0] * 10000000000) + (parts[1] * 100000000) + (parts[2] * 1000000) + (parts[3] || 0);
                 };
                 const compareScore = parseVersion(compareVer);

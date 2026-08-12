@@ -1,12 +1,36 @@
-const CACHE_NAME = 'uki-bodybuild-v2026.8.9.14';
+const CACHE_NAME = 'uki-bodybuild-v2026.8.10.03';
 // Core assets that MUST be cached immediately
 const CORE_ASSETS = [
     './',
     './index.html',
     './style.css',
-    './src/main.js',
     './img/logo.png',
-    './manifest.json'
+    './manifest.json',
+    './src/main.js',
+    './src/version_check.js',
+    './src/utils/ShareUtils.js',
+    './src/components/TrainingComponent.js',
+    './src/components/MeasurementsComponent.js',
+    './src/modules/ui/LogbookUI.js',
+    './src/modules/ui/ChangelogUI.js',
+    './src/modules/ui/CalendarUI.js',
+    './src/modules/ui/AiAnalyticsUI.js',
+    './src/modules/ui/HistoryUI.js',
+    './src/modules/ui/DiagnosticsUI.js',
+    './src/modules/ui/MeasurementsUI.js',
+    './src/modules/ui/SettingsUI.js',
+    './src/modules/ui/TrainingUI.js',
+    './src/modules/ui/DietUI.js',
+    './src/modules/ui/AnalyticsUI.js',
+    './src/modules/ui/AppUI.js',
+    './src/modules/ui/OnboardingUI.js',
+    './src/modules/ui/ChatUI.js',
+    './src/modules/gamification/AchievementsSystem.js',
+    './src/modules/diet/DietAIEngine.js',
+    './src/modules/ai/AiAnalyticsEngine.js',
+    './src/modules/db/DatabaseManager.js',
+    './src/modules/data/LogbookDB.js',
+    './src/modules/data/CalendarDB.js'
 ];
 
 self.addEventListener('install', (e) => {

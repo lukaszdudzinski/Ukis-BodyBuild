@@ -10,15 +10,15 @@ export const AiAnalyticsEngine = {
         const endStr = endDate.toISOString().split('T')[0];
 
         // Pobierz dane
-        const trainings = await DatabaseManager.getTrainings();
+        const trainings = await window.DatabaseManager.getTrainings();
         const recentTrainings = trainings.filter(t => t.date >= startStr && t.date <= endStr);
         
-        const dietLogs = await DatabaseManager.getDietLogsByDateRange(startStr, endStr);
-        const measurements = await DatabaseManager.getMeasurements();
+        const dietLogs = await window.DatabaseManager.getDietLogsByDateRange(startStr, endStr);
+        const measurements = await window.DatabaseManager.getMeasurements();
         const latestMeasurement = measurements.length > 0 ? measurements[measurements.length - 1] : null;
 
         // Pobierz historię analiz do kontekstu
-        const pastAnalyses = await DatabaseManager.getAiAnalyses();
+        const pastAnalyses = await window.DatabaseManager.getAiAnalyses();
         const recentAnalyses = pastAnalyses.slice(0, 2);
 
         // Złóż prompt

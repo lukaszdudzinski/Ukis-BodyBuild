@@ -1,4 +1,4 @@
-export const APP_VERSION = 'v2026.8.10.02'; // Fix: photo btn layout, AI validation, dashboard version, burger removed
+export const APP_VERSION = 'v2026.8.10.03'; // Hotfix: Caching for DatabaseManager and AI bug
 
 // Obsługa błędów globalnych — zdefiniowana w main.js (klucz: uki_error_logs)
 
