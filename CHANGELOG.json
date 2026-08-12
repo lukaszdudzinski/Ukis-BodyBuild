@@ -1,5 +1,12 @@
 [
   {
+    "version": "v2026.8.10.04",
+    "date": "2026-08-12",
+    "changes": [
+      "🚨 HOTFIX: Naprawiono błąd 'dietLogs.reduce is not a function' przy generowaniu analiz AI po stronie przeglądarek opartych na nowym cache'u (poprawiony sposób wyciągania wierszy z SQLite)."
+    ]
+  },
+  {
     "version": "v2026.8.10.03",
     "date": "2026-08-12",
     "changes": [

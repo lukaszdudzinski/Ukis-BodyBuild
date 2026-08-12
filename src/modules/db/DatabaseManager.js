@@ -385,12 +385,16 @@ export const DatabaseManager = {
     getDietLogsByDateRange: async (startDate, endDate) => {
         await DatabaseManager.init();
         let query = `SELECT * FROM diet_logs WHERE date >= ? AND date <= ? ORDER BY date DESC, created_at DESC`;
-        const res = db.exec({
+        const records = [];
+        db.exec({
             sql: query,
             bind: [startDate, endDate],
-            rowMode: 'object'
+            rowMode: 'object',
+            callback: function (row) {
+                records.push(row);
+            }
         });
-        return res.length > 0 ? res[0] : [];
+        return records;
     },
 
     // --- AI Analyses ---
@@ -407,11 +411,15 @@ export const DatabaseManager = {
 
     getAiAnalyses: async () => {
         await DatabaseManager.init();
-        const res = db.exec({
+        const records = [];
+        db.exec({
             sql: `SELECT * FROM ai_analyses ORDER BY created_at DESC`,
-            rowMode: 'object'
+            rowMode: 'object',
+            callback: function (row) {
+                records.push(row);
+            }
         });
-        return res.length > 0 ? res[0] : [];
+        return records;
     },
 
     deleteAiAnalysis: async (id) => {

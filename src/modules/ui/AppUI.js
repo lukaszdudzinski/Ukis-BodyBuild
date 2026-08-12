@@ -1,4 +1,4 @@
-export const APP_VERSION = 'v2026.8.10.03'; // Hotfix: Caching for DatabaseManager and AI bug
+export const APP_VERSION = 'v2026.8.10.04'; // Hotfix: sql db.exec rowMode callback fix
 
 // Obsługa błędów globalnych — zdefiniowana w main.js (klucz: uki_error_logs)
 
