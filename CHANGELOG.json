@@ -1,5 +1,12 @@
 [
   {
+    "version": "v2026.8.13.03",
+    "date": "2026-08-13",
+    "changes": [
+      "🚨 HOTFIX: Ostateczna naprawa komunikacji analiz AI z bazą SQLite oraz prawidłowe przesyłanie kontekstu do Cloudflare Workera."
+    ]
+  },
+  {
     "version": "v2026.8.13.02",
     "date": "2026-08-13",
     "changes": [
