@@ -520,12 +520,21 @@ export const AnalyticsUI = {
             
         } catch (error) {
             console.log('Błąd podczas udostępniania:', error);
-            // Fallback: Copy to clipboard using prompt if writeText fails due to lack of focus
+            if (error.name === 'AbortError') {
+                // User cancelled the share dialog, do nothing.
+                return;
+            }
+            // Fallback: Copy to clipboard if writeText fails due to lack of focus or unsupported share API
             try {
-                // Skuteczny fallback pozwalający zignorować błąd fokusu (prompt zatrzymuje wątek i prosi użyszkodnika o skopiowanie)
-                window.prompt("Udostępnianie graficzne niedostępne na tym urządzeniu. Skopiuj swój wynik poniżej (Ctrl+C / Cmd+C):", textToShare);
+                if (navigator.clipboard && navigator.clipboard.writeText) {
+                    await navigator.clipboard.writeText(textToShare);
+                    alert("Skopiowano tekst do schowka. Możesz go wkleić do wybranej aplikacji.");
+                } else {
+                    window.prompt("Udostępnianie graficzne niedostępne na tym urządzeniu. Skopiuj swój wynik poniżej (Ctrl+C / Cmd+C):", textToShare);
+                }
             } catch(e) {
                 console.error("Fallback również zawiódł", e);
+                window.prompt("Skopiuj swój wynik poniżej (Ctrl+C / Cmd+C):", textToShare);
             }
         }
     },

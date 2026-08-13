@@ -119,7 +119,17 @@ export const SettingsUI = {
             }
         } catch (error) {
             console.log("Share error:", error);
-            window.prompt("Skopiuj swoje osiągnięcia (Ctrl+C / Cmd+C):", textToShare);
+            if (error.name === 'AbortError') return;
+            try {
+                if (navigator.clipboard && navigator.clipboard.writeText) {
+                    await navigator.clipboard.writeText(textToShare);
+                    alert("Skopiowano tekst do schowka. Możesz go wkleić do wybranej aplikacji.");
+                } else {
+                    window.prompt("Skopiuj swoje osiągnięcia (Ctrl+C / Cmd+C):", textToShare);
+                }
+            } catch(e) {
+                window.prompt("Skopiuj swoje osiągnięcia (Ctrl+C / Cmd+C):", textToShare);
+            }
         }
     },
 

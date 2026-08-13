@@ -1,5 +1,18 @@
 [
   {
+    "version": "v2026.8.10.05",
+    "date": "2026-08-13",
+    "changes": [
+      "✨ UX: Zwiększono czytelność numeru wersji na dole ekranu głównego (jaśniejszy kolor, cień).",
+      "✨ UX: Zmiana nazewnictwa znaczka 'PR! (1RM: X)' na bardziej zrozumiałe '🏆 Rekord! (Max: X kg)'.",
+      "✨ UX: Poprawiono niejasny opis nagłówka nad starszymi treningami (zmieniono na 'Ostatnie treningi (wybierz, aby skopiować na dziś)').",
+      "✨ UX: Dodano wyświetlanie nazwy i typu treningu, a także statystyk z zegarka (Spalone kalorie i Średnie tętno) w podglądzie Historii Treningów.",
+      "✨ UX: Zwiększono czcionkę pola wpisywania Nicku w ustawieniach Profilu.",
+      "🚨 HOTFIX: Naprawiono błąd 'Nie znaleziono treningu w pamięci' podczas udostępniania pojedynczego treningu z ekranu Historii.",
+      "🚨 HOTFIX: Złagodzono błąd (zamiast alertu prompt), gdy użytkownik przerwie udostępnianie ekranu w module Profilu i Analizy Progresu na niektórych przeglądarkach."
+    ]
+  },
+  {
     "version": "v2026.8.10.04",
     "date": "2026-08-12",
     "changes": [

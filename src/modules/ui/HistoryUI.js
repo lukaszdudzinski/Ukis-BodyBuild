@@ -67,7 +67,7 @@ export const HistoryUI = {
                     <div class="log-card" style="background: rgba(0,0,0,0.4); border: 1px solid rgba(0, 191, 255, 0.4); padding: 15px; border-radius: 8px; margin-bottom: 15px;">
                         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; cursor: pointer;" onclick="document.getElementById('${cardId}').style.display = document.getElementById('${cardId}').style.display === 'none' ? 'block' : 'none'">
                             <div>
-                                <strong style="color: #00BFFF; font-size: 1.1em;">🏋️ ${rec.date}</strong><br>
+                                <strong style="color: #00BFFF; font-size: 1.1em;">🏋️ ${rec.date} ${rec.name ? ' - ' + rec.name : ''}</strong><br>
                                 <span style="color: #aaa; font-size: 0.85em;">${rec.exercises.length} ćwiczeń | ${totalVolume} kg</span>
                             </div>
                             <span style="color: #00BFFF; font-size: 1.2em;">▼</span>
@@ -78,6 +78,8 @@ export const HistoryUI = {
                                 <div><strong>Czas trwania:</strong> ${HistoryUI.formatTime(rec.duration_seconds)}</div>
                                 <div><strong>Wszystkich serii:</strong> ${totalSets}</div>
                                 <div><strong>Całkowita objętość (kg):</strong> ${totalVolume} kg</div>
+                                ${rec.smartwatch && rec.smartwatch.calories ? `<div><strong>Spalone kalorie:</strong> ${rec.smartwatch.calories} kcal</div>` : ''}
+                                ${rec.smartwatch && rec.smartwatch.hr ? `<div><strong>Średnie tętno:</strong> ${rec.smartwatch.hr} bpm</div>` : ''}
                             </div>
                             
                             <h4 style="color: #00BFFF; margin-bottom: 10px;">Szczegóły ćwiczeń:</h4>
@@ -110,7 +112,7 @@ export const HistoryUI = {
     shareTraining: async (trainingId) => {
         // Zamiast robić await na DB (co na iOS może zgubić uprawnienie do navigator.share ze względu na czas oczekiwania), szukamy w pamięci:
         const records = window._cachedTrainingsHistory || [];
-        const rec = records.find(r => r.id === trainingId);
+        const rec = records.find(r => String(r.id) === String(trainingId));
         
         if (!rec) {
             alert("Błąd: Nie znaleziono treningu w pamięci. Odśwież stronę i spróbuj ponownie.");

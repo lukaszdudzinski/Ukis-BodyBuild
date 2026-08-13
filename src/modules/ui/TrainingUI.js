@@ -482,7 +482,7 @@ export const TrainingUI = {
 
             if (historyList) {
                 // Build recent history for copying
-                let historyHtml = '<h5 style="color: #ccc; margin-bottom: 10px;">📋 Skopiuj sesję treningową:</h5>';
+                let historyHtml = '<h5 style="color: #ccc; margin-bottom: 10px;">📋 Ostatnie treningi (wybierz, aby skopiować na dziś):</h5>';
                 const recentTrainings = allTrainingsCache.slice(0, 5); // Take last 5
                 
                 if (recentTrainings.length === 0) {
@@ -954,11 +954,11 @@ export const TrainingUI = {
                                 let ormText = '';
                                 if (!ex.type || ex.type === 'strength') {
                                     if (set.isPR) {
-                                        prBadge = `<span style="font-size: 0.8em; background: #FFD700; color: #000; padding: 2px 6px; border-radius: 4px; font-weight: bold; margin-left: 8px; box-shadow: 0 0 8px rgba(255, 215, 0, 0.6); animation: pulse 1s infinite;">🏆 PR!</span>`;
+                                        prBadge = `<span style="font-size: 0.8em; background: #FFD700; color: #000; padding: 2px 6px; border-radius: 4px; font-weight: bold; margin-left: 8px; box-shadow: 0 0 8px rgba(255, 215, 0, 0.6); animation: pulse 1s infinite;">🏆 Rekord!</span>`;
                                     }
                                     if (set.weight > 0 && set.reps > 0) {
                                         const orm = Math.round(set.weight * (1 + (set.reps / 30)));
-                                        ormText = `<span style="font-size: 0.75em; color: #888; margin-left: 8px;">(1RM: ~${orm} kg)</span>`;
+                                        ormText = `<span style="font-size: 0.75em; color: #888; margin-left: 8px;">(Max: ~${orm} kg)</span>`;
                                     }
                                 }
 

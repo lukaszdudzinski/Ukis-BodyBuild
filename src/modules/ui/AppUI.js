@@ -1,4 +1,4 @@
-export const APP_VERSION = 'v2026.8.10.04'; // Hotfix: sql db.exec rowMode callback fix
+export const APP_VERSION = 'v2026.8.10.05'; // Feature/UX: Fix PR badges, share fallbacks, history view
 
 // Obsługa błędów globalnych — zdefiniowana w main.js (klucz: uki_error_logs)
 
