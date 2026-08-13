@@ -1,5 +1,12 @@
 [
   {
+    "version": "v2026.8.14.01",
+    "date": "2026-08-14",
+    "changes": [
+      "✨ NOWOŚĆ: Strona Wizytówkowa (Landing Page). Od teraz aplikacja dostępna jest w 100% z poziomu ikony PWA, a w przeglądarce wyświetla instrukcję instalacji."
+    ]
+  },
+  {
     "version": "v2026.8.13.04",
     "date": "2026-08-13",
     "changes": [

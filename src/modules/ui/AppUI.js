@@ -1,4 +1,4 @@
-export const APP_VERSION = 'v2026.8.13.04'; // Faza 5.1: Bugfixes (DietAI, Settings, Chat) + Full Training Share
+export const APP_VERSION = 'v2026.8.14.01'; // Faza 5.2: Landing Page & PWA Standalone Mode
 
 // Obsługa błędów globalnych — zdefiniowana w main.js (klucz: uki_error_logs)
 
