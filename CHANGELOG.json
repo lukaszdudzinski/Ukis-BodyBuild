@@ -1,5 +1,12 @@
 [
   {
+    "version": "v2026.8.13.04",
+    "date": "2026-08-13",
+    "changes": [
+      "🚨 HOTFIX: Wymuszona nowa aktualizacja, w której ostatecznie zsynchronizowaliśmy typy danych (images) dla serwera AI."
+    ]
+  },
+  {
     "version": "v2026.8.13.03",
     "date": "2026-08-13",
     "changes": [
