@@ -181,11 +181,10 @@ export const AiAnalyticsUI = {
         try {
             const result = await AiAnalyticsEngine.generate(days, sleepHours);
             if (result && typeof result === 'string') {
-                await window.DatabaseManager.saveAiAnalysis({
-                    date: new Date().toISOString().slice(0, 10),
-                    type: days <= 7 ? 'weekly' : 'monthly',
-                    content: result
-                });
+                await window.DatabaseManager.saveAiAnalysis(
+                    days <= 7 ? 'weekly' : 'monthly',
+                    result
+                );
                 await AiAnalyticsUI.loadHistory();
                 const analyses = await window.DatabaseManager.getAiAnalyses();
                 if (analyses && analyses.length > 0) AiAnalyticsUI.showReport(analyses[0].id);
