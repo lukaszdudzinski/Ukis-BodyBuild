@@ -35,7 +35,7 @@ export const HistoryUI = {
             container.innerHTML = `
                 <div style="text-align: right; margin-bottom: 15px;">
                     <label style="background: #4CAF50; color: #fff; padding: 8px 12px; border-radius: 4px; cursor: pointer; font-size: 0.9em; font-weight: bold;">
-                        📥 Importuj Trening (JSON)
+                        📥 Importuj trening
                         <input type="file" accept=".json" style="display: none;" onchange="window.HistoryUI.importTraining(event)">
                     </label>
                 </div>
@@ -58,7 +58,7 @@ export const HistoryUI = {
         let html = `
             <div style="text-align: right; margin-bottom: 15px;">
                 <label style="background: #4CAF50; color: #fff; padding: 8px 12px; border-radius: 4px; cursor: pointer; font-size: 0.9em; font-weight: bold;">
-                    📥 Importuj Trening (JSON)
+                    📥 Importuj trening
                     <input type="file" accept=".json" style="display: none;" onchange="window.HistoryUI.importTraining(event)">
                 </label>
             </div>

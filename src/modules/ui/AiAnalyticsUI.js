@@ -194,6 +194,7 @@ export const AiAnalyticsUI = {
             }
         } catch (e) {
             console.error('AI Analysis error:', e);
+            if (window.ukiLogError) window.ukiLogError('AI Analysis error', e.stack || e.toString());
             alert('Błąd generowania analizy: ' + (e.message || 'Nieznany błąd'));
         } finally {
             if (statusBar) statusBar.style.display = 'none';

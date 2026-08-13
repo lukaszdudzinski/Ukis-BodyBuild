@@ -956,7 +956,7 @@ export const TrainingUI = {
                                 let ormText = '';
                                 if (!ex.type || ex.type === 'strength') {
                                     if (set.isPR) {
-                                        prBadge = `<span style="font-size: 0.8em; background: #FFD700; color: #000; padding: 2px 6px; border-radius: 4px; font-weight: bold; margin-left: 8px; box-shadow: 0 0 8px rgba(255, 215, 0, 0.6); animation: pulse 1s infinite;">🏆 Rekord!</span>`;
+                                        prBadge = `<span style="font-size: 0.7em; background: #FFD700; color: #000; padding: 2px 4px; border-radius: 4px; font-weight: bold; margin-left: 4px; box-shadow: 0 0 8px rgba(255, 215, 0, 0.6); animation: pulse 1s infinite; display: inline-block; white-space: nowrap;">🏆 Rekord!</span>`;
                                     }
                                     if (set.weight > 0 && set.reps > 0) {
                                         const orm = Math.round(set.weight * (1 + (set.reps / 30)));

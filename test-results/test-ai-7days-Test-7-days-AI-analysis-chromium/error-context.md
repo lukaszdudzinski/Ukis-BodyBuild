@@ -126,7 +126,7 @@ Call log:
           - /url: https://suppi.pl/ukidives
           - text: ☕ Podoba Ci się to narzędzie?
           - strong [ref=e27]: Postaw mi kawę!
-        - generic [ref=e28]: v2026.8.13.01
+        - generic [ref=e28]: v2026.8.13.02
     - main [ref=e29]:
       - generic [ref=e31]:
         - generic [ref=e32]:
