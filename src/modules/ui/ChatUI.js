@@ -299,6 +299,7 @@ export const ChatUI = {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
+                    images: [],
                     imageBase64: null,
                     contextText: finalPrompt,
                     action: "chat" // Tells worker to use Chat prompt
@@ -307,6 +308,9 @@ export const ChatUI = {
 
             if (!response.ok) {
                 const errorData = await response.text();
+                if (errorData.includes("exceeded your current quota") || errorData.includes("Quota exceeded") || response.status === 429) {
+                    throw new Error("Darmowy limit zapytań AI został wyczerpany na dziś. Wróć i spróbuj ponownie jutro!");
+                }
                 throw new Error(errorData);
             }
 

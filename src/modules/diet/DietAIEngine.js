@@ -27,7 +27,11 @@ export const DietAIEngine = {
             });
 
             if (!response.ok) {
-                const errorData = await response.json();
+                const errorDataRaw = await response.text();
+                if (errorDataRaw.includes("exceeded your current quota") || errorDataRaw.includes("Quota exceeded") || response.status === 429) {
+                    throw new Error("Darmowy limit zapytań AI został wyczerpany na dziś. Wróć i spróbuj ponownie jutro!");
+                }
+                const errorData = JSON.parse(errorDataRaw);
                 throw new Error(errorData.error || "Wystąpił błąd podczas analizy obrazu przez serwer.");
             }
 

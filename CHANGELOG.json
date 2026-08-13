@@ -1,5 +1,12 @@
 [
   {
+    "version": "v2026.8.14.02",
+    "date": "2026-08-14",
+    "changes": [
+      "🚨 HOTFIX: Wymuszona aktualizacja z lepszą obsługą komunikatów o wyczerpaniu limitów API oraz poprawionym tekstem w analityce."
+    ]
+  },
+  {
     "version": "v2026.8.14.01",
     "date": "2026-08-14",
     "changes": [

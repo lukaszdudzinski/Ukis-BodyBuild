@@ -62,6 +62,7 @@ Zawrzyj w niej:
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
+                images: [],
                 imageBase64: null,
                 contextText: systemPrompt,
                 action: "chat"
@@ -69,7 +70,11 @@ Zawrzyj w niej:
         });
 
         if (!response.ok) {
-            throw new Error("Błąd z serwerem AI.");
+            const errText = await response.text();
+            if (errText.includes("exceeded your current quota") || errText.includes("Quota exceeded") || response.status === 429) {
+                throw new Error("Darmowy limit zapytań AI został wyczerpany na dziś. Wróć i spróbuj ponownie jutro!");
+            }
+            throw new Error(`Cloudflare: ${errText}`);
         }
 
         const data = await response.json();

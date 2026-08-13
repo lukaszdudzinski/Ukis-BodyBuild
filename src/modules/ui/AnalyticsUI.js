@@ -266,7 +266,7 @@ export const AnalyticsUI = {
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
                         ${atlasCards}
                     </div>
-                    ${tiredCount > 3 ? '<p style="color: #ff9800; font-size: 0.9em; margin: 15px 0 0 0; font-weight: bold; text-align: center;">Trener Edward radzi: "Zluzuj trochę gacie, przetrenowałeś pół ciała! Dzisiaj zrób cardio albo odpocznij."</p>' : ''}
+                    ${tiredCount > 3 ? '<p style="color: #ff9800; font-size: 0.9em; margin: 15px 0 0 0; font-weight: bold; text-align: center;">Trener Edward radzi: "Zluzuj trochę gacie, przetrenowałeś pół ciała! Jutro zrób cardio albo odpocznij."</p>' : ''}
                 </div>
             `;
         }
