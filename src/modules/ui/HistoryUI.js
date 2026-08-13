@@ -32,7 +32,15 @@ export const HistoryUI = {
         if (!container) return;
         
         if (records.length === 0) {
-            container.innerHTML = '<p style="color: #888; text-align: center; font-style: italic;">Brak zarejestrowanych treningów.</p>';
+            container.innerHTML = `
+                <div style="text-align: right; margin-bottom: 15px;">
+                    <label style="background: #4CAF50; color: #fff; padding: 8px 12px; border-radius: 4px; cursor: pointer; font-size: 0.9em; font-weight: bold;">
+                        📥 Importuj Trening (JSON)
+                        <input type="file" accept=".json" style="display: none;" onchange="window.HistoryUI.importTraining(event)">
+                    </label>
+                </div>
+                <p style="color: #888; text-align: center; font-style: italic;">Brak zarejestrowanych treningów.</p>
+            `;
             return;
         }
 
@@ -47,7 +55,14 @@ export const HistoryUI = {
             grouped[monthYear].push(rec);
         });
 
-        let html = '';
+        let html = `
+            <div style="text-align: right; margin-bottom: 15px;">
+                <label style="background: #4CAF50; color: #fff; padding: 8px 12px; border-radius: 4px; cursor: pointer; font-size: 0.9em; font-weight: bold;">
+                    📥 Importuj Trening (JSON)
+                    <input type="file" accept=".json" style="display: none;" onchange="window.HistoryUI.importTraining(event)">
+                </label>
+            </div>
+        `;
         for (const [monthYear, monthRecords] of Object.entries(grouped)) {
             html += `
                 <div style="margin-bottom: 25px;">
@@ -96,7 +111,10 @@ export const HistoryUI = {
                                 `).join('')}
                             
                             <button onclick="window.HistoryUI.shareTraining('${rec.id}')" class="action-button" style="background-color: #3b5998; border-color: #3b5998; color: white; width: 100%; margin-top: 15px;">
-                                📤 Udostępnij Trening
+                                📤 Udostępnij Trening (Obraz)
+                            </button>
+                            <button onclick="window.HistoryUI.exportTraining('${rec.id}')" class="action-button" style="background-color: #FF9800; border-color: #FF9800; color: black; width: 100%; margin-top: 10px;">
+                                💾 Eksportuj (Dla znajomych)
                             </button>
                         </div>
                     </div>
@@ -142,15 +160,7 @@ export const HistoryUI = {
                 nickname = settings.nickname || 'BodyBuilder';
             }
 
-            const statsList = [
-                { label: 'Data treningu', value: dateStr },
-                { label: 'Ciężar', value: `${totalVolume} kg`, color: '#00BFFF' },
-                { label: 'Liczba ćwiczeń', value: String(exercisesCount) }
-            ];
-
-            const socialPhoto = (rec.socialPhotos && rec.socialPhotos.length > 0) ? rec.socialPhotos[0] : null;
-
-            await ShareUtils.generateAndShareImage("Mój Trening", statsList, avatar, nickname, textToShare, socialPhoto);
+            await ShareUtils.generateTrainingReceipt(rec, avatar, nickname);
             
         } catch (error) {
             console.log('Błąd podczas udostępniania:', error);
@@ -161,6 +171,68 @@ export const HistoryUI = {
                 console.error("Fallback również zawiódł", e);
             }
         }
+    },
+
+    exportTraining: async (trainingId) => {
+        const records = window._cachedTrainingsHistory || [];
+        const rec = records.find(r => String(r.id) === String(trainingId));
+        if (!rec) {
+            alert("Nie znaleziono treningu.");
+            return;
+        }
+        
+        // Prepare clean object for export
+        const exportData = {
+            ukiExportType: 'training',
+            version: window.APP_VERSION,
+            data: rec
+        };
+        
+        const jsonString = JSON.stringify(exportData, null, 2);
+        const blob = new Blob([jsonString], { type: "application/json" });
+        const url = URL.createObjectURL(blob);
+        
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `trening_${rec.date.replace(/-/g, '')}.json`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+    },
+
+    importTraining: async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        
+        const reader = new FileReader();
+        reader.onload = async (event) => {
+            try {
+                const jsonString = event.target.result;
+                const importedData = JSON.parse(jsonString);
+                
+                if (importedData.ukiExportType !== 'training' || !importedData.data) {
+                    alert("To nie jest poprawny plik z pojedynczym treningiem Uki's BodyBuild.");
+                    return;
+                }
+                
+                const rec = importedData.data;
+                // Generate new ID to avoid conflicts
+                rec.id = Date.now(); 
+                
+                // Prompt user to confirm
+                if (confirm(`Czy na pewno chcesz zaimportować trening "${rec.name}" z dnia ${rec.date}?`)) {
+                    await window.DatabaseManager.saveTraining(rec);
+                    alert("Trening został pomyślnie zaimportowany!");
+                    HistoryUI.loadHistory();
+                }
+            } catch (err) {
+                console.error(err);
+                alert("Błąd podczas importu treningu. Upewnij się, że plik jest prawidłowy.");
+            }
+        };
+        reader.readAsText(file);
+        e.target.value = ''; // Reset input
     }
 };
 

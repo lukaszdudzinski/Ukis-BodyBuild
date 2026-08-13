@@ -9,6 +9,8 @@
         
         init: () => {
             if (!('serviceWorker' in navigator)) return;
+            // Disable SW in Playwright E2E tests to prevent random reloads
+            if (window.navigator.webdriver) return;
             
             // CLEANUP: Usuń zepsute service workery z poprzednich błędnych rejestracji
             navigator.serviceWorker.getRegistrations().then(registrations => {

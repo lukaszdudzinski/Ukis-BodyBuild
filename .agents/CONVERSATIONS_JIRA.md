@@ -1,6 +1,15 @@
 # Rejestr Konwersacji (Wewnętrzna Jira)
 
-## Konwersacja (Obecna): 81d8d0fa-789f-443c-980e-de49ed502d2f
+## Konwersacja (Obecna): b37122c4-ebbb-4fd6-a9dd-6a40db267a7d
+- **Temat**: ROADMAPA - Faza 4.5: Łatanie błędów, stabilizacja i testy przed Orkiestracją.
+- **Kluczowe Zmiany**:
+  - Naprawiono testy E2E (Playwright) po rozbiciu `AppUI` i `SettingsUI` na niezależne moduły ES6.
+  - Naprawiono fałszywy błąd "Brak zdjęcia lub tekstu" przy użyciu Trenera Edwarda z poziomu "Analiza Diety AI" (kalkulator AI wymagał wysłania chociaż kawałka kontekstu lub obrazu).
+  - Wdrożono jednolity, duży rozmiar czcionek w ustawieniach i polach formularzy (Profile, Pomiary, Cele TDEE).
+  - Załatano irytujący scroll w kalendarzu po otwarciu ekranu Treningi.
+  - Wyeksponowano z powrotem funkcje udostępniania na zewnątrz modułów, przywracając "Pochwal się odznakami".
+
+## Konwersacja: 81d8d0fa-789f-443c-980e-de49ed502d2f
 - **Temat**: ROADMAPA - Faza 3: Zaawansowana Analityka, Personalizacja i Atlas Mięśni.
 - **Kluczowe Zmiany**:
   - Wdrożenie systemu Szablonów Treningowych (Zapisz / Załaduj szablon).

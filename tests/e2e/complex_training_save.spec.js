@@ -3,7 +3,7 @@ const { test, expect } = require('@playwright/test');
 test.describe('Złożony scenariusz zapisu treningu z draftem', () => {
   test('Powinien zapisać trening z dropsetami, superseriami, cardio i czasem ręcznym bez utraty danych', async ({ page }) => {
     // Navigate to the app (assuming it's served locally during tests)
-    await page.addInitScript(() => window.localStorage.setItem('tutorial_global_v22', 'true'));
+    await page.addInitScript(() => { window.localStorage.setItem('tutorial_global_v22', 'true'); window.localStorage.setItem('uki-bodybuild-last-version', 'v2026.8.13.01'); });
     await page.goto('/');
 
     // Wait for the app to load
@@ -11,6 +11,9 @@ test.describe('Złożony scenariusz zapisu treningu z draftem', () => {
 
     // Go to Training tab
     await page.click('a[data-tab="training-dashboard"]');
+
+    // Select day 15 first
+    await page.evaluate(() => window.TrainingUI.handleDayClick('2026-08-15'));
 
     // Start a new session
     await page.click('#start-new-session-btn');

@@ -1,5 +1,5 @@
 # Aktualny Stan Projektu "Uki's BodyBuild"
-**Zapisany przez Agenta (Antigravity):** Sierpień 2026 r. (v.2026.8.7.25)
+**Zapisany przez Agenta (Antigravity):** Sierpień 2026 r. (v2026.8.13.02)
 
 ## Najważniejsze imperatywy i zasady w projekcie (PRZECZYTAJ UWAŻNIE)
 1. **Reguły PWA**: Patrz plik `pwa_rules.md`! Kategorycznie pilnuj procedury podbijania Cache_Name, by nie uwięzić przeglądarek Safari w zepsutym silniku. Nowy instalator zawsze musi zaktualizować swój adres po zmianie (w pliku `AppUI.js`, `sw.js` oraz w `CHANGELOG.json` gdzie tablica MUST mieć najnowszą wersję dokładnie odpowiadającą `APP_VERSION`, inaczej baner wpadnie w pętlę wywołań).
@@ -9,18 +9,17 @@
 5. **Filozofia UX (Interaktywność)**: Zgodnie z wytycznymi, interfejs ma być nowoczesny (Gradienty, Liquid Glass). Użytkownik ceni piękne i eleganckie rzeczy (jak np. w najnowszym Samouczku).
 6. **Rejestr Konwersacji (Wewnętrzna Jira)**: Na koniec każdej fazy/konwersacji Agent MUSI uaktualnić plik `.agents/CONVERSATIONS_JIRA.md`, dopisując ID swojej konwersacji oraz zwięzłe podsumowanie wykonanych prac i wdrożonych założeń. Po uaktualnieniu Jiry, Agent musi przygotować "paczkę informacyjną" (prompt przekazania) dla następnego Agenta, zawierającą m.in. ID właśnie zakończonej konwersacji, aby zachować ciągłość prac na Roadmapie.
 
-## Prace zrealizowane w najnowszych iteracjach (do v.2026.8.7.28):
-- **Wdrożenie inteligentnych reakcji "Trenera Edwarda"**: Trener reaguje dymkami kontekstowymi po zakończeniu pierwszego oraz co siódmego treningu, a także przypomina o regeneracji.
-- **Tutorial Kontekstowy**: Obecny ciemny samouczek zastąpiono mądrym, responsywnym systemem pop-upów (Edwarda) uruchamianym przy pierwszym wejściu w Diety i Treningi. Ekran startowy pyta jedynie o Nick.
-- **Przepisanie starych testów E2E**: Testy (`analytics.spec.js`, `training.spec.js`) używają selektorów paska nawigacji (`a[data-tab]`) zgodnych z najnowszym widokiem.
-- **Moduł Dymków "OnboardingTour" (Samouczek)**: Całkowicie przebudowany na styl "Liquid Glass", z poprawioną logiką podświetlania (użycie `clip-path` do precyzyjnego wycinania tła).
-- **Naprawa historii treningów**: Przycisk usuwania w kalendarzu ponownie odświeża widok asynchronicznie po usunięciu z IndexedDB (`TrainingUI.loadHistoryAndCalendar`).
-- **Tonaż własnego ciała**: Pompki i podciągania przy obliczaniu "Volume" w analizie wliczają % masy ludzkiego ciała! (Moduł podpięty pod Treningi).
-- **Zewnętrzne łączenia (Apple Watch / Smartwatch)**: Wpisywanie spalonych kalorii tuż pod koniec sesji w ekranie Finalizacji Treningu (poprawiono też overflow na małych ekranach: dodano box-sizing).
-- **Global Safeguard dla PWA Updater**: Z powodu groźnego SyntaxError, który zamroził aplikację i uniemożliwił pobranie aktualizacji, **PWA Updater został całkowicie wyizolowany z modułów ES6**.
+## Prace zrealizowane w najnowszych iteracjach (do v.2026.8.13.02 - Koniec Fazy 4.5):
+- **Eksport/Import JSON**: Zbudowano system pozwalający przekazać swój trening innej osobie (do wdrożenia zrzutów ekranowych/importu całej bazy w kolejnych etapach).
+- **Naprawa 'Brak zdjęcia lub tekstu'**: Załatano rygorystyczne zasady w DietAIEngine.
+- **Odznaki i UX**: Wskrzeszono "Pochwal się odznakami", ujednolicono font we wszystkich formularzach Ustawień i Pomiarów do wyśrodkowanego `1.2em` bold.
+- **Scroll kalendarza**: Wejście w moduł Treningu nie powoduje już dzikiego zjeżdżania ekranu na sam dół (pominięto auto-scroll po wczytaniu).
+- **Testy E2E (Playwright)**: Wyprowadzono na prostą psujące się selektory po przejściu na modułowość. Środowisko testowe 100% stabilne.
 
 ## Problemy NA JUŻ (Do rozwiązania w nowej konwersacji):
-1. **Kalkulacje Kaloryczne ze smartwatcha**: Mają one ostatecznie uderzyć do sekcji Analiz (Wykresów), by łączyć się z postępami.
+1. **Historia treningu - udostępnianie ekranu (Cały rzut)**: Użytkownik chce móc zrobić pełny screen-shot treningu (np. z html2canvas) zamiast suchego zestawienia (tak jak widział na "zrzucie 5").
+2. **Pełny Import/Export Plików Treningowych**: Należy dopracować import jsonów z listą ćwiczeń (by użytkownicy mogli wymieniać się planami w `.json`).
+3. **Orkiestracja Agentów (Multi-Agent Setup)**: Użytkownik chce oddelegować nudne procesy upewniania się, czy testy Playwright przechodzą lub analizy logów do osobnego środowiska testowego (sub-agent).
 
 ## Przekazanie dla nowej iteracji (Roadmapa dla Agenta):
-Twoim zadaniem (Jako nowego Agenta, który właśnie wchodzi z tym promptem) będzie zrealizowanie nowej koncepcji **Tutoriala Kontekstowego** krok po kroku oraz wplecenie w to mądrych uwag Trenera Edwarda. Na samym końcu zbuduj do tego dedykowane, małe testy E2E, byśmy mieli pewność, że wszystko pięknie działa.
+Twoim zadaniem (Jako nowego Agenta, który właśnie wchodzi z tym promptem) będzie wdrożenie nowego sposobu generowania ekranu (zrzutu) z wynikiem Treningu (Pełne udostępnienie) oraz zaprogramowanie Orkiestracji. Dodatkowo upewnij się, że opcja Exportu JSON i Importu u użytkowników jest solidna. Zawsze testuj środowisko przed deproymentem. Pamiętaj by zaktualizować `.agents/CONVERSATIONS_JIRA.md` na start z poprzednimi wynikami.

@@ -180,11 +180,11 @@ export const AiAnalyticsUI = {
         if (monthlyBtn) monthlyBtn.disabled = true;
         try {
             const result = await AiAnalyticsEngine.generate(days, sleepHours);
-            if (result && result.content) {
+            if (result && typeof result === 'string') {
                 await window.DatabaseManager.saveAiAnalysis({
                     date: new Date().toISOString().slice(0, 10),
                     type: days <= 7 ? 'weekly' : 'monthly',
-                    content: result.content
+                    content: result
                 });
                 await AiAnalyticsUI.loadHistory();
                 const analyses = await window.DatabaseManager.getAiAnalyses();

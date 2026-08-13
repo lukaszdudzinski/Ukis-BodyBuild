@@ -115,7 +115,7 @@ export const DietUI = {
                     
                     <div style="margin-bottom: 15px;">
                         <label style="display: block; margin-bottom: 5px; color: #aaa; font-size: 0.9em;">Aktywność i Treningi (w tygodniu)</label>
-                        <select id="diet-tdee-activity" class="input-field" style="width: 100%; padding: 10px; background: #222; border: 1px solid #444; color: #fff; border-radius: 5px;">
+                        <select id="diet-tdee-activity" class="input-field" style="width: 100%; padding: 10px; background: #222; border: 1px solid #444; color: #fff; border-radius: 5px; font-size: 1.2em; font-weight: bold;">
                             <option value="1.2">Brak aktywności (Praca siedząca)</option>
                             <option value="1.375">Niska (1-2 treningi)</option>
                             <option value="1.55" selected>Umiarkowana (3-4 treningi)</option>
@@ -126,7 +126,7 @@ export const DietUI = {
 
                     <div style="margin-bottom: 20px;">
                         <label style="display: block; margin-bottom: 5px; color: #aaa; font-size: 0.9em;">Obecny cel</label>
-                        <select id="diet-tdee-goal" class="input-field" style="width: 100%; padding: 10px; background: #222; border: 1px solid #444; color: #fff; border-radius: 5px;">
+                        <select id="diet-tdee-goal" class="input-field" style="width: 100%; padding: 10px; background: #222; border: 1px solid #444; color: #fff; border-radius: 5px; font-size: 1.2em; font-weight: bold;">
                             <option value="cut">Redukcja (-500 kcal)</option>
                             <option value="maintenance" selected>Utrzymanie wagi</option>
                             <option value="bulk">Budowa masy (+300 kcal)</option>

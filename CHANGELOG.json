@@ -1,5 +1,27 @@
 [
   {
+    "version": "v2026.8.13.02",
+    "date": "2026-08-13",
+    "changes": [
+      "✨ UX: Ujednolicono i powiększono czcionkę we wszystkich polach konfiguracji Profilu (Pomiary, Cele) oraz Ustawień.",
+      "🚨 HOTFIX: Złagodzono irytujące zjeżdżanie ekranu (focus) na 'Opcje Treningu' po kliknięciu głównego kafelka 'Treningi', co pozwala teraz normalnie obejrzeć kalendarz.",
+      "🚨 HOTFIX: Przycisk 'Pochwal się odznakami' w Ustawieniach znowu działa i generuje Twoje zrzuty z pucharami!",
+      "🧪 TESTY: 100% stabilności E2E Playwright - środowisko przygotowane do wypuszczenia sub-agentów!"
+    ]
+  },
+  {
+    "version": "v2026.8.13.01",
+    "date": "2026-08-13",
+    "changes": [
+      "🚨 HOTFIX: Naprawiono błąd 'Brak zdjęcia lub tekstu' wyskakujący po wysłaniu samego zdjęcia jedzenia do Trenera Edwarda.",
+      "🚨 HOTFIX: Naprawiono błąd braku odpowiedzi (i błędów 500) od chmury Trenera Edwarda z powodu zmian w obiekcie wyjściowym (obsługa samego tekstu).",
+      "🚨 HOTFIX: Zabezpieczenie przed niewidzialnym błędem podczas zapisu pustych danych tętna/kalorii z zegarka do starszych treningów.",
+      "✨ NOWOŚĆ: Generowanie 'Paragonu treningowego' podczas udostępniania – dzieli się z przyjaciółmi pełną listą ćwiczeń i serii, a nie tylko suchymi statystykami!",
+      "✨ NOWOŚĆ: Eksport i Import Treningu – łatwo prześlesz znajomym wybitny plan treningowy, z możliwością jednoklikowego importu u nich.",
+      "✨ UX: Ujednolicono i powiększono czcionkę we wszystkich polach konfiguracji Profilu oraz Ustawień."
+    ]
+  },
+  {
     "version": "v2026.8.10.05",
     "date": "2026-08-13",
     "changes": [

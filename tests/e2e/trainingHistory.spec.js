@@ -15,7 +15,7 @@ test.describe('Training and History Flow', () => {
     await page.click('text=Dodaj nową sesję treningową');
     
     // Fill the training name
-    await page.fill('input[placeholder="Nazwa treningu (opcjonalnie)"]', 'Trening siłowy');
+    await page.fill('#training-name-input', 'Trening siłowy test');
 
     // Wait a moment for UI
     await page.waitForTimeout(500);
@@ -38,67 +38,62 @@ test.describe('Training and History Flow', () => {
     await page.click('button:has-text("+ Seria")');
 
     // Add another exercise
-    await page.click('text=Dodaj kolejne ćwiczenie');
+    await page.click('#add-exercise-to-plan-btn');
     await page.waitForTimeout(500);
 
     // --- Exercise 2: Wyciskanie skośne ---
-    const exerciseInputs = await page.$$('.exercise-name-input');
-    await exerciseInputs[1].fill('Wyciskanie skośne');
+    const exerciseInputs = page.locator('.exercise-name-input');
+    await exerciseInputs.nth(1).fill('Wyciskanie skośne');
 
-    const weightInputs = await page.$$('input[placeholder="kg"]');
-    const repsInputs = await page.$$('input[placeholder="powt"]');
-    const addSetBtns = await page.$$('button:has-text("+ Seria")');
+    const weightInputs = page.locator('input[placeholder="kg"]');
+    const repsInputs = page.locator('input[placeholder="powt"]');
+    const addSetBtns = page.locator('button:has-text("+ Seria")');
     
-    await weightInputs[1].fill('60');
-    await repsInputs[1].fill('15');
-    await addSetBtns[1].click();
-    await weightInputs[1].fill('65');
-    await repsInputs[1].fill('12');
-    await addSetBtns[1].click();
-    await weightInputs[1].fill('70');
-    await repsInputs[1].fill('10');
-    await addSetBtns[1].click();
+    await weightInputs.nth(1).fill('60');
+    await repsInputs.nth(1).fill('15');
+    await addSetBtns.nth(1).click();
+    await weightInputs.nth(1).fill('65');
+    await repsInputs.nth(1).fill('12');
+    await addSetBtns.nth(1).click();
+    await weightInputs.nth(1).fill('70');
+    await repsInputs.nth(1).fill('10');
+    await addSetBtns.nth(1).click();
 
     // Add third exercise
-    await page.click('text=Dodaj kolejne ćwiczenie');
+    await page.click('#add-exercise-to-plan-btn');
     await page.waitForTimeout(500);
 
     // --- Exercise 3: Triceps ---
-    const exInputs3 = await page.$$('.exercise-name-input');
-    await exInputs3[2].fill('Francuskie wyciskanie (Triceps)');
+    const exInputs3 = page.locator('.exercise-name-input');
+    await exInputs3.nth(2).fill('Francuskie wyciskanie (Triceps)');
 
-    const weightInputs3 = await page.$$('input[placeholder="kg"]');
-    const repsInputs3 = await page.$$('input[placeholder="powt"]');
-    const addSetBtns3 = await page.$$('button:has-text("+ Seria")');
+    const weightInputs3 = page.locator('input[placeholder="kg"]');
+    const repsInputs3 = page.locator('input[placeholder="powt"]');
+    const addSetBtns3 = page.locator('button:has-text("+ Seria")');
 
-    await weightInputs3[2].fill('30');
-    await repsInputs3[2].fill('15');
-    await addSetBtns3[2].click();
-    await weightInputs3[2].fill('35');
-    await repsInputs3[2].fill('12');
-    await addSetBtns3[2].click();
-    await weightInputs3[2].fill('40');
-    await repsInputs3[2].fill('10');
-    await addSetBtns3[2].click();
+    await weightInputs3.nth(2).fill('30');
+    await repsInputs3.nth(2).fill('15');
+    await addSetBtns3.nth(2).click();
+    await weightInputs3.nth(2).fill('35');
+    await repsInputs3.nth(2).fill('12');
+    await addSetBtns3.nth(2).click();
+    await weightInputs3.nth(2).fill('40');
+    await repsInputs3.nth(2).fill('10');
+    await addSetBtns3.nth(2).click();
 
     // Finish training
     page.on('dialog', dialog => dialog.accept());
-    await page.click('text=Zakończ i Zapisz Trening');
+    await page.click('#finish-training-btn');
+    await expect(page.locator('#training-calendar-view')).toBeVisible({ timeout: 5000 });
 
     // Go to History tab
-    const isBurgerVisible = await page.isVisible('.menu-toggle');
-    if (isBurgerVisible) {
-        await page.click('.menu-toggle');
-        await page.click('.nav-links >> text=Historia Treningów');
-    } else {
-        await page.click('nav >> text=Historia Treningów');
-    }
+    await page.evaluate(() => window.switchTab('history-dashboard'));
 
     // Wait for history to load
     await page.waitForTimeout(1000);
 
     // Assert that the training is in history
-    await expect(page.locator('text=Trening siłowy').first()).toBeVisible();
+    await expect(page.locator('#history-dashboard >> text=Trening siłowy test').first()).toBeVisible();
 
     // Expand details
     await page.locator('text=▼').first().click();

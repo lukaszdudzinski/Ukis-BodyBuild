@@ -34,7 +34,7 @@ test.describe('Uki BodyBuild App - PWA and UI', () => {
   });
 
   test('Nawigacja pomiędzy zakładkami działa', async ({ page }) => {
-    await page.addInitScript(() => window.localStorage.setItem('tutorial_global_v22', 'true'));
+    await page.addInitScript(() => { window.localStorage.setItem('tutorial_global_v22', 'true'); window.localStorage.setItem('uki-bodybuild-last-version', 'v2026.8.13.01'); });
     await page.goto('/');
     
     // Zakładka główna powinna być widoczna domyślnie
@@ -49,6 +49,7 @@ test.describe('Uki BodyBuild App - PWA and UI', () => {
     await expect(page.locator('#training-dashboard')).toBeVisible();
 
     // Klikamy -> Pomiary Ciała
+    await page.click('#home-link-header');
     await page.click('.sidebar-nav a[data-tab="measurements-dashboard"]');
     await expect(page.locator('#measurements-dashboard')).toHaveClass(/active-tab/);
     await expect(page.locator('#measurements-dashboard')).toBeVisible();

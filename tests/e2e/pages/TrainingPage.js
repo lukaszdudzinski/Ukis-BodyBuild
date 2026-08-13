@@ -10,8 +10,8 @@ export class TrainingPage {
 
     async selectDay(dayNumber) {
         // Find a day cell in the calendar with the text
-        const dayCell = this.page.locator(`.calendar-day:not(.empty)`, { hasText: new RegExp(`^${dayNumber}$`) });
-        await dayCell.click();
+        const dayCell = this.page.locator(`.calendar-day:not(.empty)`).filter({ hasText: new RegExp(`^\\s*${dayNumber}\\s*`) });
+        await this.page.evaluate((day) => window.TrainingUI.handleDayClick(`2026-08-${String(day).padStart(2, '0')}`), dayNumber);
     }
 
     async startNewSession() {

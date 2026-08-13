@@ -11,6 +11,8 @@ Gdy jako Agent kończysz pracę nad przydzielonym zadaniem (niezależnie od tego
 2. Ten prompt musi zawierać dokładne informacje o tym, co zostało zrobione, w jakim celu, z jakiego miejsca projektu zaczynamy (odniesienie do pliku `.agents/CONVERSATIONS_JIRA.md`) oraz jakie jest ID twojej (czyli bieżącej) konwersacji, by nowy agent mógł się do niej odnieść.
 3. Musisz przypomnieć nowemu agentowi w tym prompcie, że również będzie musiał wygenerować taki hand-off prompt, gdy będzie kończył swoje zadanie w przyszłości.
 
+4. **OBOZWIĄZKOWO** dołączać wylistowanie najważniejszych plików statusowych projektu (np. pliki w `.agents/rules/`, `roadmap.md`), gdzie dokładnie jest opisane, czym aplikacja żyje. Kolejny agent musi wiedzieć, gdzie szukać zasad!
+
 Każda iteracja w tym projekcie MUST kończyć się wygenerowaniem dla Użytkownika gotowego do skopiowania bloku tekstu z promptem przekazania pałeczki.
 
 # Imperatyw: Raportowanie Zmian (Changelog)

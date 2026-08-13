@@ -15,7 +15,7 @@ import { AiAnalyticsUI } from './modules/ui/AiAnalyticsUI.js';
 window.ukiLogError = (msg, stack) => {
     let logs = [];
     try { logs = JSON.parse(localStorage.getItem('uki_error_logs') || '[]'); } catch(e) {}
-    logs.unshift({ time: new Date().toISOString(), msg, stack });
+    logs.unshift({ time: new Date().toISOString(), msg, stack, version: window.APP_VERSION || 'Nieznana' });
     if(logs.length > 50) logs.length = 50;
     localStorage.setItem('uki_error_logs', JSON.stringify(logs));
 };
@@ -43,6 +43,7 @@ const initApp = () => {
     AppUI.init();
     MeasurementsUI.init();
     TrainingUI.init();
+    window.SettingsUI = SettingsUI;
     SettingsUI.init();
     HistoryUI.init();
     AnalyticsUI.init();

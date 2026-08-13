@@ -381,7 +381,7 @@ export const TrainingUI = {
             
             // Automatically select and show options for the currently selected date (defaults to today)
             if (selectedDate) {
-                TrainingUI.handleDayClick(selectedDate);
+                TrainingUI.handleDayClick(selectedDate, true);
             }
         } catch (err) {
             console.error("Error loading training history:", err);
@@ -433,7 +433,7 @@ export const TrainingUI = {
         grid.innerHTML = html;
     },
 
-    handleDayClick: (dateStr) => {
+    handleDayClick: (dateStr, preventScroll = false) => {
         selectedDate = dateStr;
         TrainingUI.renderCalendar(); // To update the 'selected' visual state
         
@@ -539,7 +539,9 @@ export const TrainingUI = {
         }
         
         // Scroll to panel
-        panel.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        if (!preventScroll) {
+            panel.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
     },
 
     deleteTraining: async (id) => {

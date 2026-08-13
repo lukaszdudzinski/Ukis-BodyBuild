@@ -36,6 +36,7 @@ export const DatabaseManager = {
 
                 // Initialize tables
                 DatabaseManager.createTables();
+                DatabaseManager.db = db;
                 isReady = true;
                 resolve(true);
             } catch (err) {

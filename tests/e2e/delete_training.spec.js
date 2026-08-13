@@ -1,7 +1,7 @@
 const { test, expect } = require('@playwright/test');
 
 test('Sprawdzenie poprawnego usuwania sesji treningowych z bazy PWA', async ({ page }) => {
-  await page.addInitScript(() => window.localStorage.setItem('tutorial_global_v22', 'true'));
+  await page.addInitScript(() => { window.localStorage.setItem('tutorial_global_v22', 'true'); window.localStorage.setItem('uki-bodybuild-last-version', 'v2026.8.13.01'); });
     await page.goto('/');
 
   await page.waitForTimeout(1000); 

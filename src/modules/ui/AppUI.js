@@ -1,4 +1,4 @@
-export const APP_VERSION = 'v2026.8.10.05'; // Feature/UX: Fix PR badges, share fallbacks, history view
+export const APP_VERSION = 'v2026.8.13.01'; // Faza 5.1: Bugfixes (DietAI, Settings, Chat) + Full Training Share
 
 // Obsługa błędów globalnych — zdefiniowana w main.js (klucz: uki_error_logs)
 

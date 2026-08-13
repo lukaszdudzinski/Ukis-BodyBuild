@@ -221,6 +221,7 @@ export const ChatUI = {
 
     appendMessage: (text, sender) => {
         const messagesDiv = document.getElementById('edward-chat-messages');
+        if (!messagesDiv) return;
         const isUser = sender === 'user';
         
         const html = `

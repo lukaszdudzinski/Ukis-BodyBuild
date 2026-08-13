@@ -1,4 +1,5 @@
 import { DatabaseManager } from '../db/DatabaseManager.js';
+import { ShareUtils } from '../../utils/ShareUtils.js';
 
 export const SettingsUI = {
     init: () => {
@@ -112,8 +113,8 @@ export const SettingsUI = {
         const nickname = (JSON.parse(localStorage.getItem('uki_bodybuild_settings') || '{}')).nickname || 'BodyBuilder';
 
         try {
-            if (window.ShareUtils) {
-                await window.ShareUtils.generateAndShareImage("Moje Odznaki", statsList, avatar, nickname, textToShare);
+            if (ShareUtils) {
+                await ShareUtils.generateAndShareImage("Moje Odznaki", statsList, avatar, nickname, textToShare);
             } else {
                 throw new Error("Brak ShareUtils");
             }

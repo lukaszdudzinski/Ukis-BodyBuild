@@ -19,7 +19,11 @@ export const DietAIEngine = {
                 headers: {
                     "Content-Type": "application/json"
                 },
-                body: JSON.stringify({ images: imagesBase64, contextText: contextText })
+                body: JSON.stringify({ 
+                    images: imagesBase64, 
+                    imageBase64: imagesBase64 && imagesBase64.length > 0 ? imagesBase64[0] : null,
+                    contextText: contextText 
+                })
             });
 
             if (!response.ok) {

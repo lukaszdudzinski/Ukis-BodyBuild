@@ -61,8 +61,39 @@ export const DiagnosticsUI = {
 
         const logsContainer = document.getElementById('diagnostics-logs-container');
         if (logsContainer) {
-            const logs = localStorage.getItem('uki_error_logs');
-            logsContainer.innerText = logs ? logs : 'Brak zarejestrowanych błędów :)';
+            try {
+                const logsStr = localStorage.getItem('uki_error_logs');
+                if (!logsStr) {
+                    logsContainer.innerText = 'Brak zarejestrowanych błędów :)';
+                    return;
+                }
+                const logsArray = JSON.parse(logsStr);
+                if (Array.isArray(logsArray) && logsArray.length > 0) {
+                    const grouped = {};
+                    logsArray.forEach(log => {
+                        const v = log.version || 'Starsze wersje';
+                        if (!grouped[v]) grouped[v] = [];
+                        grouped[v].push(log);
+                    });
+                    
+                    let html = '';
+                    for (const v in grouped) {
+                        html += `<div style="color: #FF9800; font-weight: bold; font-size: 1.1em; border-bottom: 1px solid #333; margin-top: 10px; padding-bottom: 4px;">Wersja: ${v}</div>`;
+                        grouped[v].forEach(l => {
+                            html += `<div style="margin: 8px 0; border-left: 2px solid #E74C3C; padding-left: 8px;">`;
+                            html += `<span style="color: #888; font-size: 0.85em;">${l.time}</span><br>`;
+                            html += `<span style="color: #E74C3C; font-weight: bold;">${l.msg}</span>`;
+                            if (l.stack) html += `<br><span style="color: #aaa; font-size: 0.8em;">${l.stack.substring(0, 200)}...</span>`;
+                            html += `</div>`;
+                        });
+                    }
+                    logsContainer.innerHTML = html;
+                } else {
+                    logsContainer.innerText = logsStr;
+                }
+            } catch(e) {
+                logsContainer.innerText = localStorage.getItem('uki_error_logs') || 'Brak zarejestrowanych błędów :)';
+            }
         }
 
         DiagnosticsUI.bindEvents();
@@ -161,12 +192,30 @@ export const DiagnosticsUI = {
         const shareErrs = document.getElementById('share-errors-btn');
         if (shareErrs) {
             shareErrs.addEventListener('click', () => {
-                const logs = localStorage.getItem('uki_error_logs');
-                if (!logs) {
+                const logsStr = localStorage.getItem('uki_error_logs');
+                if (!logsStr) {
                     alert("Brak błędów do udostępnienia.");
                     return;
                 }
-                const text = "Logi błędów Uki's BodyBuild:\n\n" + logs;
+                let text = "Logi błędów Uki's BodyBuild:\\n\\n";
+                try {
+                    const logsArray = JSON.parse(logsStr);
+                    const grouped = {};
+                    logsArray.forEach(log => {
+                        const v = log.version || 'Starsze wersje';
+                        if (!grouped[v]) grouped[v] = [];
+                        grouped[v].push(log);
+                    });
+                    for (const v in grouped) {
+                        text += `--- Wersja: ${v} ---\\n`;
+                        grouped[v].forEach(l => {
+                            text += `[${l.time}] ${l.msg}\\n${l.stack}\\n\\n`;
+                        });
+                    }
+                } catch (e) {
+                    text += logsStr;
+                }
+                
                 if (navigator.share) {
                     navigator.share({
                         title: 'Logi błędów aplikacji',

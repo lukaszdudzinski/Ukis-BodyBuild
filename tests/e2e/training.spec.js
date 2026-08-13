@@ -8,7 +8,7 @@ test.describe('Training Workflow', () => {
         const trainingPage = new TrainingPage(page);
 
         // Given I am on the home page
-        await page.addInitScript(() => window.localStorage.setItem('tutorial_global_v22', 'true'));
+        await page.addInitScript(() => { window.localStorage.setItem('tutorial_global_v22', 'true'); window.localStorage.setItem('uki-bodybuild-last-version', 'v2026.8.13.01'); });
         await dashboard.navigate();
 
         // When I click on Training tile
