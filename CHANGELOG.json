@@ -1,5 +1,14 @@
 [
   {
+    "version": "v2026.8.14.12",
+    "date": "2026-08-14",
+    "changes": [
+      "🧠 Pełny Wywiad i Makroskładniki u Trenera Edwarda: Edward przed każdą analizą pyta teraz o sen, staż treningowy i cel sylwetkowy! Dodatkowo silnik AI przekazuje pełną gramaturę makroskładników (Białko, Węglowodany, Tłuszcze oraz Kalorie ze szczegółami każdego posiłku). Koniec z narzekaniem Edwarda na brak rozbicia makro!",
+      "📋 Import Planu Treningowego z Analizy AI: Każdy trening zaproponowany przez Trenera Edwarda możesz teraz jednym kliknięciem (\"📋 Plan\") zapisać jako gotowy Szablon Treningowy i od razu załadować go na siłowni!",
+      "🔙 Intuicyjna Nawigacja w Raporcie: Dodano wyraźny przycisk powrotu do aplikacji u góry i na samym dole raportu z zachowaniem bezpiecznego marginesu pod Dynamic Island / Notch na iPhone."
+    ]
+  },
+  {
     "version": "v2026.8.14.11",
     "date": "2026-08-14",
     "changes": [
