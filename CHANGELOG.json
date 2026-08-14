@@ -1,5 +1,12 @@
 [
   {
+    "version": "v2026.8.14.19",
+    "date": "2026-08-14",
+    "changes": [
+      "📱 Poprawiono układ graficzny wizytówki: Przycisk wsparcia (Postaw Kawę) teraz perfekcyjnie dopasowuje się do szerokości ekranów smartfonów, unikając niepotrzebnego ucinania."
+    ]
+  },
+  {
     "version": "v2026.8.14.18",
     "date": "2026-08-14",
     "changes": [
