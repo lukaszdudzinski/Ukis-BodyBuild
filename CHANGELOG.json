@@ -1,5 +1,12 @@
 [
   {
+    "version": "v2026.8.14.11",
+    "date": "2026-08-14",
+    "changes": [
+      "🛠️ Dopracowanie layoutu Serii: Zastosowano zaawansowany CSS, dzięki któremu, jeśli wiersz z Serią, polami wagi/powtórzeń i ikoną usuwania zmieści się na ekranie – zostanie ułożony elegancko w jednym wierszu. Dopiero gdy czcionka jest za duża i brakuje miejsca, inputy naturalnie centrują się pod spodem. Czysta magia front-endu!"
+    ]
+  },
+  {
     "version": "v2026.8.14.10",
     "date": "2026-08-14",
     "changes": [
