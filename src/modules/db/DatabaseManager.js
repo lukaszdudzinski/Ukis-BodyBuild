@@ -357,19 +357,26 @@ export const DatabaseManager = {
         } catch(e) {}
 
         const settings = {
-            nickname: localStorage.getItem("uki-nickname"),
-            avatar: localStorage.getItem("uki-avatar"),
-            templates: localStorage.getItem("uki_workout_templates")
+            nickname: localStorage.getItem("uki-nickname") || localStorage.getItem("userNick") || "",
+            avatar: localStorage.getItem("uki-avatar") || "",
+            templates: localStorage.getItem("uki_workout_templates") || "[]",
+            trainingExperience: localStorage.getItem("trainingExperience") || "",
+            dietGoal: localStorage.getItem("dietGoal") || "",
+            dietWorkerUrl: localStorage.getItem("dietWorkerUrl") || "",
+            schedules: localStorage.getItem("uki_workout_schedules") || "[]",
+            customWallpaper: localStorage.getItem("uki-custom-wallpaper") || ""
         };
 
         return JSON.stringify({
-            measurements: measurements,
-            trainings: trainings,
-            dietLogs: dietLogs,
-            aiAnalyses: aiAnalyses,
+            app: "Uki's BodyBuild",
+            exportDate: new Date().toISOString(),
+            measurements: measurements || [],
+            trainings: trainings || [],
+            dietLogs: dietLogs || [],
+            aiAnalyses: aiAnalyses || [],
             settings: settings,
-            version: "1.1"
-        });
+            version: "2.0"
+        }, null, 2);
     },
 
     importDatabase: async (jsonString) => {
@@ -378,7 +385,7 @@ export const DatabaseManager = {
             const data = JSON.parse(jsonString);
             
             if (!data.measurements || !data.trainings) {
-                throw new Error("Nieprawidłowy format pliku JSON.");
+                throw new Error("Nieprawidłowy format pliku archiwum bazy.");
             }
 
             db.exec(`DELETE FROM measurements`);
@@ -387,7 +394,8 @@ export const DatabaseManager = {
             try { db.exec(`DELETE FROM diet_logs`); } catch(e) {}
             try { db.exec(`DELETE FROM ai_analyses`); } catch(e) {}
 
-            data.measurements.forEach(m => {
+            // Import Pomiarów
+            (data.measurements || []).forEach(m => {
                 db.exec({
                     sql: `INSERT INTO measurements (id, date, weight, chest, waist, hips, thigh, biceps, photo, created_at, height, neck) 
                           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
@@ -395,35 +403,60 @@ export const DatabaseManager = {
                 });
             });
 
-            data.trainings.forEach(t => {
+            // Import Treningów
+            (data.trainings || []).forEach(t => {
                 db.exec({
                     sql: `INSERT INTO trainings (id, date, duration_seconds, exercises, name) VALUES (?, ?, ?, ?, ?)`,
-                    bind: [t.id, t.date, t.duration_seconds, JSON.stringify(t.exercises), t.name || null]
+                    bind: [t.id, t.date, t.duration_seconds, typeof t.exercises === 'string' ? t.exercises : JSON.stringify(t.exercises), t.name || null]
                 });
             });
             
-            if (data.dietLogs) {
+            // Import Dziennika Diety
+            if (data.dietLogs && Array.isArray(data.dietLogs)) {
                 data.dietLogs.forEach(d => {
                     db.exec({
-                        sql: `INSERT INTO diet_logs (id, date, image_data, analysis_result, created_at) VALUES (?, ?, ?, ?, ?)`,
-                        bind: [d.id, d.date, d.image_data, d.analysis_result, d.created_at]
+                        sql: `INSERT INTO diet_logs (id, date, meal_type, food_name, calories, protein, carbs, fat, image_data, analysis_result, created_at) 
+                              VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+                        bind: [
+                            d.id, 
+                            d.date, 
+                            d.meal_type || 'Inne', 
+                            d.food_name || '', 
+                            d.calories || 0, 
+                            d.protein || 0, 
+                            d.carbs || 0, 
+                            d.fat || 0, 
+                            d.image_data || null, 
+                            d.analysis_result || null, 
+                            d.created_at || new Date().toISOString()
+                        ]
                     });
                 });
             }
             
-            if (data.aiAnalyses) {
+            // Import Raportów AI
+            if (data.aiAnalyses && Array.isArray(data.aiAnalyses)) {
                 data.aiAnalyses.forEach(a => {
                     db.exec({
                         sql: `INSERT INTO ai_analyses (id, date, type, content, created_at) VALUES (?, ?, ?, ?, ?)`,
-                        bind: [a.id, a.date, a.type, a.content, a.created_at]
+                        bind: [a.id, a.date, a.type, a.content, a.created_at || new Date().toISOString()]
                     });
                 });
             }
             
+            // Import Ustawień i Szablonów
             if (data.settings) {
-                if (data.settings.nickname) localStorage.setItem("uki-nickname", data.settings.nickname);
+                if (data.settings.nickname) {
+                    localStorage.setItem("uki-nickname", data.settings.nickname);
+                    localStorage.setItem("userNick", data.settings.nickname);
+                }
                 if (data.settings.avatar) localStorage.setItem("uki-avatar", data.settings.avatar);
-                if (data.settings.templates) localStorage.setItem("uki_workout_templates", data.settings.templates);
+                if (data.settings.templates) localStorage.setItem("uki_workout_templates", typeof data.settings.templates === 'string' ? data.settings.templates : JSON.stringify(data.settings.templates));
+                if (data.settings.trainingExperience) localStorage.setItem("trainingExperience", data.settings.trainingExperience);
+                if (data.settings.dietGoal) localStorage.setItem("dietGoal", data.settings.dietGoal);
+                if (data.settings.dietWorkerUrl) localStorage.setItem("dietWorkerUrl", data.settings.dietWorkerUrl);
+                if (data.settings.schedules) localStorage.setItem("uki_workout_schedules", typeof data.settings.schedules === 'string' ? data.settings.schedules : JSON.stringify(data.settings.schedules));
+                if (data.settings.customWallpaper) localStorage.setItem("uki-custom-wallpaper", data.settings.customWallpaper);
             }
 
             return true;

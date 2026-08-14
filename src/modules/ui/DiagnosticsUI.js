@@ -14,11 +14,11 @@ export const DiagnosticsUI = {
 
         wrapper.innerHTML = `
             <div style="background: rgba(0,0,0,0.3); padding: 15px; border-radius: 8px; border: 1px solid rgba(255,152,0,0.3); margin-bottom: 20px;">
-                <h3 style="color: #FF9800; margin-top: 0;">Eksport / Import Danych</h3>
-                <p style="font-size: 0.9em; color: #ccc;">Zapisz swoje dane do pliku na urządzeniu lub wgraj z powrotem. Zalecane przed Twardym Resetem.</p>
+                <h3 style="color: #FF9800; margin-top: 0;">📦 Pełne Archiwum Bazy Danych</h3>
+                <p style="font-size: 0.9em; color: #ccc;">Utwórz kompletną kopię bezpieczeństwa (pomiary, treningi, szablony, dieta, raporty AI, awatar i ustawienia) lub przywróć całą aplikację z pliku archiwum JSON.</p>
                 <div style="display: flex; gap: 10px; margin-top: 15px;">
-                    <button id="db-export-btn" style="flex: 1; padding: 13px 10px; background: #222; border: 1px solid #00BFFF; color: #00BFFF; border-radius: 5px; cursor: pointer; font-size: 1em; font-weight: bold; text-align: center;">Zrób Kopię (Export)</button>
-                    <button id="db-import-btn" style="flex: 1; padding: 13px 10px; background: #222; border: 1px solid #FF9800; color: #FF9800; border-radius: 5px; cursor: pointer; font-size: 1em; font-weight: bold; text-align: center;">Wgraj Kopię (Import)</button>
+                    <button id="db-export-btn" style="flex: 1; padding: 13px 10px; background: #222; border: 1px solid #00BFFF; color: #00BFFF; border-radius: 5px; cursor: pointer; font-size: 1em; font-weight: bold; text-align: center;">📦 Utwórz Archiwum</button>
+                    <button id="db-import-btn" style="flex: 1; padding: 13px 10px; background: #222; border: 1px solid #FF9800; color: #FF9800; border-radius: 5px; cursor: pointer; font-size: 1em; font-weight: bold; text-align: center;">📥 Przywróć z Pliku</button>
                     <input type="file" id="db-import-file" accept=".json" style="display: none;">
                 </div>
             </div>

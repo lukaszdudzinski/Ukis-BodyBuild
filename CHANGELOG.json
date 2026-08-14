@@ -1,5 +1,13 @@
 [
   {
+    "version": "v2026.8.14.14",
+    "date": "2026-08-14",
+    "changes": [
+      "📦 Pełne Archiwum Danych (Kopia Bezpieczeństwa v2.0): Udoskonalono silnik kopii zapasowej – archiwum obejmuje teraz 100% bazy SQLite (pomiary, treningi, pełną historię diety, raporty AI) oraz wszystkie ustawienia i szablony!",
+      "✨ Nowoczesne Okno Szablonów Planów Treningowych: Przywrócono pełną nazwę modułu, dodano stały nagłówek z przyciskiem zamknięcia (X) oraz możliwość zamknięcia okna jednym tapnięciem w tło!"
+    ]
+  },
+  {
     "version": "v2026.8.14.13",
     "date": "2026-08-14",
     "changes": [

@@ -170,11 +170,20 @@ export const TrainingUI = {
         }
 
         let html = `
-            <div id="templates-modal-overlay" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 10000; display: flex; justify-content: center; align-items: center; padding: 20px; box-sizing: border-box;">
-                <div style="background: #222; border: 1px solid #FF9800; border-radius: 12px; width: 100%; max-width: 500px; max-height: 80vh; overflow-y: auto; padding: 20px;">
-                    <h3 style="color: #FF9800; margin-top: 0;">Załaduj Plan Treningowy</h3>
-                    <p style="color: #ccc; font-size: 0.9em; margin-bottom: 20px;">Wybierz jeden z zapisanych planów by od razu zacząć trening:</p>
-                    <div style="display: flex; flex-direction: column; gap: 10px;">
+            <div id="templates-modal-overlay" onclick="if(event.target.id === 'templates-modal-overlay') this.remove()" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 10000; display: flex; justify-content: center; align-items: center; padding: 16px; box-sizing: border-box;">
+                <div style="background: #1e1e1e; border: 1px solid #FF9800; border-radius: 14px; width: 100%; max-width: 480px; max-height: 85vh; display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 15px 50px rgba(0,0,0,0.7); box-sizing: border-box;">
+                    
+                    <!-- Fixed Header with Title and Close X -->
+                    <div style="padding: 16px 20px; border-bottom: 1px solid rgba(255,152,0,0.3); display: flex; justify-content: space-between; align-items: center; background: #181818; flex-shrink: 0;">
+                        <div>
+                            <h3 style="color: #FF9800; margin: 0; font-size: 1.15em;">Szablony Planów Treningowych</h3>
+                            <p style="color: #888; font-size: 0.8em; margin: 3px 0 0 0;">Wybierz zapisany plan by rozpocząć sesję:</p>
+                        </div>
+                        <button onclick="document.getElementById('templates-modal-overlay').remove()" style="background: rgba(255,255,255,0.1); border: none; color: #fff; width: 34px; height: 34px; border-radius: 50%; font-size: 1.4em; cursor: pointer; display: flex; align-items: center; justify-content: center; line-height: 1;">&times;</button>
+                    </div>
+
+                    <!-- Scrollable Cards Container -->
+                    <div style="padding: 16px; overflow-y: auto; flex: 1; -webkit-overflow-scrolling: touch; display: flex; flex-direction: column; gap: 12px;">
         `;
 
         templates.forEach(t => {
@@ -185,16 +194,16 @@ export const TrainingUI = {
             let durationInfo = t.duration_seconds ? `<br>Przewidywany czas: ${TrainingUI.formatTime(t.duration_seconds)}` : '';
             
             html += `
-                <div style="background: #333; padding: 15px; border-radius: 8px; border: 1px solid #444; display: flex; flex-direction: column; gap: 12px; margin-bottom: 10px;">
-                    <div style="text-align: center; border-bottom: 1px solid #555; padding-bottom: 8px;">
+                <div style="background: #2a2a2a; padding: 15px; border-radius: 10px; border: 1px solid #444; display: flex; flex-direction: column; gap: 10px;">
+                    <div style="text-align: center; border-bottom: 1px solid #444; padding-bottom: 8px;">
                         <strong style="color: #00BFFF; font-size: 1.1em;">${t.name}</strong>
                     </div>
-                    <div style="font-size: 0.9em; color: #aaa; text-align: center;">
+                    <div style="font-size: 0.9em; color: #bbb; text-align: center; line-height: 1.5;">
                         Typ: ${typeLabel}<br>
                         Ilość ćwiczeń w treningu: ${t.exercises && t.exercises.length ? t.exercises.length : 0}
                         ${durationInfo}
                     </div>
-                    <div style="display: flex; gap: 10px; width: 100%; margin-top: 5px; box-sizing: border-box;">
+                    <div style="display: flex; gap: 10px; width: 100%; margin-top: 4px; box-sizing: border-box;">
                         <button onclick="window.TrainingUI.startFromTemplate(${t.id})" class="action-button" style="flex: 1; background: #2ECC71; border: 1px solid #2ECC71; color: #fff; padding: 12px 10px; font-weight: bold; border-radius: 8px; font-size: 0.95em; cursor: pointer;">▶ Wybierz</button>
                         <button onclick="window.TrainingUI.deleteTemplate(${t.id})" class="action-button" style="flex: 1; background: rgba(231, 76, 60, 0.2); border: 1px solid rgba(231, 76, 60, 0.4); color: #E74C3C; padding: 12px 10px; font-weight: bold; border-radius: 8px; font-size: 0.95em; cursor: pointer;">Usuń</button>
                     </div>
@@ -204,7 +213,11 @@ export const TrainingUI = {
 
         html += `
                     </div>
-                    <button onclick="document.getElementById('templates-modal-overlay').remove()" class="action-button" style="width: 100%; margin-top: 20px; background: #555; border-color: #555; color: #fff;">Anuluj</button>
+
+                    <!-- Fixed Footer with Close Button -->
+                    <div style="padding: 12px 16px; border-top: 1px solid #333; background: #181818; flex-shrink: 0;">
+                        <button onclick="document.getElementById('templates-modal-overlay').remove()" class="action-button" style="width: 100%; background: #444; border: 1px solid #555; color: #eee; padding: 11px; border-radius: 8px; font-weight: bold; font-size: 0.95em; cursor: pointer;">Zamknij</button>
+                    </div>
                 </div>
             </div>
         `;
