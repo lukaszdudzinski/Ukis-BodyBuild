@@ -15,10 +15,14 @@ Ten dokument służy jako główne źródło prawdy dla wszystkich planów bizne
   - **Anulowanie Treningu:** Przycisk na dole trwającego treningu (obok Pauzy/Zakończ) pozwalający zrezygnować z rozpoczętej sesji (czyści brudnopis po potwierdzeniu w okienku modalnym).
 
 ### 2. Profesjonalny Asystent AI (Trener Edward)
-- **Cel:** Zmiana tonu wypowiedzi z czysto humorystycznego na ekspercki, merytoryczny i analityczny.
-- **Funkcjonalności:**
-  - Zmiana Promptu systemowego: Trener analizuje objętość (liczba serii na partię mięśniową), tonaż całkowity i ewentualne sygnały przetrenowania.
-  - Ocena doboru ćwiczeń (Split) oraz podsumowanie czasu regeneracji (sen, dni wolne).
+- **Cel:** Pełna, gruba i wyczerpująca merytoryczna analiza z prawdziwego zdarzenia. Aplikacja ma dawać poczucie premium.
+- **Wymagane Analizy (System Prompt):**
+  1. **Objętość i Tonaż:** Analiza pod kątem ryzyka przetrenowania i optymalnej bodźcowania.
+  2. **Podział Treningowy (Split / FBW):** Ocena poprawności łączenia partii mięśniowych i odstępów regeneracyjnych.
+  3. **Odżywianie vs Cel:** Skorelowanie kalorii z celem (masa, redukcja, utrzymanie). Wskazanie czy użytkownik je za mało/za dużo. *Uwaga: Jeśli brakuje danych, AI musi wymusić na użytkowniku ich uzupełnienie w przyszłości.*
+  4. **Pomiary i Obwody:** Odniesienie wagi i obwodów do celu. Na masie - czy obwody rosną? Na redukcji - czy spadają? Jakie podjąć kroki (dodać cardio, uciąć kalorie itp.).
+  5. **Analiza Długoterminowa (Trend):** AI musi analizować dane historyczne i poprzednie raporty (np. z 4 tygodni), by wywnioskować czy użytkownik idzie w dobrym kierunku i czy wdraża rady.
+  6. **Podsumowanie i Motywacja:** Zakończenie profesjonalnym akcentem i określeniem jasnego wektora działań na kolejny tydzień/miesiąc.
 
 ### 3. Stabilizacja PWA
 - **Cel:** Wyeliminowanie błędu, gdzie aplikacja po aktualizacji do nowszej wersji wciąż sugeruje instalację starszej. (Rozwiązane poprzez stałą synchronizację pliku CHANGELOG.json i usprawnienie `pwa-updater.js`).
