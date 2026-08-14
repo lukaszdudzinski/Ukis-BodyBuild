@@ -56,6 +56,11 @@ export const TrainingUI = {
             loadTemplateBtn.addEventListener('click', TrainingUI.loadTemplatesDialog);
         }
 
+        const cancelBtn = document.getElementById('cancel-training-btn');
+        if (cancelBtn) {
+            cancelBtn.addEventListener('click', TrainingUI.cancelTraining);
+        }
+
         const pauseBtn = document.getElementById('pause-training-btn');
         if (pauseBtn) {
             pauseBtn.addEventListener('click', TrainingUI.togglePause);
@@ -133,7 +138,7 @@ export const TrainingUI = {
             return;
         }
 
-        const templateName = prompt("Podaj nazwę szablonu (np. 'Push Wtorek'):");
+        const templateName = prompt("Podaj nazwę planu treningowego (np. 'Plan Masa: Push Wtorek'):");
         if (!templateName || templateName.trim() === '') return;
 
         // Clone current training and remove specific data
@@ -152,23 +157,23 @@ export const TrainingUI = {
         templates.push(template);
         localStorage.setItem('uki_workout_templates', JSON.stringify(templates));
         
-        if (window.ChatUI) window.ChatUI.showContextualBubble(`Elegancko! Szablon "${template.name}" zapisany. 💪 Możesz go załadować przy kolejnym treningu.`);
-        else alert(`Szablon "${template.name}" został zapisany.`);
+        if (window.ChatUI) window.ChatUI.showContextualBubble(`Elegancko! Plan Treningowy "${template.name}" zapisany. 💪 Możesz go załadować przy kolejnym treningu.`);
+        else alert(`Plan Treningowy "${template.name}" został zapisany.`);
     },
 
     loadTemplatesDialog: () => {
         const templates = TrainingUI.getTemplates();
         if (templates.length === 0) {
-            if (window.ChatUI) window.ChatUI.showContextualBubble("Nie masz jeszcze żadnych zapisanych szablonów. Zapisz jakiś podczas treningu! 📝");
-            else alert("Brak zapisanych szablonów.");
+            if (window.ChatUI) window.ChatUI.showContextualBubble("Nie masz jeszcze żadnych zapisanych planów treningowych. Zapisz jakiś podczas treningu! 📝");
+            else alert("Brak zapisanych planów treningowych.");
             return;
         }
 
         let html = `
             <div id="templates-modal-overlay" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 10000; display: flex; justify-content: center; align-items: center; padding: 20px; box-sizing: border-box;">
                 <div style="background: #222; border: 1px solid #FF9800; border-radius: 12px; width: 100%; max-width: 500px; max-height: 80vh; overflow-y: auto; padding: 20px;">
-                    <h3 style="color: #FF9800; margin-top: 0;">Załaduj Szablon</h3>
-                    <p style="color: #ccc; font-size: 0.9em; margin-bottom: 20px;">Wybierz jeden z zapisanych szablonów by od razu zacząć trening:</p>
+                    <h3 style="color: #FF9800; margin-top: 0;">Załaduj Plan Treningowy</h3>
+                    <p style="color: #ccc; font-size: 0.9em; margin-bottom: 20px;">Wybierz jeden z zapisanych planów by od razu zacząć trening:</p>
                     <div style="display: flex; flex-direction: column; gap: 10px;">
         `;
 
@@ -200,7 +205,7 @@ export const TrainingUI = {
     },
 
     deleteTemplate: (id) => {
-        if (confirm("Na pewno usunąć ten szablon?")) {
+        if (confirm("Na pewno usunąć ten plan treningowy?")) {
             let templates = TrainingUI.getTemplates();
             templates = templates.filter(t => t.id !== id);
             localStorage.setItem('uki_workout_templates', JSON.stringify(templates));
@@ -267,7 +272,7 @@ export const TrainingUI = {
         TrainingUI.saveDraft();
         
         if (window.ChatUI) {
-            window.ChatUI.showContextualBubble("Ogień z kurwami! 🔥 Szablon załadowany, zegar tyka!", true);
+            window.ChatUI.showContextualBubble("Ogień z kurwami! 🔥 Plan Treningowy załadowany, zegar tyka!", true);
         }
     },
 
@@ -633,6 +638,29 @@ export const TrainingUI = {
         }
     },
 
+    cancelTraining: () => {
+        if (confirm("Czy na pewno chcesz anulować i porzucić ten trening? Ta akcja jest nieodwracalna i wyczyści cały brudnopis!")) {
+            if (currentTraining && currentTraining.timerInterval) {
+                clearInterval(currentTraining.timerInterval);
+            }
+            if (currentTraining && currentTraining.exercises) {
+                currentTraining.exercises.forEach(ex => {
+                    if (ex.cardioInterval) clearInterval(ex.cardioInterval);
+                    if (ex.exercises) {
+                        ex.exercises.forEach(nex => {
+                            if (nex.cardioInterval) clearInterval(nex.cardioInterval);
+                        });
+                    }
+                });
+            }
+            TrainingUI.clearDraft();
+            currentTraining = null;
+            document.getElementById('active-training-view').style.display = 'none';
+            document.getElementById('training-calendar-view').style.display = 'block';
+            TrainingUI.loadHistoryAndCalendar();
+        }
+    },
+
     continueTraining: (trainingId) => {
         const existingTraining = trainingId !== undefined 
             ? allTrainingsCache.find(t => t.id === trainingId)
@@ -919,6 +947,23 @@ export const TrainingUI = {
         }
     },
 
+    toggleSetCompletion: (exerciseId, setIndex, isCompleted) => {
+        const exercise = TrainingUI.getExerciseById(exerciseId);
+        if (exercise && exercise.sets[setIndex]) {
+            exercise.sets[setIndex].isCompleted = isCompleted;
+            TrainingUI.renderCurrentExercises();
+        }
+    },
+
+    updateSetInline: (exerciseId, setIndex, field, value) => {
+        const exercise = TrainingUI.getExerciseById(exerciseId);
+        if (exercise && exercise.sets[setIndex]) {
+            exercise.sets[setIndex][field] = parseFloat(value) || 0;
+            // No need to full re-render on every keystroke, but we save draft
+            TrainingUI.saveDraft();
+        }
+    },
+
     renderCurrentExercises: () => {
         const list = document.getElementById('current-exercises-list');
         if (currentTraining.exercises.length === 0) {
@@ -965,9 +1010,23 @@ export const TrainingUI = {
                                 }
 
                                 return `
-                                    <div style="display: flex; justify-content: space-between; align-items: center; ${style}">
-                                        <span>${prefix} <strong style="color: ${isDropset ? '#FF9800' : '#00BFFF'};">${set.weight} kg</strong> x <strong>${set.reps} powt.</strong> ${prBadge} ${ormText}</span>
-                                        <button onclick="window.TrainingUI.removeSet('${ex.id}', ${i})" style="background: transparent; border: none; color: #ff4444; font-size: 1.2em; cursor: pointer;">&times;</button>
+                                    <div style="display: flex; justify-content: space-between; align-items: center; ${style} ${set.isCompleted ? 'background: rgba(46, 204, 113, 0.15); border-radius: 4px;' : ''}">
+                                        <div style="display: flex; align-items: center; gap: 8px; flex: 1; flex-wrap: wrap;">
+                                            <input type="checkbox" ${set.isCompleted ? 'checked' : ''} onchange="window.TrainingUI.toggleSetCompletion('${ex.id}', ${i}, this.checked)" style="transform: scale(1.3); cursor: pointer; accent-color: #2ECC71; margin-right: 5px;">
+                                            <span style="font-size: 0.9em; ${set.isCompleted ? 'opacity: 0.6;' : ''}">${prefix}</span>
+                                            
+                                            <div style="display: flex; align-items: center; gap: 4px;">
+                                                <input type="number" value="${set.weight}" onchange="window.TrainingUI.updateSetInline('${ex.id}', ${i}, 'weight', this.value)" style="width: 55px; background: rgba(0,0,0,0.3); border: 1px solid #444; color: ${isDropset ? '#FF9800' : '#00BFFF'}; font-weight: bold; text-align: center; border-radius: 4px; padding: 4px; font-size: 1em;" inputmode="decimal"> 
+                                                <span style="font-size: 0.8em; color: #888;">kg</span>
+                                                <span style="color: #666; font-size: 0.9em;">x</span>
+                                                <input type="number" value="${set.reps}" onchange="window.TrainingUI.updateSetInline('${ex.id}', ${i}, 'reps', this.value)" style="width: 50px; background: rgba(0,0,0,0.3); border: 1px solid #444; color: #fff; font-weight: bold; text-align: center; border-radius: 4px; padding: 4px; font-size: 1em;" inputmode="numeric">
+                                            </div>
+                                            
+                                            <div style="width: 100%; display: flex; align-items: center; gap: 5px; margin-top: 2px;">
+                                                ${prBadge} ${ormText}
+                                            </div>
+                                        </div>
+                                        <button onclick="window.TrainingUI.removeSet('${ex.id}', ${i})" style="background: transparent; border: none; color: #ff4444; font-size: 1.4em; cursor: pointer; padding-left: 10px;">&times;</button>
                                     </div>
                                 `;
                             }).join('');

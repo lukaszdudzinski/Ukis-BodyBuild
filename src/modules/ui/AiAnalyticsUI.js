@@ -235,7 +235,7 @@ export const AiAnalyticsUI = {
         try { parsedContent = marked.parse(analysis.content); } catch(e) {}
         modal.innerHTML = '<div style="background:#111; border-bottom:1px solid rgba(255,152,0,0.3); padding:16px 20px; display:flex; justify-content:space-between; align-items:center; flex-shrink:0;">'
             + '<div><div style="color:#FF9800; font-weight:bold;">' + typeLabel + '</div><div style="color:#888; font-size:0.8em; margin-top:2px;">' + dateStr + '</div></div>'
-            + '<button id="ai-report-close" style="background:rgba(255,255,255,0.1); border:none; color:#fff; width:38px; height:38px; border-radius:50%; font-size:1.4em; cursor:pointer;">x</button>'
+            + '<button id="ai-report-close" style="background:rgba(255,255,255,0.1); border:none; color:#fff; width:38px; height:38px; border-radius:50%; font-size:1.4em; cursor:pointer; display:flex; align-items:center; justify-content:center;">&times;</button>'
             + '</div>'
             + '<div style="flex:1; overflow-y:auto; padding:20px 16px; -webkit-overflow-scrolling:touch;">'
             + '<div style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08); border-radius:10px; padding:20px; color:#eee; line-height:1.75; font-size:0.95em; max-width:700px; margin:0 auto;">'

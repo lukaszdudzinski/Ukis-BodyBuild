@@ -31,7 +31,7 @@ export const TrainingComponent = {
 
                     <div id="day-action-empty-state">
                         <button id="start-new-session-btn" class="action-button pulse" style="width: 100%; margin-bottom: 10px; background-color: rgba(0, 191, 255, 0.2); border-color: #00BFFF; color: #00BFFF;">➕ Dodaj nową sesję treningową</button>
-                        <button id="load-template-session-btn" class="action-button" style="width: 100%; margin-bottom: 10px; background-color: rgba(255, 152, 0, 0.2); border-color: #FF9800; color: #FF9800;">📄 Załaduj z szablonu</button>
+                        <button id="load-template-session-btn" class="action-button" style="width: 100%; margin-bottom: 10px; background-color: rgba(255, 152, 0, 0.2); border-color: #FF9800; color: #FF9800;">📄 Załaduj Plan Treningowy</button>
                         <div id="history-sessions-list" style="margin-top: 15px;">
                             <h5 style="color: #ccc; margin-bottom: 10px;">📋 Skopiuj sesję treningową:</h5>
                             <!-- Populated with recent sessions -->
@@ -128,8 +128,11 @@ export const TrainingComponent = {
                 </div>
 
                 <div class="form-full-width" style="margin-top: 30px;">
-                    <button type="button" id="save-as-template-btn" class="action-button" style="width: 100%; margin-bottom: 10px; background-color: rgba(156, 39, 176, 0.2); border-color: #9c27b0; color: #e1bee7;">💾 Zapisz jako Szablon</button>
-                    <button type="button" id="pause-training-btn" class="action-button" style="width: 100%; margin-bottom: 10px; background-color: #f39c12; border-color: #f39c12; color: #fff;">⏸ Pauza</button>
+                    <button type="button" id="save-as-template-btn" class="action-button" style="width: 100%; margin-bottom: 10px; background-color: rgba(156, 39, 176, 0.2); border-color: #9c27b0; color: #e1bee7;">💾 Zapisz jako Plan Treningowy</button>
+                    <div style="display: flex; gap: 10px; margin-bottom: 10px;">
+                        <button type="button" id="pause-training-btn" class="action-button" style="flex: 1; background-color: #f39c12; border-color: #f39c12; color: #fff;">⏸ Pauza</button>
+                        <button type="button" id="cancel-training-btn" class="action-button" style="flex: 1; background-color: rgba(231, 76, 60, 0.2); border-color: #E74C3C; color: #E74C3C;">❌ Anuluj</button>
+                    </div>
                     <button type="button" id="finish-training-btn" class="action-button" style="width: 100%; background-color: #ff4444; border-color: #ff4444;">⏹ Zakończ Trening</button>
                 </div>
             </div>

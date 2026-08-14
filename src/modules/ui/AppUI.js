@@ -1,4 +1,4 @@
-export const APP_VERSION = 'v2026.8.14.03'; // Faza 5.2: Landing Page & PWA Standalone Mode
+export const APP_VERSION = 'v2026.8.14.04'; // Faza 5.2: Landing Page & PWA Standalone Mode
 
 // Obsługa błędów globalnych — zdefiniowana w main.js (klucz: uki_error_logs)
 

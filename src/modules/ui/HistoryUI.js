@@ -64,6 +64,13 @@ export const HistoryUI = {
             </div>
         `;
         for (const [monthYear, monthRecords] of Object.entries(grouped)) {
+            let templates = [];
+            try {
+                const tmp = localStorage.getItem('uki_workout_templates');
+                if (tmp) templates = JSON.parse(tmp);
+            } catch(e) {}
+            const templateNames = templates.map(t => (t.name || '').toLowerCase().trim());
+
             html += `
                 <div style="margin-bottom: 25px;">
                     <h3 style="color: #fff; border-bottom: 2px solid #00BFFF; padding-bottom: 5px; margin-bottom: 15px; text-transform: capitalize;">${monthYear}</h3>
@@ -78,11 +85,14 @@ export const HistoryUI = {
 
                 const cardId = `history-card-${monthYear.replace(/\s/g, '-')}-${idx}`;
 
+                const isTemplate = rec.name && templateNames.includes(rec.name.toLowerCase().trim());
+                const titleIcon = isTemplate ? '⭐' : '🏋️';
+
                 html += `
                     <div class="log-card" style="background: rgba(0,0,0,0.4); border: 1px solid rgba(0, 191, 255, 0.4); padding: 15px; border-radius: 8px; margin-bottom: 15px;">
                         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; cursor: pointer;" onclick="document.getElementById('${cardId}').style.display = document.getElementById('${cardId}').style.display === 'none' ? 'block' : 'none'">
                             <div>
-                                <strong style="color: #00BFFF; font-size: 1.1em;">🏋️ ${rec.date} ${rec.name ? ' - ' + rec.name : ''}</strong><br>
+                                <strong style="color: #00BFFF; font-size: 1.1em;">${titleIcon} ${rec.date} ${rec.name ? ' - ' + rec.name : ''}</strong><br>
                                 <span style="color: #aaa; font-size: 0.85em;">${rec.exercises.length} ćwiczeń | ${totalVolume} kg</span>
                             </div>
                             <span style="color: #00BFFF; font-size: 1.2em;">▼</span>

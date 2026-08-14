@@ -1,5 +1,21 @@
 [
   {
+    "version": "v2026.8.14.04",
+    "date": "2026-08-14",
+    "changes": [
+      "✨ NOWOŚĆ: Przebudowano Szablony Treningowe na Plany Treningowe z edycją ćwiczeń w locie (Checkboxy).",
+      "🤖 Trener Edward po szkoleniu! Oferuje teraz głębszą, profesjonalną analizę medyczną z uwzględnieniem objętości i splitu.",
+      "🚨 HOTFIX: Wymuszona aktualizacja naprawiająca zaciętą pętlę ekranu nowości PWA (Problem wersji .03 rozwiązywany bezwzględnie)."
+    ]
+  },
+  {
+    "version": "v2026.8.14.03",
+    "date": "2026-08-14",
+    "changes": [
+      "🚨 HOTFIX: Poprawa obsługi błędów 429 dla Trenera Edwarda (Komunikaty o limitach API)."
+    ]
+  },
+  {
     "version": "v2026.8.14.02",
     "date": "2026-08-14",
     "changes": [

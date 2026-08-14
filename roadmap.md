@@ -1,58 +1,50 @@
-# Uki's BodyBuild - Roadmapa Projektu
+# Roadmapa Projektu - Uki's BodyBuild
 
-Dokument ten jest głównym źródłem prawdy o zaplanowanych funkcjach biznesowych i kierunku rozwoju aplikacji. Zawiera historię wykonanych faz oraz plany na przyszłe etapy.
+Ten dokument służy jako główne źródło prawdy dla wszystkich planów biznesowych, pomysłów, i przyszłych funkcjonalności aplikacji Uki's BodyBuild. Dokument ten jest dzielony pomiędzy wszystkie sesje AI, aby nie utracić kontekstu.
 
-## Wykonane Fazy
+## Faza Aktualna (W trakcie wdrażania)
 
-### Faza 1: Stabilność zapisu i bezpieczeństwo danych (ZAKOŃCZONE)
-- [x] Naprawa błędów zapisu z Dropsetami i Superseriami.
-- [x] Wdrożenie funkcji "Auto-Save" (Brudnopis), by chronić niezapisany trening.
+### 1. Przebudowa Modułu Treningowego (Plany i Edycja Inline)
+- **Cel:** Przekształcenie "Szablonów" w pełnoprawne "Plany Treningowe", które ułatwiają codzienny trening.
+- **Funkcjonalności:**
+  - Zmiana nazewnictwa w UI z "Szablony" na "Plany Treningowe".
+  - **Edycja Inline i Checkboxy:** Po wczytaniu planu treningowego, wszystkie ćwiczenia, serie, ciężary i powtórzenia z ostatniego razu zostają skopiowane na ekran główny treningu. Użytkownik widzi je od razu rozwinięte z gotowymi polami (Ciężar x Powtórzenia).
+  - Obok każdej serii znajduje się **Checkbox**. Zaznaczenie checkboxa oznacza wykonanie serii (podświetlenie na zielono/zgaszenie na szaro). 
+  - Jeśli użytkownik chce zmienić ciężar lub liczbę powtórzeń w trakcie treningu, po prostu edytuje cyferki w polach tekstowych serii obok checkboxa, zamiast usuwać całą serię i dodawać nową.
+  - Odróżnienie w Historii: Treningi, które są zapisane jako wzór Planu Treningowego, będą miały w Historii specjalną ikonkę (⭐ / 🏋️), co ułatwi ich znalezienie.
+  - **Anulowanie Treningu:** Przycisk na dole trwającego treningu (obok Pauzy/Zakończ) pozwalający zrezygnować z rozpoczętej sesji (czyści brudnopis po potwierdzeniu w okienku modalnym).
 
-### Faza 2: Modułowość Treningów i Smartwatch (ZAKOŃCZONE)
-- [x] Wprowadzenie trzech typów treningu: Siłowy, Cardio, Zajęcia Zorganizowane.
-- [x] Słownik zajęć zorganizowanych (Tabata, HYROX itp.).
-- [x] Dodanie ręcznego wpisywania kalorii i tętna ze smartwatcha.
+### 2. Profesjonalny Asystent AI (Trener Edward)
+- **Cel:** Zmiana tonu wypowiedzi z czysto humorystycznego na ekspercki, merytoryczny i analityczny.
+- **Funkcjonalności:**
+  - Zmiana Promptu systemowego: Trener analizuje objętość (liczba serii na partię mięśniową), tonaż całkowity i ewentualne sygnały przetrenowania.
+  - Ocena doboru ćwiczeń (Split) oraz podsumowanie czasu regeneracji (sen, dni wolne).
 
-### Faza 3: Zaawansowana Analityka i Atlas Mięśni (ZAKOŃCZONE)
-- [x] Szablony Treningowe (Zapisz / Załaduj plan).
-- [x] Inteligentny system śledzenia 1RM (Personal Records).
-- [x] Mapa Ciała (Atlas Mięśni) wskazująca zmęczenie danych partii.
-- [x] Separacja funkcji diagnostycznych do kafelka "Diagnostyka".
-
-### Faza 4: Wdrożenie AI - Trener Edward (ZAKOŃCZONE)
-- [x] Kalkulator Dietetyczny ze zdjęcia posiłku (Cloudflare Worker).
-- [x] System "Onboarding Tour" wprowadzający nowych użytkowników.
-- [x] Analiza 7-dniowa i 30-dniowa generowana przez AI.
-- [x] Architektura Modułowa (refaktor plików na ES6).
-
-### Faza 4.5: Łatanie, Stabilizacja i E2E (ZAKOŃCZONE)
-- [x] Solidne przetestowanie środowiska narzędziem Playwright.
-- [x] Poprawki UI: naprawa kalendarza, ujednolicenie czcionek.
-- [x] Naprawienie ukrytego błędu "DietAI" przy pustych promtach tekstowych.
+### 3. Stabilizacja PWA
+- **Cel:** Wyeliminowanie błędu, gdzie aplikacja po aktualizacji do nowszej wersji wciąż sugeruje instalację starszej. (Rozwiązane poprzez stałą synchronizację pliku CHANGELOG.json i usprawnienie `pwa-updater.js`).
 
 ---
 
-## 🛠️ Obecna Faza: Faza 5 - Społeczność, Orkiestracja i Udostępnianie (W TRAKCIE)
+## Faza Przyszła (Planowane)
 
-Głównym celem Fazy 5 jest rozbudowa funkcji "Social" w aplikacji, by użytkownicy mogli łatwo chwalić się wynikami w internecie oraz wymieniać się planami treningowymi między sobą. To w tej fazie wdrożymy również sub-agenta do testów.
+### 4. Zaawansowane Zarządzanie Planami Treningowymi i Kalendarz
+- **Cel:** Grupowanie treningów w wielodniowe programy i planowanie ich w czasie.
+- **Scenariusz Biznesowy:** 
+  - Użytkownik tworzy folder "Plan Masa Uki 1". W nim umieszcza "Sesja 1 (Klatka, Triceps)", "Sesja 2 (Plecy, Biceps)", "Sesja 3 (Nogi, Barki)".
+  - Do każdego planu można dodać reprezentacyjne zdjęcie w tle.
+  - **Kalendarz:** Użytkownik przypisuje Sesje do dni tygodnia (np. Sesja 1 -> Poniedziałek, Sesja 2 -> Środa). W głównym kalendarzu aplikacji pojawiają się pomarańczowe kropki dla zaplanowanych dni. Kropki zmieniają kolor na niebieski/zielony po zrealizowaniu treningu.
+  
+### 5. Monetyzacja ("Postaw Kawę") i Obejście Limitów API AI
+- **Cel:** Limit zapytań AI (błąd 429 quota exceeded) staje się płatną barierą dla intensywnie korzystających użytkowników.
+- **Scenariusz Biznesowy:**
+  - Wersja darmowa korzysta ze wspólnego, darmowego klucza API Gemini (z nałożonymi limitami).
+  - W aplikacji istnieje sekcja "Postaw Kawę na 30 dni".
+  - Użytkownik wspiera twórców w serwisie zewnętrznym, a w zamian dostaje wygenerowane **Hasło Premium**.
+  - Wpisuje Hasło w profilu, co daje mu nielimitowany lub wyższy dostęp na wybrany okres (np. używając komercyjnego klucza API zaszytego w Cloudflare Workerze).
+  - Backend (Cloudflare Worker) weryfikuje to hasło i w przypadku zgodności, realizuje zapytania AI bez irytujących limitów.
 
-1. **Udostępnianie Graficzne Treningu (Zrzuty)**
-   - Aktualnie system generuje tylko suchy tekst "Paragon Treningowy".
-   - **Cel:** Należy użyć biblioteki takiej jak `html2canvas`, by generować wysokiej jakości render całego rozwinięcia Treningu w pięknej oprawie, gotowej do wstawienia np. na relację na Instagramie.
-
-2. **Pełny Eksport / Import w `.json`**
-   - **Cel:** Użytkownik musi mieć możliwość kliknięcia "Eksportuj", co wygeneruje plik JSON z całym danym treningiem. Kolega na innej maszynie klika "Importuj", ładuje ten sam plik, i od razu zapisuje sobie ten Trening w swojej historii lub jako szablon gotowy do użycia.
-
-3. **Orkiestracja AI (Multi-Agent)**
-   - **Cel:** Budujemy zautomatyzowany flow developerski. Przy każdym skomplikowanym wdrożeniu wywołujemy w tle sub-agenta "Testera", który przejmuje proces odpalania frameworka Playwright i weryfikuje czy nic się nie popsuło.
-
----
-
-## 🔮 Faza 6: Grywalizacja i Dalszy Rozwój AI (PLANOWANE)
-
-1. **Wyzwania Tygodniowe i Miesięczne**
-   - Dodanie "Questów" z nagrodami (odznakami), np. "Zrób trening 4 razy w tym tygodniu", "Spal łącznie 5000 kcal".
-2. **Synchronizacja w Chmurze (Web3 / Firebase)**
-   - Opcjonalne dodanie backendu (np. Firebase), aby zapisywać stany bazy na różnych urządzeniach.
-3. **Inteligentny Asystent Głosowy**
-   - Możliwość gadania do Edwarda na żywo w trakcie treningu (przekształcanie głosu na tekst i dodawanie serii bez użycia rąk!).
+### 6. Modularyzacja Architektury (Refaktoryzacja)
+- **Cel:** Skrócenie głównych plików `index.html` oraz `main.js`.
+- **Działania:** 
+  - Utworzenie `ProfileUI.js`, `SettingsUI.js`.
+  - Przeniesienie wszystkich powtarzających się modalów i systemów logowania błędów do osobnych serwisów (np. `ModalService.js`).
