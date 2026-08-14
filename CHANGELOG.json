@@ -1,5 +1,13 @@
 [
   {
+    "version": "v2026.8.14.17",
+    "date": "2026-08-14",
+    "changes": [
+      "📅 Wprowadzono opcję *Przywracania* odwołanych treningów. Usunięto błąd logiki, przez który odwołany z harmonogramu trening wciąż świecił się na czerwono bez możliwości interakcji.",
+      "📱 Poprawiono szerokość wierszy dla Dropsetów wewnątrz Super-Serii. Słowo *Dropset* zostało zastąpione intuicyjnym *↳ 🔥*, co wraz z redukcją marginesu całkowicie eliminuje problem nie mieszczących się elementów na małych ekranach przy dużej czcionce."
+    ]
+  },
+  {
     "version": "v2026.8.14.16",
     "date": "2026-08-14",
     "changes": [

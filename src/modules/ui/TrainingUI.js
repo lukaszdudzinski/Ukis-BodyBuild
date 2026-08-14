@@ -280,6 +280,17 @@ export const TrainingUI = {
         }
     },
 
+    restorePlannedTraining: (dateStr) => {
+        let exceptions = [];
+        try { exceptions = JSON.parse(localStorage.getItem("uki_schedule_exceptions") || "[]"); } catch(e) {}
+        
+        exceptions = exceptions.filter(e => e.date !== dateStr);
+        
+        localStorage.setItem("uki_schedule_exceptions", JSON.stringify(exceptions));
+        TrainingUI.renderCalendar();
+        TrainingUI.handleDayClick(dateStr);
+    },
+
     skipPlannedTraining: (dateStr, templateId) => {
         let exceptions = [];
         try { exceptions = JSON.parse(localStorage.getItem("uki_schedule_exceptions") || "[]"); } catch(e) {}
@@ -516,13 +527,13 @@ export const TrainingUI = {
             const dateStr = `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
             const dateObj = new Date(currentYear, currentMonth, day);
             const dow = dateObj.getDay();
-            
             const hasTraining = trainingDates.has(dateStr);
             const isToday = dateStr === todayDate;
             const isSelected = dateStr === selectedDate;
             
-            // Harmonogram automatyczny działa tylko od 'dzisiaj' w przód
-            const isPlanned = (dateStr >= todayDate) && schedules.some(s => s.daysOfWeek.includes(dow));
+            // Harmonogram działa dla wybranego dnia
+            const isScheduledDay = schedules.some(s => s.daysOfWeek.includes(dow));
+            const isPlanned = (dateStr >= todayDate) && isScheduledDay;
             const isException = exceptions.some(e => e.date === dateStr && e.status === 'skipped');
             
             let dotHtml = '';
@@ -530,7 +541,7 @@ export const TrainingUI = {
                 dotHtml = '<div class="training-dot" style="background-color: #2ECC71; box-shadow: 0 0 5px #2ECC71;"></div>'; // Green
             } else if (isPlanned && !isException) {
                 dotHtml = '<div class="training-dot" style="background-color: #FF9800; box-shadow: 0 0 5px #FF9800;"></div>'; // Orange (Future/Today planned)
-            } else if (isException) {
+            } else if (isScheduledDay && isException) {
                 dotHtml = '<div class="training-dot" style="background-color: #E74C3C; box-shadow: 0 0 5px #E74C3C;"></div>'; // Red solid (Explicitly Skipped)
             }
 
@@ -596,7 +607,6 @@ export const TrainingUI = {
         if (plannedState) {
             plannedState.style.display = 'none'; // hide by default
             
-            // Check if day is planned
             let schedules = [];
             try { schedules = JSON.parse(localStorage.getItem("uki_workout_schedules") || "[]"); } catch(e) {}
             let exceptions = [];
@@ -607,41 +617,59 @@ export const TrainingUI = {
             const sched = schedules.find(s => s.daysOfWeek.includes(dow));
             const isException = exceptions.some(e => e.date === dateStr && e.status === "skipped");
             
-            if (sched && !isException && existingTrainingsOnDay.length === 0) {
-                isPlanned = true;
-                plannedState.style.display = 'block';
-                
-                // Find template
-                let templates = [];
-                try { templates = JSON.parse(localStorage.getItem("uki_workout_templates") || "[]"); } catch(e) {}
-                const template = templates.find(t => t.id === sched.templateId);
-                const tName = template ? template.name : "Nieznany szablon";
-                const typeLabel = template ? (template.type === "cardio" ? "Cardio" : (template.type === "classes" ? "Zajęcia zorganizowane" : "Trening Siłowy")) : "";
-                
-                if (plannedPreview) {
-                    plannedPreview.innerHTML = `
-                        <div style="background-color: #222; border: 1px solid #FF9800; border-radius: 8px; padding: 15px;">
-                            <strong style="color: #FF9800; font-size: 1.1em;">${tName}</strong><br>
-                            <span style="font-size: 0.9em; color: #aaa;">${typeLabel} ${template && template.exercises ? `| Ćwiczeń: ${template.exercises.length}` : ""}</span>
-                            <div style="margin-top: 10px;">
-                                <button onclick="window.TrainingUI.startFromTemplate(${sched.templateId})" class="action-button pulse" style="width: 100%; background-color: #FF9800; border-color: #FF9800; color: #000; font-weight: bold; padding: 10px;">▶ Rozpocznij ten plan</button>
+            if (sched && existingTrainingsOnDay.length === 0) {
+                if (!isException) {
+                    isPlanned = true;
+                    plannedState.style.display = 'block';
+                    
+                    let templates = [];
+                    try { templates = JSON.parse(localStorage.getItem("uki_workout_templates") || "[]"); } catch(e) {}
+                    const template = templates.find(t => t.id === sched.templateId);
+                    const tName = template ? template.name : "Nieznany szablon";
+                    const typeLabel = template ? (template.type === "cardio" ? "Cardio" : (template.type === "classes" ? "Zajęcia zorganizowane" : "Trening Siłowy")) : "";
+                    
+                    if (plannedPreview) {
+                        plannedPreview.innerHTML = `
+                            <div style="background-color: #222; border: 1px solid #FF9800; border-radius: 8px; padding: 15px;">
+                                <strong style="color: #FF9800; font-size: 1.1em;">${tName}</strong><br>
+                                <span style="font-size: 0.9em; color: #aaa;">${typeLabel} ${template && template.exercises ? `| Ćwiczeń: ${template.exercises.length}` : ""}</span>
+                                <div style="margin-top: 10px;">
+                                    <button onclick="window.TrainingUI.startFromTemplate(${sched.templateId})" class="action-button pulse" style="width: 100%; background-color: #FF9800; border-color: #FF9800; color: #000; font-weight: bold; padding: 10px;">▶ Rozpocznij ten plan</button>
+                                </div>
                             </div>
-                        </div>
-                    `;
-                }
-                
-                if (postponeBtn) {
-                    postponeBtn.onclick = () => {
-                        window.TrainingUI.skipPlannedTraining(dateStr, sched.templateId);
-                        alert("Trening dzisiejszy przełożony. Jutro musisz go wywołać ręcznie z kalendarza lub szablonów.");
-                        TrainingUI.handleDayClick(dateStr);
-                    };
-                }
-                if (cancelPlannedBtn) {
-                    cancelPlannedBtn.onclick = () => {
-                        window.TrainingUI.skipPlannedTraining(dateStr, sched.templateId);
-                        TrainingUI.handleDayClick(dateStr);
-                    };
+                        `;
+                    }
+                    if (postponeBtn) {
+                        postponeBtn.style.display = 'block';
+                        postponeBtn.onclick = () => {
+                            window.TrainingUI.skipPlannedTraining(dateStr, sched.templateId);
+                            alert("Trening dzisiejszy przełożony. Jutro musisz go wywołać ręcznie z kalendarza lub szablonów.");
+                            TrainingUI.handleDayClick(dateStr);
+                        };
+                    }
+                    if (cancelPlannedBtn) {
+                        cancelPlannedBtn.style.display = 'block';
+                        cancelPlannedBtn.onclick = () => {
+                            window.TrainingUI.skipPlannedTraining(dateStr, sched.templateId);
+                            TrainingUI.handleDayClick(dateStr);
+                        };
+                    }
+                } else {
+                    // Odwołany trening
+                    plannedState.style.display = 'block';
+                    if (plannedPreview) {
+                        plannedPreview.innerHTML = `
+                            <div style="background-color: rgba(231, 76, 60, 0.1); border: 1px dashed #E74C3C; border-radius: 8px; padding: 15px;">
+                                <strong style="color: #E74C3C; font-size: 1.1em;">Trening odwołany</strong><br>
+                                <span style="font-size: 0.9em; color: #aaa;">Ten dzień został celowo pominięty z harmonogramu.</span>
+                                <div style="margin-top: 10px;">
+                                    <button onclick="window.TrainingUI.restorePlannedTraining('${dateStr}')" class="action-button" style="width: 100%; background-color: transparent; border: 1px solid #E74C3C; color: #E74C3C; padding: 10px;">Przywróć trening na dziś</button>
+                                </div>
+                            </div>
+                        `;
+                    }
+                    if (postponeBtn) postponeBtn.style.display = 'none';
+                    if (cancelPlannedBtn) cancelPlannedBtn.style.display = 'none';
                 }
             }
         }
@@ -1223,8 +1251,8 @@ export const TrainingUI = {
                             return (ex.sets || []).map((set, i) => {
                                 const isDropset = set.type === 'dropset';
                                 if (!isDropset) seriesCount++;
-                                const style = isDropset ? 'padding: 6px 0 6px 20px; border-bottom: 1px dashed rgba(255,152,0,0.3); font-size: 0.95em; color: #ccc; border-left: 3px solid #FF9800;' : 'padding: 8px 0; border-bottom: 1px solid rgba(0,191,255,0.2); font-size: 1em;';
-                                const prefix = isDropset ? '↳ 🔥 Dropset:' : `Seria ${seriesCount}:`;
+                                const style = isDropset ? 'padding: 6px 0 6px 4px; border-bottom: 1px dashed rgba(255,152,0,0.3); font-size: 0.95em; color: #ccc; border-left: 3px solid #FF9800;' : 'padding: 8px 0; border-bottom: 1px solid rgba(0,191,255,0.2); font-size: 1em;';
+                                const prefix = isDropset ? '↳ 🔥' : `Seria ${seriesCount}:`;
                                 
                                 let prBadge = '';
                                 let ormText = '';
