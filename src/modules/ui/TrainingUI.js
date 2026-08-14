@@ -717,7 +717,7 @@ export const TrainingUI = {
                     <div style="color: #fff; font-weight: bold; margin-bottom: 5px;">${i+1}. ${ex.name || 'Nieznane ćwiczenie'}</div>
                     <div style="padding-left: 10px; border-left: 2px solid #00BFFF;">
                         ${(!ex.sets || ex.sets.length === 0) ? '<em style="color: #777;">Brak serii</em>' : ''}
-                        ${(ex.sets || []).map((set, sIdx) => \`<div>Seria \${sIdx + 1}: \${set.weight} kg x \${set.reps} powt.</div>\`).join('')}
+                        ${(ex.sets || []).map((set, sIdx) => `<div>Seria ${sIdx + 1}: ${set.weight} kg x ${set.reps} powt.</div>`).join('')}
                     </div>
                 </div>
             `;

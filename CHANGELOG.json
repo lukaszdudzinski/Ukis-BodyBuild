@@ -1,5 +1,12 @@
 [
   {
+    "version": "v2026.8.14.07",
+    "date": "2026-08-14",
+    "changes": [
+      "🛠️ Hotfix: Szybka naprawa krytycznego błędu (tzw. zawieszenie na Loading), który wdarł się do najnowszego modułu treningowego. Teraz wszystko znowu śmiga płynnie! Przepraszamy za usterkę."
+    ]
+  },
+  {
     "version": "v2026.8.14.06",
     "date": "2026-08-14",
     "changes": [
@@ -569,4 +576,4 @@
       "Zoptymalizowano proces ładowania danych w historii pomiarów."
     ]
   }
-]
+]\n
