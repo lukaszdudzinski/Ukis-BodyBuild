@@ -10,8 +10,14 @@
 6. **Rejestr Konwersacji (Wewnętrzna Jira)**: Na koniec każdej fazy/konwersacji Agent MUSI uaktualnić plik `.agents/CONVERSATIONS_JIRA.md`, dopisując ID swojej konwersacji oraz zwięzłe podsumowanie wykonanych prac i wdrożonych założeń. Po uaktualnieniu Jiry, Agent musi przygotować "paczkę informacyjną" (prompt przekazania) dla następnego Agenta, zawierającą m.in. ID właśnie zakończonej konwersacji, aby zachować ciągłość prac na Roadmapie.
 
 ## Prace zrealizowane w najnowszych iteracjach (do v.2026.8.14.06 - Koniec Fazy 5.2):
-- **Eksport/Import JSON**: Zbudowano system pozwalający przekazać swój trening innej osobie oraz wyeksportować całą bazę dla bezpieczeństwa (naprawiono błąd exportDatabase w Diagnostyce).
-- **AiAnalyticsEngine (Trener Edward)**: Naprawiono błędy limitów 429 (Quota Exceeded) by wyświetlać przyjazne komunikaty. Zintegrowano "Staż Treningowy" z Profilem (aby prompt AI był celniejszy). Dodano opcję pobierania raportów analizy jako plik `.txt`. Ustawiono sztywną regułę dla AI, by plany naprawcze generowane były "w punktach".
+- **Trener Edward & AI Analytics (v2026.8.14.13)**: 
+  - Wdrożono pełny wywiad przed każdą analizą (sen, staż treningowy, cel sylwetkowy).
+  - Silnik AI przekazuje do promptu pełne makroskładniki (Białko, Węglowodany, Tłuszcze, Kalorie ze szczegółami każdego posiłku).
+  - Wprowadzono 1-klikowy import zaproponowanego treningu z raportu do Szablonów Planów Treningowych.
+  - Oczyszczono komunikację Trenera Edwarda z wulgaryzmów – obowiązuje ton profesjonalny, motywujący i z lekkim sportowym humorem.
+- **Formularz Treningu (UX / Wiersz Serii)**:
+  - Wprowadzono perfekcyjne wyśrodkowanie w pionie dla Checkboxa, pól wpisywania ciężaru/powtórzeń oraz przycisku usunięcia.
+  - Zbalansowano kafelki szablonów i przyciski akcji (równe 50%/50% dla Wybierz i Usuń).
 - **Szablony Treningowe -> Plany Treningowe**: Dodano opcję zapisywania odbytych treningów prosto z historii jako nowe Szablony ('Zapisz jako plan treningowy').
 - **UX i Interfejs**: Powiększono czcionki i inputy (`.training-input-large`) w aktywnym treningu dla lepszej czytelności podczas ćwiczeń (jak prosił użytkownik).
 - **Podgląd Historii**: Dodano wygodny przycisk 'Podgląd' (Modal window) przy odbytych treningach w kalendarzu, by podejrzeć parametry bez wchodzenia w szczegółowy widok historii.
