@@ -1,4 +1,4 @@
-const CACHE_NAME = 'ukis-bodybuild-v2026.8.14.05';
+const CACHE_NAME = 'ukis-bodybuild-v2026.8.14.06';
 // Core assets that MUST be cached immediately
 const CORE_ASSETS = [
     './',

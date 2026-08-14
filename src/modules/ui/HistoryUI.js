@@ -126,6 +126,9 @@ export const HistoryUI = {
                             <button onclick="window.HistoryUI.exportTraining('${rec.id}')" class="action-button" style="background-color: #FF9800; border-color: #FF9800; color: black; width: 100%; margin-top: 10px;">
                                 💾 Eksportuj (Dla znajomych)
                             </button>
+                            <button onclick="window.HistoryUI.saveAsTemplateFromHistory('${rec.id}')" class="action-button" style="background-color: #2ECC71; border-color: #2ECC71; color: white; width: 100%; margin-top: 10px;">
+                                📝 Zapisz jako plan treningowy
+                            </button>
                         </div>
                     </div>
                 `;
@@ -135,6 +138,39 @@ export const HistoryUI = {
         }
         
         container.innerHTML = html;
+    },
+
+    saveAsTemplateFromHistory: (trainingId) => {
+        const records = window._cachedTrainingsHistory || [];
+        const rec = records.find(r => String(r.id) === String(trainingId));
+        if (!rec) {
+            alert("Nie znaleziono treningu.");
+            return;
+        }
+
+        const templateName = prompt("Podaj nazwę dla nowego Planu Treningowego (np. 'Z historii: Klatka'):", `Z planu: ${rec.name || rec.date}`);
+        if (!templateName || templateName.trim() === '') return;
+
+        const template = {
+            id: Date.now(),
+            name: templateName.trim(),
+            type: rec.type || 'strength',
+            exercises: JSON.parse(JSON.stringify(rec.exercises)).map(ex => {
+                const newEx = { ...ex, cardioInterval: null };
+                return newEx;
+            })
+        };
+
+        let templates = [];
+        try {
+            const tmps = localStorage.getItem('uki_workout_templates');
+            if (tmps) templates = JSON.parse(tmps);
+        } catch(e) {}
+        
+        templates.push(template);
+        localStorage.setItem('uki_workout_templates', JSON.stringify(templates));
+        alert(`Plan Treningowy "${template.name}" został zapisany!`);
+        HistoryUI.loadHistory(); // Odśwież widok by zaktualizować ikony gwiazdek
     },
 
     shareTraining: async (trainingId) => {

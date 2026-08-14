@@ -40,6 +40,7 @@ window.AiAnalyticsUI = AiAnalyticsUI;
 // Initialize Application
 const initApp = () => {
     console.log("Starting App Initialization...");
+    ChangelogUI.init();
     AppUI.init();
     MeasurementsUI.init();
     TrainingUI.init();
@@ -50,7 +51,6 @@ const initApp = () => {
     DietUI.init();
     OnboardingUI.init();
     ChatUI.init();
-    ChangelogUI.init();
     DiagnosticsUI.init();
 
     // AI Analytics — renders on tab open

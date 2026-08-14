@@ -1,5 +1,18 @@
 # Rejestr Konwersacji (Wewnętrzna Jira)
 
+## Konwersacja (Obecna): 10b60446-8dba-4bf9-847f-283850fa05a5
+- **Temat**: ROADMAPA - Faza 5.2: Nowe funkcje Historii, Profilu i Trenera Edwarda.
+- **Kluczowe Zmiany (Zakończone)**:
+  - Naprawiono eksport danych (metoda `exportDatabase`) z poziomu panelu Diagnostyki.
+  - Wyeliminowano błędy wyczerpania limitu (Quota / 429) w AiAnalyticsEngine oraz DietAIEngine.
+  - Zaimplementowano powiększone czcionki (Large Input) dla pól "kg" i "powt" podczas wprowadzania serii na ekranie treningu.
+  - W kalendarzu przy zakończonych treningach dodano opcję "🔍 Podgląd", wyświetlającą szczegółowy Modal bez ruszania aktywnego trybu treningu.
+  - Dodano możliwość zapisu wcześniejszego treningu z Historii jako szablon ("📝 Zapisz jako plan treningowy").
+  - Rozbudowano Profil Użytkownika o wybór "Stażu Treningowego", który trafia wprost do promptów Trenera Edwarda.
+  - Raporty analiz wygenerowane przez Trenera Edwarda otrzymały funkcję pobierania do dysku ("💾 TXT").
+  - Zaktualizowano `CHANGELOG.json` wprowadzając obiecane bogate opisy dla `v2026.8.14.06`.
+- **Wytyczne Customizacji (Dla kolejnego Agenta / Użytkownika)**:
+  - Zgodnie z systemem **Antigravity Customization System** (szczegóły w `agy-customizations`), można dodawać własne sztywne wytyczne co do zachowania. Projekt ma już folder `.agents/rules/` i polecamy wpisać wymagania o bogatym opisie aktualizacji do `.agents/rules/core_imperative.md`.
 ## Konwersacja (Obecna): 347c3dc8-6407-44a6-a907-9375ef41b290
 - **Temat**: ROADMAPA - Faza 4.6: Profesjonalizacja AI (Trener Edward), Szablony Treningowe, Checkboxy i Kopia Zapasowa.
 - **Kluczowe Zmiany (Zakończone)**:

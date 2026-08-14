@@ -1,4 +1,4 @@
-export const APP_VERSION = 'v2026.8.14.05'; // Faza 5.2: Landing Page & PWA Standalone Mode
+export const APP_VERSION = 'v2026.8.14.06'; // Faza 5.2: Landing Page & PWA Standalone Mode
 
 // Obsługa błędów globalnych — zdefiniowana w main.js (klucz: uki_error_logs)
 
@@ -33,7 +33,7 @@ export const AppUI = {
                     if (!compareVersion && 'caches' in window) {
                         try {
                             const cacheNames = await caches.keys();
-                            const ukiCaches = cacheNames.filter(c => c.startsWith('ukis-bodybuild-v.'));
+                            const ukiCaches = cacheNames.filter(c => c.startsWith('ukis-bodybuild-v'));
                             if (ukiCaches.length > 0) {
                                 const oldVersions = ukiCaches
                                     .map(c => c.replace('ukis-bodybuild-', ''))

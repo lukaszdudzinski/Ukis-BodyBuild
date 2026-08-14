@@ -31,11 +31,27 @@ export const DietAIEngine = {
                 if (errorDataRaw.includes("exceeded your current quota") || errorDataRaw.includes("Quota exceeded") || response.status === 429) {
                     throw new Error("Darmowy limit zapytań AI został wyczerpany na dziś. Wróć i spróbuj ponownie jutro!");
                 }
-                const errorData = JSON.parse(errorDataRaw);
-                throw new Error(errorData.error || "Wystąpił błąd podczas analizy obrazu przez serwer.");
+                let errorData;
+                try {
+                    errorData = JSON.parse(errorDataRaw);
+                } catch(e) {
+                    throw new Error(errorDataRaw || "Wystąpił nieznany błąd podczas analizy obrazu przez serwer.");
+                }
+                const errStr = errorData.error || "";
+                if (errStr.includes("exceeded your current quota") || errStr.includes("Quota exceeded")) {
+                    throw new Error("Darmowy limit zapytań AI został wyczerpany na dziś. Wróć i spróbuj ponownie jutro!");
+                }
+                throw new Error(errStr || "Wystąpił błąd podczas analizy obrazu przez serwer.");
             }
 
             const data = await response.json();
+            
+            if (data.error) {
+                if (data.error.includes("exceeded your current quota") || data.error.includes("Quota exceeded")) {
+                    throw new Error("Darmowy limit zapytań AI został wyczerpany na dziś. Wróć i spróbuj ponownie jutro!");
+                }
+                throw new Error(data.error);
+            }
             
             // Weryfikacja czy serwer zwrócił poprawne dane JSON
             if (!data.food_name || typeof data.calories === 'undefined') {

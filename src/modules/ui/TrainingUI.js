@@ -473,6 +473,7 @@ export const TrainingUI = {
                             <span style="font-size: 0.9em;">Czas treningu: ${TrainingUI.formatTime(existingTraining.duration_seconds)}</span><br>
                             <span style="font-size: 0.8em; color: #888;">Liczba ćwiczeń: ${existingTraining.exercises.length}</span>
                             <div style="margin-top: 10px; display: flex; gap: 8px;">
+                                <button onclick="window.TrainingUI.viewTraining(${existingTraining.id})" class="action-button" style="flex: 1; background-color: #3498db; border-color: #3498db; color: #fff; font-size: 0.9em; padding: 8px;">🔍 Podgląd</button>
                                 <button onclick="window.TrainingUI.continueTraining(${existingTraining.id})" class="action-button pulse" style="flex: 1; background-color: #2ECC71; border-color: #2ECC71; color: #fff; font-size: 0.9em; padding: 8px;">▶ Kontynuuj</button>
                                 <button onclick="window.TrainingUI.deleteTraining(${existingTraining.id})" class="action-button" style="flex: 1; background-color: rgba(231, 76, 60, 0.1); border-color: rgba(231, 76, 60, 0.3); color: #E74C3C; font-size: 0.9em; padding: 8px;">🗑 Usuń</button>
                             </div>
@@ -689,6 +690,47 @@ export const TrainingUI = {
 
         TrainingUI.renderCurrentExercises();
         currentTraining.timerInterval = setInterval(TrainingUI.updateTimer, 1000);
+    },
+
+    viewTraining: (trainingId) => {
+        const rec = allTrainingsCache.find(t => t.id === trainingId);
+        if (!rec) return;
+        
+        let html = `
+            <div id="view-modal-overlay" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 10000; display: flex; justify-content: center; align-items: center; padding: 20px; box-sizing: border-box;">
+                <div style="background: #222; border: 1px solid #3498db; border-radius: 12px; width: 100%; max-width: 500px; max-height: 80vh; overflow-y: auto; padding: 20px; color: #fff;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 10px;">
+                        <h3 style="color: #3498db; margin: 0;">Podgląd Treningu</h3>
+                        <button onclick="document.getElementById('view-modal-overlay').remove()" style="background: transparent; border: none; color: #fff; font-size: 1.5em; cursor: pointer;">&times;</button>
+                    </div>
+                    <div style="margin-bottom: 15px;">
+                        <strong style="color: #00BFFF; font-size: 1.2em;">${rec.date} ${rec.name ? ' - ' + rec.name : ''}</strong><br>
+                        <span style="color: #aaa; font-size: 0.9em;">Czas trwania: ${TrainingUI.formatTime(rec.duration_seconds)}</span><br>
+                        <span style="color: #aaa; font-size: 0.9em;">Ćwiczeń: ${rec.exercises.length}</span>
+                    </div>
+                    <h4 style="color: #00BFFF; margin-bottom: 10px;">Zapisane ćwiczenia:</h4>
+        `;
+        
+        rec.exercises.forEach((ex, i) => {
+            html += `
+                <div style="margin-bottom: 10px; padding: 10px; background: rgba(255,255,255,0.05); border-radius: 5px;">
+                    <div style="color: #fff; font-weight: bold; margin-bottom: 5px;">${i+1}. ${ex.name || 'Nieznane ćwiczenie'}</div>
+                    <div style="padding-left: 10px; border-left: 2px solid #00BFFF;">
+                        ${(!ex.sets || ex.sets.length === 0) ? '<em style="color: #777;">Brak serii</em>' : ''}
+                        ${(ex.sets || []).map((set, sIdx) => \`<div>Seria \${sIdx + 1}: \${set.weight} kg x \${set.reps} powt.</div>\`).join('')}
+                    </div>
+                </div>
+            `;
+        });
+
+        html += `
+                    <button onclick="document.getElementById('view-modal-overlay').remove()" class="action-button" style="width: 100%; margin-top: 20px; background: #555; border-color: #555; color: #fff;">Zamknij</button>
+                </div>
+            </div>
+        `;
+        const existingModal = document.getElementById('view-modal-overlay');
+        if (existingModal) existingModal.remove();
+        document.body.insertAdjacentHTML('beforeend', html);
     },
 
     startTraining: (copyFromIndex = null) => {
@@ -1016,10 +1058,10 @@ export const TrainingUI = {
                                             <span style="font-size: 0.9em; ${set.isCompleted ? 'opacity: 0.6;' : ''}">${prefix}</span>
                                             
                                             <div style="display: flex; align-items: center; gap: 4px;">
-                                                <input type="number" value="${set.weight}" onchange="window.TrainingUI.updateSetInline('${ex.id}', ${i}, 'weight', this.value)" style="width: 55px; background: rgba(0,0,0,0.3); border: 1px solid #444; color: ${isDropset ? '#FF9800' : '#00BFFF'}; font-weight: bold; text-align: center; border-radius: 4px; padding: 4px; font-size: 1em;" inputmode="decimal"> 
-                                                <span style="font-size: 0.8em; color: #888;">kg</span>
-                                                <span style="color: #666; font-size: 0.9em;">x</span>
-                                                <input type="number" value="${set.reps}" onchange="window.TrainingUI.updateSetInline('${ex.id}', ${i}, 'reps', this.value)" style="width: 50px; background: rgba(0,0,0,0.3); border: 1px solid #444; color: #fff; font-weight: bold; text-align: center; border-radius: 4px; padding: 4px; font-size: 1em;" inputmode="numeric">
+                                                <input type="number" class="training-input-large" value="${set.weight}" onchange="window.TrainingUI.updateSetInline('${ex.id}', ${i}, 'weight', this.value)" style="width: 75px; background: rgba(0,0,0,0.3); border: 1px solid #444; color: ${isDropset ? '#FF9800' : '#00BFFF'}; font-weight: bold; text-align: center; border-radius: 4px; padding: 4px; font-size: 1.2em;" inputmode="decimal"> 
+                                                <span style="font-size: 1.2em; color: #888;">kg</span>
+                                                <span style="color: #666; font-size: 1.2em;">x</span>
+                                                <input type="number" class="training-input-large" value="${set.reps}" onchange="window.TrainingUI.updateSetInline('${ex.id}', ${i}, 'reps', this.value)" style="width: 70px; background: rgba(0,0,0,0.3); border: 1px solid #444; color: #fff; font-weight: bold; text-align: center; border-radius: 4px; padding: 4px; font-size: 1.2em;" inputmode="numeric">
                                             </div>
                                             
                                             <div style="width: 100%; display: flex; align-items: center; gap: 5px; margin-top: 2px;">
@@ -1038,10 +1080,10 @@ export const TrainingUI = {
                             ${(ex.name && ['brzuch', 'brzus', 'podciąg', 'podciag', 'pompk', 'plank', 'deska', 'drąż', 'draz'].some(kw => ex.name.toLowerCase().includes(kw))) ? 
                             `<button onclick="window.TrainingUI.toggleSign('weight-${ex.id}')" style="background: #444; color: #fff; border: none; padding: 12px; border-radius: 4px; font-weight: bold; cursor: pointer; border: 1px solid #666;" title="Zmień ciężar na ujemny (odciążenie z gum)">+/-</button>` 
                             : ''}
-                            <input type="${(ex.name && ['brzuch', 'brzus', 'podciąg', 'podciag', 'pompk', 'plank', 'deska', 'drąż', 'draz'].some(kw => ex.name.toLowerCase().includes(kw))) ? 'text' : 'number'}" id="weight-${ex.id}" placeholder="kg" style="flex: 1; min-width: 40px; padding: 12px; border-radius: 4px; border: 1px solid #444; background: #222; color: #fff; font-size: 1.25em; text-align: center; box-sizing: border-box;" inputmode="decimal">
+                            <input type="${(ex.name && ['brzuch', 'brzus', 'podciąg', 'podciag', 'pompk', 'plank', 'deska', 'drąż', 'draz'].some(kw => ex.name.toLowerCase().includes(kw))) ? 'text' : 'number'}" id="weight-${ex.id}" class="training-input-large" placeholder="kg" style="flex: 1; min-width: 40px; padding: 12px; border-radius: 4px; border: 1px solid #444; background: #222; color: #fff; font-size: 1.4em; text-align: center; box-sizing: border-box;" inputmode="decimal">
                         </div>
                         <span style="color: #aaa; font-weight: bold; font-size: 1.25em;">X</span>
-                        <input type="number" id="reps-${ex.id}" placeholder="powt" style="min-width: 60px; flex: 1; padding: 12px; border-radius: 4px; border: 1px solid #444; background: #222; color: #fff; font-size: 1.25em; text-align: center; box-sizing: border-box;" inputmode="numeric">
+                        <input type="number" id="reps-${ex.id}" class="training-input-large" placeholder="powt" style="min-width: 60px; flex: 1; padding: 12px; border-radius: 4px; border: 1px solid #444; background: #222; color: #fff; font-size: 1.4em; text-align: center; box-sizing: border-box;" inputmode="numeric">
                     </div>
                     <div style="display: flex; gap: 10px; margin-top: 10px;">
                         <button onclick="window.TrainingUI.addSet('${ex.id}', false)" style="background: #00BFFF; color: #fff; border: none; padding: 12px; border-radius: 4px; cursor: pointer; flex: 1; font-weight: bold; font-size: 1.1em; box-sizing: border-box;">+ Seria</button>

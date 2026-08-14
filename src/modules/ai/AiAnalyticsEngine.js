@@ -17,13 +17,18 @@ export const AiAnalyticsEngine = {
         const measurements = await window.DatabaseManager.getMeasurements();
         const latestMeasurement = measurements.length > 0 ? measurements[measurements.length - 1] : null;
 
-        // Pobierz ustawienia (cel treningowy)
-        let cel = "Brak ustalonego celu. Poinformuj użytkownika, by uzupełnił cel (masa/redukcja/utrzymanie) w ustawieniach.";
+        let cel = localStorage.getItem('dietGoal') || "Brak ustalonego celu. Poinformuj użytkownika, by uzupełnił cel (masa/redukcja/utrzymanie) w ustawieniach.";
+        let staz = localStorage.getItem('trainingExperience') || "Nie określono. Przewiduj, że jest to osoba co najmniej początkująca.";
+
+        // Pobierz szablony planów
+        let plans = "Brak utworzonych planów.";
         try {
-            const setStr = localStorage.getItem('uki_bodybuild_settings');
-            if (setStr) {
-                const settings = JSON.parse(setStr);
-                if (settings.goal) cel = settings.goal;
+            const tStr = localStorage.getItem('uki_workout_templates');
+            if (tStr) {
+                const tObj = JSON.parse(tStr);
+                if (Array.isArray(tObj) && tObj.length > 0) {
+                    plans = tObj.map(p => p.name).join(', ');
+                }
             }
         } catch(e) {}
 
@@ -35,6 +40,8 @@ export const AiAnalyticsEngine = {
         const userData = {
             okres_dni: days,
             cel_treningowy_uzytkownika: cel,
+            staz_treningowy: staz,
+            zapisane_plany_treningowe: plans,
             sredni_sen_godziny: sleepData !== null && sleepData !== undefined
                 ? sleepData
                 : 'BRAK DANYCH — poinformuj użytkownika wprost, że do pełnej analizy regeneracji musi zacząć wpisywać dane o śnie.',
@@ -73,7 +80,8 @@ Twoja analiza w formacie Markdown MUSI pokrywać dokładnie te punkty (bez pomij
    - Spójrz na sekcję "pomiary_historia" (ostatnie 5 wpisów).
    - Jeśli buduje masę: czy waga i obwody rosną? Jeśli redukuje: czy waga i obwody spadają? Jakie konkretnie kroki podjąć (np. uciąć kalorie, dołożyć trening)? Zwróć uwagę na wahania.
 6. **Analiza Długoterminowa (Kierunek)**: Porównaj obecny tydzień do poprzednich analiz (jeśli są). Czy idziemy w dobrą stronę?
-7. **Podsumowanie i Motywacja**: Zwieńcz profesjonalnym akcentem i wyznacz wektor działania na kolejny tydzień.`;
+7. **Podsumowanie i Motywacja**: Zwieńcz profesjonalnym akcentem i wyznacz wektor działania na kolejny tydzień.
+Jeśli wykryjesz błędy w planie, w podsumowaniu wygeneruj konkretną, poprawioną propozycję treningu w punktach (Ćwiczenie - Serie x Powtórzenia - Ciężar docelowy), biorąc pod uwagę poziom zaawansowania (${staz}).`;
 
         // Wyślij do Workera
         const response = await fetch(workerUrl, {
@@ -96,6 +104,12 @@ Twoja analiza w formacie Markdown MUSI pokrywać dokładnie te punkty (bez pomij
         }
 
         const data = await response.json();
+        const respText = data.response || data.error || "";
+        
+        if (respText && (respText.includes("exceeded your current quota") || respText.includes("Quota exceeded"))) {
+            throw new Error("Darmowy limit zapytań AI został wyczerpany na dziś. Wróć i spróbuj ponownie jutro!");
+        }
+        
         return data.response || "Błąd generowania.";
     }
 };

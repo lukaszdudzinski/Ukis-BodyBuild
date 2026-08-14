@@ -238,6 +238,16 @@ export const SettingsUI = {
             });
         }
 
+        const expSelect = document.getElementById('profile-experience-select');
+        if (expSelect) {
+            const savedExp = localStorage.getItem('trainingExperience') || '1-3 lata (Średniozaawansowany)';
+            expSelect.value = savedExp;
+            
+            expSelect.addEventListener('change', (e) => {
+                localStorage.setItem('trainingExperience', e.target.value);
+            });
+        }
+
         // Listeners
         if (nickInput) {
             nickInput.addEventListener('input', (e) => {

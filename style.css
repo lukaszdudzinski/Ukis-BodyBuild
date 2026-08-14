@@ -29,3 +29,12 @@
 @import 'styles/sections/science.css';
 @import 'styles/sections/quiz.css';
 @import 'styles/sections/game.css';
+
+/* Ulepszenia UX dla treningu */
+.training-input-large {
+    font-size: 1.4rem !important;
+    padding: 12px !important;
+    height: 50px !important;
+    font-weight: bold;
+    text-align: center;
+}

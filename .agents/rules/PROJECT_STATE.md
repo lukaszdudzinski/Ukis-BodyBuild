@@ -9,17 +9,17 @@
 5. **Filozofia UX (Interaktywność)**: Zgodnie z wytycznymi, interfejs ma być nowoczesny (Gradienty, Liquid Glass). Użytkownik ceni piękne i eleganckie rzeczy (jak np. w najnowszym Samouczku).
 6. **Rejestr Konwersacji (Wewnętrzna Jira)**: Na koniec każdej fazy/konwersacji Agent MUSI uaktualnić plik `.agents/CONVERSATIONS_JIRA.md`, dopisując ID swojej konwersacji oraz zwięzłe podsumowanie wykonanych prac i wdrożonych założeń. Po uaktualnieniu Jiry, Agent musi przygotować "paczkę informacyjną" (prompt przekazania) dla następnego Agenta, zawierającą m.in. ID właśnie zakończonej konwersacji, aby zachować ciągłość prac na Roadmapie.
 
-## Prace zrealizowane w najnowszych iteracjach (do v.2026.8.13.02 - Koniec Fazy 4.5):
-- **Eksport/Import JSON**: Zbudowano system pozwalający przekazać swój trening innej osobie (do wdrożenia zrzutów ekranowych/importu całej bazy w kolejnych etapach).
-- **Naprawa 'Brak zdjęcia lub tekstu'**: Załatano rygorystyczne zasady w DietAIEngine.
-- **Odznaki i UX**: Wskrzeszono "Pochwal się odznakami", ujednolicono font we wszystkich formularzach Ustawień i Pomiarów do wyśrodkowanego `1.2em` bold.
-- **Scroll kalendarza**: Wejście w moduł Treningu nie powoduje już dzikiego zjeżdżania ekranu na sam dół (pominięto auto-scroll po wczytaniu).
-- **Testy E2E (Playwright)**: Wyprowadzono na prostą psujące się selektory po przejściu na modułowość. Środowisko testowe 100% stabilne.
+## Prace zrealizowane w najnowszych iteracjach (do v.2026.8.14.06 - Koniec Fazy 5.2):
+- **Eksport/Import JSON**: Zbudowano system pozwalający przekazać swój trening innej osobie oraz wyeksportować całą bazę dla bezpieczeństwa (naprawiono błąd exportDatabase w Diagnostyce).
+- **AiAnalyticsEngine (Trener Edward)**: Naprawiono błędy limitów 429 (Quota Exceeded) by wyświetlać przyjazne komunikaty. Zintegrowano "Staż Treningowy" z Profilem (aby prompt AI był celniejszy). Dodano opcję pobierania raportów analizy jako plik `.txt`. Ustawiono sztywną regułę dla AI, by plany naprawcze generowane były "w punktach".
+- **Szablony Treningowe -> Plany Treningowe**: Dodano opcję zapisywania odbytych treningów prosto z historii jako nowe Szablony ('Zapisz jako plan treningowy').
+- **UX i Interfejs**: Powiększono czcionki i inputy (`.training-input-large`) w aktywnym treningu dla lepszej czytelności podczas ćwiczeń (jak prosił użytkownik).
+- **Podgląd Historii**: Dodano wygodny przycisk 'Podgląd' (Modal window) przy odbytych treningach w kalendarzu, by podejrzeć parametry bez wchodzenia w szczegółowy widok historii.
+- **Wydajność / PWA**: Zaimplementowano bezwzględne reguły wersji (Cache). Aktualizacja APP_VERSION i CACHE_NAME działa sprawnie, nie więżąc użytkowników w nieskończonych pętlach instalacji.
 
-## Problemy NA JUŻ (Do rozwiązania w nowej konwersacji):
-1. **Historia treningu - udostępnianie ekranu (Cały rzut)**: Użytkownik chce móc zrobić pełny screen-shot treningu (np. z html2canvas) zamiast suchego zestawienia (tak jak widział na "zrzucie 5").
-2. **Pełny Import/Export Plików Treningowych**: Należy dopracować import jsonów z listą ćwiczeń (by użytkownicy mogli wymieniać się planami w `.json`).
-3. **Orkiestracja Agentów (Multi-Agent Setup)**: Użytkownik chce oddelegować nudne procesy upewniania się, czy testy Playwright przechodzą lub analizy logów do osobnego środowiska testowego (sub-agent).
+## Wytyczne dla Agenta (Reguły Customizacji - 'Imperatywy'):
+- **Gdzie Agent powinien czytać/zapisywać reguły zachowania?** W ekosystemie Antigravity możesz (jako użytkownik) dopisać zasady w `.agents/rules/core_imperative.md`. Agent przy każdym wejściu do projektu przeczyta ten plik i zastosuje jego wytyczne (np. to, by pisać bogate logi w CHANGELOG.json).
 
-## Przekazanie dla nowej iteracji (Roadmapa dla Agenta):
-Twoim zadaniem (Jako nowego Agenta, który właśnie wchodzi z tym promptem) będzie wdrożenie nowego sposobu generowania ekranu (zrzutu) z wynikiem Treningu (Pełne udostępnienie) oraz zaprogramowanie Orkiestracji. Dodatkowo upewnij się, że opcja Exportu JSON i Importu u użytkowników jest solidna. Zawsze testuj środowisko przed deproymentem. Pamiętaj by zaktualizować `.agents/CONVERSATIONS_JIRA.md` na start z poprzednimi wynikami.
+## Problemy NA JUŻ (Do rozwiązania w kolejnych iteracjach):
+1. Dalsza poprawa testów automatycznych, by objęły nowe funkcje (np. generowanie podglądu, modal, zapisy raportów w .txt).
+2. Dalsza orkiestracja agentów przy testach i wdrażaniu nowości (Subagenci).
