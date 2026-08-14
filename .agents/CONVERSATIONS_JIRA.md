@@ -1,6 +1,19 @@
 # Rejestr Konwersacji (Wewnętrzna Jira)
 
-## Konwersacja (Obecna): b37122c4-ebbb-4fd6-a9dd-6a40db267a7d
+## Konwersacja (Obecna): 347c3dc8-6407-44a6-a907-9375ef41b290
+- **Temat**: ROADMAPA - Faza 4.6: Profesjonalizacja AI (Trener Edward), Szablony Treningowe, Checkboxy i Kopia Zapasowa.
+- **Kluczowe Zmiany (Zakończone)**:
+  - Naprawiono eksport danych (zła nazwa metody `exportDataJSON` oraz błąd z `a.click` na urządzeniach mobilnych).
+  - Wdrożono Checkboxy (oznaczanie wykonanych serii) i Edycję Inline przy rozpoczynaniu gotowych "Szablonów" treningowych.
+  - Podniesiono profesjonalizm Trenera Edwarda (AI analizuje tonaż, objętość, sen, cel treningowy i 5 ostatnich obwodów by określić kierunek postępów użytkownika).
+  - Utworzono dokument `ROADMAP.md` jako źródło prawdy dla dalszych prac.
+- **Kluczowe Zmiany (Do wdrożenia przez kolejnego Agenta)**:
+  - Przycisk "Zapisz jako plan treningowy" na ekranie wykonanego treningu w zakładce Historia.
+  - Przycisk "Pokaż / Podgląd" w zakładce Kalendarza, by móc wyświetlić trening w trybie tylko do odczytu bez wznawiania trybu wpisywania serii.
+  - Zbieranie i przekazywanie poziomu zaawansowania do Trenera Edwarda (zapisywane w SettingsUI).
+  - Powiększone czcionki wyświetlające kilogramy i powtórzenia podczas trwającego treningu.
+  - Zapisywanie analiz AI (Trenera Edwarda) do pliku tekstowego na dysku użytkownika.
+## Konwersacja: b37122c4-ebbb-4fd6-a9dd-6a40db267a7d
 - **Temat**: ROADMAPA - Faza 4.5: Łatanie błędów, stabilizacja i testy przed Orkiestracją.
 - **Kluczowe Zmiany**:
   - Naprawiono testy E2E (Playwright) po rozbiciu `AppUI` i `SettingsUI` na niezależne moduły ES6.

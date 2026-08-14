@@ -17,7 +17,7 @@ const year = now.getFullYear();
 const month = now.getMonth() + 1; // e.g. 8
 const day = now.getDate(); // e.g. 6
 
-const prefix = `v.${year}.${month}.${day}`;
+const prefix = `v${year}.${month}.${day}`;
 
 // Read AppUI.js to get current version
 let appUiContent = fs.readFileSync(appUiPath, 'utf8');
