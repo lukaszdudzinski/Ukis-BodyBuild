@@ -1,5 +1,13 @@
 [
   {
+    "version": "v2026.8.14.09",
+    "date": "2026-08-14",
+    "changes": [
+      "🛠️ Potężna Kopii Zapasowa (Diagnoza): Teraz funkcja Eksportu w zakładce Diagnostyka zapisuje absolutnie WSZYSTKO – treningi, pomiary, ustawienia (awatar, nick, szablony), dziennik diety oraz analizy Trenera Edwarda. Śmiało możesz reinstalować aplikację z czystym sumieniem!",
+      "🎨 Kolejne szlify Treningu: Poprawiono wyrównanie pól wprowadzania ciężaru przy dużym rozmiarze czcionki na ekranie (zawijanie wierszy z zachowaniem wyśrodkowania)."
+    ]
+  },
+  {
     "version": "v2026.8.14.08",
     "date": "2026-08-14",
     "changes": [

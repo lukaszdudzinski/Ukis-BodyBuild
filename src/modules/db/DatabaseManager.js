@@ -337,10 +337,38 @@ export const DatabaseManager = {
         await DatabaseManager.init();
         const measurements = await DatabaseManager.getMeasurements();
         const trainings = await DatabaseManager.getTrainings();
+        
+        let dietLogs = [];
+        try {
+            db.exec({
+                sql: "SELECT * FROM diet_logs ORDER BY date DESC, created_at DESC",
+                rowMode: "object",
+                callback: function (row) { dietLogs.push(row); }
+            });
+        } catch(e) {}
+        
+        let aiAnalyses = [];
+        try {
+            db.exec({
+                sql: "SELECT * FROM ai_analyses ORDER BY created_at DESC",
+                rowMode: "object",
+                callback: function (row) { aiAnalyses.push(row); }
+            });
+        } catch(e) {}
+
+        const settings = {
+            nickname: localStorage.getItem("uki-nickname"),
+            avatar: localStorage.getItem("uki-avatar"),
+            templates: localStorage.getItem("uki_workout_templates")
+        };
+
         return JSON.stringify({
             measurements: measurements,
             trainings: trainings,
-            version: '1.0'
+            dietLogs: dietLogs,
+            aiAnalyses: aiAnalyses,
+            settings: settings,
+            version: "1.1"
         });
     },
 
@@ -349,16 +377,16 @@ export const DatabaseManager = {
         try {
             const data = JSON.parse(jsonString);
             
-            // Basic validation
             if (!data.measurements || !data.trainings) {
                 throw new Error("Nieprawidłowy format pliku JSON.");
             }
 
-            // Clear tables
             db.exec(`DELETE FROM measurements`);
             db.exec(`DELETE FROM trainings`);
+            
+            try { db.exec(`DELETE FROM diet_logs`); } catch(e) {}
+            try { db.exec(`DELETE FROM ai_analyses`); } catch(e) {}
 
-            // Import Measurements
             data.measurements.forEach(m => {
                 db.exec({
                     sql: `INSERT INTO measurements (id, date, weight, chest, waist, hips, thigh, biceps, photo, created_at, height, neck) 
@@ -367,14 +395,36 @@ export const DatabaseManager = {
                 });
             });
 
-            // Import Trainings
             data.trainings.forEach(t => {
                 db.exec({
-                    sql: `INSERT INTO trainings (id, date, duration_seconds, exercises_json, name, created_at) 
-                          VALUES (?, ?, ?, ?, ?, ?)`,
-                    bind: [t.id, t.date, t.duration_seconds, JSON.stringify(t.exercises), t.name || '', t.created_at]
+                    sql: `INSERT INTO trainings (id, date, duration_seconds, exercises, name) VALUES (?, ?, ?, ?, ?)`,
+                    bind: [t.id, t.date, t.duration_seconds, JSON.stringify(t.exercises), t.name || null]
                 });
             });
+            
+            if (data.dietLogs) {
+                data.dietLogs.forEach(d => {
+                    db.exec({
+                        sql: `INSERT INTO diet_logs (id, date, image_data, analysis_result, created_at) VALUES (?, ?, ?, ?, ?)`,
+                        bind: [d.id, d.date, d.image_data, d.analysis_result, d.created_at]
+                    });
+                });
+            }
+            
+            if (data.aiAnalyses) {
+                data.aiAnalyses.forEach(a => {
+                    db.exec({
+                        sql: `INSERT INTO ai_analyses (id, date, type, content, created_at) VALUES (?, ?, ?, ?, ?)`,
+                        bind: [a.id, a.date, a.type, a.content, a.created_at]
+                    });
+                });
+            }
+            
+            if (data.settings) {
+                if (data.settings.nickname) localStorage.setItem("uki-nickname", data.settings.nickname);
+                if (data.settings.avatar) localStorage.setItem("uki-avatar", data.settings.avatar);
+                if (data.settings.templates) localStorage.setItem("uki_workout_templates", data.settings.templates);
+            }
 
             return true;
         } catch (e) {

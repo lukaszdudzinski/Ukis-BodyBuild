@@ -1054,10 +1054,12 @@ export const TrainingUI = {
                                 return `
                                     <div style="display: flex; justify-content: space-between; align-items: center; ${style} ${set.isCompleted ? 'background: rgba(46, 204, 113, 0.15); border-radius: 4px;' : ''}">
                                         <div style="display: flex; align-items: center; gap: 8px; flex: 1; flex-wrap: wrap;">
-                                            <input type="checkbox" ${set.isCompleted ? 'checked' : ''} onchange="window.TrainingUI.toggleSetCompletion('${ex.id}', ${i}, this.checked)" style="transform: scale(1.3); cursor: pointer; accent-color: #2ECC71; margin-right: 5px;">
-                                            <span style="font-size: 0.9em; ${set.isCompleted ? 'opacity: 0.6;' : ''}">${prefix}</span>
-                                            
                                             <div style="display: flex; align-items: center; gap: 4px;">
+                                                <input type="checkbox" ${set.isCompleted ? 'checked' : ''} onchange="window.TrainingUI.toggleSetCompletion('${ex.id}', ${i}, this.checked)" style="transform: scale(1.3); cursor: pointer; accent-color: #2ECC71; margin-right: 2px;">
+                                                <span style="font-size: 0.9em; white-space: nowrap; ${set.isCompleted ? 'opacity: 0.6;' : ''}">${prefix}</span>
+                                            </div>
+                                            
+                                            <div style="display: flex; align-items: center; justify-content: center; gap: 4px; flex: 1; min-width: 160px;">
                                                 <input type="number" class="training-input-large" value="${set.weight}" onchange="window.TrainingUI.updateSetInline('${ex.id}', ${i}, 'weight', this.value)" style="width: 75px; background: rgba(0,0,0,0.3); border: 1px solid #444; color: ${isDropset ? '#FF9800' : '#00BFFF'}; font-weight: bold; text-align: center; border-radius: 4px; padding: 4px; font-size: 1.2em;" inputmode="decimal"> 
                                                 <span style="font-size: 1.2em; color: #888;">kg</span>
                                                 <span style="color: #666; font-size: 1.2em;">x</span>
