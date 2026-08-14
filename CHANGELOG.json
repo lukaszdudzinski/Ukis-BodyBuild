@@ -1,5 +1,12 @@
 [
   {
+    "version": "v2026.8.14.08",
+    "date": "2026-08-14",
+    "changes": [
+      "🎨 Szlify interfejsu (UX/UI): Zoptymalizowano rozmiar i proporcje nowych, powiększonych pól wprowadzania ciężaru i powtórzeń w trakcie treningu (pozbyto się czarnych kwadratów), żeby aplikacja wyglądała świetnie i profesjonalnie na ekranie smartfona!"
+    ]
+  },
+  {
     "version": "v2026.8.14.07",
     "date": "2026-08-14",
     "changes": [
@@ -576,4 +583,4 @@
       "Zoptymalizowano proces ładowania danych w historii pomiarów."
     ]
   }
-]\n
+]
