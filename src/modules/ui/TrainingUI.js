@@ -170,7 +170,7 @@ export const TrainingUI = {
         }
 
         let html = `
-            <div id="templates-modal-overlay" onclick="if(event.target.id === 'templates-modal-overlay') this.remove()" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 10000; display: flex; justify-content: center; align-items: center; padding: 16px; box-sizing: border-box;">
+            <div id="templates-modal-overlay" onclick="if(event.target.id === 'templates-modal-overlay') { this.remove(); window.TrainingUI.renderCalendar(); }" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 10000; display: flex; justify-content: center; align-items: center; padding: 16px; box-sizing: border-box;">
                 <div style="background: #1e1e1e; border: 1px solid #FF9800; border-radius: 14px; width: 100%; max-width: 480px; max-height: 85vh; display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 15px 50px rgba(0,0,0,0.7); box-sizing: border-box;">
                     
                     <!-- Fixed Header with Title and Close X -->
@@ -179,7 +179,7 @@ export const TrainingUI = {
                             <h3 style="color: #FF9800; margin: 0; font-size: 1.15em;">Szablony Planów Treningowych</h3>
                             <p style="color: #888; font-size: 0.8em; margin: 3px 0 0 0;">Wybierz zapisany plan by rozpocząć sesję:</p>
                         </div>
-                        <button onclick="document.getElementById('templates-modal-overlay').remove()" style="background: rgba(255,255,255,0.1); border: none; color: #fff; width: 34px; height: 34px; border-radius: 50%; font-size: 1.4em; cursor: pointer; display: flex; align-items: center; justify-content: center; line-height: 1;">&times;</button>
+                        <button onclick="document.getElementById('templates-modal-overlay').remove(); window.TrainingUI.renderCalendar();" style="background: rgba(255,255,255,0.1); border: none; color: #fff; width: 34px; height: 34px; border-radius: 50%; font-size: 1.4em; cursor: pointer; display: flex; align-items: center; justify-content: center; line-height: 1;">&times;</button>
                     </div>
 
                     <!-- Scrollable Cards Container -->
@@ -239,7 +239,7 @@ export const TrainingUI = {
 
                     <!-- Fixed Footer with Close Button -->
                     <div style="padding: 12px 16px; border-top: 1px solid #333; background: #181818; flex-shrink: 0;">
-                        <button onclick="document.getElementById('templates-modal-overlay').remove()" class="action-button" style="width: 100%; background: #444; border: 1px solid #555; color: #eee; padding: 11px; border-radius: 8px; font-weight: bold; font-size: 0.95em; cursor: pointer;">Zamknij</button>
+                        <button onclick="document.getElementById('templates-modal-overlay').remove(); window.TrainingUI.renderCalendar();" class="action-button" style="width: 100%; background: #444; border: 1px solid #555; color: #eee; padding: 11px; border-radius: 8px; font-weight: bold; font-size: 0.95em; cursor: pointer;">Zamknij</button>
                     </div>
                 </div>
             </div>
@@ -521,19 +521,16 @@ export const TrainingUI = {
             const isToday = dateStr === todayDate;
             const isSelected = dateStr === selectedDate;
             
-            const isPlanned = schedules.some(s => s.daysOfWeek.includes(dow));
+            // Harmonogram automatyczny działa tylko od 'dzisiaj' w przód
+            const isPlanned = (dateStr >= todayDate) && schedules.some(s => s.daysOfWeek.includes(dow));
             const isException = exceptions.some(e => e.date === dateStr && e.status === 'skipped');
             
             let dotHtml = '';
             if (hasTraining) {
                 dotHtml = '<div class="training-dot" style="background-color: #2ECC71; box-shadow: 0 0 5px #2ECC71;"></div>'; // Green
             } else if (isPlanned && !isException) {
-                if (dateStr >= todayDate) {
-                    dotHtml = '<div class="training-dot" style="background-color: #FF9800; box-shadow: 0 0 5px #FF9800;"></div>'; // Orange (Future/Today planned)
-                } else {
-                    dotHtml = '<div class="training-dot" style="background-color: transparent; border: 2px solid #E74C3C; width: 4px; height: 4px;"></div>'; // Red outline (Missed past)
-                }
-            } else if (isPlanned && isException) {
+                dotHtml = '<div class="training-dot" style="background-color: #FF9800; box-shadow: 0 0 5px #FF9800;"></div>'; // Orange (Future/Today planned)
+            } else if (isException) {
                 dotHtml = '<div class="training-dot" style="background-color: #E74C3C; box-shadow: 0 0 5px #E74C3C;"></div>'; // Red solid (Explicitly Skipped)
             }
 
