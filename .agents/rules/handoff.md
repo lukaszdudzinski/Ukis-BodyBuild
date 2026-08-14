@@ -7,13 +7,23 @@ description: Zasada dotycząca kończenia pracy nad zadaniami i przekazywania wi
 Zasada ta jest **KRYTYCZNA** dla całego projektu Uki's BodyBuild.
 
 Gdy jako Agent kończysz pracę nad przydzielonym zadaniem (niezależnie od tego czy jest to Faza projektu, naprawa pojedynczego błędu, czy dodanie nowej funkcji) i zamierzasz poinformować użytkownika, że praca jest skończona, **MUSISZ**:
-1. Stworzyć dla użytkownika "hand-off prompt" (analogiczny prompt dla kolejnego Agenta).
-2. Ten prompt musi zawierać dokładne informacje o tym, co zostało zrobione, w jakim celu, z jakiego miejsca projektu zaczynamy (odniesienie do pliku `.agents/CONVERSATIONS_JIRA.md`) oraz jakie jest ID twojej (czyli bieżącej) konwersacji, by nowy agent mógł się do niej odnieść.
-3. Musisz przypomnieć nowemu agentowi w tym prompcie, że również będzie musiał wygenerować taki hand-off prompt, gdy będzie kończył swoje zadanie w przyszłości.
+1. Stworzyć dla użytkownika "hand-off prompt" (analogiczny prompt startowy dla kolejnego Agenta).
+2. Hand-off ten MUSI zaczynać się od sekcji wylistowującej pliki projektowe, dokładnie w takim formacie:
 
-4. **OBOZWIĄZKOWO** dołączać wylistowanie najważniejszych plików statusowych projektu (np. pliki w `.agents/rules/`, `roadmap.md`), gdzie dokładnie jest opisane, czym aplikacja żyje. Kolejny agent musi wiedzieć, gdzie szukać zasad!
+```markdown
+## TWOJE KLUCZOWE ZASOBY NA START (Koniecznie przeczytaj te pliki!):
+- **`.agents/rules/PROJECT_STATE.md`** - Absolutna podstawa. Znajdziesz tam status z ostatniej iteracji i priorytety na teraz.
+- **`.agents/CONVERSATIONS_JIRA.md`** - Znajdziesz tam historię naszych prac (m m.in. co zrobiono w poprzedniej konwersacji), abyś nie cofał już wdrożonych poprawek. Dopisz do niego swoje ID na końcu pracy.
+- **`ROADMAP.md`** - Główne źródło prawdy o funkcjach biznesowych i merytorycznych.
+- **`.agents/rules/pwa_rules.md`** - Krytyczne zasady działania PWA (baza OPFS, cache, system Updater).
+- **`.agents/rules/core_imperative.md`** - Główne zasady, zakazy (np. format wersji bez kropki).
+- **`.agents/rules/handoff.md`** - Instrukcja jak przekazać zadanie dalej (czyli to, co czytasz).
+```
 
-Każda iteracja w tym projekcie MUST kończyć się wygenerowaniem dla Użytkownika gotowego do skopiowania bloku tekstu z promptem przekazania pałeczki.
+3. Pod tą sekcją musisz opisać dokładnie:
+   - Co zostało zrobione w bieżącej sesji (i jakie było jej ID).
+   - Co jest do zrobienia (plan implementacyjny / następne kroki).
+4. Musisz przypomnieć nowemu agentowi, że on również będzie musiał wygenerować taki hand-off prompt na koniec swojej pracy.
 
 # Imperatyw: Raportowanie Zmian (Changelog)
 
