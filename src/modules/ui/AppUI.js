@@ -1,9 +1,12 @@
-export const APP_VERSION = 'v2026.8.14.17'; // Faza 5.2: Landing Page & PWA Standalone Mode
+export const APP_VERSION = 'v2026.8.14.18'; // Faza 5.2: Landing Page & PWA Standalone Mode
 
 // Obsługa błędów globalnych — zdefiniowana w main.js (klucz: uki_error_logs)
 
 export const AppUI = {
     init: () => {
+        if (!localStorage.getItem("uki_install_date")) {
+            localStorage.setItem("uki_install_date", new Date().toISOString());
+        }
         AppUI.initNavigation();
         AppUI.initMobileMenu();
         AppUI.initPWA();

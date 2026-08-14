@@ -1,5 +1,13 @@
 [
   {
+    "version": "v2026.8.14.18",
+    "date": "2026-08-14",
+    "changes": [
+      "☕ Wdrożenie Modułu Monetyzacji (AI Premium). Narzędzia sztucznej inteligencji (Trener Edward oraz Analiza Zdjec Diety) są teraz dostępne za darmo przez pierwsze 7 dni od uruchomienia aplikacji. Następnie wymagają odblokowania tokenem wsparcia poprzez Suppi (Postaw Kawę).",
+      "🔗 Dodano dedykowany przycisk wsparcia (Postaw Kawę) bezpośrednio na ekranie startowym (Wizytówce) aplikacji."
+    ]
+  },
+  {
     "version": "v2026.8.14.17",
     "date": "2026-08-14",
     "changes": [

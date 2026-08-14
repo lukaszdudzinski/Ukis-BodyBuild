@@ -1,5 +1,10 @@
 export const AiAnalyticsEngine = {
     generate: async (days, params = {}) => {
+        if (window.PremiumUI && !window.PremiumUI.checkPremium()) {
+            window.PremiumUI.showPremiumPaywall();
+            throw new Error("Wymagany dostęp premium.");
+        }
+        
         const workerUrl = localStorage.getItem('dietWorkerUrl') || 'https://uki-dieta.lukasz-dudzinski.workers.dev';
         if (!workerUrl) throw new Error("Brak URL do API AI.");
 

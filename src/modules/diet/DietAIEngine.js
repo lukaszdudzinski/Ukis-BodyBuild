@@ -1,6 +1,11 @@
 export const DietAIEngine = {
     analyzeImage: async (imagesBase64, contextText) => {
         // Z LocalStorage pobieramy URL do naszego Workera Cloudflare (lub używamy domyślnego dla wszystkich klientów)
+        if (window.PremiumUI && !window.PremiumUI.checkPremium()) {
+            window.PremiumUI.showPremiumPaywall();
+            return { error: "Wymagany dostęp premium." };
+        }
+        
         const workerUrl = localStorage.getItem('dietWorkerUrl') || 'https://uki-dieta.lukasz-dudzinski.workers.dev';
         
         if (!workerUrl) {
