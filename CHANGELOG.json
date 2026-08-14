@@ -1,5 +1,12 @@
 [
   {
+    "version": "v2026.8.14.21",
+    "date": "2026-08-14",
+    "changes": [
+      "🛠 Naprawiono schemat importu bazy danych, który blokował prawidłowe przywrócenie archiwum z powodu niedopasowania nazw nowych kolumn z typami treningów."
+    ]
+  },
+  {
     "version": "v2026.8.14.20",
     "date": "2026-08-14",
     "changes": [

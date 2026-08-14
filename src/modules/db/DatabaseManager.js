@@ -406,8 +406,17 @@ export const DatabaseManager = {
             // Import Treningów
             (data.trainings || []).forEach(t => {
                 db.exec({
-                    sql: `INSERT INTO trainings (id, date, duration_seconds, exercises, name) VALUES (?, ?, ?, ?, ?)`,
-                    bind: [t.id, t.date, t.duration_seconds, typeof t.exercises === 'string' ? t.exercises : JSON.stringify(t.exercises), t.name || null]
+                    sql: `INSERT INTO trainings (id, date, duration_seconds, exercises_json, name, type, social_photos_json, smartwatch_json) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+                    bind: [
+                        t.id, 
+                        t.date, 
+                        t.duration_seconds, 
+                        typeof t.exercises === 'string' ? t.exercises : JSON.stringify(t.exercises), 
+                        t.name || null,
+                        t.type || 'strength',
+                        t.socialPhotos ? JSON.stringify(t.socialPhotos) : (t.social_photos_json || null),
+                        t.smartwatch ? JSON.stringify(t.smartwatch) : (t.smartwatch_json || null)
+                    ]
                 });
             });
             
@@ -462,7 +471,7 @@ export const DatabaseManager = {
             return true;
         } catch (e) {
             console.error("Błąd podczas importu bazy:", e);
-            return false;
+            throw e; // Throw so that DiagnosticsUI can catch it
         }
     },
 
