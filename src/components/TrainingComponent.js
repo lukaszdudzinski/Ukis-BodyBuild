@@ -28,6 +28,16 @@ export const TrainingComponent = {
                             <!-- Previews of existing trainings -->
                         </div>
                     </div>
+                    <div id="day-action-planned-state" style="display: none; text-align: center; margin-bottom: 20px;">
+                        <h5 style="color: #FF9800; margin-bottom: 10px;">📅 Zaplanowano na ten dzień:</h5>
+                        <div id="planned-training-preview" style="margin-bottom: 15px; color: #ccc;">
+                            <!-- Populated by JS -->
+                        </div>
+                        <div style="display: flex; gap: 10px;">
+                            <button id="postpone-planned-btn" class="action-button" style="flex: 1; background-color: rgba(255, 255, 255, 0.1); border-color: #888; color: #ccc; font-size: 0.9em;">Przełóż na jutro</button>
+                            <button id="cancel-planned-btn" class="action-button" style="flex: 1; background-color: rgba(231, 76, 60, 0.2); border-color: #E74C3C; color: #E74C3C; font-size: 0.9em;">Anuluj trening</button>
+                        </div>
+                    </div>
 
                     <div id="day-action-empty-state">
                         <button id="start-new-session-btn" class="action-button pulse" style="width: 100%; margin-bottom: 10px; background-color: rgba(0, 191, 255, 0.2); border-color: #00BFFF; color: #00BFFF;">➕ Dodaj nową sesję treningową</button>

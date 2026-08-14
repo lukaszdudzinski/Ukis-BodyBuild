@@ -1,5 +1,16 @@
 [
   {
+    "version": "v2026.8.14.15",
+    "date": "2026-08-14",
+    "changes": [
+      "📅 Kalendarz Faza 4 - Harmonogramy Treningów! Dodano możliwość przypisania Szablonu Planu Treningowego do konkretnych dni tygodnia (np. każdy Poniedziałek i Środa).",
+      "🟢 Kalendarz zyskał inteligentne kropki: pomarańczowa (zaplanowany trening), zielona (trening zrealizowany), czerwona (trening pominięty).",
+      "🏃 Automatyczne uruchamianie: Kliknięcie w zaplanowany dzień w kalendarzu pozwala od razu wczytać i rozpocząć dedykowany plan z opcją przełożenia na inny dzień.",
+      "🐛 Naprawiono błąd załamywania się wierszy i spadania przycisku X w widoku serii podczas skalowania dużych czcionek.",
+      "💾 Udoskonalono formatowanie nazwy pobieranego pełnego archiwum bazy danych o sekundy (HH-mm-ss)."
+    ]
+  },
+  {
     "version": "v2026.8.14.14",
     "date": "2026-08-14",
     "changes": [

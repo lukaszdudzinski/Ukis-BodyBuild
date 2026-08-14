@@ -134,7 +134,10 @@ export const DiagnosticsUI = {
                 const url = URL.createObjectURL(blob);
                 const a = document.createElement('a');
                 a.href = url;
-                a.download = `ukis_bodybuild_backup_${new Date().toISOString().slice(0,10)}.json`;
+                const now = new Date();
+                const dateStr = now.toISOString().split('T')[0];
+                const timeStr = now.toTimeString().split(' ')[0].replace(/:/g, '-'); // HH-mm-ss
+                a.download = `bodybuild_backup_${dateStr}_${timeStr}.json`;
                 document.body.appendChild(a);
                 a.click();
                 document.body.removeChild(a);

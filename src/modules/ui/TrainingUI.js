@@ -186,6 +186,11 @@ export const TrainingUI = {
                     <div style="padding: 16px; overflow-y: auto; flex: 1; -webkit-overflow-scrolling: touch; display: flex; flex-direction: column; gap: 12px;">
         `;
 
+        let schedules = [];
+        try {
+            schedules = JSON.parse(localStorage.getItem('uki_workout_schedules') || '[]');
+        } catch(e) {}
+
         templates.forEach(t => {
             let typeLabel = 'Trening Siłowy';
             if (t.type === 'cardio') typeLabel = 'Cardio';
@@ -193,6 +198,23 @@ export const TrainingUI = {
             
             let durationInfo = t.duration_seconds ? `<br>Przewidywany czas: ${TrainingUI.formatTime(t.duration_seconds)}` : '';
             
+            const mySchedule = schedules.find(s => s.templateId === t.id) || { daysOfWeek: [] };
+            const days = [
+                { num: 1, name: 'Pn' }, { num: 2, name: 'Wt' }, { num: 3, name: 'Śr' }, 
+                { num: 4, name: 'Czw' }, { num: 5, name: 'Pt' }, { num: 6, name: 'Sb' }, { num: 0, name: 'Nd' }
+            ];
+
+            let daysHtml = `<div style="display: flex; gap: 4px; justify-content: center; flex-wrap: wrap; margin-top: 5px; padding-top: 10px; border-top: 1px dashed #444;">
+                <div style="width: 100%; text-align: center; font-size: 0.85em; color: #888; margin-bottom: 4px;">📅 Automatyczny Harmonogram w Kalendarzu:</div>`;
+            days.forEach(d => {
+                const isSelected = mySchedule.daysOfWeek.includes(d.num);
+                const bg = isSelected ? '#FF9800' : 'rgba(255,255,255,0.05)';
+                const col = isSelected ? '#000' : '#888';
+                const border = isSelected ? '#FF9800' : '#444';
+                daysHtml += `<button onclick="window.TrainingUI.toggleScheduleDay(${t.id}, ${d.num})" style="background: ${bg}; color: ${col}; border: 1px solid ${border}; border-radius: 12px; padding: 4px 10px; font-size: 0.85em; font-weight: bold; cursor: pointer; transition: all 0.2s;">${d.name}</button>`;
+            });
+            daysHtml += `</div>`;
+
             html += `
                 <div style="background: #2a2a2a; padding: 15px; border-radius: 10px; border: 1px solid #444; display: flex; flex-direction: column; gap: 10px;">
                     <div style="text-align: center; border-bottom: 1px solid #444; padding-bottom: 8px;">
@@ -207,6 +229,7 @@ export const TrainingUI = {
                         <button onclick="window.TrainingUI.startFromTemplate(${t.id})" class="action-button" style="flex: 1; background: #2ECC71; border: 1px solid #2ECC71; color: #fff; padding: 12px 10px; font-weight: bold; border-radius: 8px; font-size: 0.95em; cursor: pointer;">▶ Wybierz</button>
                         <button onclick="window.TrainingUI.deleteTemplate(${t.id})" class="action-button" style="flex: 1; background: rgba(231, 76, 60, 0.2); border: 1px solid rgba(231, 76, 60, 0.4); color: #E74C3C; padding: 12px 10px; font-weight: bold; border-radius: 8px; font-size: 0.95em; cursor: pointer;">Usuń</button>
                     </div>
+                    ${daysHtml}
                 </div>
             `;
         });
@@ -225,6 +248,50 @@ export const TrainingUI = {
         const existingModal = document.getElementById('templates-modal-overlay');
         if (existingModal) existingModal.remove();
         document.body.insertAdjacentHTML('beforeend', html);
+    },
+
+    toggleScheduleDay: (templateId, dayNum) => {
+        let schedules = [];
+        try { schedules = JSON.parse(localStorage.getItem("uki_workout_schedules") || "[]"); } catch(e) {}
+        
+        let sched = schedules.find(s => s.templateId === templateId);
+        if (!sched) {
+            sched = { templateId: templateId, daysOfWeek: [] };
+            schedules.push(sched);
+        }
+        
+        const idx = sched.daysOfWeek.indexOf(dayNum);
+        if (idx > -1) {
+            sched.daysOfWeek.splice(idx, 1);
+        } else {
+            sched.daysOfWeek.push(dayNum);
+        }
+        
+        // Remove empty schedules
+        schedules = schedules.filter(s => s.daysOfWeek.length > 0);
+        
+        localStorage.setItem("uki_workout_schedules", JSON.stringify(schedules));
+        TrainingUI.loadTemplatesDialog(); // Re-render modal to show updated colors
+        
+        // Refresh calendar if its open
+        const calendarEl = document.getElementById("calendar-grid");
+        if (calendarEl && window.CalendarUI) {
+            window.CalendarUI.renderCalendar(window.CalendarUI.currentDate);
+        }
+    },
+
+    skipPlannedTraining: (dateStr, templateId) => {
+        let exceptions = [];
+        try { exceptions = JSON.parse(localStorage.getItem("uki_schedule_exceptions") || "[]"); } catch(e) {}
+        
+        exceptions.push({
+            date: dateStr,
+            templateId: templateId,
+            status: "skipped"
+        });
+        
+        localStorage.setItem("uki_schedule_exceptions", JSON.stringify(exceptions));
+        TrainingUI.renderCalendar();
     },
 
     deleteTemplate: (id) => {
@@ -439,12 +506,36 @@ export const TrainingUI = {
         }
 
         const todayDate = new Date().toISOString().split('T')[0];
+        
+        let schedules = [];
+        try { schedules = JSON.parse(localStorage.getItem('uki_workout_schedules') || '[]'); } catch(e) {}
+        let exceptions = [];
+        try { exceptions = JSON.parse(localStorage.getItem('uki_schedule_exceptions') || '[]'); } catch(e) {}
 
         for (let day = 1; day <= daysInMonth; day++) {
             const dateStr = `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+            const dateObj = new Date(currentYear, currentMonth, day);
+            const dow = dateObj.getDay();
+            
             const hasTraining = trainingDates.has(dateStr);
             const isToday = dateStr === todayDate;
             const isSelected = dateStr === selectedDate;
+            
+            const isPlanned = schedules.some(s => s.daysOfWeek.includes(dow));
+            const isException = exceptions.some(e => e.date === dateStr && e.status === 'skipped');
+            
+            let dotHtml = '';
+            if (hasTraining) {
+                dotHtml = '<div class="training-dot" style="background-color: #2ECC71; box-shadow: 0 0 5px #2ECC71;"></div>'; // Green
+            } else if (isPlanned && !isException) {
+                if (dateStr >= todayDate) {
+                    dotHtml = '<div class="training-dot" style="background-color: #FF9800; box-shadow: 0 0 5px #FF9800;"></div>'; // Orange (Future/Today planned)
+                } else {
+                    dotHtml = '<div class="training-dot" style="background-color: transparent; border: 2px solid #E74C3C; width: 4px; height: 4px;"></div>'; // Red outline (Missed past)
+                }
+            } else if (isPlanned && isException) {
+                dotHtml = '<div class="training-dot" style="background-color: #E74C3C; box-shadow: 0 0 5px #E74C3C;"></div>'; // Red solid (Explicitly Skipped)
+            }
 
             let classes = 'calendar-day';
             if (hasTraining) classes += ' has-training';
@@ -454,11 +545,29 @@ export const TrainingUI = {
             html += `
                 <div class="${classes}" onclick="window.TrainingUI.handleDayClick('${dateStr}')">
                     ${day}
-                    ${hasTraining ? '<div class="training-dot"></div>' : ''}
+                    ${dotHtml}
                 </div>
             `;
         }
         grid.innerHTML = html;
+
+        const container = grid.parentElement;
+        if (container && !document.getElementById('cal-legend')) {
+            const legendHtml = `
+                <div id="cal-legend" style="display: flex; justify-content: center; gap: 15px; margin-top: 15px; font-size: 0.8em; color: #aaa; flex-wrap: wrap;">
+                    <div style="display: flex; align-items: center; gap: 4px;">
+                        <div style="width: 8px; height: 8px; border-radius: 50%; background-color: #2ECC71; box-shadow: 0 0 5px #2ECC71;"></div> Wykonany
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 4px;">
+                        <div style="width: 8px; height: 8px; border-radius: 50%; background-color: #FF9800; box-shadow: 0 0 5px #FF9800;"></div> Zaplanowany
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 4px;">
+                        <div style="width: 8px; height: 8px; border-radius: 50%; background-color: #E74C3C; box-shadow: 0 0 5px #E74C3C;"></div> Pominięty
+                    </div>
+                </div>
+            `;
+            container.insertAdjacentHTML('beforeend', legendHtml);
+        }
     },
 
     handleDayClick: (dateStr, preventScroll = false) => {
@@ -471,6 +580,10 @@ export const TrainingUI = {
         const emptyState = document.getElementById('day-action-empty-state');
         const existingState = document.getElementById('day-action-existing-state');
         const existingPreview = document.getElementById('existing-training-preview');
+        const plannedState = document.getElementById('day-action-planned-state');
+        const plannedPreview = document.getElementById('planned-training-preview');
+        const postponeBtn = document.getElementById('postpone-planned-btn');
+        const cancelPlannedBtn = document.getElementById('cancel-planned-btn');
         const historyList = document.getElementById('history-sessions-list');
         
         if (!panel) return;
@@ -481,6 +594,60 @@ export const TrainingUI = {
 
         // Always show emptyState which now contains "start new session"
         if (emptyState) emptyState.style.display = 'block';
+        
+        let isPlanned = false;
+        if (plannedState) {
+            plannedState.style.display = 'none'; // hide by default
+            
+            // Check if day is planned
+            let schedules = [];
+            try { schedules = JSON.parse(localStorage.getItem("uki_workout_schedules") || "[]"); } catch(e) {}
+            let exceptions = [];
+            try { exceptions = JSON.parse(localStorage.getItem("uki_schedule_exceptions") || "[]"); } catch(e) {}
+            
+            const dateObj = new Date(dateStr);
+            const dow = dateObj.getDay();
+            const sched = schedules.find(s => s.daysOfWeek.includes(dow));
+            const isException = exceptions.some(e => e.date === dateStr && e.status === "skipped");
+            
+            if (sched && !isException && existingTrainingsOnDay.length === 0) {
+                isPlanned = true;
+                plannedState.style.display = 'block';
+                
+                // Find template
+                let templates = [];
+                try { templates = JSON.parse(localStorage.getItem("uki_workout_templates") || "[]"); } catch(e) {}
+                const template = templates.find(t => t.id === sched.templateId);
+                const tName = template ? template.name : "Nieznany szablon";
+                const typeLabel = template ? (template.type === "cardio" ? "Cardio" : (template.type === "classes" ? "Zajęcia zorganizowane" : "Trening Siłowy")) : "";
+                
+                if (plannedPreview) {
+                    plannedPreview.innerHTML = `
+                        <div style="background-color: #222; border: 1px solid #FF9800; border-radius: 8px; padding: 15px;">
+                            <strong style="color: #FF9800; font-size: 1.1em;">${tName}</strong><br>
+                            <span style="font-size: 0.9em; color: #aaa;">${typeLabel} ${template && template.exercises ? `| Ćwiczeń: ${template.exercises.length}` : ""}</span>
+                            <div style="margin-top: 10px;">
+                                <button onclick="window.TrainingUI.startFromTemplate(${sched.templateId})" class="action-button pulse" style="width: 100%; background-color: #FF9800; border-color: #FF9800; color: #000; font-weight: bold; padding: 10px;">▶ Rozpocznij ten plan</button>
+                            </div>
+                        </div>
+                    `;
+                }
+                
+                if (postponeBtn) {
+                    postponeBtn.onclick = () => {
+                        window.TrainingUI.skipPlannedTraining(dateStr, sched.templateId);
+                        alert("Trening dzisiejszy przełożony. Jutro musisz go wywołać ręcznie z kalendarza lub szablonów.");
+                        TrainingUI.handleDayClick(dateStr);
+                    };
+                }
+                if (cancelPlannedBtn) {
+                    cancelPlannedBtn.onclick = () => {
+                        window.TrainingUI.skipPlannedTraining(dateStr, sched.templateId);
+                        TrainingUI.handleDayClick(dateStr);
+                    };
+                }
+            }
+        }
 
         if (existingTrainingsOnDay.length > 0) {
             // Day has trainings
@@ -1077,19 +1244,19 @@ export const TrainingUI = {
                                 return `
                                     <div style="padding: 6px 0; border-bottom: 1px solid rgba(255,255,255,0.05); width: 100%; box-sizing: border-box; ${style} ${set.isCompleted ? 'background: rgba(46, 204, 113, 0.15); border-radius: 4px;' : ''}">
                                         
-                                        <div style="display: flex; align-items: center; justify-content: space-between; gap: 6px; width: 100%; flex-wrap: wrap;">
+                                        <div style="display: flex; align-items: center; justify-content: space-between; gap: 4px; width: 100%; flex-wrap: nowrap; overflow: hidden;">
                                             <!-- Lewa strona: Checkbox + Seria -->
-                                            <div style="display: flex; align-items: center; gap: 6px; flex-shrink: 0;">
+                                            <div style="display: flex; align-items: center; gap: 4px; flex-shrink: 0;">
                                                 <input type="checkbox" ${set.isCompleted ? 'checked' : ''} onchange="window.TrainingUI.toggleSetCompletion('${ex.id}', ${i}, this.checked)" style="transform: scale(1.3); cursor: pointer; accent-color: #2ECC71; margin-right: 2px;">
-                                                <span style="font-size: 1.05em; font-weight: bold; white-space: nowrap; ${set.isCompleted ? 'opacity: 0.6;' : ''}">${prefix}</span>
+                                                <span style="font-size: 1.0em; font-weight: bold; white-space: nowrap; ${set.isCompleted ? 'opacity: 0.6;' : ''}">${prefix}</span>
                                             </div>
                                             
                                             <!-- Środek: Wpisywanie ciężaru i powtórzeń -->
-                                            <div style="display: flex; align-items: center; justify-content: center; gap: 6px; flex: 1; min-width: 140px;">
-                                                <input type="number" class="training-input-large" value="${set.weight}" onchange="window.TrainingUI.updateSetInline('${ex.id}', ${i}, 'weight', this.value)" style="width: 65px; box-sizing: border-box; background: rgba(0,0,0,0.3); border: 1px solid #444; color: ${isDropset ? '#FF9800' : '#00BFFF'}; font-weight: bold; text-align: center; border-radius: 6px; font-size: 1.25em;" inputmode="decimal"> 
-                                                <span style="font-size: 1.1em; color: #888;">kg</span>
-                                                <span style="color: #666; font-size: 1.1em;">x</span>
-                                                <input type="number" class="training-input-large" value="${set.reps}" onchange="window.TrainingUI.updateSetInline('${ex.id}', ${i}, 'reps', this.value)" style="width: 55px; box-sizing: border-box; background: rgba(0,0,0,0.3); border: 1px solid #444; color: #fff; font-weight: bold; text-align: center; border-radius: 6px; font-size: 1.25em;" inputmode="numeric">
+                                            <div style="display: flex; align-items: center; justify-content: center; gap: 4px; flex: 1; min-width: 0;">
+                                                <input type="number" class="training-input-large" value="${set.weight}" onchange="window.TrainingUI.updateSetInline('${ex.id}', ${i}, 'weight', this.value)" style="width: 55px; box-sizing: border-box; background: rgba(0,0,0,0.3); border: 1px solid #444; color: ${isDropset ? '#FF9800' : '#00BFFF'}; font-weight: bold; text-align: center; border-radius: 6px; font-size: 1.15em; padding: 4px;" inputmode="decimal"> 
+                                                <span style="font-size: 0.95em; color: #888;">kg</span>
+                                                <span style="color: #666; font-size: 0.95em; margin: 0 2px;">x</span>
+                                                <input type="number" class="training-input-large" value="${set.reps}" onchange="window.TrainingUI.updateSetInline('${ex.id}', ${i}, 'reps', this.value)" style="width: 48px; box-sizing: border-box; background: rgba(0,0,0,0.3); border: 1px solid #444; color: #fff; font-weight: bold; text-align: center; border-radius: 6px; font-size: 1.15em; padding: 4px;" inputmode="numeric">
                                             </div>
                                             
                                             <!-- Prawa strona: Przycisk usunięcia X -->
