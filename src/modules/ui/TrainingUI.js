@@ -194,9 +194,9 @@ export const TrainingUI = {
                         Ilość ćwiczeń w treningu: ${t.exercises && t.exercises.length ? t.exercises.length : 0}
                         ${durationInfo}
                     </div>
-                    <div style="display: flex; gap: 10px; width: 100%; margin-top: 5px;">
-                        <button onclick="window.TrainingUI.startFromTemplate(${t.id})" class="action-button" style="flex: 1; background: #2ECC71; border-color: #2ECC71; color: #fff; padding: 10px 12px;">▶ Wybierz</button>
-                        <button onclick="window.TrainingUI.deleteTemplate(${t.id})" class="action-button" style="background: rgba(231, 76, 60, 0.2); border-color: transparent; color: #E74C3C; padding: 10px 15px; flex-shrink: 0; min-width: 60px;">🗑 Usuń</button>
+                    <div style="display: flex; gap: 10px; width: 100%; margin-top: 5px; box-sizing: border-box;">
+                        <button onclick="window.TrainingUI.startFromTemplate(${t.id})" class="action-button" style="flex: 1; background: #2ECC71; border: 1px solid #2ECC71; color: #fff; padding: 12px 10px; font-weight: bold; border-radius: 8px; font-size: 0.95em; cursor: pointer;">▶ Wybierz</button>
+                        <button onclick="window.TrainingUI.deleteTemplate(${t.id})" class="action-button" style="flex: 1; background: rgba(231, 76, 60, 0.2); border: 1px solid rgba(231, 76, 60, 0.4); color: #E74C3C; padding: 12px 10px; font-weight: bold; border-radius: 8px; font-size: 0.95em; cursor: pointer;">Usuń</button>
                     </div>
                 </div>
             `;
@@ -282,7 +282,7 @@ export const TrainingUI = {
         TrainingUI.saveDraft();
         
         if (window.ChatUI) {
-            window.ChatUI.showContextualBubble("Ogień z kurwami! 🔥 Plan Treningowy załadowany, zegar tyka!", true);
+            window.ChatUI.showContextualBubble("Ogień! 🔥 Plan Treningowy załadowany, zegar tyka – bierzemy się do roboty! 💪", true);
         }
     },
 
@@ -961,7 +961,7 @@ export const TrainingUI = {
             if (current1RM > maxHistorical1RM && maxHistorical1RM > 0) {
                 newSet.isPR = true;
                 if (window.ChatUI) {
-                    window.ChatUI.showContextualBubble(`🏆 O kurwa, nowy rekord (PR)! 1RM wyjebało poza skale! Jesteś dzikiem! 🐗🔥`);
+                    window.ChatUI.showContextualBubble(`🏆 Nowy Rekord Życiowy (PR)! 💪 Świetna forma, idziesz jak czołg! 🐗🔥`);
                 }
             } else if (maxHistorical1RM === 0) {
                 // First time doing this exercise or no history
@@ -1062,26 +1062,29 @@ export const TrainingUI = {
                                 }
 
                                 return `
-                                    <div style="padding: 10px 0; border-bottom: 1px solid rgba(255,255,255,0.05); text-align: center; width: 100%; ${style} ${set.isCompleted ? 'background: rgba(46, 204, 113, 0.15); border-radius: 4px;' : ''}">
+                                    <div style="padding: 6px 0; border-bottom: 1px solid rgba(255,255,255,0.05); width: 100%; box-sizing: border-box; ${style} ${set.isCompleted ? 'background: rgba(46, 204, 113, 0.15); border-radius: 4px;' : ''}">
                                         
-                                        <div style="float: left; display: flex; align-items: center; gap: 6px; padding-top: 5px;">
-                                            <input type="checkbox" ${set.isCompleted ? 'checked' : ''} onchange="window.TrainingUI.toggleSetCompletion('${ex.id}', ${i}, this.checked)" style="transform: scale(1.3); cursor: pointer; accent-color: #2ECC71; margin-right: 2px;">
-                                            <span style="font-size: 1.05em; font-weight: bold; white-space: nowrap; ${set.isCompleted ? 'opacity: 0.6;' : ''}">${prefix}</span>
+                                        <div style="display: flex; align-items: center; justify-content: space-between; gap: 6px; width: 100%; flex-wrap: wrap;">
+                                            <!-- Lewa strona: Checkbox + Seria -->
+                                            <div style="display: flex; align-items: center; gap: 6px; flex-shrink: 0;">
+                                                <input type="checkbox" ${set.isCompleted ? 'checked' : ''} onchange="window.TrainingUI.toggleSetCompletion('${ex.id}', ${i}, this.checked)" style="transform: scale(1.3); cursor: pointer; accent-color: #2ECC71; margin-right: 2px;">
+                                                <span style="font-size: 1.05em; font-weight: bold; white-space: nowrap; ${set.isCompleted ? 'opacity: 0.6;' : ''}">${prefix}</span>
+                                            </div>
+                                            
+                                            <!-- Środek: Wpisywanie ciężaru i powtórzeń -->
+                                            <div style="display: flex; align-items: center; justify-content: center; gap: 6px; flex: 1; min-width: 140px;">
+                                                <input type="number" class="training-input-large" value="${set.weight}" onchange="window.TrainingUI.updateSetInline('${ex.id}', ${i}, 'weight', this.value)" style="width: 65px; box-sizing: border-box; background: rgba(0,0,0,0.3); border: 1px solid #444; color: ${isDropset ? '#FF9800' : '#00BFFF'}; font-weight: bold; text-align: center; border-radius: 6px; font-size: 1.25em;" inputmode="decimal"> 
+                                                <span style="font-size: 1.1em; color: #888;">kg</span>
+                                                <span style="color: #666; font-size: 1.1em;">x</span>
+                                                <input type="number" class="training-input-large" value="${set.reps}" onchange="window.TrainingUI.updateSetInline('${ex.id}', ${i}, 'reps', this.value)" style="width: 55px; box-sizing: border-box; background: rgba(0,0,0,0.3); border: 1px solid #444; color: #fff; font-weight: bold; text-align: center; border-radius: 6px; font-size: 1.25em;" inputmode="numeric">
+                                            </div>
+                                            
+                                            <!-- Prawa strona: Przycisk usunięcia X -->
+                                            <button onclick="window.TrainingUI.removeSet('${ex.id}', ${i})" style="background: transparent; border: none; color: #ff4444; font-size: 1.5em; line-height: 1; cursor: pointer; padding: 4px 8px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">&times;</button>
                                         </div>
-                                        
-                                        <button onclick="window.TrainingUI.removeSet('${ex.id}', ${i})" style="float: right; background: transparent; border: none; color: #ff4444; font-size: 1.4em; cursor: pointer; padding: 0 5px; padding-top: 2px;">&times;</button>
-                                        
-                                        <div style="display: inline-flex; align-items: center; justify-content: center; gap: 8px; margin-top: 5px;">
-                                            <input type="number" class="training-input-large" value="${set.weight}" onchange="window.TrainingUI.updateSetInline('${ex.id}', ${i}, 'weight', this.value)" style="width: 70px; box-sizing: border-box; background: rgba(0,0,0,0.3); border: 1px solid #444; color: ${isDropset ? '#FF9800' : '#00BFFF'}; font-weight: bold; text-align: center; border-radius: 6px; font-size: 1.25em;" inputmode="decimal"> 
-                                            <span style="font-size: 1.2em; color: #888;">kg</span>
-                                            <span style="color: #666; font-size: 1.2em;">x</span>
-                                            <input type="number" class="training-input-large" value="${set.reps}" onchange="window.TrainingUI.updateSetInline('${ex.id}', ${i}, 'reps', this.value)" style="width: 60px; box-sizing: border-box; background: rgba(0,0,0,0.3); border: 1px solid #444; color: #fff; font-weight: bold; text-align: center; border-radius: 6px; font-size: 1.25em;" inputmode="numeric">
-                                        </div>
-                                        
-                                        <div style="clear: both;"></div>
                                         
                                         ${(prBadge || ormText) ? `
-                                        <div style="width: 100%; display: flex; justify-content: center; align-items: center; gap: 10px; margin-top: 6px;">
+                                        <div style="width: 100%; display: flex; justify-content: center; align-items: center; gap: 10px; margin-top: 4px;">
                                             ${prBadge} ${ormText}
                                         </div>
                                         ` : ''}

@@ -13,11 +13,11 @@ export const AiAnalyticsUI = {
                     </div>
                 </div>
                 <div style="display: flex; gap: 12px; margin-top: 16px;">
-                    <button id="ai-gen-weekly-btn" style="flex: 1; padding: 16px 8px; background: linear-gradient(135deg, #00BFFF, #005f99); color: #fff; border: none; border-radius: 10px; font-weight: bold; font-size: 0.95em; cursor: pointer; box-shadow: 0 4px 15px rgba(0,191,255,0.35); line-height:1.4;">
-                        Analiza Tygodniowa<br><span style="font-size:0.8em; font-weight:normal; opacity:0.85;">ostatnie 7 dni</span>
+                    <button id="ai-gen-weekly-btn" style="flex: 1; padding: 14px 8px; background: linear-gradient(135deg, #00BFFF, #005f99); color: #fff; border: none; border-radius: 10px; font-weight: bold; font-size: 0.95em; cursor: pointer; box-shadow: 0 4px 15px rgba(0,191,255,0.35); line-height: 1.3; text-align: center;">
+                        Analiza<br>Tygodniowa<br><span style="font-size:0.8em; font-weight:normal; opacity:0.85;">ostatnie 7 dni</span>
                     </button>
-                    <button id="ai-gen-monthly-btn" style="flex: 1; padding: 16px 8px; background: linear-gradient(135deg, #FFD700, #b29600); color: #000; border: none; border-radius: 10px; font-weight: bold; font-size: 0.95em; cursor: pointer; box-shadow: 0 4px 15px rgba(255,215,0,0.35); line-height:1.4;">
-                        Analiza Miesięczna<br><span style="font-size:0.8em; font-weight:normal; opacity:0.7;">ostatnie 30 dni</span>
+                    <button id="ai-gen-monthly-btn" style="flex: 1; padding: 14px 8px; background: linear-gradient(135deg, #FFD700, #b29600); color: #000; border: none; border-radius: 10px; font-weight: bold; font-size: 0.95em; cursor: pointer; box-shadow: 0 4px 15px rgba(255,215,0,0.35); line-height: 1.3; text-align: center;">
+                        Analiza<br>Miesięczna<br><span style="font-size:0.8em; font-weight:normal; opacity:0.7;">ostatnie 30 dni</span>
                     </button>
                 </div>
                 <div id="ai-status-bar" style="display:none; margin-top:16px; padding:14px; background:rgba(0,0,0,0.5); border-radius:8px; text-align:center; color:#00BFFF; font-size:0.9em; border:1px solid rgba(0,191,255,0.2);">

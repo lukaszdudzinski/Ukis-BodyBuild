@@ -1,5 +1,15 @@
 [
   {
+    "version": "v2026.8.14.13",
+    "date": "2026-08-14",
+    "changes": [
+      "📐 Perfekcyjne Wyrównanie w Wierszu Serii: Checkbox, numer serii, pola ciężaru/powtórzeń oraz przycisk usunięcia są teraz idealnie wyśrodkowane w pionie na jednej linii wzroku!",
+      "🎯 Szablony Treningowe: Przyciski \"Wybierz\" i \"Usuń\" mają teraz idealnie równe proporcje (50%/50%) i zawsze mieszczą się w kafelku bez wyjeżdżania poza obrys.",
+      "✨ Symetria Przycisków Analiz: Przycisk \"Analiza Miesięczna\" zyskał identyczny, zbalansowany dwuliniowy układ jak \"Analiza Tygodniowa\".",
+      "🥋 Profesjonalna Komunikacja Trenera: Oczyszczono wszystkie dymki Trenera Edwarda z wulgaryzmów – teraz komunikaty są w 100% profesjonalne, motywujące i z lekkim, sportowym humorem!"
+    ]
+  },
+  {
     "version": "v2026.8.14.12",
     "date": "2026-08-14",
     "changes": [
