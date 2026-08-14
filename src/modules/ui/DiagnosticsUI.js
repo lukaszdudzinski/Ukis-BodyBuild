@@ -129,7 +129,7 @@ export const DiagnosticsUI = {
         const exportBtn = document.getElementById('db-export-btn');
         if (exportBtn) {
             exportBtn.addEventListener('click', async () => {
-                const dataStr = await DatabaseManager.exportDataJSON();
+                const dataStr = await DatabaseManager.exportDatabase();
                 const blob = new Blob([dataStr], {type: "application/json"});
                 const url = URL.createObjectURL(blob);
                 const a = document.createElement('a');
@@ -154,7 +154,7 @@ export const DiagnosticsUI = {
                 reader.onload = async (e) => {
                     try {
                         const jsonStr = e.target.result;
-                        await DatabaseManager.importDataJSON(jsonStr);
+                        await DatabaseManager.importDatabase(jsonStr);
                         alert("Dane przywrócone pomyślnie! Aplikacja zostanie zrestartowana.");
                         window.location.reload();
                     } catch (err) {
