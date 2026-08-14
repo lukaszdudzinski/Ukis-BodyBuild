@@ -155,6 +155,7 @@ export const HistoryUI = {
             id: Date.now(),
             name: templateName.trim(),
             type: rec.type || 'strength',
+            duration_seconds: rec.duration_seconds || 0,
             exercises: JSON.parse(JSON.stringify(rec.exercises)).map(ex => {
                 const newEx = { ...ex, cardioInterval: null };
                 return newEx;

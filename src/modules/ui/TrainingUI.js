@@ -178,15 +178,25 @@ export const TrainingUI = {
         `;
 
         templates.forEach(t => {
+            let typeLabel = 'Trening Siłowy';
+            if (t.type === 'cardio') typeLabel = 'Cardio';
+            else if (t.type === 'classes') typeLabel = 'Zajęcia zorganizowane';
+            
+            let durationInfo = t.duration_seconds ? `<br>Przewidywany czas: ${TrainingUI.formatTime(t.duration_seconds)}` : '';
+            
             html += `
-                <div style="background: #333; padding: 15px; border-radius: 8px; border: 1px solid #444; display: flex; justify-content: space-between; align-items: center;">
-                    <div>
-                        <strong style="color: #00BFFF;">${t.name}</strong><br>
-                        <span style="font-size: 0.8em; color: #888;">Typ: ${t.type}, Ćwiczeń: ${t.exercises && t.exercises.length ? t.exercises.length : 0}</span>
+                <div style="background: #333; padding: 15px; border-radius: 8px; border: 1px solid #444; display: flex; flex-direction: column; gap: 12px; margin-bottom: 10px;">
+                    <div style="text-align: center; border-bottom: 1px solid #555; padding-bottom: 8px;">
+                        <strong style="color: #00BFFF; font-size: 1.1em;">${t.name}</strong>
                     </div>
-                    <div style="display: flex; gap: 5px;">
-                        <button onclick="window.TrainingUI.startFromTemplate(${t.id})" class="action-button" style="background: #2ECC71; border-color: #2ECC71; color: #fff; padding: 8px 12px;">▶ Wybierz</button>
-                        <button onclick="window.TrainingUI.deleteTemplate(${t.id})" class="action-button" style="background: rgba(231, 76, 60, 0.2); border-color: transparent; color: #E74C3C; padding: 8px 12px;">🗑</button>
+                    <div style="font-size: 0.9em; color: #aaa; text-align: center;">
+                        Typ: ${typeLabel}<br>
+                        Ilość ćwiczeń w treningu: ${t.exercises && t.exercises.length ? t.exercises.length : 0}
+                        ${durationInfo}
+                    </div>
+                    <div style="display: flex; gap: 10px; width: 100%; margin-top: 5px;">
+                        <button onclick="window.TrainingUI.startFromTemplate(${t.id})" class="action-button" style="flex: 1; background: #2ECC71; border-color: #2ECC71; color: #fff; padding: 10px 12px;">▶ Wybierz</button>
+                        <button onclick="window.TrainingUI.deleteTemplate(${t.id})" class="action-button" style="background: rgba(231, 76, 60, 0.2); border-color: transparent; color: #E74C3C; padding: 10px 15px; flex-shrink: 0; min-width: 60px;">🗑 Usuń</button>
                     </div>
                 </div>
             `;
@@ -1052,25 +1062,30 @@ export const TrainingUI = {
                                 }
 
                                 return `
-                                    <div style="display: flex; justify-content: space-between; align-items: center; ${style} ${set.isCompleted ? 'background: rgba(46, 204, 113, 0.15); border-radius: 4px;' : ''}">
-                                        <div style="display: flex; align-items: center; gap: 8px; flex: 1; flex-wrap: wrap;">
-                                            <div style="display: flex; align-items: center; gap: 4px;">
+                                    <div style="display: flex; flex-direction: column; width: 100%; padding: 10px 0; border-bottom: 1px solid rgba(255,255,255,0.05); ${style} ${set.isCompleted ? 'background: rgba(46, 204, 113, 0.15); border-radius: 4px;' : ''}">
+                                        <!-- Wiersz 1: Checkbox, Seria i Usuń -->
+                                        <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+                                            <div style="display: flex; align-items: center; gap: 6px;">
                                                 <input type="checkbox" ${set.isCompleted ? 'checked' : ''} onchange="window.TrainingUI.toggleSetCompletion('${ex.id}', ${i}, this.checked)" style="transform: scale(1.3); cursor: pointer; accent-color: #2ECC71; margin-right: 2px;">
-                                                <span style="font-size: 0.9em; white-space: nowrap; ${set.isCompleted ? 'opacity: 0.6;' : ''}">${prefix}</span>
+                                                <span style="font-size: 1.05em; font-weight: bold; white-space: nowrap; ${set.isCompleted ? 'opacity: 0.6;' : ''}">${prefix}</span>
                                             </div>
-                                            
-                                            <div style="display: flex; align-items: center; justify-content: center; gap: 4px; flex: 1; min-width: 160px;">
-                                                <input type="number" class="training-input-large" value="${set.weight}" onchange="window.TrainingUI.updateSetInline('${ex.id}', ${i}, 'weight', this.value)" style="width: 75px; background: rgba(0,0,0,0.3); border: 1px solid #444; color: ${isDropset ? '#FF9800' : '#00BFFF'}; font-weight: bold; text-align: center; border-radius: 4px; padding: 4px; font-size: 1.2em;" inputmode="decimal"> 
-                                                <span style="font-size: 1.2em; color: #888;">kg</span>
-                                                <span style="color: #666; font-size: 1.2em;">x</span>
-                                                <input type="number" class="training-input-large" value="${set.reps}" onchange="window.TrainingUI.updateSetInline('${ex.id}', ${i}, 'reps', this.value)" style="width: 70px; background: rgba(0,0,0,0.3); border: 1px solid #444; color: #fff; font-weight: bold; text-align: center; border-radius: 4px; padding: 4px; font-size: 1.2em;" inputmode="numeric">
-                                            </div>
-                                            
-                                            <div style="width: 100%; display: flex; align-items: center; gap: 5px; margin-top: 2px;">
-                                                ${prBadge} ${ormText}
-                                            </div>
+                                            <button onclick="window.TrainingUI.removeSet('${ex.id}', ${i})" style="background: transparent; border: none; color: #ff4444; font-size: 1.4em; cursor: pointer; padding: 5px;">&times;</button>
                                         </div>
-                                        <button onclick="window.TrainingUI.removeSet('${ex.id}', ${i})" style="background: transparent; border: none; color: #ff4444; font-size: 1.4em; cursor: pointer; padding-left: 10px;">&times;</button>
+                                        
+                                        <!-- Wiersz 2: Inputy wyśrodkowane -->
+                                        <div style="display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; margin-top: 10px;">
+                                            <input type="number" class="training-input-large" value="${set.weight}" onchange="window.TrainingUI.updateSetInline('${ex.id}', ${i}, 'weight', this.value)" style="width: 70px; box-sizing: border-box; background: rgba(0,0,0,0.3); border: 1px solid #444; color: ${isDropset ? '#FF9800' : '#00BFFF'}; font-weight: bold; text-align: center; border-radius: 6px; font-size: 1.25em;" inputmode="decimal"> 
+                                            <span style="font-size: 1.2em; color: #888;">kg</span>
+                                            <span style="color: #666; font-size: 1.2em;">x</span>
+                                            <input type="number" class="training-input-large" value="${set.reps}" onchange="window.TrainingUI.updateSetInline('${ex.id}', ${i}, 'reps', this.value)" style="width: 60px; box-sizing: border-box; background: rgba(0,0,0,0.3); border: 1px solid #444; color: #fff; font-weight: bold; text-align: center; border-radius: 6px; font-size: 1.25em;" inputmode="numeric">
+                                        </div>
+                                        
+                                        <!-- Wiersz 3: Rekord i ORM -->
+                                        ${(prBadge || ormText) ? `
+                                        <div style="width: 100%; display: flex; justify-content: center; align-items: center; gap: 10px; margin-top: 10px;">
+                                            ${prBadge} ${ormText}
+                                        </div>
+                                        ` : ''}
                                     </div>
                                 `;
                             }).join('');

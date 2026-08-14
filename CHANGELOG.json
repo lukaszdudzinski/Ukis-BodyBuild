@@ -1,5 +1,13 @@
 [
   {
+    "version": "v2026.8.14.10",
+    "date": "2026-08-14",
+    "changes": [
+      "🔥 Responsywny formularz Serii: Całkowicie przebudowano wygląd wprowadzania powtórzeń i ciężaru. Pola są teraz niezależne i pięknie wyśrodkowane na ekranie. Koniec z nachodzącymi na siebie przyciskami (szczególnie widocznymi przy dużych czcionkach w systemie iOS!).",
+      "🎨 Nowy wygląd Szablonów: Przebudowano modal z zapisanymi planami treningowymi. O wiele czystszy układ z nazwą jako tytułem na środku, dokładnymi informacjami o przewidywanym czasie (jeśli zapisano z historii) oraz z wygodnymi przyciskami na całą szerokość ekranu."
+    ]
+  },
+  {
     "version": "v2026.8.14.09",
     "date": "2026-08-14",
     "changes": [
