@@ -65,10 +65,9 @@ export const DiagnosticsUI = {
                 const logsStr = localStorage.getItem('uki_error_logs');
                 if (!logsStr) {
                     logsContainer.innerText = 'Brak zarejestrowanych błędów :)';
-                    return;
-                }
-                const logsArray = JSON.parse(logsStr);
-                if (Array.isArray(logsArray) && logsArray.length > 0) {
+                } else {
+                    const logsArray = JSON.parse(logsStr);
+                    if (Array.isArray(logsArray) && logsArray.length > 0) {
                     const grouped = {};
                     logsArray.forEach(log => {
                         const v = log.version || 'Starsze wersje';
@@ -88,8 +87,9 @@ export const DiagnosticsUI = {
                         });
                     }
                     logsContainer.innerHTML = html;
-                } else {
-                    logsContainer.innerText = logsStr;
+                    } else {
+                        logsContainer.innerText = logsStr;
+                    }
                 }
             } catch(e) {
                 logsContainer.innerText = localStorage.getItem('uki_error_logs') || 'Brak zarejestrowanych błędów :)';

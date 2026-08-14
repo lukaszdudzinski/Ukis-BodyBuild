@@ -1,5 +1,12 @@
 [
   {
+    "version": "v2026.8.14.20",
+    "date": "2026-08-14",
+    "changes": [
+      "🛠 Naprawiono krytyczny błąd w zakładce Diagnostyka: przyciski (np. Przywróć z Pliku, Utwórz Archiwum) przestały reagować na kliknięcia, jeśli system nie miał zapisanych żadnych logów błędów."
+    ]
+  },
+  {
     "version": "v2026.8.14.19",
     "date": "2026-08-14",
     "changes": [
