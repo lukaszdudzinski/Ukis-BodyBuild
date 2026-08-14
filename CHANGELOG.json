@@ -1,5 +1,13 @@
 [
   {
+    "version": "v2026.8.14.22",
+    "date": "2026-08-14",
+    "changes": [
+      "🛠 Poprawiono kolejny błąd mapowania danych bazy podczas importu, tym razem w obrębie tabel dziennika diety (usunięto nieistniejące kolumny ze skryptu wczytującego).",
+      "📝 Ulepszono moduł logowania błędów: błędy podczas przywracania danych będą teraz zawsze poprawnie zapisywane w systemie logów Diagnostyki."
+    ]
+  },
+  {
     "version": "v2026.8.14.21",
     "date": "2026-08-14",
     "changes": [

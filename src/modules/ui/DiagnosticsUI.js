@@ -161,7 +161,8 @@ export const DiagnosticsUI = {
                         alert("Dane przywrócone pomyślnie! Aplikacja zostanie zrestartowana.");
                         window.location.reload();
                     } catch (err) {
-                        alert("Błąd przywracania danych. Upewnij się, że to poprawny plik kopii zapasowej.");
+                        if (window.ukiLogError) window.ukiLogError("Import Error: " + err.message, err.stack);
+                        alert("Błąd przywracania danych. Upewnij się, że to poprawny plik kopii zapasowej. Sprawdź logi w Diagnostyce.");
                     }
                 };
                 reader.readAsText(file);

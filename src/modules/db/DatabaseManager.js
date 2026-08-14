@@ -424,8 +424,8 @@ export const DatabaseManager = {
             if (data.dietLogs && Array.isArray(data.dietLogs)) {
                 data.dietLogs.forEach(d => {
                     db.exec({
-                        sql: `INSERT INTO diet_logs (id, date, meal_type, food_name, calories, protein, carbs, fat, image_data, analysis_result, created_at) 
-                              VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+                        sql: `INSERT INTO diet_logs (id, date, meal_type, food_name, calories, protein, carbs, fat, created_at) 
+                              VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
                         bind: [
                             d.id, 
                             d.date, 
@@ -435,8 +435,6 @@ export const DatabaseManager = {
                             d.protein || 0, 
                             d.carbs || 0, 
                             d.fat || 0, 
-                            d.image_data || null, 
-                            d.analysis_result || null, 
                             d.created_at || new Date().toISOString()
                         ]
                     });
