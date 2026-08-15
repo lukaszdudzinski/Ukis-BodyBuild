@@ -69,38 +69,43 @@ export const AnalyticsUI = {
         
         html += measurementReminderHtml;
 
-        // 2. Volume & Intensity Analytics
-        let analyticsContentHtml = '';
+        // 2. Volume, Cardio & Intensity Analytics
+        let analyticsContentHtml = "";
         
         let totalVolume = 0;
         let totalWorkouts = trainings.length;
         let thisMonthWorkouts = [];
         let thisMonthVolume = 0;
+        let totalCalories = 0;
+        let cardioCount = 0;
+        let classesCount = 0;
+        let strengthCount = 0;
 
         if (trainings.length === 0) {
-            analyticsContentHtml = '<p style="text-align: center; color: #888;">Za mało danych treningowych do przeprowadzenia analizy.</p>';
+            analyticsContentHtml = "<p style=\"text-align: center; color: #888;\">Za mało danych treningowych do przeprowadzenia analizy.</p>";
         } else {
-            // Calculate total volume for each training
+            // Calculate total volume and smartwatch metrics for each training
             const workoutsWithVolume = trainings.map(t => {
                 let vol = 0;
                 let volBody = 0;
                 let volMachine = 0;
 
-                t.exercises.forEach(ex => {
-                    const exName = ex.name ? ex.name.toLowerCase() : '';
-                    const isBodyweight65 = exName.includes('pompk');
-                    const isBodyweight100 = exName.includes('podciąg') || exName.includes('drąż') || exName.includes('brzuszk') || exName.includes('wspięcia');
+                const exercises = t.exercises || [];
+                exercises.forEach(ex => {
+                    const exName = ex.name ? ex.name.toLowerCase() : "";
+                    const isBodyweight65 = exName.includes("pompk");
+                    const isBodyweight100 = exName.includes("podciąg") || exName.includes("drąż") || exName.includes("brzuszk") || exName.includes("wspięcia");
                     
                     if (ex.sets) {
                         ex.sets.forEach(set => {
-                            let weightForVolume = set.weight;
+                            let weightForVolume = (set.weight !== undefined && set.weight !== null) ? Number(set.weight) : 0;
                             if (isBodyweight65) {
                                 weightForVolume += (measurements.length > 0 ? (measurements[0].weight * 0.65) : 0);
                             } else if (isBodyweight100) {
                                 weightForVolume += (measurements.length > 0 ? measurements[0].weight : 0);
                             }
                             
-                            const setTonnage = weightForVolume * set.reps;
+                            const setTonnage = weightForVolume * (set.reps ? Number(set.reps) : 0);
                             vol += setTonnage;
                             if (isBodyweight65 || isBodyweight100) {
                                 volBody += setTonnage;
@@ -110,7 +115,26 @@ export const AnalyticsUI = {
                         });
                     }
                 });
-                return { date: new Date(t.date), volume: vol, volBody, volMachine };
+
+                const sw = t.smartwatch || {};
+                const calories = sw.calories ? Number(sw.calories) : 0;
+                const hr = sw.hr ? Number(sw.hr) : null;
+                const type = t.type || (vol > 0 ? "strength" : (calories > 0 ? "classes" : "strength"));
+                const durationMinutes = t.duration_seconds ? Math.round(t.duration_seconds / 60) : null;
+
+                return { 
+                    id: t.id,
+                    name: t.name || "",
+                    date: new Date(t.date), 
+                    volume: vol, 
+                    volBody, 
+                    volMachine, 
+                    type,
+                    calories, 
+                    hr, 
+                    durationMinutes,
+                    duration_seconds: t.duration_seconds || 0
+                };
             });
 
             // Sort by date descending
@@ -123,54 +147,99 @@ export const AnalyticsUI = {
                 totalVolume += w.volume;
                 totalVolBody += w.volBody;
                 totalVolMachine += w.volMachine;
+                if (w.calories > 0) totalCalories += w.calories;
+                if (w.type === "cardio") cardioCount++;
+                else if (w.type === "classes") classesCount++;
+                else strengthCount++;
             });
 
             const thisMonth = new Date().getMonth();
             const thisYear = new Date().getFullYear();
             
             thisMonthWorkouts = workoutsWithVolume.filter(w => w.date.getMonth() === thisMonth && w.date.getFullYear() === thisYear);
-            
             thisMonthWorkouts.forEach(w => thisMonthVolume += w.volume);
 
+            const maxStrengthVol = Math.max(...workoutsWithVolume.filter(w => w.type === "strength" || w.volume > 0).map(wo => wo.volume), 1);
+            const maxCardioCalories = Math.max(...workoutsWithVolume.filter(w => w.type === "cardio" || w.type === "classes" || w.volume === 0).map(wo => wo.calories), 1);
+
             analyticsContentHtml = `
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 25px;">
-                    <div style="background: rgba(0,0,0,0.5); border: 1px solid #00BFFF; padding: 15px; border-radius: 8px; text-align: center; grid-column: span 2;">
-                        <div style="font-size: 2em; color: #00BFFF; font-weight: bold; margin-bottom: 5px;">${totalWorkouts}</div>
-                        <div style="font-size: 0.8em; color: #aaa; text-transform: uppercase;">Wszystkich Treningów</div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 25px;">
+                    <div style="background: rgba(0,0,0,0.5); border: 1px solid #00BFFF; padding: 12px; border-radius: 8px; text-align: center;">
+                        <div style="font-size: 1.8em; color: #00BFFF; font-weight: bold; margin-bottom: 3px;">${totalWorkouts}</div>
+                        <div style="font-size: 0.75em; color: #aaa; text-transform: uppercase;">Wszystkich Treningów</div>
                     </div>
-                    <div style="background: rgba(0,0,0,0.5); border: 1px solid #E91E63; padding: 15px; border-radius: 8px; text-align: center;">
-                        <div style="font-size: 1.5em; color: #E91E63; font-weight: bold; margin-bottom: 5px;">${Math.round(totalVolMachine)} kg</div>
+                    <div style="background: rgba(0,0,0,0.5); border: 1px solid #FF9800; padding: 12px; border-radius: 8px; text-align: center;">
+                        <div style="font-size: 1.8em; color: #FF9800; font-weight: bold; margin-bottom: 3px;">${totalCalories > 0 ? totalCalories.toLocaleString("pl-PL") : "0"} <span style="font-size: 0.6em;">kcal</span></div>
+                        <div style="font-size: 0.75em; color: #aaa; text-transform: uppercase;">Spalone (Smartwatch)</div>
+                    </div>
+                    <div style="background: rgba(0,0,0,0.5); border: 1px solid #E91E63; padding: 12px; border-radius: 8px; text-align: center;">
+                        <div style="font-size: 1.4em; color: #E91E63; font-weight: bold; margin-bottom: 3px;">${Math.round(totalVolMachine)} kg</div>
                         <div style="font-size: 0.7em; color: #aaa; text-transform: uppercase;">Tonaż Żelastwa</div>
                     </div>
-                    <div style="background: rgba(0,0,0,0.5); border: 1px solid #2ECC71; padding: 15px; border-radius: 8px; text-align: center;">
-                        <div style="font-size: 1.5em; color: #2ECC71; font-weight: bold; margin-bottom: 5px;">${Math.round(totalVolBody)} kg</div>
+                    <div style="background: rgba(0,0,0,0.5); border: 1px solid #2ECC71; padding: 12px; border-radius: 8px; text-align: center;">
+                        <div style="font-size: 1.4em; color: #2ECC71; font-weight: bold; margin-bottom: 3px;">${Math.round(totalVolBody)} kg</div>
                         <div style="font-size: 0.7em; color: #aaa; text-transform: uppercase;">Tonaż Ciała <span style="cursor:help;" title="Liczone automatycznie na podstawie wagi użytkownika">ℹ️</span></div>
                     </div>
                 </div>
                 
-                
                 <h4 style="color: #00BFFF; border-bottom: 1px solid rgba(0,191,255,0.2); padding-bottom: 5px; margin-bottom: 15px;">Zaawansowana Analityka (PRO)</h4>
                 
                 <div style="background: rgba(255,255,255,0.05); padding: 15px; border-radius: 8px; margin-bottom: 20px;">
-                    <p style="margin: 0 0 10px 0; font-size: 1.1em; color: #fff;">Zrobiłeś <strong>${thisMonthWorkouts.length}</strong> treningów, podnosząc łącznie <strong>${thisMonthVolume} kg</strong>!</p>
-                    ${thisMonthVolume > 10000 
-                        ? '<p style="color: #2ECC71; margin: 0; font-weight: bold;">🔥 Jesteś prawdziwą bestią! Świetna robota!</p>' 
-                        : '<p style="color: #00BFFF; margin: 0;">💪 Każdy kilogram przybliża Cię do celu. Nie przestawaj!</p>'}
+                    <p style="margin: 0 0 10px 0; font-size: 1.05em; color: #fff;">W tym miesiącu: <strong>${thisMonthWorkouts.length}</strong> aktywności, w tym <strong>${thisMonthVolume > 0 ? (thisMonthVolume >= 1000 ? (thisMonthVolume/1000).toFixed(1) + " t" : thisMonthVolume + " kg") : "0 kg"}</strong> tonażu siłowego!</p>
+                    ${thisMonthWorkouts.length >= 8 
+                        ? '<p style="color: #2ECC71; margin: 0; font-weight: bold;">🔥 Konsekwencja mistrza! Świetna robota!</p>' 
+                        : '<p style="color: #00BFFF; margin: 0;">💪 Każda sesja przybliża Cię do życiowej formy. Nie przestawaj!</p>'}
                 </div>
                 
-                <h5 style="color: #FFD700; margin-top: 15px; margin-bottom: 5px;">📈 Ostatnie 10 sesji treningowych</h5>
-                <p style="font-size: 0.8em; color: #aaa; margin: 0 0 12px 0;">Pasek pokazuje względną objętość sesji (im szerszy, tym mocniejszy trening).</p>
+                <h5 style="color: #FFD700; margin-top: 15px; margin-bottom: 5px;">📈 Ostatnie 10 sesji treningowych (Wykres Hybrydowy)</h5>
+                <p style="font-size: 0.8em; color: #aaa; margin: 0 0 12px 0;">Pasek pokazuje zaangażowanie sesji (Zielony/Żółty = Tonaż siłowy, Ognisty = Zajęcia zorganizowane / Hyrox, Niebieski = Cardio).</p>
                 <div style="display: flex; flex-direction: column; gap: 8px; margin-bottom: 25px;">
                     ${workoutsWithVolume.slice(0,10).reverse().map(w => {
-                        const maxVol = Math.max(...workoutsWithVolume.slice(0,10).map(wo => wo.volume)) || 1;
-                        const barPct = Math.min(100, Math.max(4, Math.round((w.volume / maxVol) * 100)));
                         const dateStr = new Date(w.date).toLocaleDateString('pl-PL', {weekday:'short', day:'numeric', month:'short'});
-                        const displayVol = w.volume >= 1000 ? (w.volume/1000).toFixed(1) + ' t' : Math.round(w.volume) + ' kg';
-                        const barColor = barPct >= 80 ? '#2ECC71' : barPct >= 50 ? '#FFD700' : '#FF9800';
-                        return '<div style="background: rgba(255,255,255,0.04); border-radius: 6px; padding: 8px 12px;">'
+                        const isCardioOrClasses = (w.type === "cardio" || w.type === "classes") || (w.volume === 0 && (w.calories > 0 || w.duration_seconds > 0));
+                        
+                        let barPct = 10;
+                        let barColor = "#FF9800";
+                        let displayVal = "";
+                        let typeBadge = "";
+
+                        if (isCardioOrClasses) {
+                            const isClasses = w.type === "classes" || (!w.type && w.volume === 0);
+                            typeBadge = isClasses ? "🔥 Zajęcia" : "🏃 Cardio";
+                            barColor = isClasses ? "#FF5722" : "#00BFFF";
+                            
+                            const calVal = w.calories > 0 ? w.calories : (w.durationMinutes ? w.durationMinutes * 7 : 200);
+                            barPct = Math.min(100, Math.max(15, Math.round((calVal / Math.max(maxCardioCalories, 500)) * 100)));
+                            
+                            if (w.calories > 0) {
+                                displayVal = `${w.calories} kcal`;
+                            } else if (w.durationMinutes) {
+                                displayVal = `⏱️ ${w.durationMinutes} min`;
+                            } else {
+                                displayVal = `Aktywność`;
+                            }
+                            
+                            if (w.hr) {
+                                displayVal += ` <span style="font-size: 0.85em; opacity: 0.85;">(💓${w.hr})</span>`;
+                            }
+                        } else {
+                            typeBadge = "🏋️ Siła";
+                            barPct = Math.min(100, Math.max(8, Math.round((w.volume / maxStrengthVol) * 100)));
+                            barColor = barPct >= 80 ? "#2ECC71" : (barPct >= 50 ? "#FFD700" : "#FF9800");
+                            
+                            const volStr = w.volume >= 1000 ? (w.volume/1000).toFixed(1) + " t" : Math.round(w.volume) + " kg";
+                            displayVal = volStr;
+                            if (w.calories > 0) {
+                                displayVal += ` <span style="font-size: 0.8em; opacity: 0.85;">(🔥${w.calories})</span>`;
+                            }
+                        }
+
+                        const workoutNameDisplay = w.name ? `<span style="color: #888; font-size: 0.8em; margin-left: 6px;">${w.name}</span>` : "";
+
+                        return '<div style="background: rgba(255,255,255,0.04); border-radius: 6px; padding: 8px 12px; border-left: 3px solid ' + barColor + ';">'
                             + '<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">'
-                            + '<span style="font-size: 0.85em; color: #ccc;">' + dateStr + '</span>'
-                            + '<span style="font-size: 0.85em; color: ' + barColor + '; font-weight: bold;">' + displayVol + '</span>'
+                            + '<span style="font-size: 0.85em; color: #ccc;">' + dateStr + ' <span style="font-size: 0.8em; color: #aaa; background: rgba(255,255,255,0.08); padding: 2px 6px; border-radius: 4px; margin-left: 4px;">' + typeBadge + '</span>' + workoutNameDisplay + '</span>'
+                            + '<span style="font-size: 0.85em; color: ' + barColor + '; font-weight: bold;">' + displayVal + '</span>'
                             + '</div>'
                             + '<div style="background: rgba(255,255,255,0.08); border-radius: 3px; height: 6px; overflow: hidden;">'
                             + '<div style="height: 100%; width: ' + barPct + '%; background: ' + barColor + '; border-radius: 3px; transition: width 0.6s ease;"></div>'
@@ -180,32 +249,52 @@ export const AnalyticsUI = {
                 </div>
             `;
             
-            // Highlight of recent progress (simplistic comparison of last 2 workouts)
+            // Highlight of recent progress
             if (workoutsWithVolume.length >= 2) {
-                const diff = workoutsWithVolume[0].volume - workoutsWithVolume[1].volume;
-                let trendIcon = '➖';
-                let trendColor = '#aaa';
-                let trendText = `Utrzymujesz dokładnie ten sam poziom obciążenia (różnica: ${diff} kg). Stabilność też jest ważna!`;
-                
-                if (diff > 0) {
-                    trendIcon = '📈';
-                    trendColor = '#2ECC71';
-                    trendText = `Zwiększyłeś objętość o ${Math.abs(diff)} kg w porównaniu do poprzedniej sesji! Rewelacja!`;
-                } else if (diff < 0) {
-                    trendIcon = '📉';
-                    trendColor = '#ff4444';
-                    trendText = `Tym razem ${Math.abs(diff)} kg mniej niż ostatnio. Odpocznij jeśli trzeba, ważna jest technika!`;
+                const latest = workoutsWithVolume[0];
+                const prev = workoutsWithVolume[1];
+                let trendIcon = "📈";
+                let trendColor = "#2ECC71";
+                let trendTitle = "Porównanie z poprzednią sesją";
+                let trendText = "";
+
+                const latestIsCardio = (latest.type === "cardio" || latest.type === "classes" || latest.volume === 0);
+                const prevIsCardio = (prev.type === "cardio" || prev.type === "classes" || prev.volume === 0);
+
+                if (latestIsCardio) {
+                    trendIcon = "🔥";
+                    trendColor = latest.type === "classes" ? "#FF5722" : "#00BFFF";
+                    trendTitle = "Aktywność Tlenowa";
+                    trendText = `Ostatnia sesja to świetny wysiłek (${latest.type === "classes" ? "Zajęcia zorganizowane" : "Cardio"})! ${latest.calories > 0 ? "Spaliłeś ok. " + latest.calories + " kcal" : "Czas trwania: " + (latest.durationMinutes || 0) + " min"}${latest.hr ? " przy tętnie " + latest.hr + " bpm" : ""}. Regeneracja siłowa zachowana!`;
+                } else if (!prevIsCardio && latest.volume > 0) {
+                    const diff = latest.volume - prev.volume;
+                    if (diff > 0) {
+                        trendIcon = "📈";
+                        trendColor = "#2ECC71";
+                        trendText = `Zwiększyłeś objętość o ${Math.abs(diff)} kg w porównaniu do poprzedniej sesji siłowej! Rewelacja!`;
+                    } else if (diff < 0) {
+                        trendIcon = "📉";
+                        trendColor = "#ff4444";
+                        trendText = `Tym razem ${Math.abs(diff)} kg mniej niż ostatnio. Odpocznij jeśli trzeba, ważna jest technika!`;
+                    } else {
+                        trendIcon = "➖";
+                        trendColor = "#aaa";
+                        trendText = `Utrzymujesz dokładnie ten sam poziom obciążenia siłowego (${latest.volume} kg). Stabilność też jest ważna!`;
+                    }
+                } else {
+                    trendIcon = "💪";
+                    trendColor = "#2ECC71";
+                    trendText = `Solidna sesja siłowa: ${latest.volume >= 1000 ? (latest.volume/1000).toFixed(1) + " t" : latest.volume + " kg"} tonażu! Dobry powrót do żelastwa po przerwie tlenowej.`;
                 }
                 
                 analyticsContentHtml += `
                     <div style="background: rgba(0,0,0,0.3); border: 1px solid ${trendColor}; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
-                        <strong style="color: ${trendColor};">${trendIcon} Porównanie z poprzednią sesją</strong>
+                        <strong style="color: ${trendColor};">${trendIcon} ${trendTitle}</strong>
                         <p style="margin: 5px 0 0 0; font-size: 0.9em; color: #ccc;">${trendText}</p>
                     </div>
                 `;
             }
-        } // End of trainings if/else block
-
+        }
         // --- MUSCLE ATLAS (Regeneration) ---
         let muscleAtlasHtml = '<h4 style="color: #00BFFF; border-bottom: 1px solid rgba(0,191,255,0.2); padding-bottom: 5px; margin-bottom: 15px; margin-top: 25px;">Regeneracja i Atlas Mięśni</h4>';
         

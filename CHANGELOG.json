@@ -1,5 +1,12 @@
 [
   {
+    "version": "v2026.8.15.2",
+    "date": "2026-08-15",
+    "changes": [
+      "🔥 [HOTFIX] Wdrożenie Wykresu Hybrydowego i nowych kafelków w Analizie Progresu."
+    ]
+  },
+  {
     "version": "v2026.8.15.1",
     "date": "2026-08-15",
     "changes": [
