@@ -1,5 +1,13 @@
 [
   {
+    "version": "v2026.8.15.3",
+    "date": "2026-08-15",
+    "changes": [
+      "✨ Poprawiono ergonomię ikony Informacji (ℹ️): kliknięcie w ikonę przy Tonażu Ciała otwiera teraz elegancki modal wyjaśniający obliczenia kalisteniczne na urządzeniach mobilnych.",
+      "🎩 Ujednolicono ton wypowiedzi Trenera Edwarda w module atlasu mięśni na w pełni profesjonalny i merytoryczny."
+    ]
+  },
+  {
     "version": "v2026.8.15.2",
     "date": "2026-08-15",
     "changes": [

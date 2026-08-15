@@ -178,7 +178,10 @@ export const AnalyticsUI = {
                     </div>
                     <div style="background: rgba(0,0,0,0.5); border: 1px solid #2ECC71; padding: 12px; border-radius: 8px; text-align: center;">
                         <div style="font-size: 1.4em; color: #2ECC71; font-weight: bold; margin-bottom: 3px;">${Math.round(totalVolBody)} kg</div>
-                        <div style="font-size: 0.7em; color: #aaa; text-transform: uppercase;">Tonaż Ciała <span style="cursor:help;" title="Liczone automatycznie na podstawie wagi użytkownika">ℹ️</span></div>
+                        <div style="font-size: 0.7em; color: #aaa; text-transform: uppercase; display: flex; align-items: center; justify-content: center; gap: 4px;">
+                        <span>Tonaż Ciała</span>
+                        <button type="button" onclick="window.AnalyticsUI.showBodyweightInfoModal()" style="background: none; border: none; padding: 0; font-size: 1.1em; cursor: pointer; line-height: 1;" title="Informacja o tonażu ciała">ℹ️</button>
+                    </div>
                     </div>
                 </div>
                 
@@ -355,7 +358,7 @@ export const AnalyticsUI = {
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
                         ${atlasCards}
                     </div>
-                    ${tiredCount > 3 ? '<p style="color: #ff9800; font-size: 0.9em; margin: 15px 0 0 0; font-weight: bold; text-align: center;">Trener Edward radzi: "Zluzuj trochę gacie, przetrenowałeś pół ciała! Jutro zrób cardio albo odpocznij."</p>' : ''}
+                    ${tiredCount > 3 ? '<p style="color: #ff9800; font-size: 0.9em; margin: 15px 0 0 0; font-weight: bold; text-align: center;">Trener Edward radzi: "Wysoki poziom zmęczenia mięśniowego po ostatnich sesjach. Zadbaj o pełną regenerację, sen i nawodnienie przed kolejnym ciężkim treningiem!"</p>' : ''}
                 </div>
             `;
         }
@@ -626,6 +629,33 @@ export const AnalyticsUI = {
                 window.prompt("Skopiuj swój wynik poniżej (Ctrl+C / Cmd+C):", textToShare);
             }
         }
+    },
+
+    
+    showBodyweightInfoModal: () => {
+        let modal = document.getElementById("analytics-info-modal");
+        if (!modal) {
+            modal = document.createElement("div");
+            modal.id = "analytics-info-modal";
+            modal.style.cssText = "position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 9999; display: flex; justify-content: center; align-items: center; padding: 20px; box-sizing: border-box; backdrop-filter: blur(5px); flex-direction: column; opacity: 0; transition: opacity 0.3s;";
+            document.body.appendChild(modal);
+        }
+
+        modal.innerHTML = `
+            <div style="background: #1e1e1e; padding: 25px; border-radius: 12px; width: 100%; max-width: 400px; border-top: 5px solid #2ECC71; box-shadow: 0 10px 30px rgba(0,0,0,0.8); position: relative; box-sizing: border-box; text-align: center;">
+                <h3 style="color: #2ECC71; margin-top: 0; font-size: 1.3em;">ℹ️ Co to jest Tonaż Ciała?</h3>
+                <p style="color: #ddd; font-size: 0.95em; line-height: 1.6; margin-bottom: 25px; text-align: left;">
+                    To szacowana objętość pracy wykonana przy użyciu masy własnego ciała.<br><br>
+                    Aplikacja automatycznie przelicza Twoją wagę na realne obciążenie:<br>
+                    • <strong>Podciąganie / Brzuszki:</strong> 100% wagi ciała<br>
+                    • <strong>Pompki klasyczne:</strong> ok. 65% wagi ciała<br><br>
+                    Dzięki temu ćwiczenia kalisteniczne są sprawiedliwie wliczane do Twojej całkowitej objętości treningowej!
+                </p>
+                <button onclick="document.getElementById('analytics-info-modal').style.opacity='0'; setTimeout(()=>document.getElementById('analytics-info-modal').style.display='none', 300);" style="background: #333; color: #fff; border: 1px solid #555; padding: 10px 30px; border-radius: 6px; font-weight: bold; font-size: 1em; cursor: pointer; display: inline-block;">Rozumiem</button>
+            </div>
+        `;
+        modal.style.display = "flex";
+        setTimeout(() => modal.style.opacity = "1", 10);
     },
 
     showInfoModal: (type, value) => {
