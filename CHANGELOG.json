@@ -1,5 +1,15 @@
 [
   {
+    "version": "v2026.8.15.1",
+    "date": "2026-08-15",
+    "changes": [
+      "🔥 Wdrożono Wykres Hybrydowy w Analizie Progresu: pełne wsparcie dla treningów Cardio oraz Zajęć Zorganizowanych (Hyrox, Crossfit, Zumba, Spinning).",
+      "📈 Koniec z 0 kg! Paski dla aktywności tlenowych mają teraz dedykowane kolory (Ognisty dla Zajęć, Niebieski dla Cardio) i prezentują spalone kalorie (kcal), średnie tętno (bpm) oraz czas trwania.",
+      "📊 Dodano nowy kafelek analityczny ze statystykami spalonych kalorii z zegarków (Smartwatch) na samej górze ekranu analizy.",
+      "🧠 Inteligentny komparator trendu: aplikacja rozróżnia sesje siłowe od tlenowych, nie porównując błędnie tonażu między różnymi dyscyplinami."
+    ]
+  },
+  {
     "version": "v2026.8.14.22",
     "date": "2026-08-14",
     "changes": [
