@@ -1,5 +1,13 @@
 [
   {
+    "version": "v2026.8.17.4",
+    "date": "2026-08-17",
+    "changes": [
+      "🎨 Czysty layout grafiki do social mediów: Usunięto nakładający się niebieski napis ze stopki wygenerowanego obrazu.",
+      "📐 Inteligentne skalowanie: Rekordy siłowe na wygenerowanej karcie są teraz dynamicznie rozmieszczane, aby idealnie wypełniać kadr bez obcinania tekstu."
+    ]
+  },
+  {
     "version": "v2026.8.17.3",
     "date": "2026-08-17",
     "changes": [

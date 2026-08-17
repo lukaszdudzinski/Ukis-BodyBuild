@@ -65,11 +65,7 @@ export const ShareUtils = {
                 ctx.textAlign = 'right';
                 // Nie rysujemy nicka na dole z boku
                 
-                // Add encouragement text
-                ctx.fillStyle = '#00BFFF';
-                ctx.font = 'italic 35px Arial';
-                ctx.textAlign = 'center';
-                ctx.fillText("UkiBodyBuild (Kliknij w link poniżej by dołączyć!)", canvas.width / 2, canvas.height - 40);
+                // No overlay text in footer
                 
                 // convert canvas to blob and share
                 canvas.toBlob(async (blob) => {
@@ -118,15 +114,24 @@ export const ShareUtils = {
                 }
             }
             
-            // Draw Stats - Przesuwamy Statsy niżej z powodu avatara (np z 430 na 500)
-            ctx.font = 'bold 50px Arial';
-            let y = 530;
+            // Draw Stats - dynamiczne skalowanie w zależności od liczby rekordów
+            const itemCount = statsList.length;
+            const startY = itemCount >= 4 ? 470 : (itemCount === 3 ? 500 : 540);
+            const stepY = itemCount >= 4 ? 135 : 160;
+            const labelFontSize = itemCount >= 4 ? 38 : 46;
+            const valueFontSize = itemCount >= 4 ? 46 : 52;
+
+            let y = startY;
             statsList.forEach(stat => {
+                ctx.font = `bold ${labelFontSize}px Arial`;
                 ctx.fillStyle = '#aaa';
                 ctx.fillText(stat.label, canvas.width / 2, y);
+
+                ctx.font = `bold ${valueFontSize}px Arial`;
                 ctx.fillStyle = stat.color || '#2ECC71';
-                ctx.fillText(stat.value, canvas.width / 2, y + 60);
-                y += 160;
+                ctx.fillText(stat.value, canvas.width / 2, y + (itemCount >= 4 ? 50 : 60));
+                
+                y += stepY;
             });
 
             drawFooter();
