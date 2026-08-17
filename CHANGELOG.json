@@ -1,5 +1,12 @@
 [
   {
+    "version": "v2026.8.17.2",
+    "date": "2026-08-17",
+    "changes": [
+      "🏆 Precyzja faktów: Kafelki Rekordów Siłowych pokazują teraz Rzeczywisty Podniesiony Ciężar (np. 100 kg w 10 powtórzeniach), a szacowany wskaźnik 1RM prezentowany jest jako dodatkowa, czytelna ciekawostka."
+    ]
+  },
+  {
     "version": "v2026.8.17.1",
     "date": "2026-08-17",
     "changes": [

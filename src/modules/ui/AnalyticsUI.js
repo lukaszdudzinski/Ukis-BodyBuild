@@ -317,15 +317,16 @@ export const AnalyticsUI = {
                         const weight = Number(s.weight);
                         const reps = Number(s.reps);
 
-                        if (!isNaN(weight) && weight > 0 && !isNaN(reps) && reps >= 1 && reps <= 15) {
+                        if (!isNaN(weight) && weight > 0 && !isNaN(reps) && reps >= 1) {
                             // Epley formula: 1RM = Weight * (1 + Reps / 30)
                             const estimated1Rm = reps === 1 ? weight : Math.round(weight * (1 + (reps / 30)) * 10) / 10;
                             
-                            if (!exerciseMaxMap[cleanName] || estimated1Rm > exerciseMaxMap[cleanName].max1Rm) {
+                            // Wybieramy serię z największym rzeczywistym ciężarem (a przy remisie z większą liczbą powtórzeń)
+                            if (!exerciseMaxMap[cleanName] || weight > exerciseMaxMap[cleanName].actualWeight || (weight === exerciseMaxMap[cleanName].actualWeight && reps > exerciseMaxMap[cleanName].reps)) {
                                 exerciseMaxMap[cleanName] = {
                                     name: cleanName,
+                                    actualWeight: weight,
                                     max1Rm: estimated1Rm,
-                                    weight: weight,
                                     reps: reps,
                                     date: tDate
                                 };
@@ -335,7 +336,7 @@ export const AnalyticsUI = {
                 });
             });
 
-            const recordsList = Object.values(exerciseMaxMap).sort((a, b) => b.max1Rm - a.max1Rm);
+            const recordsList = Object.values(exerciseMaxMap).sort((a, b) => b.actualWeight - a.actualWeight);
 
             if (recordsList.length > 0) {
                 const topRecords = recordsList.slice(0, 4);
@@ -344,12 +345,12 @@ export const AnalyticsUI = {
                     <div style="margin-top: 25px; margin-bottom: 25px;">
                         <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,215,0,0.3); padding-bottom: 5px; margin-bottom: 8px;">
                             <h4 style="color: #FFD700; margin: 0; display: flex; align-items: center; gap: 6px; font-size: 1.1em;">
-                                🏆 Twoje Rekordy Siłowe (1RM)
+                                🏆 Twoje Rekordy Siłowe (Faktyczny Ciężar)
                             </h4>
                             <button type="button" onclick="window.AnalyticsUI.show1RmInfoModal()" style="background: rgba(255,215,0,0.15); border: 1px solid #FFD700; color: #FFD700; border-radius: 50%; width: 26px; height: 26px; font-size: 0.9em; cursor: pointer; display: flex; align-items: center; justify-content: center; font-weight: bold; line-height: 1;" title="Czym jest 1RM?">ℹ️</button>
                         </div>
                         <p style="font-size: 0.8em; color: #aaa; margin: 0 0 12px 0;">
-                            <strong>1RM (One Rep Max)</strong> to Twój szacowany maksymalny ciężar na 1 powtórzenie, wyliczony bezpiecznie z najlepszych serii roboczych.
+                            Prawdziwy, największy podniesiony ciężar w serii roboczej z wyliczonym teoretycznym <strong>1RM</strong>.
                         </p>
                         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
                             ${topRecords.map(r => {
@@ -358,8 +359,9 @@ export const AnalyticsUI = {
                                     <div style="background: rgba(255,255,255,0.04); border: 1px solid rgba(255,215,0,0.2); border-radius: 8px; padding: 10px; display: flex; flex-direction: column; justify-content: space-between;">
                                         <div style="font-size: 0.85em; color: #eee; font-weight: bold; margin-bottom: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${r.name}">${r.name}</div>
                                         <div>
-                                            <div style="font-size: 1.3em; color: #FFD700; font-weight: 800; line-height: 1.1;">${r.max1Rm.toFixed(1)} <span style="font-size: 0.6em; color: #fff;">kg</span></div>
-                                            <div style="font-size: 0.7em; color: #888; margin-top: 3px;">z serii: ${r.weight} kg × ${r.reps} (${dStr})</div>
+                                            <div style="font-size: 1.35em; color: #FFD700; font-weight: 800; line-height: 1.1;">${r.actualWeight} <span style="font-size: 0.6em; color: #fff;">kg</span></div>
+                                            <div style="font-size: 0.72em; color: #bbb; margin-top: 3px;">seria: ${r.reps} powt. (${dStr})</div>
+                                            <div style="font-size: 0.68em; color: #00BFFF; margin-top: 2px;">Szac. 1RM: ~${r.max1Rm.toFixed(1)} kg</div>
                                         </div>
                                     </div>
                                 `;
