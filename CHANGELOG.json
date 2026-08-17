@@ -1,5 +1,12 @@
 [
   {
+    "version": "v2026.8.17.3",
+    "date": "2026-08-17",
+    "changes": [
+      "📤 Udostępnianie Rekordów Siłowych: Dodano dedykowany przycisk generujący estetyczną grafikę z Twoimi najlepszymi wynikami siłowymi, gotową do publikacji na Instagramie lub Facebooku."
+    ]
+  },
+  {
     "version": "v2026.8.17.2",
     "date": "2026-08-17",
     "changes": [

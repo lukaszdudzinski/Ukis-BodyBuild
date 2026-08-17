@@ -367,6 +367,11 @@ export const AnalyticsUI = {
                                 `;
                             }).join("")}
                         </div>
+                        <div style="text-align: center; margin-top: 12px;">
+                            <button type="button" onclick="window.AnalyticsUI.shareRecords()" class="action-button" style="background: linear-gradient(135deg, #FFD700, #FF9800); color: #000; font-weight: bold; border: none; padding: 10px 18px; border-radius: 6px; font-size: 0.9em; cursor: pointer; width: 100%; box-shadow: 0 4px 12px rgba(255,215,0,0.25);">
+                                📤 Udostępnij swoje rekordy
+                            </button>
+                        </div>
                     </div>
                 `;
                 analyticsContentHtml += records1RmHtml;
@@ -660,6 +665,67 @@ export const AnalyticsUI = {
 
         html += analyticsContentHtml;
         container.innerHTML = html;
+    },
+
+    
+    shareRecords: async () => {
+        try {
+            const trainings = await DatabaseManager.getTrainings();
+            const exerciseMaxMap = {};
+
+            trainings.forEach(t => {
+                const exList = t.exercises || [];
+                const tDate = t.date;
+
+                exList.forEach(ex => {
+                    if (!ex.name) return;
+                    const cleanName = ex.name.trim();
+                    if (!cleanName) return;
+
+                    const sets = ex.sets || [];
+                    sets.forEach(s => {
+                        const weight = Number(s.weight);
+                        const reps = Number(s.reps);
+
+                        if (!isNaN(weight) && weight > 0 && !isNaN(reps) && reps >= 1) {
+                            const estimated1Rm = reps === 1 ? weight : Math.round(weight * (1 + (reps / 30)) * 10) / 10;
+                            if (!exerciseMaxMap[cleanName] || weight > exerciseMaxMap[cleanName].actualWeight || (weight === exerciseMaxMap[cleanName].actualWeight && reps > exerciseMaxMap[cleanName].reps)) {
+                                exerciseMaxMap[cleanName] = {
+                                    name: cleanName,
+                                    actualWeight: weight,
+                                    max1Rm: estimated1Rm,
+                                    reps: reps,
+                                    date: tDate
+                                };
+                            }
+                        }
+                    });
+                });
+            });
+
+            const topRecords = Object.values(exerciseMaxMap).sort((a, b) => b.actualWeight - a.actualWeight).slice(0, 4);
+
+            if (topRecords.length === 0) {
+                alert("Brak zarejestrowanych serii siłowych do wygenerowania grafiki.");
+                return;
+            }
+
+            let avatar = localStorage.getItem("uki-avatar") || localStorage.getItem("uki-bodybuild-avatar") || null;
+            let nickname = localStorage.getItem("uki-nickname") || localStorage.getItem("userNick") || "BodyBuilder";
+
+            const statsList = topRecords.map(r => ({
+                label: r.name,
+                value: `${r.actualWeight} kg (${r.reps} powt.)`,
+                color: "#FFD700"
+            }));
+
+            const textToShare = `Moje aktualne rekordy siłowe z Uki's BodyBuild! 🔥 Dźwigaj i rośnij: https://lukaszdudzinski.github.io/Ukis-BodyBuild/`;
+            await ShareUtils.generateAndShareImage("Rekordy Siłowe", statsList, avatar, nickname, textToShare);
+        } catch (error) {
+            console.log("Błąd podczas udostępniania rekordów:", error);
+            if (error.name === "AbortError") return;
+            alert("Nie udało się udostępnić grafiki: " + error.message);
+        }
     },
 
     shareProgress: async (monthWorkouts, monthVolume, totalVolume) => {
