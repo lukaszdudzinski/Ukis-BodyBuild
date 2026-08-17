@@ -298,6 +298,79 @@ export const AnalyticsUI = {
                 `;
             }
         }
+        // --- 1RM (ONE REP MAX) RECORDS ---
+        let records1RmHtml = "";
+        if (trainings && trainings.length > 0) {
+            const exerciseMaxMap = {};
+
+            trainings.forEach(t => {
+                const exList = t.exercises || [];
+                const tDate = t.date;
+
+                exList.forEach(ex => {
+                    if (!ex.name) return;
+                    const cleanName = ex.name.trim();
+                    if (!cleanName) return;
+
+                    const sets = ex.sets || [];
+                    sets.forEach(s => {
+                        const weight = Number(s.weight);
+                        const reps = Number(s.reps);
+
+                        if (!isNaN(weight) && weight > 0 && !isNaN(reps) && reps >= 1 && reps <= 15) {
+                            // Epley formula: 1RM = Weight * (1 + Reps / 30)
+                            const estimated1Rm = reps === 1 ? weight : Math.round(weight * (1 + (reps / 30)) * 10) / 10;
+                            
+                            if (!exerciseMaxMap[cleanName] || estimated1Rm > exerciseMaxMap[cleanName].max1Rm) {
+                                exerciseMaxMap[cleanName] = {
+                                    name: cleanName,
+                                    max1Rm: estimated1Rm,
+                                    weight: weight,
+                                    reps: reps,
+                                    date: tDate
+                                };
+                            }
+                        }
+                    });
+                });
+            });
+
+            const recordsList = Object.values(exerciseMaxMap).sort((a, b) => b.max1Rm - a.max1Rm);
+
+            if (recordsList.length > 0) {
+                const topRecords = recordsList.slice(0, 4);
+                
+                records1RmHtml = `
+                    <div style="margin-top: 25px; margin-bottom: 25px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,215,0,0.3); padding-bottom: 5px; margin-bottom: 8px;">
+                            <h4 style="color: #FFD700; margin: 0; display: flex; align-items: center; gap: 6px; font-size: 1.1em;">
+                                🏆 Twoje Rekordy Siłowe (1RM)
+                            </h4>
+                            <button type="button" onclick="window.AnalyticsUI.show1RmInfoModal()" style="background: rgba(255,215,0,0.15); border: 1px solid #FFD700; color: #FFD700; border-radius: 50%; width: 26px; height: 26px; font-size: 0.9em; cursor: pointer; display: flex; align-items: center; justify-content: center; font-weight: bold; line-height: 1;" title="Czym jest 1RM?">ℹ️</button>
+                        </div>
+                        <p style="font-size: 0.8em; color: #aaa; margin: 0 0 12px 0;">
+                            <strong>1RM (One Rep Max)</strong> to Twój szacowany maksymalny ciężar na 1 powtórzenie, wyliczony bezpiecznie z najlepszych serii roboczych.
+                        </p>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                            ${topRecords.map(r => {
+                                const dStr = new Date(r.date).toLocaleDateString("pl-PL", {day:"numeric", month:"short"});
+                                return `
+                                    <div style="background: rgba(255,255,255,0.04); border: 1px solid rgba(255,215,0,0.2); border-radius: 8px; padding: 10px; display: flex; flex-direction: column; justify-content: space-between;">
+                                        <div style="font-size: 0.85em; color: #eee; font-weight: bold; margin-bottom: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${r.name}">${r.name}</div>
+                                        <div>
+                                            <div style="font-size: 1.3em; color: #FFD700; font-weight: 800; line-height: 1.1;">${r.max1Rm.toFixed(1)} <span style="font-size: 0.6em; color: #fff;">kg</span></div>
+                                            <div style="font-size: 0.7em; color: #888; margin-top: 3px;">z serii: ${r.weight} kg × ${r.reps} (${dStr})</div>
+                                        </div>
+                                    </div>
+                                `;
+                            }).join("")}
+                        </div>
+                    </div>
+                `;
+                analyticsContentHtml += records1RmHtml;
+            }
+        }
+
         // --- MUSCLE ATLAS (Regeneration) ---
         let muscleAtlasHtml = '<h4 style="color: #00BFFF; border-bottom: 1px solid rgba(0,191,255,0.2); padding-bottom: 5px; margin-bottom: 15px; margin-top: 25px;">Regeneracja i Atlas Mięśni</h4>';
         
@@ -632,6 +705,42 @@ export const AnalyticsUI = {
     },
 
     
+    
+    show1RmInfoModal: () => {
+        let modal = document.getElementById("analytics-info-modal");
+        if (!modal) {
+            modal = document.createElement("div");
+            modal.id = "analytics-info-modal";
+            modal.style.cssText = "position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 9999; display: flex; justify-content: center; align-items: center; padding: 20px; box-sizing: border-box; backdrop-filter: blur(5px); flex-direction: column; opacity: 0; transition: opacity 0.3s;";
+            document.body.appendChild(modal);
+        }
+
+        modal.innerHTML = `
+            <div style="background: #1e1e1e; padding: 25px; border-radius: 12px; width: 100%; max-width: 420px; border-top: 5px solid #FFD700; box-shadow: 0 10px 30px rgba(0,0,0,0.8); position: relative; box-sizing: border-box; text-align: left;">
+                <h3 style="color: #FFD700; margin-top: 0; font-size: 1.3em; display: flex; align-items: center; gap: 8px;">
+                    🏆 Czym jest 1RM (One Repetition Max)?
+                </h3>
+                <p style="color: #ddd; font-size: 0.9em; line-height: 1.6; margin-bottom: 15px;">
+                    <strong>1RM</strong> to wskaźnik oznaczający <em>Maksimum Jednego Powtórzenia</em> – czyli największy możliwy ciężar, jaki jesteś w stanie podnieść w danym ćwiczeniu dokładnie <strong>jeden raz</strong> z prawidłową techniką.
+                </p>
+                <div style="background: rgba(255,215,0,0.08); border-left: 3px solid #FFD700; padding: 10px 12px; border-radius: 4px; margin-bottom: 15px; font-size: 0.85em; color: #eee; line-height: 1.5;">
+                    💡 <strong>Dlaczego to szacujemy, a nie sprawdzamy na żywo?</strong><br>
+                    Próby podnoszenia 100% maksa na 1 powtórzenie niosą ze sobą ogromne ryzyko kontuzji stawów, ścięgien i kręgosłupa. Aplikacja bezpiecznie oblicza Twój teoretyczny rekord ze zwykłych serii roboczych (np. seria 80 kg × 8 powtórzeń daje szacowany max ok. 101 kg).
+                </div>
+                <p style="color: #bbb; font-size: 0.85em; line-height: 1.5; margin-bottom: 20px;">
+                    🎯 <strong>Jak to wykorzystać w treningu?</strong><br>
+                    • <strong>Budowanie masy mięśniowej:</strong> trenuj na <strong>70–80%</strong> swojego 1RM (8–12 powtórzeń).<br>
+                    • <strong>Budowanie czystej siły:</strong> trenuj na <strong>80–90%</strong> swojego 1RM (3–5 powtórzeń).
+                </p>
+                <div style="text-align: center;">
+                    <button onclick="document.getElementById('analytics-info-modal').style.opacity='0'; setTimeout(()=>document.getElementById('analytics-info-modal').style.display='none', 300);" style="background: #333; color: #fff; border: 1px solid #555; padding: 10px 30px; border-radius: 6px; font-weight: bold; font-size: 1em; cursor: pointer; display: inline-block;">Wszystko jasne!</button>
+                </div>
+            </div>
+        `;
+        modal.style.display = "flex";
+        setTimeout(() => modal.style.opacity = "1", 10);
+    },
+
     showBodyweightInfoModal: () => {
         let modal = document.getElementById("analytics-info-modal");
         if (!modal) {

@@ -1,5 +1,13 @@
 [
   {
+    "version": "v2026.8.17.1",
+    "date": "2026-08-17",
+    "changes": [
+      "🏆 Nowa sekcja w Analizie Progresu: Twoje Rekordy Siłowe (Szacowane 1RM). Aplikacja automatycznie wylicza Twój szacowany maksymalny ciężar na 1 powtórzenie (wzorem Epleya) z najlepszych serii roboczych.",
+      "💡 Wyczerpujące wyjaśnienie wskaźnika 1RM: Dodano interaktywny modal informacyjny wyjaśniający, czym jest 1RM, dlaczego szacujemy go matematycznie zamiast ryzykować kontuzję oraz jak dobierać obciążenia robocze."
+    ]
+  },
+  {
     "version": "v2026.8.15.3",
     "date": "2026-08-15",
     "changes": [
