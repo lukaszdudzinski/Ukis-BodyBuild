@@ -1,5 +1,6 @@
 import { DatabaseManager } from '../db/DatabaseManager.js';
 import { TrainingComponent } from '../../components/TrainingComponent.js';
+import { ExerciseCatalog } from '../../data/ExerciseCatalog.js';
 
 let currentTraining = {
     date: null,
@@ -24,6 +25,18 @@ export const TrainingUI = {
         const container = document.getElementById('training-dashboard');
         if (container) {
             container.innerHTML = TrainingComponent.render();
+            
+            // Add Datalist for Exercise Catalog if not exists
+            if (!document.getElementById('exercise-catalog-list')) {
+                const dataList = document.createElement('datalist');
+                dataList.id = 'exercise-catalog-list';
+                ExerciseCatalog.forEach(exName => {
+                    const option = document.createElement('option');
+                    option.value = exName;
+                    dataList.appendChild(option);
+                });
+                container.appendChild(dataList);
+            }
         }
 
         const startNewBtn = document.getElementById('start-new-session-btn');
@@ -1325,7 +1338,7 @@ export const TrainingUI = {
             return `
                 <div style="background-color: ${isNested ? 'rgba(0,0,0,0.2)' : '#1e1e1e'}; border: 1px solid ${isNested ? '#E91E63' : '#333'}; padding: 15px; border-radius: 8px; margin-bottom: 15px;">
                     <div style="margin-bottom: 15px;">
-                        <input type="text" class="exercise-name-input" placeholder="Nazwa ćwiczenia (np. Wyciskanie)" value="${ex.name}" onchange="window.TrainingUI.updateExerciseField('${ex.id}', 'name', this.value); window.TrainingUI.renderCurrentExercises();" style="display: block; width: 100%; padding: 15px; margin-bottom: 10px; border-radius: 6px; border: 1px solid ${isNested ? '#E91E63' : '#00BFFF'}; background: #222; color: #fff; font-size: 1.1em; box-sizing: border-box; text-align: center;">
+                        <input type="text" class="exercise-name-input" list="exercise-catalog-list" placeholder="Nazwa ćwiczenia (np. Wyciskanie)" value="${ex.name}" onchange="window.TrainingUI.updateExerciseField('${ex.id}', 'name', this.value); window.TrainingUI.renderCurrentExercises();" style="display: block; width: 100%; padding: 15px; margin-bottom: 10px; border-radius: 6px; border: 1px solid ${isNested ? '#E91E63' : '#00BFFF'}; background: #222; color: #fff; font-size: 1.1em; box-sizing: border-box; text-align: center;">
                         <select onchange="window.TrainingUI.updateExerciseField('${ex.id}', 'type', this.value); window.TrainingUI.renderCurrentExercises();" style="display: block; width: 100%; padding: 15px; border-radius: 6px; border: 1px solid ${isNested ? '#E91E63' : '#00BFFF'}; background: #222; color: #fff; font-size: 1.1em; box-sizing: border-box; text-align: center;">
                             <option value="strength" ${ex.type === 'strength' ? 'selected' : ''}>Siłowe</option>
                             <option value="cardio" ${ex.type === 'cardio' ? 'selected' : ''}>Cardio</option>

@@ -40,6 +40,7 @@ window.AiAnalyticsUI = AiAnalyticsUI;
 // Initialize Application
 const initApp = () => {
     console.log("Starting App Initialization...");
+    DatabaseManager.migrateExercises();
     ChangelogUI.init();
     AppUI.init();
     MeasurementsUI.init();

@@ -235,6 +235,63 @@ export const DatabaseManager = {
         });
     },
 
+    migrateExercises: async () => {
+        const migratedFlag = localStorage.getItem('uki_exercises_migrated');
+        if (migratedFlag) return;
+
+        const mapping = {
+            "Klatka płaska": "Klatka - Wyciskanie sztangi - Ławka płaska",
+            "Wyciskanie leżąc": "Klatka - Wyciskanie sztangi - Ławka płaska",
+            "Wyciskanie hantli skos": "Klatka - Wyciskanie hantli - Skos dodatni",
+            "Rozpiętki": "Klatka - Rozpiętki - Hantle (ławka płaska)",
+            "Dipsy": "Klatka - Pompki na poręczach (Dipsy) - Wersja na klatkę",
+            "Martwy ciąg": "Plecy - Martwy ciąg - Klasyczny",
+            "Podciąganie": "Plecy - Podciąganie na drążku - Nachwyt szeroki",
+            "Wiosłowanie sztangą": "Plecy - Wiosłowanie sztangą - Opad tułowia",
+            "Ściąganie drążka": "Plecy - Ściąganie drążka wyciągu górnego - Szeroko",
+            "Przysiad": "Nogi - Przysiad ze sztangą - Tył (Back Squat)",
+            "Przysiady": "Nogi - Przysiad ze sztangą - Tył (Back Squat)",
+            "Suwnica": "Nogi - Suwnica - Wypychanie (szerokie ustawienie stóp)",
+            "Hip thrust": "Pośladki - Hip Thrust - Ze sztangą",
+            "Wykroki": "Nogi - Wykroki - Z hantlami",
+            "Wyciskanie żołnierskie": "Barki - Wyciskanie sztangi (Żołnierskie) - Stojąc",
+            "Wznosy bokiem": "Barki - Wznosy hantli bokiem - Stojąc",
+            "Face pulls": "Barki - Face Pulls - Wyciąg górny z liną",
+            "Uginanie sztangi": "Biceps - Uginanie ramion - Sztanga prosta",
+            "Uginanie hantli": "Biceps - Uginanie ramion - Hantle",
+            "Francuz": "Triceps - Wyciskanie francuskie - Sztanga łamana (leżąc)",
+            "Prostowanie na wyciągu": "Triceps - Prostowanie ramion na wyciągu - Uchwyt prosty"
+        };
+
+        try {
+            const trainings = await DatabaseManager.getTrainings();
+            let count = 0;
+            for (let t of trainings) {
+                let changed = false;
+                if (t.exercises && t.exercises.length > 0) {
+                    t.exercises.forEach(ex => {
+                        if (ex.name) {
+                            const trimmedName = ex.name.trim();
+                            const oldNameKey = Object.keys(mapping).find(key => key.toLowerCase() === trimmedName.toLowerCase());
+                            if (oldNameKey) {
+                                ex.name = mapping[oldNameKey];
+                                changed = true;
+                            }
+                        }
+                    });
+                }
+                if (changed) {
+                    await DatabaseManager.updateTraining(t);
+                    count++;
+                }
+            }
+            console.log(`Migrated ${count} trainings to new exercise names.`);
+            localStorage.setItem('uki_exercises_migrated', 'true');
+        } catch (err) {
+            console.error('Migration failed:', err);
+        }
+    },
+
     getMeasurements: async () => {
         await DatabaseManager.init();
         const records = [];

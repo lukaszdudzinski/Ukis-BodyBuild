@@ -244,12 +244,8 @@ export const ShareUtils = {
                 currentY += 20;
             });
 
-            // Footer
+            // Footer removed per request
             currentY += 50;
-            ctx.fillStyle = '#00BFFF';
-            ctx.font = 'italic 35px Arial';
-            ctx.textAlign = 'center';
-            ctx.fillText("UkiBodyBuild (Kliknij w link poniżej by dołączyć!)", canvas.width / 2, currentY);
             
             // convert canvas to blob and share
             canvas.toBlob(async (blob) => {

@@ -352,16 +352,21 @@ export const AnalyticsUI = {
                         <p style="font-size: 0.8em; color: #aaa; margin: 0 0 12px 0;">
                             Prawdziwy, największy podniesiony ciężar w serii roboczej z wyliczonym teoretycznym <strong>1RM</strong>.
                         </p>
-                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                        <div style="display: flex; flex-wrap: wrap; gap: 10px;">
                             ${topRecords.map(r => {
                                 const dStr = new Date(r.date).toLocaleDateString("pl-PL", {day:"numeric", month:"short"});
                                 return `
-                                    <div style="background: rgba(255,255,255,0.04); border: 1px solid rgba(255,215,0,0.2); border-radius: 8px; padding: 10px; display: flex; flex-direction: column; justify-content: space-between;">
+                                    <div style="flex: 1 1 calc(50% - 10px); min-width: 140px; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,215,0,0.2); border-radius: 8px; padding: 10px; display: flex; flex-direction: column; justify-content: space-between;">
                                         <div style="font-size: 0.85em; color: #eee; font-weight: bold; margin-bottom: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${r.name}">${r.name}</div>
                                         <div>
-                                            <div style="font-size: 1.35em; color: #FFD700; font-weight: 800; line-height: 1.1;">${r.actualWeight} <span style="font-size: 0.6em; color: #fff;">kg</span></div>
-                                            <div style="font-size: 0.72em; color: #bbb; margin-top: 3px;">seria: ${r.reps} powt. (${dStr})</div>
-                                            <div style="font-size: 0.68em; color: #00BFFF; margin-top: 2px;">Szac. 1RM: ~${r.max1Rm.toFixed(1)} kg</div>
+                                            <div style="font-size: 1.25em; color: #FFD700; font-weight: 800; line-height: 1.1; margin-bottom: 4px;">
+                                                ${r.actualWeight} <span style="font-size: 0.65em; color: #fff; font-weight: normal;">kg</span> 
+                                                <span style="font-size: 0.8em; color: #aaa; font-weight: normal;">x ${r.reps}</span>
+                                            </div>
+                                            <div style="font-size: 0.72em; color: #bbb;">${dStr}</div>
+                                            <div style="font-size: 0.7em; color: #00BFFF; margin-top: 6px; display: flex; align-items: center; gap: 4px;">
+                                                <span style="background: rgba(0, 191, 255, 0.15); padding: 2px 6px; border-radius: 4px; border: 1px solid rgba(0, 191, 255, 0.3);">ℹ️ Szac. 1RM: ~${r.max1Rm.toFixed(1)} kg</span>
+                                            </div>
                                         </div>
                                     </div>
                                 `;
