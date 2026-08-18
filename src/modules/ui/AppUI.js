@@ -1,4 +1,4 @@
-export const APP_VERSION = 'v2026.8.17.4'; // Faza 5.2: Landing Page & PWA Standalone Mode
+export const APP_VERSION = 'v2026.8.18.1'; // Faza 6.1: Katalog Ćwiczeń i Rekordy 1RM
 
 // Obsługa błędów globalnych — zdefiniowana w main.js (klucz: uki_error_logs)
 

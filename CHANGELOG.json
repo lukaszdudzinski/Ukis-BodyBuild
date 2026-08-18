@@ -1,5 +1,16 @@
 [
   {
+    "version": "v2026.8.18.1",
+    "date": "2026-08-18",
+    "changes": [
+      "📚 Wbudowany Katalog Ćwiczeń: dodając ćwiczenie otrzymujesz inteligentne podpowiedzi z ujednoliconego słownika.",
+      "🚀 Automatyczna Migracja Historii: Twoje stare nazwy ćwiczeń (np. Klatka płaska) zostały zaktualizowane w całej historii do profesjonalnych odpowiedników z katalogu.",
+      "🏆 Czytelniejsze Rekordy Siłowe: W Analizie Progresu główny wynik (Ciężar x Powtórzenia) jest teraz na pierwszym planie, a szacowane 1RM pełni rolę wspierającą.",
+      "📱 Ulepszona Responsywność: Rekordy wyświetlają się perfekcyjnie na każdym ekranie i przy dużej czcionce dzięki płynnemu zawijaniu (flex-wrap).",
+      "🎨 Szlify estetyczne udostępniania: Z karty podsumowującej treningi do social mediów zniknęła nadmiarowa, niebieska stopka."
+    ]
+  },
+  {
     "version": "v2026.8.17.4",
     "date": "2026-08-17",
     "changes": [
