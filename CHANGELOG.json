@@ -1,5 +1,15 @@
 [
   {
+    "version": "v2026.8.19.1",
+    "date": "2026-08-19",
+    "changes": [
+      "📚 Wygodny Katalog Ćwiczeń: Zamiast ukrytej listy (która nie chciała działać na iPhone'ach), obok nazwy ćwiczenia znajdziesz teraz dedykowany przycisk '📚 Katalog', który otwiera czytelne okno wyboru.",
+      "🗂️ Podział na partie mięśniowe: Katalog w pierwszej kolejności pozwala wybrać partię (np. Plecy, Klatka), a dopiero potem konkretne ćwiczenie, skracając listę i ułatwiając szukanie.",
+      "📱 Ulepszona Responsywność Serii: Pola ciężaru i powtórzeń zostały zwężone i ciaśniej ułożone, dzięki czemu nawet przy dużym skalowaniu czcionki na ekranach iPhone'a przyciski się nie nachodzą i nie uciekają z ekranu.",
+      "🔄 Fix Aktualizacji: Ostatecznie naprawiono błąd powodujący ciągłe pojawianie się paska 'Dostępna nowa aktualizacja' mimo poprawnego zainstalowania nowej wersji."
+    ]
+  },
+  {
     "version": "v2026.8.18.1",
     "date": "2026-08-18",
     "changes": [

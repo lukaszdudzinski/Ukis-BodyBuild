@@ -1,6 +1,6 @@
 import { DatabaseManager } from '../db/DatabaseManager.js';
 import { TrainingComponent } from '../../components/TrainingComponent.js';
-import { ExerciseCatalog } from '../../data/ExerciseCatalog.js';
+import { ExerciseCatalog, ExerciseCategories } from '../../data/ExerciseCatalog.js';
 
 let currentTraining = {
     date: null,
@@ -22,6 +22,8 @@ let selectedDate = new Date().toISOString().split('T')[0];
 
 export const TrainingUI = {
     init: () => {
+        TrainingUI.injectCatalogModalHTML();
+
         const container = document.getElementById('training-dashboard');
         if (container) {
             container.innerHTML = TrainingComponent.render();
@@ -132,6 +134,68 @@ export const TrainingUI = {
                 }
             }
         }, 500);
+    },
+
+    injectCatalogModalHTML: () => {
+        if (document.getElementById('catalog-modal-overlay')) return;
+        const html = `
+            <div id="catalog-modal-overlay" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.85); z-index: 10000; justify-content: center; align-items: center; padding: 20px;">
+                <div style="background: #1e1e1e; width: 100%; max-width: 500px; border-radius: 12px; border: 1px solid rgba(0, 191, 255, 0.3); display: flex; flex-direction: column; max-height: 85vh;">
+                    <div style="padding: 15px 20px; border-bottom: 1px solid rgba(255, 255, 255, 0.1); display: flex; justify-content: space-between; align-items: center;">
+                        <h3 id="catalog-modal-title" style="margin: 0; color: #00BFFF; font-size: 1.3em;">Wybierz partię</h3>
+                        <button onclick="document.getElementById('catalog-modal-overlay').style.display='none';" style="background: none; border: none; color: #aaa; font-size: 1.8rem; cursor: pointer; padding: 0; line-height: 1;">&times;</button>
+                    </div>
+                    <div id="catalog-modal-content" style="padding: 15px; overflow-y: auto; flex: 1; display: flex; flex-direction: column; gap: 10px;">
+                    </div>
+                </div>
+            </div>
+        `;
+        document.body.insertAdjacentHTML('beforeend', html);
+    },
+
+    openCatalogModal: (exerciseId) => {
+        const overlay = document.getElementById('catalog-modal-overlay');
+        const content = document.getElementById('catalog-modal-content');
+        const title = document.getElementById('catalog-modal-title');
+        
+        title.innerText = "Wybierz partię";
+        content.innerHTML = '';
+        
+        Object.keys(ExerciseCategories).forEach(cat => {
+            const btn = document.createElement('button');
+            btn.innerText = cat;
+            btn.style.cssText = 'background: #333; color: #fff; padding: 15px; border-radius: 8px; border: 1px solid #444; font-size: 1.1em; cursor: pointer; text-align: left; font-weight: bold; margin-bottom: 5px;';
+            btn.onclick = () => TrainingUI.selectCategory(cat, exerciseId);
+            content.appendChild(btn);
+        });
+        
+        overlay.style.display = 'flex';
+    },
+
+    selectCategory: (category, exerciseId) => {
+        const content = document.getElementById('catalog-modal-content');
+        const title = document.getElementById('catalog-modal-title');
+        
+        title.innerText = category;
+        content.innerHTML = '';
+        
+        const backBtn = document.createElement('button');
+        backBtn.innerText = '⬅ Powrót do partii';
+        backBtn.style.cssText = 'background: rgba(0,191,255,0.1); color: #00BFFF; padding: 10px; border-radius: 8px; border: 1px solid rgba(0,191,255,0.3); font-size: 1em; cursor: pointer; margin-bottom: 10px; font-weight: bold;';
+        backBtn.onclick = () => TrainingUI.openCatalogModal(exerciseId);
+        content.appendChild(backBtn);
+        
+        ExerciseCategories[category].forEach(exName => {
+            const btn = document.createElement('button');
+            btn.innerText = exName;
+            btn.style.cssText = 'background: #222; color: #ccc; padding: 12px 15px; border-radius: 6px; border: 1px solid #333; font-size: 0.95em; cursor: pointer; text-align: left; transition: all 0.2s; margin-bottom: 5px;';
+            btn.onclick = () => {
+                TrainingUI.updateExerciseField(exerciseId, 'name', exName);
+                document.getElementById('catalog-modal-overlay').style.display = 'none';
+                TrainingUI.renderCurrentExercises();
+            };
+            content.appendChild(btn);
+        });
     },
 
     getTemplates: () => {
@@ -1282,23 +1346,23 @@ export const TrainingUI = {
                                 return `
                                     <div style="padding: 6px 0; border-bottom: 1px solid rgba(255,255,255,0.05); width: 100%; box-sizing: border-box; ${style} ${set.isCompleted ? 'background: rgba(46, 204, 113, 0.15); border-radius: 4px;' : ''}">
                                         
-                                        <div style="display: flex; align-items: center; justify-content: space-between; gap: 4px; width: 100%; flex-wrap: nowrap; overflow: hidden;">
+                                        <div style="display: flex; align-items: center; justify-content: space-between; gap: 2px; width: 100%; flex-wrap: nowrap; overflow: hidden;">
                                             <!-- Lewa strona: Checkbox + Seria -->
-                                            <div style="display: flex; align-items: center; gap: 4px; flex-shrink: 0;">
-                                                <input type="checkbox" ${set.isCompleted ? 'checked' : ''} onchange="window.TrainingUI.toggleSetCompletion('${ex.id}', ${i}, this.checked)" style="transform: scale(1.3); cursor: pointer; accent-color: #2ECC71; margin-right: 2px;">
-                                                <span style="font-size: 1.0em; font-weight: bold; white-space: nowrap; ${set.isCompleted ? 'opacity: 0.6;' : ''}">${prefix}</span>
+                                            <div style="display: flex; align-items: center; gap: 2px; flex-shrink: 0;">
+                                                <input type="checkbox" ${set.isCompleted ? 'checked' : ''} onchange="window.TrainingUI.toggleSetCompletion('${ex.id}', ${i}, this.checked)" style="transform: scale(1.2); cursor: pointer; accent-color: #2ECC71; margin-right: 2px;">
+                                                <span style="font-size: 0.9em; font-weight: bold; white-space: nowrap; ${set.isCompleted ? 'opacity: 0.6;' : ''}">${prefix}</span>
                                             </div>
                                             
                                             <!-- Środek: Wpisywanie ciężaru i powtórzeń -->
-                                            <div style="display: flex; align-items: center; justify-content: center; gap: 4px; flex: 1; min-width: 0;">
-                                                <input type="number" class="training-input-large" value="${set.weight}" onchange="window.TrainingUI.updateSetInline('${ex.id}', ${i}, 'weight', this.value)" style="width: 55px; box-sizing: border-box; background: rgba(0,0,0,0.3); border: 1px solid #444; color: ${isDropset ? '#FF9800' : '#00BFFF'}; font-weight: bold; text-align: center; border-radius: 6px; font-size: 1.15em; padding: 4px;" inputmode="decimal"> 
-                                                <span style="font-size: 0.95em; color: #888;">kg</span>
-                                                <span style="color: #666; font-size: 0.95em; margin: 0 2px;">x</span>
-                                                <input type="number" class="training-input-large" value="${set.reps}" onchange="window.TrainingUI.updateSetInline('${ex.id}', ${i}, 'reps', this.value)" style="width: 48px; box-sizing: border-box; background: rgba(0,0,0,0.3); border: 1px solid #444; color: #fff; font-weight: bold; text-align: center; border-radius: 6px; font-size: 1.15em; padding: 4px;" inputmode="numeric">
+                                            <div style="display: flex; align-items: center; justify-content: center; gap: 2px; flex: 1; min-width: 0;">
+                                                <input type="number" class="training-input-large" value="${set.weight}" onchange="window.TrainingUI.updateSetInline('${ex.id}', ${i}, 'weight', this.value)" style="width: 48px; box-sizing: border-box; background: rgba(0,0,0,0.3); border: 1px solid #444; color: ${isDropset ? '#FF9800' : '#00BFFF'}; font-weight: bold; text-align: center; border-radius: 6px; font-size: 1.05em; padding: 2px;" inputmode="decimal"> 
+                                                <span style="font-size: 0.85em; color: #888;">kg</span>
+                                                <span style="color: #666; font-size: 0.85em; margin: 0 2px;">x</span>
+                                                <input type="number" class="training-input-large" value="${set.reps}" onchange="window.TrainingUI.updateSetInline('${ex.id}', ${i}, 'reps', this.value)" style="width: 42px; box-sizing: border-box; background: rgba(0,0,0,0.3); border: 1px solid #444; color: #fff; font-weight: bold; text-align: center; border-radius: 6px; font-size: 1.05em; padding: 2px;" inputmode="numeric">
                                             </div>
                                             
                                             <!-- Prawa strona: Przycisk usunięcia X -->
-                                            <button onclick="window.TrainingUI.removeSet('${ex.id}', ${i})" style="background: transparent; border: none; color: #ff4444; font-size: 1.5em; line-height: 1; cursor: pointer; padding: 4px 8px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">&times;</button>
+                                            <button onclick="window.TrainingUI.removeSet('${ex.id}', ${i})" style="background: transparent; border: none; color: #ff4444; font-size: 1.3em; line-height: 1; cursor: pointer; padding: 4px 6px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">&times;</button>
                                         </div>
                                         
                                         ${(prBadge || ormText) ? `
@@ -1338,7 +1402,10 @@ export const TrainingUI = {
             return `
                 <div style="background-color: ${isNested ? 'rgba(0,0,0,0.2)' : '#1e1e1e'}; border: 1px solid ${isNested ? '#E91E63' : '#333'}; padding: 15px; border-radius: 8px; margin-bottom: 15px;">
                     <div style="margin-bottom: 15px;">
-                        <input type="text" class="exercise-name-input" list="exercise-catalog-list" placeholder="Nazwa ćwiczenia (np. Wyciskanie)" value="${ex.name}" onchange="window.TrainingUI.updateExerciseField('${ex.id}', 'name', this.value); window.TrainingUI.renderCurrentExercises();" style="display: block; width: 100%; padding: 15px; margin-bottom: 10px; border-radius: 6px; border: 1px solid ${isNested ? '#E91E63' : '#00BFFF'}; background: #222; color: #fff; font-size: 1.1em; box-sizing: border-box; text-align: center;">
+                        <div style="display: flex; gap: 5px; margin-bottom: 10px;">
+                            <input type="text" class="exercise-name-input" placeholder="Wpisz nazwę..." value="${ex.name}" onchange="window.TrainingUI.updateExerciseField('${ex.id}', 'name', this.value); window.TrainingUI.renderCurrentExercises();" style="flex: 1; min-width: 0; padding: 15px; border-radius: 6px; border: 1px solid ${isNested ? '#E91E63' : '#00BFFF'}; background: #222; color: #fff; font-size: 1.1em; box-sizing: border-box; text-align: center;">
+                            <button onclick="window.TrainingUI.openCatalogModal('${ex.id}')" style="background: rgba(0,191,255,0.1); color: #00BFFF; border: 1px solid ${isNested ? '#E91E63' : '#00BFFF'}; border-radius: 6px; padding: 0 15px; cursor: pointer; font-weight: bold; flex-shrink: 0; display: flex; align-items: center; justify-content: center;">📚<br><span style="font-size: 0.7em;">Katalog</span></button>
+                        </div>
                         <select onchange="window.TrainingUI.updateExerciseField('${ex.id}', 'type', this.value); window.TrainingUI.renderCurrentExercises();" style="display: block; width: 100%; padding: 15px; border-radius: 6px; border: 1px solid ${isNested ? '#E91E63' : '#00BFFF'}; background: #222; color: #fff; font-size: 1.1em; box-sizing: border-box; text-align: center;">
                             <option value="strength" ${ex.type === 'strength' ? 'selected' : ''}>Siłowe</option>
                             <option value="cardio" ${ex.type === 'cardio' ? 'selected' : ''}>Cardio</option>
