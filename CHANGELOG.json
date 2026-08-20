@@ -1,5 +1,14 @@
 [
   {
+    "version": "v2026.8.20.03",
+    "date": "2026-08-20",
+    "changes": [
+      "Wdrożenie dedykowanego narzędzia (w zakładce Diagnostyka) do automatycznego mapowania i unifikacji starych nazw ćwiczeń (np. 'wyciskanie płaska' -> 'Klatka - Wyciskanie sztangi - Ławka płaska') we wszystkich Twoich historycznych treningach.",
+      "Wdrożenie Fazy 8 (Analityka): Dodano interaktywny Wykres Progresu dla konkretnych ćwiczeń w zakładce Analiza Progresu.",
+      "Możliwość wyboru dowolnego ćwiczenia z rozwijanej listy i śledzenia historii maksymalnego podniesionego ciężaru (oraz powtórzeń) na przestrzenni czasu w formie estetycznego wykresu słupkowego."
+    ]
+  },
+  {
     "version": "v2026.8.20.01",
     "date": "2026-08-20",
     "changes": [

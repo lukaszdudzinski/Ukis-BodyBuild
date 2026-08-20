@@ -30,6 +30,14 @@ export const DiagnosticsUI = {
                     ⚠️ WYKONAJ TWARDY RESET APLIKACJI
                 </button>
             </div>
+
+            <div style="background: rgba(155, 89, 182, 0.1); padding: 15px; border-radius: 8px; border: 1px solid #9B59B6; margin-bottom: 20px;">
+                <h3 style="color: #9B59B6; margin-top: 0;">🔧 Naprawa i Mapowanie Danych</h3>
+                <p style="font-size: 0.9em; color: #ccc;">Narzędzie do automatycznej naprawy starych nazw ćwiczeń na nowe, zunifikowane nazwy z Katalogu (np. zamienia "wyciskanie płaska" na "Klatka - Wyciskanie sztangi - Ławka płaska"). <b>WAŻNE: Przed użyciem utwórz Archiwum na samej górze!</b></p>
+                <button id="db-migrate-names-btn" style="width: 100%; padding: 13px; font-weight: bold; font-size: 1em; background: #9B59B6; color: white; border: none; border-radius: 8px; cursor: pointer; margin-top: 15px; text-align: center;">
+                    🔄 Wykonaj Mapowanie Ćwiczeń
+                </button>
+            </div>
             
             <div style="background: rgba(0,0,0,0.3); padding: 15px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.2); margin-bottom: 20px;">
                 <h3 style="color: #eee; margin-top: 0;">Pamięć Podręczna</h3>
@@ -177,6 +185,96 @@ export const DiagnosticsUI = {
                     localStorage.clear();
                     alert("Zrobione. Aplikacja się odświeży.");
                     window.location.reload();
+                }
+            });
+        }
+
+        // Mapowanie Ćwiczeń
+        const migrateNamesBtn = document.getElementById('db-migrate-names-btn');
+        if (migrateNamesBtn) {
+            migrateNamesBtn.addEventListener('click', async () => {
+                if (confirm("WAŻNE: Czy utworzyłeś już Archiwum na samej górze tej zakładki?\n\nKliknij OK, jeśli chcesz dokonać mapowania (nadpisze to stare nazwy ćwiczeń m.in. 'wyciskanie płaska' na docelowe z Katalogu).")) {
+                    try {
+                        const trainings = await DatabaseManager.getTrainings();
+                        if (!trainings || trainings.length === 0) {
+                            alert("Brak treningów do zmapowania.");
+                            return;
+                        }
+
+                        // Słownik mapowań
+                        const mapDict = [
+                            { match: ["wyciskanie płaska", "klatka płaska", "wyciskanie sztangi płaska", "wycisk płaska"], replace: "Klatka - Wyciskanie sztangi - Ławka płaska" },
+                            { match: ["klatka skos", "wyciskanie skos", "wyciskanie sztangi skos", "wycisk skos dodatni"], replace: "Klatka - Wyciskanie sztangi - Skos dodatni" },
+                            { match: ["wyciskanie hantli płaska", "hantle płaska klatka", "rozpiętki płaska"], replace: "Klatka - Wyciskanie hantli - Ławka płaska" },
+                            { match: ["rozpiętki", "rozpietki", "rozpiętki skos", "hantle skos klatka"], replace: "Klatka - Rozpiętki - Hantle (skos dodatni)" },
+                            { match: ["martwy", "mc", "martwy ciąg"], replace: "Plecy - Martwy ciąg (Klasyczny)" },
+                            { match: ["przysiady", "siady", "przysiad ze sztangą"], replace: "Nogi - Przysiady ze sztangą na karku" },
+                            { match: ["ołp", "ohp", "wyciskanie żołnierskie", "żołnierskie"], replace: "Barki - Wyciskanie sztangi nad głowę (OHP)" },
+                            { match: ["wiosłowanie", "wiosło"], replace: "Plecy - Wiosłowanie sztangą w opadzie" }
+                        ];
+
+                        let updatedCount = 0;
+                        for (let t of trainings) {
+                            let changed = false;
+                            if (t.exercises && t.exercises.length > 0) {
+                                t.exercises.forEach(ex => {
+                                    if (ex.name) {
+                                        const origName = ex.name.toLowerCase().trim();
+                                        for (const dict of mapDict) {
+                                            // Sprawdzamy czy któraś fraza idealnie pasuje do oryginalnej nazwy
+                                            if (dict.match.includes(origName)) {
+                                                ex.name = dict.replace;
+                                                changed = true;
+                                                break;
+                                            }
+                                        }
+                                        // Dla "wyciskanie sztangi płaska" itp. jeśli ktoś wpisał np "Wyciskanie płaska klatka"
+                                        if (!changed) {
+                                            if (origName.includes("wyciskanie") && origName.includes("płaska") && !origName.includes("hantl")) {
+                                                ex.name = "Klatka - Wyciskanie sztangi - Ławka płaska";
+                                                changed = true;
+                                            } else if (origName.includes("klatka") && origName.includes("płaska") && !origName.includes("hantl")) {
+                                                ex.name = "Klatka - Wyciskanie sztangi - Ławka płaska";
+                                                changed = true;
+                                            }
+                                        }
+                                    }
+                                    // Obsługa superserii
+                                    if (ex.type === 'superset' && ex.exercises) {
+                                        ex.exercises.forEach(nestedEx => {
+                                            if (nestedEx.name) {
+                                                const origNameNested = nestedEx.name.toLowerCase().trim();
+                                                for (const dict of mapDict) {
+                                                    if (dict.match.includes(origNameNested)) {
+                                                        nestedEx.name = dict.replace;
+                                                        changed = true;
+                                                        break;
+                                                    }
+                                                }
+                                                if (!changed) {
+                                                    if (origNameNested.includes("wyciskanie") && origNameNested.includes("płaska") && !origNameNested.includes("hantl")) {
+                                                        nestedEx.name = "Klatka - Wyciskanie sztangi - Ławka płaska";
+                                                        changed = true;
+                                                    } else if (origNameNested.includes("klatka") && origNameNested.includes("płaska") && !origNameNested.includes("hantl")) {
+                                                        nestedEx.name = "Klatka - Wyciskanie sztangi - Ławka płaska";
+                                                        changed = true;
+                                                    }
+                                                }
+                                            }
+                                        });
+                                    }
+                                });
+                            }
+                            if (changed) {
+                                await DatabaseManager.updateTraining(t);
+                                updatedCount++;
+                            }
+                        }
+
+                        alert(`Zakończono! Zaktualizowano ${updatedCount} treningów z poprawionymi nazwami ćwiczeń.`);
+                    } catch (err) {
+                        alert("Błąd podczas mapowania: " + err.message);
+                    }
                 }
             });
         }
