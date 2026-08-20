@@ -1113,7 +1113,8 @@ export const TrainingUI = {
             type: 'superset',
             name: '',
             exercises: [
-                { id: Date.now().toString() + '-1', type: 'strength', name: '', sets: [] }
+                { id: Date.now().toString() + '-1', type: 'strength', name: '', sets: [] },
+                { id: Date.now().toString() + '-2', type: 'strength', name: '', sets: [] }
             ]
         });
         TrainingUI.renderCurrentExercises();

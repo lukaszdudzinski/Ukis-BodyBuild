@@ -20,6 +20,9 @@ export const AnalyticsUI = {
             const trainings = await DatabaseManager.getTrainings();
             const measurements = await DatabaseManager.getMeasurements();
             
+            AnalyticsUI.cachedTrainings = trainings;
+            AnalyticsUI.cachedMeasurements = measurements;
+            
             AnalyticsUI.renderAnalytics(container, trainings, measurements);
         } catch (err) {
             console.error("Error loading analytics:", err);
@@ -383,6 +386,44 @@ export const AnalyticsUI = {
             }
         }
 
+        // --- EXERCISE PROGRESSION CHART ---
+        let progressChartHtml = "";
+        if (trainings && trainings.length > 0) {
+            // Get unique exercise names for the dropdown
+            const uniqueExNames = new Set();
+            trainings.forEach(t => {
+                if(t.exercises) {
+                    t.exercises.forEach(ex => {
+                        if(ex.name && ex.name.trim()) uniqueExNames.add(ex.name.trim());
+                    });
+                }
+            });
+            const exListOptions = Array.from(uniqueExNames).sort();
+            
+            if (exListOptions.length > 0) {
+                progressChartHtml = `
+                    <div style="margin-top: 30px; margin-bottom: 25px;">
+                        <h4 style="color: #2ECC71; border-bottom: 1px solid rgba(46,204,113,0.2); padding-bottom: 5px; margin-bottom: 15px;">
+                            📈 Śledzenie Progresu (Wykres Max Ciężaru)
+                        </h4>
+                        <div style="background: rgba(255,255,255,0.05); padding: 15px; border-radius: 8px;">
+                            <label style="color: #ccc; font-size: 0.9em; margin-bottom: 8px; display: block;">Wybierz ćwiczenie do analizy:</label>
+                            <select id="analytics-exercise-select" onchange="window.AnalyticsUI.renderExerciseChart(this.value)" style="width: 100%; padding: 10px; border-radius: 6px; background: #222; border: 1px solid #2ECC71; color: #fff; font-size: 1em; margin-bottom: 15px;">
+                                <option value="">-- Wybierz ćwiczenie --</option>
+                                ${exListOptions.map(name => `<option value="${name}">${name}</option>`).join('')}
+                            </select>
+                            
+                            <div id="analytics-exercise-chart-container" style="min-height: 160px; display: flex; align-items: center; justify-content: center; color: #888; font-size: 0.9em;">
+                                Wybierz ćwiczenie z listy powyżej, aby zobaczyć wykres swojego progresu na przestrzeni czasu.
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+        }
+        
+        analyticsContentHtml += progressChartHtml;
+
         // --- MUSCLE ATLAS (Regeneration) ---
         let muscleAtlasHtml = '<h4 style="color: #00BFFF; border-bottom: 1px solid rgba(0,191,255,0.2); padding-bottom: 5px; margin-bottom: 15px; margin-top: 25px;">Regeneracja i Atlas Mięśni</h4>';
         
@@ -670,6 +711,82 @@ export const AnalyticsUI = {
 
         html += analyticsContentHtml;
         container.innerHTML = html;
+    },
+
+    renderExerciseChart: (exerciseName) => {
+        const container = document.getElementById('analytics-exercise-chart-container');
+        if (!container) return;
+        if (!exerciseName) {
+            container.innerHTML = 'Wybierz ćwiczenie z listy powyżej, aby zobaczyć wykres swojego progresu na przestrzeni czasu.';
+            return;
+        }
+
+        const trainings = AnalyticsUI.cachedTrainings || [];
+        // Extract max weight per day for this exercise
+        const historyData = [];
+        
+        trainings.forEach(t => {
+            if (!t.exercises) return;
+            let dayMax = 0;
+            let dayReps = 0;
+            let found = false;
+            
+            t.exercises.forEach(ex => {
+                if (ex.name && ex.name.trim() === exerciseName) {
+                    if (ex.sets) {
+                        ex.sets.forEach(s => {
+                            const w = Number(s.weight);
+                            const r = Number(s.reps);
+                            if (!isNaN(w) && w > 0 && !isNaN(r) && r > 0) {
+                                found = true;
+                                if (w > dayMax || (w === dayMax && r > dayReps)) {
+                                    dayMax = w;
+                                    dayReps = r;
+                                }
+                            }
+                        });
+                    }
+                }
+            });
+            
+            if (found && dayMax > 0) {
+                historyData.push({ date: t.date, maxWeight: dayMax, reps: dayReps });
+            }
+        });
+
+        if (historyData.length === 0) {
+            container.innerHTML = '<span style="color: #ff4444;">Brak wystarczających danych z poprawnym ciężarem do wygenerowania wykresu dla tego ćwiczenia.</span>';
+            return;
+        }
+
+        // Sort ascending by date
+        historyData.sort((a, b) => new Date(a.date) - new Date(b.date));
+        
+        // Take last 12 entries so it fits well on mobile
+        const chartData = historyData.slice(-12);
+        
+        const absoluteMax = Math.max(...chartData.map(d => d.maxWeight));
+        
+        let chartHtml = `
+            <div style="width: 100%; display: flex; align-items: flex-end; gap: 6px; height: 180px; padding: 10px 10px 45px 10px; background: rgba(0,0,0,0.3); border-radius: 8px; overflow-x: auto; margin-top: 10px; position: relative; border-bottom: 1px solid #2ECC71;">
+        `;
+        
+        chartData.forEach(d => {
+            const heightPct = Math.max(5, (d.maxWeight / absoluteMax) * 100);
+            const dateShort = new Date(d.date).toLocaleDateString('pl-PL', {day:'numeric', month:'short'});
+            
+            chartHtml += `
+                <div style="display: flex; flex-direction: column; align-items: center; flex: 1; min-width: 40px; position: relative;">
+                    <div style="font-size: 0.75em; color: #2ECC71; font-weight: bold; margin-bottom: 2px;">${d.maxWeight} <span style="font-size:0.7em;color:#aaa;">kg</span></div>
+                    <div style="font-size: 0.65em; color: #888; margin-bottom: 5px;">x${d.reps}</div>
+                    <div style="width: 100%; max-width: 30px; height: ${heightPct}%; background: linear-gradient(to top, rgba(46,204,113,0.3), #2ECC71); border-radius: 4px 4px 0 0; min-height: 5px; max-height: 120px; box-shadow: 0 0 5px rgba(46,204,113,0.2);"></div>
+                    <div style="font-size: 0.65em; color: #aaa; margin-top: 8px; transform: rotate(-45deg); transform-origin: top left; position: absolute; bottom: -35px; left: 50%; white-space: nowrap;">${dateShort}</div>
+                </div>
+            `;
+        });
+        
+        chartHtml += `</div>`;
+        container.innerHTML = chartHtml;
     },
 
     
