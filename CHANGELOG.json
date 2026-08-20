@@ -3,16 +3,16 @@
     "version": "v2026.8.20.03",
     "date": "2026-08-20",
     "changes": [
-      "Wdrożenie dedykowanego narzędzia (w zakładce Diagnostyka) do automatycznego mapowania i unifikacji starych nazw ćwiczeń (np. 'wyciskanie płaska' -> 'Klatka - Wyciskanie sztangi - Ławka płaska') we wszystkich Twoich historycznych treningach.",
-      "Wdrożenie Fazy 8 (Analityka): Dodano interaktywny Wykres Progresu dla konkretnych ćwiczeń w zakładce Analiza Progresu.",
-      "Możliwość wyboru dowolnego ćwiczenia z rozwijanej listy i śledzenia historii maksymalnego podniesionego ciężaru (oraz powtórzeń) na przestrzenni czasu w formie estetycznego wykresu słupkowego."
+      "🔧 Wdrożenie dedykowanego narzędzia (w zakładce Diagnostyka) do automatycznego mapowania i unifikacji starych nazw ćwiczeń (np. 'wyciskanie płaska' -> 'Klatka - Wyciskanie sztangi - Ławka płaska') we wszystkich Twoich historycznych treningach.",
+      "📈 Wdrożenie Fazy 8 (Analityka): Dodano interaktywny Wykres Progresu dla konkretnych ćwiczeń w zakładce Analiza Progresu.",
+      "📊 Możliwość wyboru dowolnego ćwiczenia z rozwijanej listy i śledzenia historii maksymalnego podniesionego ciężaru (oraz powtórzeń) na przestrzenni czasu w formie estetycznego wykresu słupkowego."
     ]
   },
   {
     "version": "v2026.8.20.01",
     "date": "2026-08-20",
     "changes": [
-      "Wdrożenie Fazy 7: Model Freemium. Aplikacja rozróżnia wersję Light oraz Heavy (PRO). Użytkownicy Light nie mają dostępu do funkcji AI po 7 dniach.",
+      "👑 Wdrożenie Fazy 7: Model Freemium. Aplikacja rozróżnia wersję Light oraz Heavy (PRO). Użytkownicy Light nie mają dostępu do funkcji AI po 7 dniach.",
       "Dodanie banera Premium na ekranie startowym (Dashboard), który odlicza dni Trial i informuje o statusie (Trial / Light / PRO).",
       "Poprawa działania Superserii: Dodawany jest jeden pusty blok ćwiczenia z możliwością rozszerzania go za pomocą dedykowanego przycisku '+ Kolejne ćwiczenie (Superseria)'.",
       "Przebudowa wyglądu okna Superserii (ujednolicona szerokość i usunięto podwójne obramowanie, które sprawiało problemy na mniejszych ekranach).",

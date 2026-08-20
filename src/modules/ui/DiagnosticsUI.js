@@ -1,4 +1,5 @@
 import { DatabaseManager } from '../db/DatabaseManager.js';
+import { ExerciseCategories } from '../../data/ExerciseCatalog.js';
 
 export const DiagnosticsUI = {
     init: () => {
@@ -189,77 +190,121 @@ export const DiagnosticsUI = {
             });
         }
 
-        // Mapowanie Ćwiczeń
+        // Mapowanie Ćwiczeń (Interaktywne)
         const migrateNamesBtn = document.getElementById('db-migrate-names-btn');
         if (migrateNamesBtn) {
             migrateNamesBtn.addEventListener('click', async () => {
-                if (confirm("WAŻNE: Czy utworzyłeś już Archiwum na samej górze tej zakładki?\n\nKliknij OK, jeśli chcesz dokonać mapowania (nadpisze to stare nazwy ćwiczeń m.in. 'wyciskanie płaska' na docelowe z Katalogu).")) {
-                    try {
-                        const trainings = await DatabaseManager.getTrainings();
-                        if (!trainings || trainings.length === 0) {
-                            alert("Brak treningów do zmapowania.");
+                if (!confirm("WAŻNE: Czy utworzyłeś już Archiwum? Ta akcja zmodyfikuje Twoją bazę.\n\nKliknij OK, aby otworzyć asystenta mapowania.")) return;
+                
+                try {
+                    const trainings = await DatabaseManager.getTrainings();
+                    if (!trainings || trainings.length === 0) {
+                        alert("Brak treningów."); return;
+                    }
+
+                    // 1. Zbuduj płaską listę wszystkich poprawnych ćwiczeń z Katalogu
+                    const validExercises = [];
+                    for (const cat in ExerciseCategories) {
+                        ExerciseCategories[cat].forEach(ex => validExercises.push(ex));
+                    }
+
+                    // 2. Znajdź wszystkie unikalne nazwy z historii, których NIE MA w katalogu
+                    const unknownNames = new Set();
+                    trainings.forEach(t => {
+                        if (t.exercises) {
+                            t.exercises.forEach(ex => {
+                                if (ex.name && !validExercises.includes(ex.name)) unknownNames.add(ex.name);
+                                if (ex.type === 'superset' && ex.exercises) {
+                                    ex.exercises.forEach(nx => {
+                                        if (nx.name && !validExercises.includes(nx.name)) unknownNames.add(nx.name);
+                                    });
+                                }
+                            });
+                        }
+                    });
+
+                    if (unknownNames.size === 0) {
+                        alert("Wszystkie Twoje ćwiczenia w historii już pasują do oficjalnego katalogu! Brak pracy.");
+                        return;
+                    }
+
+                    // 3. Pokaż modal do ręcznego parowania
+                    const modalId = 'mapping-modal';
+                    const existing = document.getElementById(modalId);
+                    if (existing) existing.remove();
+
+                    let rowsHtml = '';
+                    Array.from(unknownNames).forEach((unknown, i) => {
+                        // Spróbujmy podpowiedzieć z kontekstu (np. po 4 znakach lub całych słowach)
+                        let bestMatch = '';
+                        const lw = unknown.toLowerCase();
+                        if (lw.includes('płaska') && lw.includes('wycisk')) bestMatch = 'Klatka - Wyciskanie sztangi - Ławka płaska';
+                        else if (lw.includes('rozpi') && lw.includes('płas')) bestMatch = 'Klatka - Rozpiętki - Hantle (ławka płaska)';
+                        else if (lw.includes('przysiad')) bestMatch = 'Nogi - Przysiady ze sztangą na karku';
+                        else if (lw.includes('martw') || lw.includes(' mc')) bestMatch = 'Plecy - Martwy ciąg (Klasyczny)';
+                        else if (lw.includes('wiosł') || lw.includes('wioslo')) bestMatch = 'Plecy - Wiosłowanie sztangą w opadzie';
+                        else if (lw.includes('brzuch') || lw.includes('brzus') || lw.includes('spi')) bestMatch = 'Brzuch - Skłony tułowia na ławce rzymskiej'; // Podpowiedź dla brzucha
+
+                        rowsHtml += `
+                            <div style="background: rgba(255,255,255,0.05); padding: 10px; border-radius: 6px; margin-bottom: 10px; border: 1px solid #444;">
+                                <div style="color: #ff9800; font-weight: bold; margin-bottom: 5px;">Nieznane: "${unknown}"</div>
+                                <select id="map-select-${i}" data-original="${unknown}" style="width: 100%; padding: 8px; border-radius: 4px; background: #222; color: #fff; border: 1px solid #00BFFF;">
+                                    <option value="">-- Pomiń (Zostaw bez zmian) --</option>
+                                    ${validExercises.map(ex => `<option value="${ex}" ${ex === bestMatch ? 'selected' : ''}>Zmień na: ${ex}</option>`).join('')}
+                                </select>
+                            </div>
+                        `;
+                    });
+
+                    const modalHtml = `
+                        <div id="${modalId}" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 100000; display: flex; justify-content: center; align-items: center; padding: 20px; box-sizing: border-box;">
+                            <div style="background: #1e1e1e; border: 1px solid #9B59B6; border-radius: 12px; width: 100%; max-width: 500px; max-height: 90vh; display: flex; flex-direction: column; box-shadow: 0 10px 40px rgba(155,89,182,0.3);">
+                                <div style="padding: 15px; border-bottom: 1px solid #333; display: flex; justify-content: space-between; align-items: center;">
+                                    <h3 style="color: #9B59B6; margin: 0;">Asystent Mapowania</h3>
+                                    <button onclick="document.getElementById('${modalId}').remove()" style="background: none; border: none; color: #aaa; font-size: 1.5em; cursor: pointer;">&times;</button>
+                                </div>
+                                <div style="padding: 15px; overflow-y: auto; flex: 1;">
+                                    <p style="font-size: 0.9em; color: #ccc;">Poniżej znajdują się nazwy, które nie występują w nowym katalogu. Wybierz z listy docelowe odpowiedniki. Jeśli zostawisz "-- Pomiń --", nazwa nie zostanie zmieniona.</p>
+                                    ${rowsHtml}
+                                </div>
+                                <div style="padding: 15px; border-top: 1px solid #333; text-align: center;">
+                                    <button id="map-save-btn" style="background: #2ECC71; color: white; border: none; padding: 12px 20px; font-weight: bold; font-size: 1.1em; border-radius: 6px; cursor: pointer; width: 100%;">💾 Zapisz Zmiany do Bazy</button>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                    
+                    document.body.insertAdjacentHTML('beforeend', modalHtml);
+
+                    document.getElementById('map-save-btn').addEventListener('click', async () => {
+                        const mapDict = {};
+                        Array.from(unknownNames).forEach((unknown, i) => {
+                            const sel = document.getElementById(`map-select-${i}`);
+                            if (sel && sel.value) {
+                                mapDict[unknown] = sel.value;
+                            }
+                        });
+
+                        if (Object.keys(mapDict).length === 0) {
+                            alert("Nie wybrano żadnych zmian.");
+                            document.getElementById(modalId).remove();
                             return;
                         }
-
-                        // Słownik mapowań
-                        const mapDict = [
-                            { match: ["wyciskanie płaska", "klatka płaska", "wyciskanie sztangi płaska", "wycisk płaska"], replace: "Klatka - Wyciskanie sztangi - Ławka płaska" },
-                            { match: ["klatka skos", "wyciskanie skos", "wyciskanie sztangi skos", "wycisk skos dodatni"], replace: "Klatka - Wyciskanie sztangi - Skos dodatni" },
-                            { match: ["wyciskanie hantli płaska", "hantle płaska klatka", "rozpiętki płaska"], replace: "Klatka - Wyciskanie hantli - Ławka płaska" },
-                            { match: ["rozpiętki", "rozpietki", "rozpiętki skos", "hantle skos klatka"], replace: "Klatka - Rozpiętki - Hantle (skos dodatni)" },
-                            { match: ["martwy", "mc", "martwy ciąg"], replace: "Plecy - Martwy ciąg (Klasyczny)" },
-                            { match: ["przysiady", "siady", "przysiad ze sztangą"], replace: "Nogi - Przysiady ze sztangą na karku" },
-                            { match: ["ołp", "ohp", "wyciskanie żołnierskie", "żołnierskie"], replace: "Barki - Wyciskanie sztangi nad głowę (OHP)" },
-                            { match: ["wiosłowanie", "wiosło"], replace: "Plecy - Wiosłowanie sztangą w opadzie" }
-                        ];
 
                         let updatedCount = 0;
                         for (let t of trainings) {
                             let changed = false;
                             if (t.exercises && t.exercises.length > 0) {
                                 t.exercises.forEach(ex => {
-                                    if (ex.name) {
-                                        const origName = ex.name.toLowerCase().trim();
-                                        for (const dict of mapDict) {
-                                            // Sprawdzamy czy któraś fraza idealnie pasuje do oryginalnej nazwy
-                                            if (dict.match.includes(origName)) {
-                                                ex.name = dict.replace;
-                                                changed = true;
-                                                break;
-                                            }
-                                        }
-                                        // Dla "wyciskanie sztangi płaska" itp. jeśli ktoś wpisał np "Wyciskanie płaska klatka"
-                                        if (!changed) {
-                                            if (origName.includes("wyciskanie") && origName.includes("płaska") && !origName.includes("hantl")) {
-                                                ex.name = "Klatka - Wyciskanie sztangi - Ławka płaska";
-                                                changed = true;
-                                            } else if (origName.includes("klatka") && origName.includes("płaska") && !origName.includes("hantl")) {
-                                                ex.name = "Klatka - Wyciskanie sztangi - Ławka płaska";
-                                                changed = true;
-                                            }
-                                        }
+                                    if (ex.name && mapDict[ex.name]) {
+                                        ex.name = mapDict[ex.name];
+                                        changed = true;
                                     }
-                                    // Obsługa superserii
                                     if (ex.type === 'superset' && ex.exercises) {
-                                        ex.exercises.forEach(nestedEx => {
-                                            if (nestedEx.name) {
-                                                const origNameNested = nestedEx.name.toLowerCase().trim();
-                                                for (const dict of mapDict) {
-                                                    if (dict.match.includes(origNameNested)) {
-                                                        nestedEx.name = dict.replace;
-                                                        changed = true;
-                                                        break;
-                                                    }
-                                                }
-                                                if (!changed) {
-                                                    if (origNameNested.includes("wyciskanie") && origNameNested.includes("płaska") && !origNameNested.includes("hantl")) {
-                                                        nestedEx.name = "Klatka - Wyciskanie sztangi - Ławka płaska";
-                                                        changed = true;
-                                                    } else if (origNameNested.includes("klatka") && origNameNested.includes("płaska") && !origNameNested.includes("hantl")) {
-                                                        nestedEx.name = "Klatka - Wyciskanie sztangi - Ławka płaska";
-                                                        changed = true;
-                                                    }
-                                                }
+                                        ex.exercises.forEach(nx => {
+                                            if (nx.name && mapDict[nx.name]) {
+                                                nx.name = mapDict[nx.name];
+                                                changed = true;
                                             }
                                         });
                                     }
@@ -271,10 +316,12 @@ export const DiagnosticsUI = {
                             }
                         }
 
-                        alert(`Zakończono! Zaktualizowano ${updatedCount} treningów z poprawionymi nazwami ćwiczeń.`);
-                    } catch (err) {
-                        alert("Błąd podczas mapowania: " + err.message);
-                    }
+                        alert(`Zakończono! Zaktualizowano ${updatedCount} treningów w Twojej historii.`);
+                        document.getElementById(modalId).remove();
+                    });
+
+                } catch (err) {
+                    alert("Błąd podczas odczytu bazy: " + err.message);
                 }
             });
         }
