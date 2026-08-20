@@ -1,5 +1,9 @@
 export const PremiumUI = {
     checkPremium: () => {
+        return PremiumUI.getTrialStatus().hasAccess;
+    },
+
+    getTrialStatus: () => {
         let installDateStr = localStorage.getItem('uki_install_date');
         if (!installDateStr) {
             installDateStr = new Date().toISOString();
@@ -8,7 +12,7 @@ export const PremiumUI = {
 
         const token = localStorage.getItem('uki_ai_premium_token');
         if (token === 'UkiSuppi2026' || token === 'UkiBodyBuildPro') {
-            return true; // Posiada poprawne hasło premium
+            return { hasAccess: true, isProToken: true, daysLeft: 0 };
         }
 
         const installDate = new Date(installDateStr);
@@ -16,10 +20,11 @@ export const PremiumUI = {
         const diffMs = now.getTime() - installDate.getTime();
         const diffDays = diffMs / (1000 * 60 * 60 * 24);
 
-        if (diffDays > 7.5) { // w 8smym dniu wieczorem (czyli jak minie ponad 7.5 dni)
-            return false;
+        if (diffDays > 7.5) { 
+            return { hasAccess: false, isProToken: false, daysLeft: 0 };
         }
-        return true;
+        
+        return { hasAccess: true, isProToken: false, daysLeft: Math.max(0, 7 - Math.floor(diffDays)) };
     },
 
     showPremiumPaywall: () => {
@@ -72,10 +77,54 @@ export const PremiumUI = {
             alert("Hasło poprawne! Narzędzia AI (Trener Edward oraz Analiza Zdjęć Posiłków) zostały odblokowane na stałe. Dziękujemy za wsparcie!");
             const modal = document.getElementById('premium-paywall-modal');
             if (modal) modal.remove();
+            PremiumUI.renderPremiumBanner();
         } else {
             alert("Nieprawidłowe hasło. Spróbuj ponownie lub wesprzyj projekt by uzyskać dostęp.");
+        }
+    },
+    renderPremiumBanner: () => {
+        const banner = document.getElementById('premium-status-banner');
+        if (!banner) return;
+        
+        const status = PremiumUI.getTrialStatus();
+        
+        if (status.isProToken) {
+            banner.innerHTML = `
+                <div style="background: linear-gradient(135deg, rgba(255, 215, 0, 0.1) 0%, rgba(255, 215, 0, 0.05) 100%); border: 1px solid rgba(255, 215, 0, 0.5); padding: 10px 15px; border-radius: 12px; display: inline-flex; align-items: center; gap: 10px; box-shadow: 0 0 15px rgba(255, 215, 0, 0.1);">
+                    <span style="font-size: 1.5em; text-shadow: 0 0 10px rgba(255, 215, 0, 0.8);">👑</span>
+                    <div style="text-align: left;">
+                        <div style="color: #FFD700; font-weight: bold; font-size: 1.05em;">Wersja PRO Aktywna</div>
+                        <div style="color: #aaa; font-size: 0.85em;">Wszystkie funkcje AI odblokowane. Dziękujemy!</div>
+                    </div>
+                </div>
+            `;
+        } else if (status.hasAccess) {
+            banner.innerHTML = `
+                <div style="background: linear-gradient(135deg, rgba(0, 191, 255, 0.1) 0%, rgba(0, 191, 255, 0.05) 100%); border: 1px dashed rgba(0, 191, 255, 0.5); padding: 10px 15px; border-radius: 12px; display: inline-flex; align-items: center; gap: 10px;">
+                    <span style="font-size: 1.5em;">⏳</span>
+                    <div style="text-align: left;">
+                        <div style="color: #00BFFF; font-weight: bold; font-size: 1.05em;">Okres Próbny AI</div>
+                        <div style="color: #ccc; font-size: 0.85em;">Pozostało dni: <strong style="color: #fff;">${status.daysLeft}</strong></div>
+                    </div>
+                    <button onclick="window.PremiumUI.showPremiumPaywall()" style="background: rgba(255, 152, 0, 0.2); border: 1px solid #FF9800; color: #FF9800; border-radius: 6px; padding: 6px 12px; margin-left: 10px; cursor: pointer; font-size: 0.85em; font-weight: bold;">Odblokuj PRO</button>
+                </div>
+            `;
+        } else {
+            banner.innerHTML = `
+                <div style="background: rgba(231, 76, 60, 0.1); border: 1px dashed rgba(231, 76, 60, 0.5); padding: 10px 15px; border-radius: 12px; display: inline-flex; align-items: center; gap: 10px;">
+                    <span style="font-size: 1.5em; filter: grayscale(1);">🔒</span>
+                    <div style="text-align: left;">
+                        <div style="color: #E74C3C; font-weight: bold; font-size: 1.05em;">Aplikacja Light</div>
+                        <div style="color: #aaa; font-size: 0.85em;">Funkcje inteligentne AI są zablokowane.</div>
+                    </div>
+                    <button onclick="window.PremiumUI.showPremiumPaywall()" style="background: #FF9800; border: none; color: #000; border-radius: 6px; padding: 6px 12px; margin-left: 10px; cursor: pointer; font-size: 0.85em; font-weight: bold;">Kup dostęp</button>
+                </div>
+            `;
         }
     }
 };
 
 window.PremiumUI = PremiumUI;
+document.addEventListener('DOMContentLoaded', () => {
+    setTimeout(PremiumUI.renderPremiumBanner, 500);
+});

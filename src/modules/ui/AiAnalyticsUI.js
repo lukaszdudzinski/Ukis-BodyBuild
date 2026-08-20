@@ -36,8 +36,20 @@ export const AiAnalyticsUI = {
             </div>
         `;
 
-        document.getElementById('ai-gen-weekly-btn').addEventListener('click', () => AiAnalyticsUI.openInterviewModal(7));
-        document.getElementById('ai-gen-monthly-btn').addEventListener('click', () => AiAnalyticsUI.openInterviewModal(30));
+        document.getElementById('ai-gen-weekly-btn').addEventListener('click', () => {
+            if (window.PremiumUI && !window.PremiumUI.checkPremium()) {
+                window.PremiumUI.showPremiumPaywall();
+                return;
+            }
+            AiAnalyticsUI.openInterviewModal(7);
+        });
+        document.getElementById('ai-gen-monthly-btn').addEventListener('click', () => {
+            if (window.PremiumUI && !window.PremiumUI.checkPremium()) {
+                window.PremiumUI.showPremiumPaywall();
+                return;
+            }
+            AiAnalyticsUI.openInterviewModal(30);
+        });
 
         await AiAnalyticsUI.loadHistory();
     },

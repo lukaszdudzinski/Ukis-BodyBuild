@@ -92,9 +92,9 @@ export const TrainingComponent = {
                     </div>
                 </div>
 
-                <div style="display: flex; gap: 10px; justify-content: center; margin-bottom: 20px;">
-                    <button type="button" class="action-button" style="background-color: #1DB954; border-color: #1DB954; color: #000; font-weight: bold; padding: 8px 15px; border-radius: 20px;" onclick="window.open('https://open.spotify.com/', '_blank')">🎵 Spotify</button>
-                    <button type="button" class="action-button" style="background-color: #FF0000; border-color: #FF0000; color: #fff; font-weight: bold; padding: 8px 15px; border-radius: 20px;" onclick="window.open('https://music.youtube.com/', '_blank')">🎶 YT Music</button>
+                <div style="display: flex; gap: 12px; justify-content: center; margin-bottom: 25px;">
+                    <button type="button" class="action-button pulse" style="flex: 1; background: linear-gradient(135deg, #1DB954, #128C3E); border: none; color: #fff; font-weight: bold; padding: 12px; border-radius: 12px; font-size: 1.05em; box-shadow: 0 4px 15px rgba(29, 185, 84, 0.4); display: flex; align-items: center; justify-content: center; gap: 8px; cursor: pointer;" onclick="window.open('https://open.spotify.com/', '_blank')"><span style="font-size: 1.2em;">🎵</span> Spotify</button>
+                    <button type="button" class="action-button pulse" style="flex: 1; background: linear-gradient(135deg, #FF0000, #CC0000); border: none; color: #fff; font-weight: bold; padding: 12px; border-radius: 12px; font-size: 1.05em; box-shadow: 0 4px 15px rgba(255, 0, 0, 0.4); display: flex; align-items: center; justify-content: center; gap: 8px; cursor: pointer;" onclick="window.open('https://music.youtube.com/', '_blank')"><span style="font-size: 1.2em;">🎶</span> YT Music</button>
                 </div>
 
                 <div class="form-full-width" id="exercises-container-section">

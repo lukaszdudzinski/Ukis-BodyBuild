@@ -1,5 +1,17 @@
 [
   {
+    "version": "v2026.8.20.01",
+    "date": "2026-08-20",
+    "changes": [
+      "Wdrożenie Fazy 7: Model Freemium. Aplikacja rozróżnia wersję Light oraz Heavy (PRO). Użytkownicy Light nie mają dostępu do funkcji AI po 7 dniach.",
+      "Dodanie banera Premium na ekranie startowym (Dashboard), który odlicza dni Trial i informuje o statusie (Trial / Light / PRO).",
+      "Poprawa działania Superserii: Dodawany jest jeden pusty blok ćwiczenia z możliwością rozszerzania go za pomocą dedykowanego przycisku '+ Kolejne ćwiczenie (Superseria)'.",
+      "Przebudowa wyglądu okna Superserii (ujednolicona szerokość i usunięto podwójne obramowanie, które sprawiało problemy na mniejszych ekranach).",
+      "Cardio: Umożliwienie ręcznego wpisania czasu treningu w minutach zamiast używania stopera.",
+      "Interfejs: Nowy, ładniejszy wygląd przycisków odtwarzaczy Spotify oraz YouTube Music."
+    ]
+  },
+  {
     "version": "v2026.8.19.1",
     "date": "2026-08-19",
     "changes": [

@@ -404,6 +404,11 @@ export const DietUI = {
     },
 
     handleAnalyze: async () => {
+        if (window.PremiumUI && !window.PremiumUI.checkPremium()) {
+            window.PremiumUI.showPremiumPaywall();
+            return;
+        }
+        
         const contextInput = document.getElementById('diet-context-input');
         const contextText = contextInput ? contextInput.value.trim() : '';
         

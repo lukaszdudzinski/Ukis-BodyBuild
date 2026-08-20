@@ -1113,11 +1113,23 @@ export const TrainingUI = {
             type: 'superset',
             name: '',
             exercises: [
-                { id: Date.now().toString() + '-1', type: 'strength', name: '', sets: [] },
-                { id: Date.now().toString() + '-2', type: 'strength', name: '', sets: [] }
+                { id: Date.now().toString() + '-1', type: 'strength', name: '', sets: [] }
             ]
         });
         TrainingUI.renderCurrentExercises();
+    },
+
+    addNestedSuperset: (supersetId) => {
+        const superset = currentTraining.exercises.find(e => e.id === supersetId);
+        if (superset) {
+            superset.exercises.push({
+                id: Date.now().toString() + '-' + Math.random().toString(36).substr(2,5),
+                type: 'strength',
+                name: '',
+                sets: []
+            });
+            TrainingUI.renderCurrentExercises();
+        }
     },
 
     getExerciseById: (id) => {
@@ -1168,8 +1180,7 @@ export const TrainingUI = {
             exercise.duration_minutes = Math.round(exercise.cardioSeconds / 60);
         }, 1000);
         
-        document.getElementById(`cardio-btn-start-${exerciseId}`).style.opacity = '0.5';
-        document.getElementById(`cardio-btn-stop-${exerciseId}`).style.opacity = '1';
+        TrainingUI.renderCurrentExercises();
     },
 
     stopCardio: (exerciseId) => {
@@ -1177,8 +1188,18 @@ export const TrainingUI = {
         if (!exercise || !exercise.cardioInterval) return;
         clearInterval(exercise.cardioInterval);
         exercise.cardioInterval = null;
-        document.getElementById(`cardio-btn-start-${exerciseId}`).style.opacity = '1';
-        document.getElementById(`cardio-btn-stop-${exerciseId}`).style.opacity = '0.5';
+        TrainingUI.renderCurrentExercises();
+    },
+
+    updateCardioManual: (exerciseId, minutes) => {
+        const exercise = TrainingUI.getExerciseById(exerciseId);
+        if (exercise) {
+            let m = parseInt(minutes, 10);
+            if (isNaN(m) || m < 0) m = 0;
+            exercise.cardioSeconds = m * 60;
+            exercise.duration_minutes = m;
+            TrainingUI.saveDraft();
+        }
     },
 
     addSet: (exerciseId, isDropset = false) => {
@@ -1312,9 +1333,17 @@ export const TrainingUI = {
                 const cTime = ex.cardioSeconds || (ex.duration_minutes ? ex.duration_minutes * 60 : 0);
                 exerciseDetailsHtml = `
                     <div style="margin-top: 15px; text-align: center;">
-                        <label style="color: #ccc; font-size: 0.9em;">Czas trwania Cardio (Stoper):</label><br>
-                        <div style="font-size: 2.2em; color: #00BFFF; margin: 10px 0; font-family: monospace;" id="cardio-display-${ex.id}">${window.TrainingUI.formatTime(cTime)}</div>
-                        <div style="display: flex; gap: 10px; justify-content: center;">
+                        <label style="color: #ccc; font-size: 0.9em;">Czas trwania Cardio (Stoper lub wpisz ręcznie):</label><br>
+                        
+                        <div style="display: flex; justify-content: center; align-items: center; gap: 10px; margin: 10px 0;">
+                            <div style="font-size: 2.2em; color: #00BFFF; font-family: monospace; display: ${ex.cardioInterval ? 'block' : 'none'};" id="cardio-display-${ex.id}">${window.TrainingUI.formatTime(cTime)}</div>
+                            <div style="display: ${ex.cardioInterval ? 'none' : 'flex'}; align-items: center; gap: 5px; justify-content: center;" id="cardio-input-wrap-${ex.id}">
+                                <input type="number" id="cardio-manual-min-${ex.id}" value="${Math.floor(cTime/60)}" onchange="window.TrainingUI.updateCardioManual('${ex.id}', this.value)" style="width: 80px; padding: 10px; border-radius: 6px; border: 1px solid #00BFFF; background: #222; color: #00BFFF; font-size: 1.6em; text-align: center; font-weight: bold;" inputmode="numeric">
+                                <span style="color: #888; font-size: 1.2em;">min</span>
+                            </div>
+                        </div>
+
+                        <div style="display: flex; gap: 10px; justify-content: center; margin-top: 10px;">
                             <button id="cardio-btn-start-${ex.id}" onclick="window.TrainingUI.startCardio('${ex.id}')" style="background: #2ECC71; color: white; border: none; padding: 10px 20px; border-radius: 4px; font-weight: bold; cursor: pointer; ${ex.cardioInterval ? 'opacity: 0.5;' : ''}">▶ Start</button>
                             <button id="cardio-btn-stop-${ex.id}" onclick="window.TrainingUI.stopCardio('${ex.id}')" style="background: #E74C3C; color: white; border: none; padding: 10px 20px; border-radius: 4px; font-weight: bold; cursor: pointer; ${!ex.cardioInterval ? 'opacity: 0.5;' : ''}">⏹ Stop</button>
                         </div>
@@ -1400,7 +1429,7 @@ export const TrainingUI = {
             }
             
             return `
-                <div style="background-color: ${isNested ? 'rgba(0,0,0,0.2)' : '#1e1e1e'}; border: 1px solid ${isNested ? '#E91E63' : '#333'}; padding: 15px; border-radius: 8px; margin-bottom: 15px;">
+                <div style="background: ${isNested ? 'linear-gradient(145deg, #2a0815, #1a050d)' : '#1e1e1e'}; border: 1px solid ${isNested ? '#E91E63' : '#333'}; padding: 15px; border-radius: 8px; margin-bottom: 15px; ${isNested ? 'box-shadow: 0 0 10px rgba(233, 30, 99, 0.2);' : ''}">
                     <div style="margin-bottom: 15px;">
                         <div style="display: flex; gap: 5px; margin-bottom: 10px;">
                             <input type="text" class="exercise-name-input" placeholder="Wpisz nazwę..." value="${ex.name}" onchange="window.TrainingUI.updateExerciseField('${ex.id}', 'name', this.value); window.TrainingUI.renderCurrentExercises();" style="flex: 1; min-width: 0; padding: 15px; border-radius: 6px; border: 1px solid ${isNested ? '#E91E63' : '#00BFFF'}; background: #222; color: #fff; font-size: 1.1em; box-sizing: border-box; text-align: center;">
@@ -1445,9 +1474,11 @@ export const TrainingUI = {
                 }
                 
                 html += `
-                    <div style="background: linear-gradient(145deg, #2a0815, #1a050d); border: 1px solid rgba(233, 30, 99, 0.5); padding: 15px; border-radius: 8px; margin-bottom: ${inSupersetGroup ? '0' : '15px'}; box-shadow: inset 0 0 10px rgba(0,0,0,0.5);">
-                        <h4 style="color: #E91E63; margin-top: 0; margin-bottom: 15px; text-align: center; text-transform: uppercase; font-size: 0.9em; letter-spacing: 1px;">Superseria Dodatkowa</h4>
+                    <div style="margin-bottom: ${inSupersetGroup ? '0' : '15px'};">
                         ${ex.exercises.map(nestedEx => renderExerciseForm(nestedEx, true)).join('')}
+                        <div style="text-align: center; margin-top: -5px; margin-bottom: 15px;">
+                            <button onclick="window.TrainingUI.addNestedSuperset('${ex.id}')" style="background: rgba(233, 30, 99, 0.2); border: 1px dashed #E91E63; color: #E91E63; padding: 8px 15px; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 0.9em;">+ Kolejne ćwiczenie (Superseria)</button>
+                        </div>
                     </div>
                 `;
                 

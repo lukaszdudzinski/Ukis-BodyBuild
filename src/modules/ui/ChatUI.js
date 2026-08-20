@@ -129,6 +129,10 @@ export const ChatUI = {
         const input = document.getElementById('edward-chat-input');
 
         toggleBtn.addEventListener('click', () => {
+            if (window.PremiumUI && !window.PremiumUI.checkPremium()) {
+                window.PremiumUI.showPremiumPaywall();
+                return;
+            }
             const isHidden = chatWindow.style.display === 'none' || chatWindow.style.display === '';
             chatWindow.style.display = isHidden ? 'flex' : 'none';
             if (isHidden) {
@@ -201,6 +205,10 @@ export const ChatUI = {
 
         if (clickable) {
             bubble.addEventListener('click', () => {
+                if (window.PremiumUI && !window.PremiumUI.checkPremium()) {
+                    window.PremiumUI.showPremiumPaywall();
+                    return;
+                }
                 bubble.style.opacity = '0';
                 bubble.style.transform = 'translateY(10px) scale(0.95)';
                 setTimeout(() => bubble.remove(), 400);
