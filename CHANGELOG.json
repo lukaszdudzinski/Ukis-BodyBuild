@@ -3,7 +3,10 @@
     "version": "v2026.8.21.01",
     "date": "2026-08-21",
     "changes": [
-      "Wydanie nowej wersji poprawkowej."
+      "👑 Zmiana formatowania licencji: Informacja o dostępie (Heavy / Trial / Light) została przeniesiona na dół pulpitu, tuż przed numerem wersji (np. Trial v2026.8.21.01).",
+      "📜 Czytelniejszy pulpit: Link 'Zobacz co nowego (Changelog)' oraz okno z odliczaniem dni próbnych przeniesiono do sekcji 'Ustawienia i Profil', aby zapewnić maksymalny minimalizm na głównym ekranie.",
+      "🛠️ Naprawa okienek do wpisywania ciężaru: Zwiększyliśmy szerokość pól tekstowych dla obciążeń z 48px na 62px – teraz trzycyfrowe wartości (np. 135 kg) mieszczą się idealnie i cyfry nie są ucinane!",
+      "🐞 Krytyczna poprawka aktualizacji (Bugfix): Naprawiono błąd w systemie wersjonowania, który powodował irytującą 'pętlę aktualizacji' oraz błędy Service Workera."
     ]
   },
   {

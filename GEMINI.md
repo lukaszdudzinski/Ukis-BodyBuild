@@ -15,5 +15,7 @@ Wypełnij w nim wszystkie niezbędne pola (Wersja, ID obecnej konwersacji, opis 
 
 ## 3. Wersjonowanie i PWA (Skill: QA i Aktualizacje)
 - **Skrypt aktualizacji:** Zawsze używaj `node scripts/version.mjs` do podbijania wersji. Skrypt ten zarządza wersją w plikach `index.html`, `sw.js`, `AppUI.js` i `CHANGELOG.json`. 
+- **Styl Changeloga:** Każda wydana wersja (np. w pliku CHANGELOG.json) MUSI posiadać bogaty opis zmian z odpowiednimi emotikonami na początku (np. 👑, 🛠️, 🐞). Zabraniamy używania lakonicznych i krótkich opisów w stylu "Wydanie nowej wersji". Opisy mają być dopieszczone, żeby użytkownik wiedział, że coś ulepszyliśmy.
+
 - **Zasada Pętli Aktualizacji:** Zwracaj szczególną uwagę, by wersja w pliku `CHANGELOG.json` (pierwszy wpis) **zawsze** idealnie pokrywała się z numerem `APP_VERSION` w plikach JS. Rozjazd tych numerów (np. Changelog pokazuje nowszą wersję niż `AppUI.js`) spowoduje agresywną pętlę przeładowań w PWA (`pwa-updater.js`).
 - **QA Tester:** Agent Testujący musi weryfikować po każdej zmianie wersji w Playwright, czy aplikacja uruchamia się bez zapętlenia i czy wyświetla się poprawny numer wersji na ekranie głównym.
