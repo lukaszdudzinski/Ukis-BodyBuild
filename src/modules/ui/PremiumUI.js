@@ -126,5 +126,18 @@ export const PremiumUI = {
 
 window.PremiumUI = PremiumUI;
 document.addEventListener('DOMContentLoaded', () => {
-    setTimeout(PremiumUI.renderPremiumBanner, 500);
+    setTimeout(() => {
+        PremiumUI.renderPremiumBanner();
+        
+        // Codzienne przypomnienie o końcu okresu próbnego
+        const status = PremiumUI.getTrialStatus();
+        if (!status.hasAccess && !status.isProToken) {
+            const today = new Date().toISOString().split('T')[0];
+            const lastShown = localStorage.getItem('uki_ai_paywall_last_shown');
+            if (lastShown !== today) {
+                localStorage.setItem('uki_ai_paywall_last_shown', today);
+                PremiumUI.showPremiumPaywall();
+            }
+        }
+    }, 500);
 });
