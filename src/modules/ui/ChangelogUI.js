@@ -66,6 +66,8 @@ export const ChangelogUI = {
             let updatesToShow = [];
             if (compareVersionStr === 'latest_only') {
                 updatesToShow = data.length > 0 ? [data[0]] : [];
+            } else if (compareVersionStr === 'all') {
+                updatesToShow = data;
             } else {
                 const compareVer = compareVersionStr || window.APP_VERSION || 'v.0.0.0';
                 const parseVersion = (v) => {

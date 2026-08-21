@@ -1,3 +1,5 @@
+import { PremiumUI } from "./PremiumUI.js";
+
 export const APP_VERSION = 'v2026.8.21.01'; // Faza 6.2: Katalog z podziałem na partie i Fixy UI
 
 // Obsługa błędów globalnych — zdefiniowana w main.js (klucz: uki_error_logs)
@@ -17,7 +19,22 @@ export const AppUI = {
         // Update version displays (sidebar + dashboard)
         const versionDisplays = document.querySelectorAll('.version-info, .app-version-display, #dashboard-version');
         versionDisplays.forEach(el => {
-            el.textContent = APP_VERSION;
+            if (el.id === 'dashboard-version') {
+                const premiumStatus = PremiumUI.getTrialStatus();
+                let statusHtml = '';
+                
+                if (premiumStatus.isPremium) {
+                    statusHtml = `<span style="color: #FFD700; font-weight: bold; margin-left: 5px;">👑 Heavy</span>`;
+                } else if (premiumStatus.hasAccess) {
+                    statusHtml = `<span style="color: #00BFFF; margin-left: 5px;">👑 Trial (${premiumStatus.daysLeft} dni)</span>`;
+                } else {
+                    statusHtml = `<span style="color: #aaa; margin-left: 5px;">Light</span>`;
+                }
+
+                el.innerHTML = `Uki's BodyBuild ${APP_VERSION} ${statusHtml}<br><a href="#" onclick="event.preventDefault(); window.showChangelogModal('all')" style="color: #FF9800; text-decoration: underline; font-size: 0.9em; display: inline-block; margin-top: 5px; cursor: pointer;">Zobacz co nowego (Changelog)</a>`;
+            } else {
+                el.textContent = APP_VERSION;
+            }
         });
 
         // CHANGELOG AUTO-SHOW LOGIC
@@ -52,7 +69,7 @@ export const AppUI = {
                         }
                     }
                     
-                    window.showChangelogModal(compareVersion ? compareVersion : 'latest_only');
+                    window.showChangelogModal(compareVersion ? compareVersion : 'all');
                 }, 800);
             }
         }

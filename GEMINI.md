@@ -12,3 +12,8 @@ Wypełnij w nim wszystkie niezbędne pola (Wersja, ID obecnej konwersacji, opis 
 - **PWA i Vanilla JS:** Aplikacja działa bez klasycznego backendu Node/Python.
 - **Baza danych:** Używamy lokalnego SQLite w przeglądarce (przez OPFS). Zobacz `DatabaseManager.js`.
 - **Wersja PRO/Light:** Logika sprawdzania dostępu Premium (hasło "UkiSuppi2026" / "UkiBodyBuildPro" lub trial 7 dni) znajduje się w `PremiumUI.checkPremium()`. Wszystkie nowe płatne funkcje AI muszą być opakowane w ten warunek.
+
+## 3. Wersjonowanie i PWA (Skill: QA i Aktualizacje)
+- **Skrypt aktualizacji:** Zawsze używaj `node scripts/version.mjs` do podbijania wersji. Skrypt ten zarządza wersją w plikach `index.html`, `sw.js`, `AppUI.js` i `CHANGELOG.json`. 
+- **Zasada Pętli Aktualizacji:** Zwracaj szczególną uwagę, by wersja w pliku `CHANGELOG.json` (pierwszy wpis) **zawsze** idealnie pokrywała się z numerem `APP_VERSION` w plikach JS. Rozjazd tych numerów (np. Changelog pokazuje nowszą wersję niż `AppUI.js`) spowoduje agresywną pętlę przeładowań w PWA (`pwa-updater.js`).
+- **QA Tester:** Agent Testujący musi weryfikować po każdej zmianie wersji w Playwright, czy aplikacja uruchamia się bez zapętlenia i czy wyświetla się poprawny numer wersji na ekranie głównym.
