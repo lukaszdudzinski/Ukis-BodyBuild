@@ -16,24 +16,27 @@ export const AppUI = {
         // Expose do global scope dla index.html
         window.APP_VERSION = APP_VERSION;
 
-        // Update version displays (sidebar + dashboard)
         const versionDisplays = document.querySelectorAll('.version-info, .app-version-display, #dashboard-version');
+        
+        const premiumStatus = PremiumUI.getTrialStatus();
+        let variantName = '';
+        if (premiumStatus.isPremium) {
+            variantName = 'Heavy';
+        } else if (premiumStatus.hasAccess) {
+            variantName = `Trial (${premiumStatus.daysLeft} dni)`;
+        } else {
+            variantName = 'Light';
+        }
+
         versionDisplays.forEach(el => {
             if (el.id === 'dashboard-version') {
-                const premiumStatus = PremiumUI.getTrialStatus();
-                let statusHtml = '';
-                
-                if (premiumStatus.isPremium) {
-                    statusHtml = `<span style="color: #FFD700; font-weight: bold; margin-left: 5px;">👑 Heavy</span>`;
-                } else if (premiumStatus.hasAccess) {
-                    statusHtml = `<span style="color: #00BFFF; margin-left: 5px;">👑 Trial (${premiumStatus.daysLeft} dni)</span>`;
-                } else {
-                    statusHtml = `<span style="color: #aaa; margin-left: 5px;">Light</span>`;
-                }
-
-                el.innerHTML = `Uki's BodyBuild ${APP_VERSION} ${statusHtml}<br><a href="#" onclick="event.preventDefault(); window.showChangelogModal('all')" style="color: #FF9800; text-decoration: underline; font-size: 0.9em; display: inline-block; margin-top: 5px; cursor: pointer;">Zobacz co nowego (Changelog)</a>`;
+                el.innerHTML = `<span style="color: rgba(255, 255, 255, 0.5);">${variantName} ${APP_VERSION}</span><br><a href="#" onclick="event.preventDefault(); window.showChangelogModal('all')" style="color: #FF9800; text-decoration: underline; font-size: 0.9em; display: inline-block; margin-top: 5px; cursor: pointer;">Zobacz co nowego (Changelog)</a>`;
+            } else if (el.classList.contains('app-version-display')) {
+                // W Ustawieniach
+                el.innerHTML = `${variantName} ${APP_VERSION} <span onclick="alert('Objaśnienie wariantów:\\n\\nTrial - Przez 7 dni masz odblokowaną pełną wersję aplikacji ze wszystkimi funkcjami.\\nHeavy - Wersja z nielimitowanym dostępem do sztucznej inteligencji (AI).\\nLight - Wersja podstawowa bez funkcji AI.')" style="cursor: pointer; color: #FF9800; margin-left: 5px; font-size: 1.1em;" title="Co to znaczy?">ⓘ</span>`;
             } else {
-                el.textContent = APP_VERSION;
+                // Sidebar
+                el.textContent = `${variantName} ${APP_VERSION}`;
             }
         });
 
