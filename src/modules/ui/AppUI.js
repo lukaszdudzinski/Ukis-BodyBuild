@@ -29,13 +29,11 @@ export const AppUI = {
         }
 
         versionDisplays.forEach(el => {
-            if (el.id === 'dashboard-version') {
-                el.innerHTML = `<span style="color: rgba(255, 255, 255, 0.5);">${variantName} ${APP_VERSION}</span><br><a href="#" onclick="event.preventDefault(); window.showChangelogModal('all')" style="color: #FF9800; text-decoration: underline; font-size: 0.9em; display: inline-block; margin-top: 5px; cursor: pointer;">Zobacz co nowego (Changelog)</a>`;
-            } else if (el.classList.contains('app-version-display')) {
+            if (el.classList.contains('app-version-display')) {
                 // W Ustawieniach
-                el.innerHTML = `${variantName} ${APP_VERSION} <span onclick="alert('Objaśnienie wariantów:\\n\\nTrial - Przez 7 dni masz odblokowaną pełną wersję aplikacji ze wszystkimi funkcjami.\\nHeavy - Wersja z nielimitowanym dostępem do sztucznej inteligencji (AI).\\nLight - Wersja podstawowa bez funkcji AI.')" style="cursor: pointer; color: #FF9800; margin-left: 5px; font-size: 1.1em;" title="Co to znaczy?">ⓘ</span>`;
+                el.innerHTML = `${variantName} ${APP_VERSION} <span onclick="alert('Objaśnienie wariantów:\\n\\nTrial - Przez 7 dni masz odblokowaną pełną wersję aplikacji ze wszystkimi funkcjami.\\nHeavy - Wersja z nielimitowanym dostępem do sztucznej inteligencji (AI).\\nLight - Wersja podstawowa bez funkcji AI.')" style="cursor: pointer; color: #FF9800; margin-left: 5px; font-size: 1.1em;" title="Co to znaczy?">ⓘ</span><br><a href="#" onclick="event.preventDefault(); window.showChangelogModal('all')" style="color: #FF9800; text-decoration: underline; font-size: 0.9em; display: inline-block; margin-top: 10px; cursor: pointer;">Zobacz co nowego (Changelog)</a>`;
             } else {
-                // Sidebar
+                // Sidebar oraz dashboard-version
                 el.textContent = `${variantName} ${APP_VERSION}`;
             }
         });
