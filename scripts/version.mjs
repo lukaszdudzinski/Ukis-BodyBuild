@@ -60,7 +60,7 @@ if (changelogData.length === 0 || changelogData[0].version !== newVersion) {
         version: newVersion,
         date: `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`,
         changes: [
-            "Wydanie nowej wersji poprawkowej."
+            "[UZUPEŁNIJ OPIS ZMIAN - PAMIĘTAJ O EMOTIKONACH! 🚀🐞💪]"
         ]
     });
     fs.writeFileSync(changelogPath, JSON.stringify(changelogData, null, 2) + '\n');

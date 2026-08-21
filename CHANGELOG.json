@@ -1,9 +1,19 @@
 [
   {
+    "version": "v2026.8.21.03",
+    "date": "2026-08-21",
+    "changes": [
+      "🕵️‍♂️ Analityk w akcji: System otrzymał głęboki raport UX dotyczący obsługi dotykowej, co przygotowuje grunt pod wielkie zmiany w interfejsie dodawania ćwiczeń (Swipe, Numpad, Smart Steppery)!",
+      "📝 Changelog na sterydach: Załataliśmy lukę, przez którą system wrzucał domyślny i 'suchy' opis przy nowych aktualizacjach. Od teraz każda łatka musi mieć pełne opisy z emotikonami, bo tak rzecze prawo! ⚖️"
+    ]
+  },
+  {
     "version": "v2026.8.21.02",
     "date": "2026-08-21",
     "changes": [
-      "Wydanie nowej wersji poprawkowej."
+      "⏱️ Czas trwania powiadomień: Zoptymalizowaliśmy trenera Edwarda. Jego chmurki z podpowiedziami znikają teraz po idealnych 6 sekundach.",
+      "📅 Przypomnienie o Trialu: Dodaliśmy mechanizm, który po wygaśnięciu okresu próbnego (status Light) przypomina o możliwości odblokowania wersji PRO tylko raz dziennie na starcie aplikacji, szanując Twój czas.",
+      "🚀 Kolejne szlify aktualizatora: Wypuściliśmy wersję .02, aby upewnić się, że pobieranie PWA działa już całkowicie bezproblemowo!"
     ]
   },
   {
