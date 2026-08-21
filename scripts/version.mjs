@@ -31,7 +31,7 @@ const currentVersion = versionMatch[1];
 let newVersion;
 if (currentVersion.startsWith(prefix)) {
     const parts = currentVersion.split('.');
-    const rev = parseInt(parts[4] || '0', 10);
+    const rev = parseInt(parts[3] || '0', 10);
     newVersion = `${prefix}.${String(rev + 1).padStart(2, '0')}`;
 } else {
     newVersion = `${prefix}.01`;

@@ -1385,10 +1385,10 @@ export const TrainingUI = {
                                             
                                             <!-- Środek: Wpisywanie ciężaru i powtórzeń -->
                                             <div style="display: flex; align-items: center; justify-content: center; gap: 2px; flex: 1; min-width: 0;">
-                                                <input type="number" class="training-input-large" value="${set.weight}" onchange="window.TrainingUI.updateSetInline('${ex.id}', ${i}, 'weight', this.value)" style="width: 48px; box-sizing: border-box; background: rgba(0,0,0,0.3); border: 1px solid #444; color: ${isDropset ? '#FF9800' : '#00BFFF'}; font-weight: bold; text-align: center; border-radius: 6px; font-size: 1.05em; padding: 2px;" inputmode="decimal"> 
+                                                <input type="number" class="training-input-large" value="${set.weight}" onchange="window.TrainingUI.updateSetInline('${ex.id}', ${i}, 'weight', this.value)" style="width: 62px; box-sizing: border-box; background: rgba(0,0,0,0.3); border: 1px solid #444; color: ${isDropset ? '#FF9800' : '#00BFFF'}; font-weight: bold; text-align: center; border-radius: 6px; font-size: 1.05em; padding: 2px;" inputmode="decimal"> 
                                                 <span style="font-size: 0.85em; color: #888;">kg</span>
                                                 <span style="color: #666; font-size: 0.85em; margin: 0 2px;">x</span>
-                                                <input type="number" class="training-input-large" value="${set.reps}" onchange="window.TrainingUI.updateSetInline('${ex.id}', ${i}, 'reps', this.value)" style="width: 42px; box-sizing: border-box; background: rgba(0,0,0,0.3); border: 1px solid #444; color: #fff; font-weight: bold; text-align: center; border-radius: 6px; font-size: 1.05em; padding: 2px;" inputmode="numeric">
+                                                <input type="number" class="training-input-large" value="${set.reps}" onchange="window.TrainingUI.updateSetInline('${ex.id}', ${i}, 'reps', this.value)" style="width: 54px; box-sizing: border-box; background: rgba(0,0,0,0.3); border: 1px solid #444; color: #fff; font-weight: bold; text-align: center; border-radius: 6px; font-size: 1.05em; padding: 2px;" inputmode="numeric">
                                             </div>
                                             
                                             <!-- Prawa strona: Przycisk usunięcia X -->
