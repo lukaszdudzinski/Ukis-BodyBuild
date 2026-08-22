@@ -1210,13 +1210,13 @@ export const TrainingUI = {
         const weightInput = document.getElementById(`weight-${exerciseId}`);
         const repsInput = document.getElementById(`reps-${exerciseId}`);
 
+        const bodyweightKeywords = ['brzuch', 'brzus', 'podciąg', 'podciag', 'pompk', 'plank', 'deska', 'drąż', 'draz'];
+        const isBodyweight = exercise.name && bodyweightKeywords.some(kw => exercise.name.toLowerCase().includes(kw));
+
         let wVal = "0";
         let rVal = "0";
 
         if (weightInput && repsInput) {
-            const bodyweightKeywords = ['brzuch', 'brzus', 'podciąg', 'podciag', 'pompk', 'plank', 'deska', 'drąż', 'draz'];
-            const isBodyweight = exercise.name && bodyweightKeywords.some(kw => exercise.name.toLowerCase().includes(kw));
-
             wVal = weightInput.value;
             rVal = repsInput.value;
 

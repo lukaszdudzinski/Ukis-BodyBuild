@@ -1,5 +1,30 @@
 const { test, expect } = require('@playwright/test');
 
+const setupPWA = async (page) => {
+  await page.addInitScript(() => {
+    Object.defineProperty(window.navigator, 'standalone', { value: true, configurable: true });
+    const origMatchMedia = window.matchMedia;
+    window.matchMedia = function (query) {
+      if (query === '(display-mode: standalone)') {
+        return {
+          matches: true,
+          media: query,
+          onchange: null,
+          addListener: () => {},
+          removeListener: () => {},
+          addEventListener: () => {},
+          removeEventListener: () => {},
+          dispatchEvent: () => true
+        };
+      }
+      return origMatchMedia ? origMatchMedia.call(window, query) : { matches: false, media: query };
+    };
+    window.localStorage.setItem('tutorial_global_v21', 'true');
+    window.localStorage.setItem('tutorial_global_v22', 'true');
+    window.localStorage.setItem('uki-bodybuild-last-version', 'v2026.8.22.02');
+  });
+};
+
 test.describe('Uki BodyBuild App - PWA and UI', () => {
   test('Powinna załadować się bez błędów typu SyntaxError (Smoke Test)', async ({ page }) => {
     let errors = [];
@@ -14,14 +39,15 @@ test.describe('Uki BodyBuild App - PWA and UI', () => {
       }
     });
 
+    await setupPWA(page);
     await page.goto('/');
     
     // Sprawdzamy, czy główny nagłówek z nazwą powitalną jest widoczny
     await expect(page.locator('.home-header h2')).toBeVisible();
     
-    // Sprawdzamy czy APP_VERSION jest zainicjalizowana z AppUI
+    // Sprawdzamy czy APP_VERSION jest zainicjalizowana z AppUI i ma poprawną wartość
     const appVersion = await page.evaluate(() => window.APP_VERSION);
-    expect(appVersion).toBeDefined();
+    expect(appVersion).toBe('v2026.8.22.02');
 
     // Filtrujemy tylko krytyczne błędy (np. zablokowanie ładowania main.js)
     const criticalErrors = errors.filter(e => 
@@ -34,14 +60,13 @@ test.describe('Uki BodyBuild App - PWA and UI', () => {
   });
 
   test('Nawigacja pomiędzy zakładkami działa', async ({ page }) => {
-    await page.addInitScript(() => { window.localStorage.setItem('tutorial_global_v22', 'true'); window.localStorage.setItem('uki-bodybuild-last-version', 'v2026.8.13.01'); });
+    await setupPWA(page);
     await page.goto('/');
     
     // Zakładka główna powinna być widoczna domyślnie
     await expect(page.locator('#welcome-screen')).toHaveClass(/active-tab/);
     
     // Klikamy w boczny panel -> Trening
-    // Jeśli to mobile, trzeba otworzyć menu, ale robimy test pod desktop
     await page.click('.sidebar-nav a[data-tab="training-dashboard"]');
     
     // Sprawdzamy czy przełączyło na panel treningu
