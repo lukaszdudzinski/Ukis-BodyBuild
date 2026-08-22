@@ -26,12 +26,12 @@ export const TemplateBuilderUI = {
                     <!-- Pojawią się tu wybrane ćwiczenia -->
                 </div>
                 <div style="margin-top: 15px; display: flex; gap: 8px; align-items: center; background: rgba(255, 152, 0, 0.1); padding: 10px; border-radius: 8px; border: 1px solid rgba(255,152,0,0.3); flex-wrap: wrap;">
-                    <span style="color: #FF9800; font-size: 0.9em; width: 100%;">Zastosuj do wszystkich (Zostaw puste = 0):</span>
+                    <span style="color: #FF9800; font-size: 0.9em; width: 100%;">Zastosuj do wszystkich (Można używać przecinków, np. 100,120,130):</span>
                     <input type="number" id="builder-mass-sets" placeholder="Serie" style="width: 55px; padding: 8px; background: #222; border: 1px solid #555; color: #fff; border-radius: 6px; text-align: center;">
                     <span style="color: #888;">x</span>
-                    <input type="number" id="builder-mass-reps" placeholder="Powt." style="width: 55px; padding: 8px; background: #222; border: 1px solid #555; color: #fff; border-radius: 6px; text-align: center;">
+                    <input type="text" id="builder-mass-reps" placeholder="Powt." style="width: 70px; padding: 8px; background: #222; border: 1px solid #555; color: #fff; border-radius: 6px; text-align: center;">
                     <span style="color: #888;">@</span>
-                    <input type="number" id="builder-mass-weight" placeholder="Kg (np. -10)" style="width: 75px; padding: 8px; background: #222; border: 1px solid #555; color: #fff; border-radius: 6px; text-align: center;" step="0.5">
+                    <input type="text" id="builder-mass-weight" placeholder="Kg" style="width: 85px; padding: 8px; background: #222; border: 1px solid #555; color: #fff; border-radius: 6px; text-align: center;">
                     <button onclick="TemplateBuilderUI.applyMassEdit()" style="background: #FF9800; color: #000; border: none; font-weight: bold; padding: 8px 12px; border-radius: 6px; cursor: pointer; flex-grow: 1;">Ustaw</button>
                 </div>
             </div>
@@ -120,8 +120,8 @@ export const TemplateBuilderUI = {
 
     applyMassEdit: () => {
         const setsCount = parseInt(document.getElementById('builder-mass-sets').value) || 0;
-        const repsCount = document.getElementById('builder-mass-reps').value || "0";
-        const weightVal = document.getElementById('builder-mass-weight').value || "0";
+        const repsRaw = (document.getElementById('builder-mass-reps').value || "0").trim();
+        const weightRaw = (document.getElementById('builder-mass-weight').value || "0").trim();
         
         if (setsCount <= 0) {
             alert("Podaj poprawną liczbę serii (>0).");
@@ -132,13 +132,21 @@ export const TemplateBuilderUI = {
             alert("Koszyk jest pusty! Dodaj ćwiczenia najpierw.");
             return;
         }
+        
+        // Parse comma-separated values (e.g. "100, 110, 120" or "10,12,15")
+        const weightArr = weightRaw.split(/[,;]+/).map(v => v.trim()).filter(v => v !== '');
+        const repsArr = repsRaw.split(/[,;]+/).map(v => v.trim()).filter(v => v !== '');
 
         TemplateBuilderUI.cart.forEach(ex => {
             ex.sets = [];
             for(let i=0; i<setsCount; i++) {
+                // Get the weight for this specific set (or fallback to the last provided one)
+                let w = weightArr.length > 0 ? (weightArr[i] !== undefined ? weightArr[i] : weightArr[weightArr.length - 1]) : "0";
+                let r = repsArr.length > 0 ? (repsArr[i] !== undefined ? repsArr[i] : repsArr[repsArr.length - 1]) : "0";
+                
                 ex.sets.push({
-                    weight: weightVal.toString(), 
-                    reps: repsCount.toString(),
+                    weight: w, 
+                    reps: r,
                     completed: false
                 });
             }
@@ -162,9 +170,14 @@ export const TemplateBuilderUI = {
 
         let html = '';
         TemplateBuilderUI.cart.forEach((ex, index) => {
-            const setsDesc = ex.sets.length > 0 
-                ? `<span style="color: #2ECC71; font-weight: bold; font-size: 0.85em; margin-top: 5px; display: block;">✓ Ustawiono: ${ex.sets.length} serii x ${ex.sets[0].reps} powt. @ ${ex.sets[0].weight}kg</span>` 
-                : `<span style="color: #ff4444; font-size: 0.85em; margin-top: 5px; display: block;">Brak ustawionych serii</span>`;
+            let setsDesc = '';
+            if (ex.sets.length > 0) {
+                const repsStr = ex.sets.map(s => s.reps).join(', ');
+                const weightStr = ex.sets.map(s => s.weight).join(', ');
+                setsDesc = `<span style="color: #2ECC71; font-weight: bold; font-size: 0.85em; margin-top: 5px; display: block;">✓ Ustawiono: ${ex.sets.length} serii (${repsStr} powt.) @ ${weightStr}kg</span>`;
+            } else {
+                setsDesc = `<span style="color: #ff4444; font-size: 0.85em; margin-top: 5px; display: block;">Brak ustawionych serii</span>`;
+            }
 
             html += `
                 <div style="background: rgba(0, 191, 255, 0.05); border: 1px solid #00BFFF; padding: 12px; border-radius: 8px; display: flex; align-items: center; justify-content: space-between;">
