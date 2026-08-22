@@ -9,14 +9,14 @@ export const NumpadUI = {
         if (document.getElementById('uki-custom-numpad')) return;
 
         const numpadHtml = `
-            <div id="uki-custom-numpad" style="display: none; position: fixed; bottom: 0; left: 0; width: 100%; background: #121212; border-top: 2px solid #FF9800; z-index: 9999; padding: 15px 10px 30px 10px; box-shadow: 0 -5px 15px rgba(0,0,0,0.5); font-family: -apple-system, sans-serif;">
+            <div id="uki-custom-numpad" style="display: none; position: fixed; bottom: 0; left: 0; width: 100%; max-width: 100vw; margin: 0; box-sizing: border-box; background: #121212; border-top: 2px solid #FF9800; z-index: 9999; padding: 15px 10px 30px 10px; box-shadow: 0 -5px 15px rgba(0,0,0,0.5); font-family: -apple-system, sans-serif;">
                 
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px; padding: 0 5px;">
                     <span id="numpad-target-label" style="color: #FF9800; font-size: 0.9em; font-weight: bold;">Podaj Wartość</span>
                     <button onclick="window.NumpadUI.close()" style="background: none; border: none; color: #ff4444; font-size: 1.2em; font-weight: bold; cursor: pointer; padding: 5px;">Zamknij ✖</button>
                 </div>
                 
-                <div style="background: #000; border: 1px solid #333; border-radius: 8px; margin-bottom: 15px; padding: 15px; text-align: right; box-shadow: inset 0 2px 10px rgba(0,0,0,0.8);">
+                <div style="background: #000; border: 1px solid #333; border-radius: 8px; margin-bottom: 15px; padding: 15px; text-align: right; box-shadow: inset 0 2px 10px rgba(0,0,0,0.8); box-sizing: border-box; width: 100%; overflow: hidden;">
                     <span id="numpad-display-screen" style="color: #00BFFF; font-size: 2.5em; font-weight: bold; font-family: monospace;">0</span>
                 </div>
 

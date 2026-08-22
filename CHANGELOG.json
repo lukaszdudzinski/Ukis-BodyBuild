@@ -1,5 +1,26 @@
 [
   {
+    "version": "v2026.8.22.08",
+    "date": "2026-08-22",
+    "changes": [
+      "🐞 HOTFIX (Numpad): Zastosowano ostateczne poprawki blokujące ucinanie i wychodzenie kalkulatora poza prawą krawędź ekranu. Zmieniono pozycjonowanie na elastyczne 'width: 100vw' w połączeniu z blokadą 'max-width' – koniec ze znikającymi przyciskami 'Zamknij' oraz cyframi, formatka idealnie wpasowuje się w każdy smartfon! 📱💪"
+    ]
+  },
+  {
+    "version": "v2026.8.22.07",
+    "date": "2026-08-22",
+    "changes": [
+      "🛡️ Dodatkowe zabezpieczenie RWD: Zastosowano pozycjonowanie 'left/right' (zamiast sztywnego width) dla Eksperymentalnego Numpada, by gwarantować idealne dopasowanie kalkulatora na absolutnie każdym modelu smartfona."
+    ]
+  },
+  {
+    "version": "v2026.8.22.06",
+    "date": "2026-08-22",
+    "changes": [
+      "📱 Poprawiono responsywność Eksperymentalnego Numpada: Klawiatura i ekran z wpisywaną wartością (kg) idealnie dopasowują się teraz do szerokości każdego ekranu (naprawiono ucinanie prawej krawędzi)."
+    ]
+  },
+  {
     "version": "v2026.8.22.05",
     "date": "2026-08-22",
     "changes": [
