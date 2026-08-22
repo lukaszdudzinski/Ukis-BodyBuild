@@ -11,9 +11,13 @@ export const NumpadUI = {
         const numpadHtml = `
             <div id="uki-custom-numpad" style="display: none; position: fixed; bottom: 0; left: 0; width: 100%; background: #121212; border-top: 2px solid #FF9800; z-index: 9999; padding: 15px 10px 30px 10px; box-shadow: 0 -5px 15px rgba(0,0,0,0.5); font-family: -apple-system, sans-serif;">
                 
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; padding: 0 5px;">
-                    <span id="numpad-target-label" style="color: #bbb; font-size: 0.9em; font-weight: bold;">Podaj Wartość</span>
-                    <button onclick="window.NumpadUI.close()" style="background: none; border: none; color: #ff4444; font-size: 1.2em; font-weight: bold; cursor: pointer;">Zamknij (X)</button>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px; padding: 0 5px;">
+                    <span id="numpad-target-label" style="color: #FF9800; font-size: 0.9em; font-weight: bold;">Podaj Wartość</span>
+                    <button onclick="window.NumpadUI.close()" style="background: none; border: none; color: #ff4444; font-size: 1.2em; font-weight: bold; cursor: pointer; padding: 5px;">Zamknij ✖</button>
+                </div>
+                
+                <div style="background: #000; border: 1px solid #333; border-radius: 8px; margin-bottom: 15px; padding: 15px; text-align: right; box-shadow: inset 0 2px 10px rgba(0,0,0,0.8);">
+                    <span id="numpad-display-screen" style="color: #00BFFF; font-size: 2.5em; font-weight: bold; font-family: monospace;">0</span>
                 </div>
 
                 <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px;">
@@ -44,6 +48,12 @@ export const NumpadUI = {
         document.body.insertAdjacentHTML('beforeend', numpadHtml);
     },
 
+    updateDisplay: () => {
+        if (NumpadUI.targetInput) {
+            document.getElementById('numpad-display-screen').textContent = NumpadUI.targetInput.value || "0";
+        }
+    },
+
     open: (inputEl, exIndex, setIndex, label) => {
         NumpadUI.targetInput = inputEl;
         NumpadUI.targetExerciseIndex = exIndex;
@@ -51,6 +61,7 @@ export const NumpadUI = {
         NumpadUI.isFirstClick = true; // Pierwsze kliknięcie nadpisuje starą wartość!
         
         document.getElementById('numpad-target-label').textContent = label || "Podaj wartość (Kg):";
+        NumpadUI.updateDisplay();
         
         // Zaznacz pole wizualnie
         inputEl.style.border = "2px solid #FF9800";
@@ -80,29 +91,27 @@ export const NumpadUI = {
         if (window.navigator && window.navigator.vibrate) window.navigator.vibrate(20);
 
         if (NumpadUI.isFirstClick) {
-            // Pierwsze kliknięcie kasuje domyślne "0" lub starą skopiowaną wagę
             NumpadUI.targetInput.value = char;
             NumpadUI.isFirstClick = false;
         } else {
-            // Dodajemy znak
-            if (char === '.' && NumpadUI.targetInput.value.includes('.')) return; // Blokada dwóch kropek
+            if (char === '.' && NumpadUI.targetInput.value.includes('.')) return;
             if (char === '-' && NumpadUI.targetInput.value !== '') {
-                // Jeśli kliknie minus w trakcie, zamieniamy wartość na ujemną (toggle)
                 if (NumpadUI.targetInput.value.startsWith('-')) {
                     NumpadUI.targetInput.value = NumpadUI.targetInput.value.substring(1);
                 } else {
                     NumpadUI.targetInput.value = '-' + NumpadUI.targetInput.value;
                 }
+                NumpadUI.updateDisplay();
                 return;
             }
             
-            // Limit długości, żeby nie wpisywał milionów
             if (NumpadUI.targetInput.value.length < 6) {
                 NumpadUI.targetInput.value += char;
             }
         }
         
-        // Zapisz od razu do treningu (synchronizacja w tle z TrainingUI)
+        NumpadUI.updateDisplay();
+
         if (window.TrainingUI && typeof window.TrainingUI.updateSetInline === 'function') {
             window.TrainingUI.updateSetInline(NumpadUI.targetExerciseIndex, NumpadUI.targetSetIndex, 'weight', NumpadUI.targetInput.value);
         }
@@ -116,6 +125,8 @@ export const NumpadUI = {
         NumpadUI.targetInput.value = NumpadUI.targetInput.value.slice(0, -1);
         if (NumpadUI.targetInput.value === '') NumpadUI.targetInput.value = '0';
         
+        NumpadUI.updateDisplay();
+
         if (window.TrainingUI && typeof window.TrainingUI.updateSetInline === 'function') {
             window.TrainingUI.updateSetInline(NumpadUI.targetExerciseIndex, NumpadUI.targetSetIndex, 'weight', NumpadUI.targetInput.value);
         }

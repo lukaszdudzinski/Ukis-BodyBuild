@@ -47,7 +47,9 @@ test.describe('Uki BodyBuild App - PWA and UI', () => {
     
     // Sprawdzamy czy APP_VERSION jest zainicjalizowana z AppUI i ma poprawną wartość
     const appVersion = await page.evaluate(() => window.APP_VERSION);
-    expect(appVersion).toBe('v2026.8.22.02');
+    const metaVersion = await page.getAttribute('meta[name="app-version"]', 'content');
+    expect(appVersion).toBeDefined();
+    expect(appVersion).toBe(metaVersion);
 
     // Filtrujemy tylko krytyczne błędy (np. zablokowanie ładowania main.js)
     const criticalErrors = errors.filter(e => 
