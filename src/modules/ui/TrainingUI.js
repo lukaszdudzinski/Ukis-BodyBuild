@@ -1741,7 +1741,7 @@ export const TrainingUI = {
                 // Hide active view and show calendar
                 document.getElementById('active-training-view').style.display = 'none';
                 document.getElementById('training-calendar-view').style.display = 'block';
-                TrainingUI.renderCalendar();
+                TrainingUI.loadHistoryAndCalendar();
 
                 // Trener Edward AI - Gratulacje
                 setTimeout(async () => {
