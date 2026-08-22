@@ -1,5 +1,14 @@
 [
   {
+    "version": "v2026.8.22.01",
+    "date": "2026-08-22",
+    "changes": [
+      "✨ Wdrożenie Fazy Opcji 3: Dedykowany, nowiutki Kreator Szablonów (Koszyk) na nowej, przejrzystej karcie!",
+      "🛒 Przebudowany interfejs koszykowy: Wybierasz ćwiczenia z bazy i masowo aplikujesz wszystkim ilość serii, powtórzeń, oraz ciężar (z uwzględnieniem wartości na minus dla maszyn ze wspomaganiem!).",
+      "🔗 Kreator można odpalić prosto z panelu treningowego jako nowy, bezpieczny widok."
+    ]
+  },
+  {
     "version": "v2026.8.21.03",
     "date": "2026-08-21",
     "changes": [

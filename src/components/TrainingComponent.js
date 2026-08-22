@@ -41,7 +41,8 @@ export const TrainingComponent = {
 
                     <div id="day-action-empty-state">
                         <button id="start-new-session-btn" class="action-button pulse" style="width: 100%; margin-bottom: 10px; background-color: rgba(0, 191, 255, 0.2); border-color: #00BFFF; color: #00BFFF;">➕ Dodaj nową sesję treningową</button>
-                        <button id="load-template-session-btn" class="action-button" style="width: 100%; margin-bottom: 10px; background-color: rgba(255, 152, 0, 0.2); border-color: #FF9800; color: #FF9800;">📄 Szablony Planów Treningowych</button>
+                        <button id="load-template-session-btn" class="action-button" style="width: 100%; margin-bottom: 10px; background-color: rgba(255, 152, 0, 0.2); border-color: #FF9800; color: #FF9800;">📄 Wybierz Szablon Treningowy</button>
+                        <button onclick="window.TemplateBuilderUI && window.TemplateBuilderUI.openBuilder()" class="action-button" style="width: 100%; margin-bottom: 10px; background-color: rgba(46, 204, 113, 0.2); border-color: #2ECC71; color: #2ECC71;">✨ Kreator Szablonów (Koszyk)</button>
                         <div id="history-sessions-list" style="margin-top: 15px;">
                             <h5 style="color: #ccc; margin-bottom: 10px;">📋 Skopiuj sesję treningową:</h5>
                             <!-- Populated with recent sessions -->
