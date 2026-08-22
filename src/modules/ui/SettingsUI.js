@@ -42,6 +42,7 @@ export const SettingsUI = {
         // SettingsUI logic cleaned up
 
         SettingsUI.initTheme();
+        SettingsUI.initLaboratory();
         SettingsUI.initProfile();
         SettingsUI.initDietSettings();
         
@@ -153,6 +154,24 @@ export const SettingsUI = {
                 localStorage.setItem('dietWorkerUrl', e.target.value);
             });
         }
+    },
+
+    initLaboratory: () => {
+        const toggle = document.getElementById('experimental-numpad-toggle');
+        if (!toggle) return;
+        
+        const isExp = localStorage.getItem('uki-experimental-numpad') === 'on';
+        toggle.checked = isExp;
+        
+        toggle.addEventListener('change', (e) => {
+            if (e.target.checked) {
+                localStorage.setItem('uki-experimental-numpad', 'on');
+                alert("Włączono eksperymentalny tryb Treningu. Nowe opcje pojawią się przy najbliższym rozpoczęciu sesji treningowej.");
+            } else {
+                localStorage.setItem('uki-experimental-numpad', 'off');
+                alert("Przywrócono klasyczny tryb Treningu z domyślną klawiaturą.");
+            }
+        });
     },
 
     initTheme: () => {

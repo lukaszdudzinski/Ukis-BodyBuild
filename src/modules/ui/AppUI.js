@@ -19,8 +19,9 @@ export const AppUI = {
         const versionDisplays = document.querySelectorAll('.version-info, .app-version-display, #dashboard-version');
         
         const premiumStatus = PremiumUI.getTrialStatus();
+        
         let variantName = '';
-        if (premiumStatus.isPremium) {
+        if (premiumStatus.isProToken) {
             variantName = 'Heavy';
         } else if (premiumStatus.hasAccess) {
             variantName = `Trial (${premiumStatus.daysLeft} dni)`;
