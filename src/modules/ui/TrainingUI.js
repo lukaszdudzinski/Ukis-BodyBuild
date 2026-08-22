@@ -1210,22 +1210,31 @@ export const TrainingUI = {
         const weightInput = document.getElementById(`weight-${exerciseId}`);
         const repsInput = document.getElementById(`reps-${exerciseId}`);
 
-        const bodyweightKeywords = ['brzuch', 'brzus', 'podciąg', 'podciag', 'pompk', 'plank', 'deska', 'drąż', 'draz'];
-        const isBodyweight = exercise.name && bodyweightKeywords.some(kw => exercise.name.toLowerCase().includes(kw));
+        let wVal = "0";
+        let rVal = "0";
 
-        let wVal = weightInput.value;
-        let rVal = repsInput.value;
+        if (weightInput && repsInput) {
+            const bodyweightKeywords = ['brzuch', 'brzus', 'podciąg', 'podciag', 'pompk', 'plank', 'deska', 'drąż', 'draz'];
+            const isBodyweight = exercise.name && bodyweightKeywords.some(kw => exercise.name.toLowerCase().includes(kw));
 
-        if (isBodyweight) {
-            if (!rVal) {
-                alert("Podaj ilość powtórzeń!");
-                return;
+            wVal = weightInput.value;
+            rVal = repsInput.value;
+
+            if (isBodyweight) {
+                if (!rVal) { alert("Podaj ilość powtórzeń!"); return; }
+                if (!wVal) wVal = "0";
+            } else {
+                if (!wVal || !rVal) { alert("Podaj ciężar i ilość powtórzeń!"); return; }
             }
-            if (!wVal) wVal = "0";
         } else {
-            if (!wVal || !rVal) {
-                alert("Podaj ciężar i ilość powtórzeń!");
-                return;
+            // Experimental mode - sklonuj ostatnią serię
+            if (exercise.sets && exercise.sets.length > 0) {
+                const lastSet = exercise.sets[exercise.sets.length - 1];
+                wVal = lastSet.weight;
+                rVal = lastSet.reps;
+            } else {
+                wVal = "0";
+                rVal = "10";
             }
         }
 
@@ -1315,8 +1324,23 @@ export const TrainingUI = {
         const exercise = TrainingUI.getExerciseById(exerciseId);
         if (exercise && exercise.sets[setIndex]) {
             exercise.sets[setIndex][field] = parseFloat(value) || 0;
-            // No need to full re-render on every keystroke, but we save draft
             TrainingUI.saveDraft();
+        }
+    },
+
+    updateSetStepper: (exerciseId, setIndex, delta) => {
+        const exercise = TrainingUI.getExerciseById(exerciseId);
+        if (exercise && exercise.sets[setIndex]) {
+            let newVal = parseInt(exercise.sets[setIndex].reps) + delta;
+            if (newVal < 0) newVal = 0;
+            exercise.sets[setIndex].reps = newVal;
+            
+            // Update DOM element directly
+            const inputEl = document.getElementById(`exp-reps-${exerciseId}-${setIndex}`);
+            if (inputEl) inputEl.value = newVal;
+            
+            TrainingUI.saveDraft();
+            if (window.navigator && window.navigator.vibrate) window.navigator.vibrate(20);
         }
     },
 
@@ -1385,10 +1409,24 @@ export const TrainingUI = {
                                             
                                             <!-- Środek: Wpisywanie ciężaru i powtórzeń -->
                                             <div style="display: flex; align-items: center; justify-content: center; gap: 2px; flex: 1; min-width: 0;">
-                                                <input type="number" class="training-input-large" value="${set.weight}" onchange="window.TrainingUI.updateSetInline('${ex.id}', ${i}, 'weight', this.value)" style="width: 62px; box-sizing: border-box; background: rgba(0,0,0,0.3); border: 1px solid #444; color: ${isDropset ? '#FF9800' : '#00BFFF'}; font-weight: bold; text-align: center; border-radius: 6px; font-size: 1.05em; padding: 2px;" inputmode="decimal"> 
-                                                <span style="font-size: 0.85em; color: #888;">kg</span>
-                                                <span style="color: #666; font-size: 0.85em; margin: 0 2px;">x</span>
-                                                <input type="number" class="training-input-large" value="${set.reps}" onchange="window.TrainingUI.updateSetInline('${ex.id}', ${i}, 'reps', this.value)" style="width: 54px; box-sizing: border-box; background: rgba(0,0,0,0.3); border: 1px solid #444; color: #fff; font-weight: bold; text-align: center; border-radius: 6px; font-size: 1.05em; padding: 2px;" inputmode="numeric">
+                                                ${localStorage.getItem('uki-experimental-numpad') === 'on' ? `
+                                                    <!-- Numpad dla Ciężaru -->
+                                                    <input type="text" readonly id="exp-weight-${ex.id}-${i}" class="training-input-large" value="${set.weight}" onclick="window.NumpadUI.open(this, '${ex.id}', ${i}, 'Podaj ciężar (kg)')" style="width: 70px; box-sizing: border-box; background: rgba(0,0,0,0.3); border: 1px solid #444; color: ${isDropset ? '#FF9800' : '#00BFFF'}; font-weight: bold; text-align: center; border-radius: 6px; font-size: 1.1em; padding: 6px; cursor: pointer;"> 
+                                                    <span style="font-size: 0.85em; color: #888;">kg</span>
+                                                    <span style="color: #666; font-size: 0.85em; margin: 0 4px;">x</span>
+                                                    <!-- Steppery dla Powtórzeń -->
+                                                    <div style="display: flex; gap: 2px; align-items: center;">
+                                                        <button onclick="window.TrainingUI.updateSetStepper('${ex.id}', ${i}, -1)" style="background: #333; color: #fff; border: 1px solid #555; border-radius: 4px; padding: 6px 12px; font-weight: bold; font-size: 1.1em;">-</button>
+                                                        <input type="text" id="exp-reps-${ex.id}-${i}" readonly value="${set.reps}" style="width: 45px; box-sizing: border-box; background: transparent; border: none; color: #fff; font-weight: bold; text-align: center; font-size: 1.1em; padding: 2px;">
+                                                        <button onclick="window.TrainingUI.updateSetStepper('${ex.id}', ${i}, 1)" style="background: #333; color: #fff; border: 1px solid #555; border-radius: 4px; padding: 6px 12px; font-weight: bold; font-size: 1.1em;">+</button>
+                                                    </div>
+                                                ` : `
+                                                    <!-- Klasyczne inputy -->
+                                                    <input type="number" class="training-input-large" value="${set.weight}" onchange="window.TrainingUI.updateSetInline('${ex.id}', ${i}, 'weight', this.value)" style="width: 62px; box-sizing: border-box; background: rgba(0,0,0,0.3); border: 1px solid #444; color: ${isDropset ? '#FF9800' : '#00BFFF'}; font-weight: bold; text-align: center; border-radius: 6px; font-size: 1.05em; padding: 2px;" inputmode="decimal"> 
+                                                    <span style="font-size: 0.85em; color: #888;">kg</span>
+                                                    <span style="color: #666; font-size: 0.85em; margin: 0 2px;">x</span>
+                                                    <input type="number" class="training-input-large" value="${set.reps}" onchange="window.TrainingUI.updateSetInline('${ex.id}', ${i}, 'reps', this.value)" style="width: 54px; box-sizing: border-box; background: rgba(0,0,0,0.3); border: 1px solid #444; color: #fff; font-weight: bold; text-align: center; border-radius: 6px; font-size: 1.05em; padding: 2px;" inputmode="numeric">
+                                                `}
                                             </div>
                                             
                                             <!-- Prawa strona: Przycisk usunięcia X -->
@@ -1406,6 +1444,7 @@ export const TrainingUI = {
                         })()}
                     </div>
 
+                    ${localStorage.getItem('uki-experimental-numpad') === 'on' ? '' : `
                     <div style="display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-top: 15px;">
                         <div style="display: flex; flex: 1; min-width: 80px; gap: 5px;">
                             ${(ex.name && ['brzuch', 'brzus', 'podciąg', 'podciag', 'pompk', 'plank', 'deska', 'drąż', 'draz'].some(kw => ex.name.toLowerCase().includes(kw))) ? 
@@ -1416,16 +1455,19 @@ export const TrainingUI = {
                         <span style="color: #aaa; font-weight: bold; font-size: 1.25em;">X</span>
                         <input type="number" id="reps-${ex.id}" class="training-input-large" placeholder="powt" style="min-width: 60px; flex: 1; padding: 12px; border-radius: 4px; border: 1px solid #444; background: #222; color: #fff; font-size: 1.4em; text-align: center; box-sizing: border-box;" inputmode="numeric">
                     </div>
+                    `}
                     <div style="display: flex; gap: 10px; margin-top: 10px;">
-                        <button onclick="window.TrainingUI.addSet('${ex.id}', false)" style="background: #00BFFF; color: #fff; border: none; padding: 12px; border-radius: 4px; cursor: pointer; flex: 1; font-weight: bold; font-size: 1.1em; box-sizing: border-box;">+ Seria</button>
+                        <button onclick="window.TrainingUI.addSet('${ex.id}', false)" style="background: #00BFFF; color: #fff; border: none; padding: 12px; border-radius: 4px; cursor: pointer; flex: 1; font-weight: bold; font-size: 1.1em; box-sizing: border-box;">${localStorage.getItem('uki-experimental-numpad') === 'on' ? '➕ Dodaj Serię (Klon)' : '+ Seria'}</button>
                         <button onclick="window.TrainingUI.addSet('${ex.id}', true)" style="background: #FF9800; color: #fff; border: none; padding: 12px; border-radius: 4px; cursor: pointer; flex: 1; font-weight: bold; font-size: 1.1em; box-sizing: border-box;">🔥 Dropset</button>
                     </div>
+                    ${localStorage.getItem('uki-experimental-numpad') === 'on' ? '' : `
                     <div style="margin-top: 10px; text-align: center;">
                         <label style="color: #ccc; font-size: 0.9em; display: inline-flex; align-items: center; gap: 8px; cursor: pointer;">
                             <input type="checkbox" onchange="window.TrainingUI.handleCopyCheckbox('${ex.id}', this.checked)" ${ex.autoCopy ? 'checked' : ''} style="width: 18px; height: 18px;">
                             Skopiuj dane z poprzedniej serii
                         </label>
                     </div>
+                    `}
                 `;
             }
             

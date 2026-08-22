@@ -13,6 +13,8 @@ import { DiagnosticsUI } from './modules/ui/DiagnosticsUI.js';
 import { AchievementsSystem } from './modules/gamification/AchievementsSystem.js';
 import { AiAnalyticsUI } from './modules/ui/AiAnalyticsUI.js';
 import { TemplateBuilderUI } from './modules/ui/TemplateBuilderUI.js';
+import { NumpadUI } from './modules/ui/NumpadUI.js';
+
 window.ukiLogError = (msg, stack) => {
     let logs = [];
     try { logs = JSON.parse(localStorage.getItem('uki_error_logs') || '[]'); } catch(e) {}
@@ -54,6 +56,7 @@ const initApp = () => {
     OnboardingUI.init();
     ChatUI.init();
     DiagnosticsUI.init();
+    NumpadUI.init();
 
     // AI Analytics — renders on tab open
     document.addEventListener('tabChanged', (e) => {
