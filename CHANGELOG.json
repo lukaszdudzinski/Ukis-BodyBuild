@@ -1,5 +1,15 @@
 [
   {
+    "version": "v2026.8.22.02",
+    "date": "2026-08-22",
+    "changes": [
+      "🚀 Laboratorium (BETA): Całkowicie nowy, eksperymentalny interfejs Numpada i Smart Stepperów podczas treningu! (Włączysz go w Ustawieniach)",
+      "📈 Kreator Szablonów: Dodano obsługę wartości po przecinku podczas masowego ustawiania serii, by jednym kliknięciem budować piramidy (np. 100,110,120 kg)!",
+      "🐞 Poprawiono zgłaszany błąd w kalendarzu, w którym po udanym zakończeniu treningu system nie odświeżał zielonej kropki bez twardego restartu.",
+      "👑 Zaktualizowano system weryfikacji tokenów PRO - aplikacja już prawidłowo wyświetla wersję Heavy na panelu głównym po wpisaniu ważnego hasła!"
+    ]
+  },
+  {
     "version": "v2026.8.22.01",
     "date": "2026-08-22",
     "changes": [
