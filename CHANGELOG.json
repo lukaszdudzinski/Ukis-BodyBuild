@@ -1,9 +1,18 @@
 [
   {
+    "version": "v2026.8.22.05",
+    "date": "2026-08-22",
+    "changes": [
+      "📟 Kalkulator z prawdziwego zdarzenia: Dodano duży ekran wyświetlający aktualnie wpisywane wartości bezpośrednio nad Eksperymentalnym Numpadem!",
+      "🧹 Minimalizm: Usunięto przestarzałe i nieużywane przyciski Spotify i YT Music, robiąc miejsce na to co ważne - trening.",
+      "📝 Wybaczcie błąd techniczny! Poprawiono usterkę z wersji .04, która wyświetlała roboczy tekst w okienku zmian."
+    ]
+  },
+  {
     "version": "v2026.8.22.04",
     "date": "2026-08-22",
     "changes": [
-      "[UZUPEŁNIJ OPIS ZMIAN - PAMIĘTAJ O EMOTIKONACH! 🚀🐞💪]"
+      "Wdrożenie techniczne ekranu Numpada i czyszczenie interfejsu (Brak opisu)."
     ]
   },
   {
