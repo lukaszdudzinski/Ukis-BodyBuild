@@ -26,7 +26,8 @@ export const TemplateBuilderUI = {
                     <!-- Pojawią się tu wybrane ćwiczenia -->
                 </div>
                 <div style="margin-top: 15px; display: flex; gap: 8px; align-items: center; background: rgba(255, 152, 0, 0.1); padding: 10px; border-radius: 8px; border: 1px solid rgba(255,152,0,0.3); flex-wrap: wrap;">
-                    <span style="color: #FF9800; font-size: 0.9em; width: 100%;">Zastosuj do wszystkich (Można używać przecinków, np. 100,120,130):</span>
+                    <span style="color: #FF9800; font-size: 0.95em; width: 100%; font-weight: bold;">Zastosuj do wszystkich (Możesz używać przecinków dla piramid!)</span>
+                    <span style="color: #bbb; font-size: 0.8em; width: 100%; margin-bottom: 5px;">💡 Przykład: wpisz <b style="color:#fff;">3</b> serie, Powt: <b style="color:#fff;">12,10,8</b>, Kg: <b style="color:#fff;">100,110,120</b></span>
                     <input type="number" id="builder-mass-sets" placeholder="Serie" style="width: 55px; padding: 8px; background: #222; border: 1px solid #555; color: #fff; border-radius: 6px; text-align: center;">
                     <span style="color: #888;">x</span>
                     <input type="text" id="builder-mass-reps" placeholder="Powt." style="width: 70px; padding: 8px; background: #222; border: 1px solid #555; color: #fff; border-radius: 6px; text-align: center;">
