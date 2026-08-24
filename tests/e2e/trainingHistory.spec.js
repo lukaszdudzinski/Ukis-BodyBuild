@@ -104,4 +104,52 @@ test.describe('Training and History Flow', () => {
     await expect(page.locator('text=Wyciskanie skośne').first()).toBeVisible();
     await expect(page.locator('text=Francuskie wyciskanie (Triceps)').first()).toBeVisible();
   });
+
+  test('powinien poprawnie wyświetlać Blok Łączony w oknie modalnym historii (bez Nieznane ćwiczenie)', async ({ page }) => {
+    await page.addInitScript(() => { window.localStorage.setItem('tutorial_global_v22', 'true'); });
+    await page.goto('http://127.0.0.1:8080/');
+
+    // Utwórz trening z blokiem łączonym (manualnie wstrzyknięty do DB dla szybkości, by przetestować UI historii)
+    await page.evaluate(async () => {
+        const today = new Date().toISOString().split('T')[0];
+        await window.DatabaseManager.addTraining({
+            date: today,
+            name: "Trening z superserią test",
+            duration_seconds: 3600,
+            type: "strength",
+            exercises: [
+                {
+                    id: "sup1",
+                    type: "superset",
+                    name: "",
+                    exercises: [
+                        { id: "s1", type: "strength", name: "Biceps", sets: [{weight: 10, reps: 10}] },
+                        { id: "s2", type: "strength", name: "Triceps", sets: [{weight: 15, reps: 10}] }
+                    ]
+                }
+            ]
+        });
+    });
+
+    await page.reload();
+
+    // Idź do historii
+    await page.click('a[data-tab="history-dashboard"]');
+    await page.waitForSelector('#history-dashboard', { state: 'visible' });
+
+    // Rozwiń trening z superserią
+    await expect(page.locator('text=Trening z superserią test').first()).toBeVisible();
+    
+    // Kliknij żeby otworzyć modal podglądu (w Historii kliknięcie w kartę zazwyczaj otwiera podgląd viewTrainingFromHistory lub rozwija go)
+    // Zrzut pokazuje, że po kliknięciu jest modal. Możemy wywołać podgląd bezpośrednio jeśli selektory są trudne, np. viewTrainingFromHistory
+    await page.locator('text=Trening z superserią test').first().click();
+
+    // Sprawdź czy jest Blok Łączony i nie ma "Nieznane ćwiczenie"
+    await expect(page.locator('text=Blok Łączony (Superseria)').first()).toBeVisible();
+    await expect(page.locator('text=Biceps').first()).toBeVisible();
+    await expect(page.locator('text=Triceps').first()).toBeVisible();
+
+    // Powinno nie być tekstu "Nieznane ćwiczenie"
+    await expect(page.locator('text=Nieznane ćwiczenie')).toHaveCount(0);
+  });
 });
