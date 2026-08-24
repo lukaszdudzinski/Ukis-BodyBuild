@@ -5,7 +5,7 @@
   "main": "sw.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "release": "node scripts/version.mjs && git add . && git commit -m 'Bump version'"
+    "release": "echo 'Run: node scripts/version.mjs \"🚀 Twój opis\" && git commit -am \"Bump\"' && exit 1"
   },
   "repository": {
     "type": "git",

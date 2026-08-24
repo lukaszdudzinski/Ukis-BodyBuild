@@ -37,6 +37,30 @@ if (currentVersion.startsWith(prefix)) {
     newVersion = `${prefix}.01`;
 }
 
+const changelogArgs = process.argv.slice(2);
+
+if (changelogArgs.length === 0) {
+    console.error("❌ BŁĄD KRYTYCZNY: Nie podano opisu zmian! Wywołaj: node scripts/version.mjs '🚀 Mój super opis...'");
+    process.exit(1);
+}
+
+const emojiRegex = /[\p{Emoji_Presentation}\p{Extended_Pictographic}]/u;
+
+for (const desc of changelogArgs) {
+    if (desc.includes("UZUPEŁNIJ OPIS ZMIAN")) {
+        console.error("❌ BŁĄD KRYTYCZNY: Podano placeholder jako opis zmian. Wpisz prawdziwy opis.");
+        process.exit(1);
+    }
+    if (desc.length < 15) {
+        console.error(`❌ BŁĄD KRYTYCZNY: Opis zmian jest zbyt lakoniczny ("${desc}"). Musi mieć co najmniej 15 znaków.`);
+        process.exit(1);
+    }
+    if (!emojiRegex.test(desc)) {
+        console.error(`❌ BŁĄD KRYTYCZNY: Opis zmian nie zawiera emotikony! Każdy wpis w Changelogu musi zaczynać się od emotikony.`);
+        process.exit(1);
+    }
+}
+
 // 1. Update AppUI.js
 appUiContent = appUiContent.replace(
     /export const APP_VERSION = '(.*?)';/,
@@ -59,9 +83,7 @@ if (changelogData.length === 0 || changelogData[0].version !== newVersion) {
     changelogData.unshift({
         version: newVersion,
         date: `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`,
-        changes: [
-            "[UZUPEŁNIJ OPIS ZMIAN - PAMIĘTAJ O EMOTIKONACH! 🚀🐞💪]"
-        ]
+        changes: changelogArgs
     });
     fs.writeFileSync(changelogPath, JSON.stringify(changelogData, null, 2) + '\n');
 }
