@@ -1,4 +1,4 @@
-const CACHE_NAME = 'ukis-bodybuild-v2026.8.22.08';
+const CACHE_NAME = 'ukis-bodybuild-v2026.8.24.01';
 // Core assets that MUST be cached immediately
 const CORE_ASSETS = [
     './',
@@ -59,6 +59,20 @@ self.addEventListener('fetch', (e) => {
     if (!e.request.url.startsWith('http')) {
         return;
     }
+    
+    // Bypass cache completely for API requests (like Gemini AI)
+    if (e.request.url.includes('generativelanguage.googleapis.com')) {
+        e.respondWith(
+            fetch(e.request).catch(err => {
+                console.error('[SW] API Fetch Failed (Offline?):', err);
+                return new Response(JSON.stringify({ error: "No internet connection" }), {
+                    status: 503,
+                    headers: { 'Content-Type': 'application/json' }
+                });
+            })
+        );
+        return;
+    }
 
     e.respondWith(
         caches.match(e.request).then((response) => {
@@ -78,6 +92,9 @@ self.addEventListener('fetch', (e) => {
                 });
 
                 return fetchResponse;
+            }).catch(err => {
+                console.error('[SW] Dynamic Fetch Failed:', err);
+                // Can return an offline fallback page here if desired
             });
         })
     );

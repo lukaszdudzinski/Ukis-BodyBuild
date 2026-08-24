@@ -1,5 +1,16 @@
 [
   {
+    "version": "v2026.8.24.01",
+    "date": "2026-08-24",
+    "changes": [
+      "🚀 KREATOR PLANU (KOSZYK): Przebudowa interfejsu (UX). Baza Ćwiczeń uruchamia się teraz eleganckim panelem pop-up (Modal) po kliknięciu 'Dodaj ćwiczenie', eliminując uciążliwe przewijanie ekranu! Pasek 'Zastosuj do wszystkich' powędrował na samą górę, by zawsze był pod ręką. 🛒",
+      "🏋️ WŁASNE ĆWICZENIA: Wprowadzanie własnych nazw ćwiczeń posiada od teraz intuicyjny przełącznik (ikona 🏋️/🏃), który natychmiast klasyfikuje ćwiczenie jako Siłowe lub Cardio, zachowując czystość interfejsu na jednym ekranie (bez zajmującej miejsce listy wyboru).",
+      "🔗 SUPERSERIE (BLOK ŁĄCZONY): Całkowicie przebudowano wygląd bloków łączonych (superserii). Usunięto zbędne boczne marginesy na telefonach, przez co cała szerokość ekranu jest teraz dostępna dla przycisków i nazw - koniec z ucinanymi tekstami na małych urządzeniach! Dodatkowo tworzenie superserii z automatu ładuje 1 ćwiczenie (zamiast 2), przyspieszając pracę.",
+      "🐞 HOTFIX (Crash): Naprawiono krytyczny błąd powodujący crash przy klikaniu 'Skopiuj do tego dnia' w starszych treningach posiadających superserie.",
+      "🥗 DIETA: Klonowanie (kopiowanie) raz dodanych posiłków jest już dostępne za jednym kliknięciem! Dodatkowo zrezygnowano z wymuszania włączania aparatu przy dodawaniu zdjęć w Diecie – po kliknięciu 'Dodaj zdjęcie' telefon naturalnie zapyta, czy otworzyć aparat, czy wybrać fotkę z galerii. Obliczanie zapotrzebowania jest teraz wspierane dużym, pomarańczowym i soczystym przyciskiem! 🍽️"
+    ]
+  },
+  {
     "version": "v2026.8.22.08",
     "date": "2026-08-22",
     "changes": [

@@ -68,8 +68,8 @@ export const DietUI = {
                         
                         <label id="diet-attach-btn" style="cursor: pointer; color: #FF9800; background: rgba(255,152,0,0.12); border: 1px solid #FF9800; border-radius: 8px; padding: 10px 12px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; box-shadow: 0 2px 8px rgba(0,0,0,0.4); transition: transform 0.2s; min-width: 72px; flex-shrink: 0;">
                             <span style="font-size: 1.8em; line-height: 1;">📸</span>
-                            <span style="font-size: 0.6em; font-weight: bold; color: #FF9800; text-transform: uppercase; letter-spacing: 0.5px; white-space: nowrap;">Zrób fotę</span>
-                            <input type="file" id="diet-camera-input" accept="image/*" capture="environment" multiple style="display: none;">
+                            <span style="font-size: 0.6em; font-weight: bold; color: #FF9800; text-transform: uppercase; letter-spacing: 0.5px; white-space: nowrap;">Dodaj zdjęcie</span>
+                            <input type="file" id="diet-camera-input" accept="image/*" multiple style="display: none;">
                         </label>
                     </div>
 
@@ -90,7 +90,7 @@ export const DietUI = {
 
             <!-- Przycisk konfiguracji TDEE -->
             <div style="text-align: center; margin-bottom: 20px;">
-                <button id="diet-config-btn" style="background: rgba(255,255,255,0.1); border: 1px solid #444; color: #ccc; padding: 8px 15px; border-radius: 20px; font-size: 0.9em; cursor: pointer;">
+                <button id="diet-config-btn" style="background: linear-gradient(135deg, #FF9800, #F57C00); border: none; color: #fff; padding: 12px 20px; border-radius: 25px; font-size: 1.05em; font-weight: bold; cursor: pointer; width: 100%; max-width: 400px; display: block; margin: 0 auto; box-shadow: 0 4px 15px rgba(255, 152, 0, 0.4);">
                     ⚙️ Oblicz zapotrzebowanie kaloryczne
                 </button>
             </div>
@@ -260,19 +260,41 @@ export const DietUI = {
                         </div>
                         <div style="text-align: right;">
                             <div style="font-size: 1.2em; font-weight: bold; color: #FF9800;">${log.calories} kcal</div>
-                            <button class="delete-diet-btn" data-id="${log.id}" style="background: none; border: none; color: #ff4444; font-size: 0.8em; margin-top: 5px; cursor: pointer; text-decoration: underline;">Usuń</button>
+                            <div style="display: flex; gap: 10px; justify-content: flex-end; margin-top: 8px;">
+                                <button class="clone-diet-btn" data-log='${JSON.stringify(log).replace(/'/g, "&apos;")}' style="background: rgba(0, 191, 255, 0.1); border: 1px solid #00BFFF; color: #00BFFF; font-size: 0.8em; padding: 4px 8px; border-radius: 4px; cursor: pointer;">Klonuj</button>
+                                <button class="delete-diet-btn" data-id="${log.id}" style="background: rgba(255, 68, 68, 0.1); border: 1px solid #ff4444; color: #ff4444; font-size: 0.8em; padding: 4px 8px; border-radius: 4px; cursor: pointer;">Usuń</button>
+                            </div>
                         </div>
                     `;
                     listContainer.appendChild(item);
                 });
 
-                // Przypięcie przycisków usuwania
                 document.querySelectorAll('.delete-diet-btn').forEach(btn => {
                     btn.addEventListener('click', async (e) => {
                         if (confirm('Usunąć ten posiłek?')) {
                             const id = e.target.getAttribute('data-id');
                             await DatabaseManager.deleteDietLog(id);
                             DietUI.loadTodayData();
+                        }
+                    });
+                });
+                
+                document.querySelectorAll('.clone-diet-btn').forEach(btn => {
+                    btn.addEventListener('click', async (e) => {
+                        const log = JSON.parse(e.target.getAttribute('data-log'));
+                        try {
+                            await DatabaseManager.addDietLog({
+                                date: new Date().toISOString().split('T')[0],
+                                meal_type: log.meal_type || 'Inny',
+                                food_name: log.food_name,
+                                calories: log.calories,
+                                protein: log.protein,
+                                carbs: log.carbs,
+                                fat: log.fat
+                            });
+                            DietUI.loadTodayData();
+                        } catch (err) {
+                            console.error('Klonowanie błąd:', err);
                         }
                     });
                 });

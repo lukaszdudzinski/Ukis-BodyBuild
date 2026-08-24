@@ -792,17 +792,35 @@ export const TrainingUI = {
                         let exercisesPreview = '';
                         if (rec.exercises && rec.exercises.length > 0) {
                             rec.exercises.forEach(ex => {
-                                exercisesPreview += `<div style="margin-bottom: 8px;"><strong>${ex.name || 'Brak nazwy'}</strong> <span style="font-size: 0.8em; color: #888;">(${ex.type === 'cardio' ? 'Cardio' : 'Siłowe'})</span><br>`;
-                                if (ex.sets && ex.sets.length > 0) {
-                                    exercisesPreview += `<ul style="margin: 3px 0 0 0; padding-left: 20px; font-size: 0.9em; color: #ccc;">`;
-                                    ex.sets.forEach((s, i) => {
-                                        exercisesPreview += `<li>Seria ${i+1}: <strong style="color: #00BFFF;">${s.weight} kg</strong> x <strong>${s.reps} powt.</strong></li>`;
+                                if (ex.type === 'superset' && ex.exercises && ex.exercises.length > 0) {
+                                    exercisesPreview += `<div style="margin-bottom: 8px; border-left: 2px dashed #E91E63; padding-left: 10px;">
+                                        <strong style="color: #E91E63; font-size: 0.85em; text-transform: uppercase;">Blok Łączony (Superseria)</strong><br>`;
+                                    ex.exercises.forEach(nestedEx => {
+                                        exercisesPreview += `<strong>${nestedEx.name || 'Brak nazwy'}</strong> <span style="font-size: 0.8em; color: #888;">(${nestedEx.type === 'cardio' ? 'Cardio' : 'Siłowe'})</span><br>`;
+                                        if (nestedEx.sets && nestedEx.sets.length > 0) {
+                                            exercisesPreview += `<ul style="margin: 3px 0 10px 0; padding-left: 20px; font-size: 0.9em; color: #ccc;">`;
+                                            nestedEx.sets.forEach((s, i) => {
+                                                exercisesPreview += `<li>Seria ${i+1}: <strong style="color: #00BFFF;">${s.weight} kg</strong> x <strong>${s.reps} powt.</strong></li>`;
+                                            });
+                                            exercisesPreview += `</ul>`;
+                                        } else {
+                                            exercisesPreview += `<div style="font-size: 0.9em; color: #888; margin-bottom: 10px;">Brak zapisanych serii</div>`;
+                                        }
                                     });
-                                    exercisesPreview += `</ul>`;
+                                    exercisesPreview += `</div>`;
                                 } else {
-                                    exercisesPreview += `<span style="font-size: 0.9em; color: #888; padding-left: 10px;">Brak zapisanych serii</span>`;
+                                    exercisesPreview += `<div style="margin-bottom: 8px;"><strong>${ex.name || 'Brak nazwy'}</strong> <span style="font-size: 0.8em; color: #888;">(${ex.type === 'cardio' ? 'Cardio' : 'Siłowe'})</span><br>`;
+                                    if (ex.sets && ex.sets.length > 0) {
+                                        exercisesPreview += `<ul style="margin: 3px 0 0 0; padding-left: 20px; font-size: 0.9em; color: #ccc;">`;
+                                        ex.sets.forEach((s, i) => {
+                                            exercisesPreview += `<li>Seria ${i+1}: <strong style="color: #00BFFF;">${s.weight} kg</strong> x <strong>${s.reps} powt.</strong></li>`;
+                                        });
+                                        exercisesPreview += `</ul>`;
+                                    } else {
+                                        exercisesPreview += `<span style="font-size: 0.9em; color: #888; padding-left: 10px;">Brak zapisanych serii</span>`;
+                                    }
+                                    exercisesPreview += `</div>`;
                                 }
-                                exercisesPreview += `</div>`;
                             });
                         } else {
                             exercisesPreview = `<p style="font-size: 0.9em; color: #888;">Brak zapisanych ćwiczeń.</p>`;
@@ -1059,12 +1077,28 @@ export const TrainingUI = {
 
         if (copyFromIndex !== null && allTrainingsCache[copyFromIndex]) {
             const rec = allTrainingsCache[copyFromIndex];
-            currentTraining.exercises = rec.exercises.map(ex => ({
-                id: Math.random().toString(36).substr(2, 9),
-                type: ex.type || 'strength',
-                name: ex.name || '',
-                sets: ex.sets.map(s => ({ ...s }))
-            }));
+            currentTraining.exercises = rec.exercises.map(ex => {
+                if (ex.type === 'superset') {
+                    return {
+                        id: Math.random().toString(36).substr(2, 9),
+                        type: 'superset',
+                        name: ex.name || '',
+                        exercises: (ex.exercises || []).map(nestedEx => ({
+                            id: Math.random().toString(36).substr(2, 9),
+                            type: nestedEx.type || 'strength',
+                            name: nestedEx.name || '',
+                            sets: (nestedEx.sets || []).map(s => ({ ...s, completed: false }))
+                        }))
+                    };
+                } else {
+                    return {
+                        id: Math.random().toString(36).substr(2, 9),
+                        type: ex.type || 'strength',
+                        name: ex.name || '',
+                        sets: (ex.sets || []).map(s => ({ ...s, completed: false }))
+                    };
+                }
+            });
             if (rec.name && nameInput) {
                 currentTraining.name = rec.name;
                 nameInput.value = rec.name;
@@ -1113,8 +1147,7 @@ export const TrainingUI = {
             type: 'superset',
             name: '',
             exercises: [
-                { id: Date.now().toString() + '-1', type: 'strength', name: '', sets: [] },
-                { id: Date.now().toString() + '-2', type: 'strength', name: '', sets: [] }
+                { id: Date.now().toString() + '-1', type: 'strength', name: '', sets: [] }
             ]
         });
         TrainingUI.renderCurrentExercises();
@@ -1254,11 +1287,18 @@ export const TrainingUI = {
                 allTrainingsCache.forEach(t => {
                     if (t.exercises) {
                         t.exercises.forEach(e => {
-                            if (e.name && e.name.toLowerCase().trim() === exNameLower && e.sets) {
-                                e.sets.forEach(s => {
-                                    const s1RM = s.weight * (1 + (s.reps / 30));
-                                    if (s1RM > maxHistorical1RM) maxHistorical1RM = s1RM;
-                                });
+                            const checkExercise = (ex) => {
+                                if (ex.name && ex.name.toLowerCase().trim() === exNameLower && ex.sets) {
+                                    ex.sets.forEach(s => {
+                                        const s1RM = s.weight * (1 + (s.reps / 30));
+                                        if (s1RM > maxHistorical1RM) maxHistorical1RM = s1RM;
+                                    });
+                                }
+                            };
+                            if (e.type === 'superset' && e.exercises) {
+                                e.exercises.forEach(checkExercise);
+                            } else {
+                                checkExercise(e);
                             }
                         });
                     }
@@ -1473,15 +1513,14 @@ export const TrainingUI = {
             
             return `
                 <div style="background: ${isNested ? 'linear-gradient(145deg, #2a0815, #1a050d)' : '#1e1e1e'}; border: 1px solid ${isNested ? '#E91E63' : '#333'}; padding: 15px; border-radius: 8px; margin-bottom: 15px; ${isNested ? 'box-shadow: 0 0 10px rgba(233, 30, 99, 0.2);' : ''}">
-                    <div style="margin-bottom: 15px;">
-                        <div style="display: flex; gap: 5px; margin-bottom: 10px;">
+                    <div style="margin-bottom: 15px; position: relative;">
+                        <div style="display: flex; gap: 5px; margin-bottom: 10px; align-items: stretch;">
+                            <button onclick="const newType = '${ex.type}' === 'cardio' ? 'strength' : 'cardio'; window.TrainingUI.updateExerciseField('${ex.id}', 'type', newType); window.TrainingUI.renderCurrentExercises();" style="background: #222; border: 1px solid ${isNested ? '#E91E63' : '#00BFFF'}; color: #fff; padding: 0 12px; border-radius: 6px; font-size: 1.4em; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0;" title="Zmień typ">
+                                ${ex.type === 'cardio' ? '🏃' : '🏋️'}
+                            </button>
                             <input type="text" class="exercise-name-input" placeholder="Wpisz nazwę..." value="${ex.name}" onchange="window.TrainingUI.updateExerciseField('${ex.id}', 'name', this.value); window.TrainingUI.renderCurrentExercises();" style="flex: 1; min-width: 0; padding: 15px; border-radius: 6px; border: 1px solid ${isNested ? '#E91E63' : '#00BFFF'}; background: #222; color: #fff; font-size: 1.1em; box-sizing: border-box; text-align: center;">
                             <button onclick="window.TrainingUI.openCatalogModal('${ex.id}')" style="background: rgba(0,191,255,0.1); color: #00BFFF; border: 1px solid ${isNested ? '#E91E63' : '#00BFFF'}; border-radius: 6px; padding: 0 15px; cursor: pointer; font-weight: bold; flex-shrink: 0; display: flex; align-items: center; justify-content: center;">📚<br><span style="font-size: 0.7em;">Katalog</span></button>
                         </div>
-                        <select onchange="window.TrainingUI.updateExerciseField('${ex.id}', 'type', this.value); window.TrainingUI.renderCurrentExercises();" style="display: block; width: 100%; padding: 15px; border-radius: 6px; border: 1px solid ${isNested ? '#E91E63' : '#00BFFF'}; background: #222; color: #fff; font-size: 1.1em; box-sizing: border-box; text-align: center;">
-                            <option value="strength" ${ex.type === 'strength' ? 'selected' : ''}>Siłowe</option>
-                            <option value="cardio" ${ex.type === 'cardio' ? 'selected' : ''}>Cardio</option>
-                        </select>
                     </div>
                     <div style="margin-bottom: 15px; text-align: center;">
                         <label class="action-button" style="display: inline-block; background-color: #333; border-color: #555; color: #fff; cursor: pointer; width: 100%; box-sizing: border-box; text-shadow: 0 1px 3px rgba(0,0,0,0.8);">
@@ -1502,8 +1541,8 @@ export const TrainingUI = {
             const isMainForSuperset = nextEx && nextEx.type === 'superset';
 
             if (isMainForSuperset && ex.type !== 'superset') {
-                // Rozpoczynamy elegancki blok łączony
-                html += `<div style="background: rgba(233, 30, 99, 0.03); border: 2px solid #E91E63; border-radius: 12px; padding: 15px; margin-bottom: 20px; box-shadow: 0 4px 15px rgba(233, 30, 99, 0.15); position: relative;">`;
+                // Rozpoczynamy elegancki blok łączony (bez bocznych paddingów by nie tracić miejsca na mobile)
+                html += `<div style="background: rgba(233, 30, 99, 0.03); border-top: 2px dashed #E91E63; border-bottom: 2px dashed #E91E63; padding: 25px 0 10px 0; margin-bottom: 20px; position: relative;">`;
                 html += `<div style="position: absolute; top: -12px; left: 50%; transform: translateX(-50%); background: #111; color: #E91E63; padding: 0 15px; font-size: 0.8em; font-weight: bold; text-transform: uppercase; letter-spacing: 2px; border: 1px solid #E91E63; border-radius: 20px;">Blok Łączony</div>`;
                 inSupersetGroup = true;
             }
@@ -1511,8 +1550,8 @@ export const TrainingUI = {
             if (ex.type === 'superset') {
                 if (inSupersetGroup) {
                     // Dodajemy ładny łącznik z ikoną
-                    html += `<div style="display: flex; justify-content: center; margin: -10px 0 15px 0;">
-                                <div style="background: #E91E63; width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.2em; box-shadow: 0 0 10px #E91E63; z-index: 2;">🔗</div>
+                    html += `<div style="display: flex; justify-content: center; margin: 10px 0;">
+                                <div style="background: #E91E63; width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1em; box-shadow: 0 0 10px #E91E63; z-index: 2;">🔗</div>
                              </div>`;
                 }
                 
