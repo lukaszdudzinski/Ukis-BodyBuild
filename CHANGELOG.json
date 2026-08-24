@@ -3,7 +3,7 @@
     "version": "v2026.8.24.04",
     "date": "2026-08-24",
     "changes": [
-      "[UZUPEŁNIJ OPIS ZMIAN - PAMIĘTAJ O EMOTIKONACH! 🚀🐞💪]"
+      "🌐 PWA OFFLINE (STABILNOŚĆ): Naprawiono błąd 'DietAI Error', który zawieszał aplikację przy braku dostępu do internetu. Dodano regułę omijającą cache dla wszystkich połączeń z chmurą Cloudflare (workers.dev). Teraz w przypadku braku sieci aplikacja natychmiast wyświetli czytelny komunikat 'No internet connection', pozwalając na dalszą pracę offline!"
     ]
   },
   {
