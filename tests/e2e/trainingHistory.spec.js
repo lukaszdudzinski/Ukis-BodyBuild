@@ -134,7 +134,7 @@ test.describe('Training and History Flow', () => {
     await page.reload();
 
     // Idź do historii
-    await page.click('a[data-tab="history-dashboard"]');
+    await page.evaluate(() => window.switchTab('history-dashboard'));
     await page.waitForSelector('#history-dashboard', { state: 'visible' });
 
     // Rozwiń trening z superserią
