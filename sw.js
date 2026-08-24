@@ -1,4 +1,4 @@
-const CACHE_NAME = 'ukis-bodybuild-v2026.8.24.03';
+const CACHE_NAME = 'ukis-bodybuild-v2026.8.24.04';
 // Core assets that MUST be cached immediately
 const CORE_ASSETS = [
     './',
@@ -61,7 +61,7 @@ self.addEventListener('fetch', (e) => {
     }
     
     // Bypass cache completely for API requests (like Gemini AI)
-    if (e.request.url.includes('generativelanguage.googleapis.com')) {
+    if (e.request.url.includes('generativelanguage.googleapis.com') || e.request.url.includes('workers.dev')) {
         e.respondWith(
             fetch(e.request).catch(err => {
                 console.error('[SW] API Fetch Failed (Offline?):', err);
