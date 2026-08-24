@@ -32,7 +32,12 @@ export const TrainingUI = {
             if (!document.getElementById('exercise-catalog-list')) {
                 const dataList = document.createElement('datalist');
                 dataList.id = 'exercise-catalog-list';
-                ExerciseCatalog.forEach(exName => {
+                
+                let customExercises = [];
+                try { customExercises = JSON.parse(localStorage.getItem('uki_custom_exercises') || '[]'); } catch(e) {}
+                const fullCatalog = [...ExerciseCatalog, ...customExercises];
+                
+                fullCatalog.forEach(exName => {
                     const option = document.createElement('option');
                     option.value = exName;
                     dataList.appendChild(option);
@@ -1022,15 +1027,32 @@ export const TrainingUI = {
         `;
         
         rec.exercises.forEach((ex, i) => {
-            html += `
-                <div style="margin-bottom: 10px; padding: 10px; background: rgba(255,255,255,0.05); border-radius: 5px;">
-                    <div style="color: #fff; font-weight: bold; margin-bottom: 5px;">${i+1}. ${ex.name || 'Nieznane ćwiczenie'}</div>
-                    <div style="padding-left: 10px; border-left: 2px solid #00BFFF;">
-                        ${(!ex.sets || ex.sets.length === 0) ? '<em style="color: #777;">Brak serii</em>' : ''}
-                        ${(ex.sets || []).map((set, sIdx) => `<div>Seria ${sIdx + 1}: ${set.weight} kg x ${set.reps} powt.</div>`).join('')}
+            if (ex.type === 'superset' && ex.exercises && ex.exercises.length > 0) {
+                html += `
+                    <div style="margin-bottom: 10px; padding: 10px; background: rgba(233, 30, 99, 0.05); border-radius: 5px; border-left: 2px solid #E91E63;">
+                        <div style="color: #E91E63; font-weight: bold; margin-bottom: 5px; text-transform: uppercase;">${i+1}. Blok Łączony (Superseria)</div>
+                `;
+                ex.exercises.forEach((nestedEx, nIdx) => {
+                    html += `
+                        <div style="margin-bottom: 5px; margin-top: 10px; color: #fff; font-weight: bold;">${i+1}.${nIdx+1}. ${nestedEx.name || 'Nieznane ćwiczenie'}</div>
+                        <div style="padding-left: 10px; border-left: 2px solid #E91E63;">
+                            ${(!nestedEx.sets || nestedEx.sets.length === 0) ? '<em style="color: #777;">Brak serii</em>' : ''}
+                            ${(nestedEx.sets || []).map((set, sIdx) => `<div>Seria ${sIdx + 1}: ${set.weight} kg x ${set.reps} powt.</div>`).join('')}
+                        </div>
+                    `;
+                });
+                html += `</div>`;
+            } else {
+                html += `
+                    <div style="margin-bottom: 10px; padding: 10px; background: rgba(255,255,255,0.05); border-radius: 5px;">
+                        <div style="color: #fff; font-weight: bold; margin-bottom: 5px;">${i+1}. ${ex.name || 'Nieznane ćwiczenie'}</div>
+                        <div style="padding-left: 10px; border-left: 2px solid #00BFFF;">
+                            ${(!ex.sets || ex.sets.length === 0) ? '<em style="color: #777;">Brak serii</em>' : ''}
+                            ${(ex.sets || []).map((set, sIdx) => `<div>Seria ${sIdx + 1}: ${set.weight} kg x ${set.reps} powt.</div>`).join('')}
+                        </div>
                     </div>
-                </div>
-            `;
+                `;
+            }
         });
 
         html += `
@@ -1515,8 +1537,9 @@ export const TrainingUI = {
                 <div style="background: ${isNested ? 'linear-gradient(145deg, #2a0815, #1a050d)' : '#1e1e1e'}; border: 1px solid ${isNested ? '#E91E63' : '#333'}; padding: 15px; border-radius: 8px; margin-bottom: 15px; ${isNested ? 'box-shadow: 0 0 10px rgba(233, 30, 99, 0.2);' : ''}">
                     <div style="margin-bottom: 15px; position: relative;">
                         <div style="display: flex; gap: 5px; margin-bottom: 10px; align-items: stretch;">
-                            <button onclick="const newType = '${ex.type}' === 'cardio' ? 'strength' : 'cardio'; window.TrainingUI.updateExerciseField('${ex.id}', 'type', newType); window.TrainingUI.renderCurrentExercises();" style="background: #222; border: 1px solid ${isNested ? '#E91E63' : '#00BFFF'}; color: #fff; padding: 0 12px; border-radius: 6px; font-size: 1.4em; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0;" title="Zmień typ">
-                                ${ex.type === 'cardio' ? '🏃' : '🏋️'}
+                            <button onclick="const newType = '${ex.type}' === 'strength' ? 'cardio' : ('${ex.type}' === 'cardio' ? 'classes' : 'strength'); window.TrainingUI.updateExerciseField('${ex.id}', 'type', newType); window.TrainingUI.renderCurrentExercises();" style="background: #222; border: 1px solid ${isNested ? '#E91E63' : '#00BFFF'}; color: #fff; padding: 0 8px; border-radius: 6px; font-size: 0.9em; cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; flex-shrink: 0; min-width: 60px;" title="Zmień typ">
+                                <span style="font-size: 1.5em; line-height: 1;">${ex.type === 'classes' ? '🚴' : (ex.type === 'cardio' ? '🏃' : '🏋️')}</span>
+                                <span style="font-size: 0.75em; margin-top: 2px;">${ex.type === 'classes' ? 'Zajęcia' : (ex.type === 'cardio' ? 'Cardio' : 'Siłowe')}</span>
                             </button>
                             <input type="text" class="exercise-name-input" placeholder="Wpisz nazwę..." value="${ex.name}" onchange="window.TrainingUI.updateExerciseField('${ex.id}', 'name', this.value); window.TrainingUI.renderCurrentExercises();" style="flex: 1; min-width: 0; padding: 15px; border-radius: 6px; border: 1px solid ${isNested ? '#E91E63' : '#00BFFF'}; background: #222; color: #fff; font-size: 1.1em; box-sizing: border-box; text-align: center;">
                             <button onclick="window.TrainingUI.openCatalogModal('${ex.id}')" style="background: rgba(0,191,255,0.1); color: #00BFFF; border: 1px solid ${isNested ? '#E91E63' : '#00BFFF'}; border-radius: 6px; padding: 0 15px; cursor: pointer; font-weight: bold; flex-shrink: 0; display: flex; align-items: center; justify-content: center;">📚<br><span style="font-size: 0.7em;">Katalog</span></button>
@@ -1740,6 +1763,33 @@ export const TrainingUI = {
                     delete ex.cardioInterval;
                 }
             });
+
+            // Zapisz własne ćwiczenia do prywatnego katalogu
+            let customExercises = [];
+            try { customExercises = JSON.parse(localStorage.getItem('uki_custom_exercises') || '[]'); } catch(e) {}
+            const allKnownExercises = new Set([...ExerciseCatalog, ...customExercises]);
+            let addedNew = false;
+            
+            const processCustomExercise = (name) => {
+                const n = name && name.trim();
+                if (n && !allKnownExercises.has(n)) {
+                    customExercises.push(n);
+                    allKnownExercises.add(n);
+                    addedNew = true;
+                }
+            };
+            
+            validExercises.forEach(ex => {
+                if (ex.type === 'superset' && Array.isArray(ex.exercises)) {
+                    ex.exercises.forEach(subEx => processCustomExercise(subEx.name));
+                } else {
+                    processCustomExercise(ex.name);
+                }
+            });
+            
+            if (addedNew) {
+                localStorage.setItem('uki_custom_exercises', JSON.stringify(customExercises));
+            }
 
             // Ensure exercises_json doesn't break if validExercises is empty
             const exercisesToSave = validExercises.length > 0 ? validExercises : [];

@@ -1,5 +1,17 @@
 [
   {
+    "version": "v2026.8.24.02",
+    "date": "2026-08-24",
+    "changes": [
+      "💪 WŁASNE ĆWICZENIA (Prywatny Katalog): Wszystkie Twoje własne ćwiczenia wpisywane z palca w Treningu i Kreatorze trafiają teraz automatycznie do prywatnego katalogu! Będą pojawiać się jako podpowiedzi przy kolejnych treningach.",
+      "📝 KREATOR SZABLONÓW: Opcja masowej edycji 'Zastosuj do wszystkich' została zmieniona na 'Zastosuj do zaznaczonych'. Możesz teraz łatwo odznaczać ćwiczenia, by masowo zmieniać parametry tylko dla wybranych z nich!",
+      "🏃IKONY TYPU ĆWICZENIA: Przycisk zmiany typu (Siłowe 🏋️ / Cardio 🏃) w Kreatorze i podczas Treningu zyskał dodatkowy opis tekstowy, aby było w 100% jasne, że jest on klikalny i do czego służy.",
+      "🔎 HISTORIA TRENINGU: Naprawiono błąd wyświetlania 'Nieznane ćwiczenie' w podglądzie historii, gdy wykonywano Superserie (Bloki Łączone). Teraz w podglądzie wyraźnie widać nagłówek 'Blok Łączony' i listę wykonanych pod-ćwiczeń wraz z seriami.",
+      "🚴 ZAJĘCIA ZORGANIZOWANE: Powrót kategorii 'Zajęcia zorganizowane' do głównego katalogu (Tabata, Crossfit, Zumba, Spinning itp.).",
+      "🐞 POPRAWKI BŁĘDÓW: Wyeliminowano krytyczny błąd podczas klonowania starych treningów, który powodował załamanie aplikacji (TypeError przy wczytywaniu serii). Twoje stare plany są znów w 100% bezpieczne do klonowania!"
+    ]
+  },
+  {
     "version": "v2026.8.24.01",
     "date": "2026-08-24",
     "changes": [

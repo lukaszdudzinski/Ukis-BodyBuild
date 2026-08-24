@@ -81,6 +81,15 @@ export const ExerciseCategories = {
         "Cardio - Orbitrek",
         "Cardio - Rowerek stacjonarny",
         "Cardio - Schody (Stairmaster)"
+    ],
+    "Zajęcia zorganizowane": [
+        "Zajęcia - Tabata",
+        "Zajęcia - HYROX",
+        "Zajęcia - Les Mills CORE",
+        "Zajęcia - Pośladki i Brzuch",
+        "Zajęcia - Rowery (Spinning)",
+        "Zajęcia - Crossfit",
+        "Zajęcia - Zumba"
     ]
 };
 

@@ -22,7 +22,7 @@ export const TemplateBuilderUI = {
             <!-- KOSZYK GŁÓWNY WIDOK -->
             <div id="builder-cart-area" style="padding: 15px 0;">
                 <div style="margin-bottom: 15px; display: flex; gap: 8px; align-items: center; background: rgba(255, 152, 0, 0.1); padding: 10px; border-radius: 8px; border: 1px solid rgba(255,152,0,0.3); flex-wrap: wrap;">
-                    <span style="color: #FF9800; font-size: 0.95em; width: 100%; font-weight: bold;">Zastosuj do wszystkich (Możesz używać przecinków dla piramid!)</span>
+                    <span style="color: #FF9800; font-size: 0.95em; width: 100%; font-weight: bold;">Zastosuj do zaznaczonych (Możesz używać przecinków dla piramid!)</span>
                     <span style="color: #bbb; font-size: 0.8em; width: 100%; margin-bottom: 5px;">💡 Przykład: wpisz <b style="color:#fff;">3</b> serie, Powt: <b style="color:#fff;">12,10,8</b>, Kg: <b style="color:#fff;">100,110,120</b></span>
                     <input type="number" id="builder-mass-sets" placeholder="Serie" style="width: 55px; padding: 8px; background: #222; border: 1px solid #555; color: #fff; border-radius: 6px; text-align: center;">
                     <span style="color: #888;">x</span>
@@ -58,7 +58,7 @@ export const TemplateBuilderUI = {
                             <label style="color: #aaa; font-size: 0.85em; display: block; margin-bottom: 5px;">Lub dodaj własne ćwiczenie:</label>
                             <div style="display: flex; gap: 5px;">
                                 <input type="text" id="builder-custom-name" placeholder="Własna nazwa..." style="flex: 1; padding: 10px; border-radius: 8px; border: 1px solid #444; background: #222; color: #fff;">
-                                <button onclick="TemplateBuilderUI.toggleCustomType()" id="builder-custom-type-btn" data-type="strength" style="background: #222; border: 1px solid #444; color: #fff; padding: 0 10px; border-radius: 8px; font-size: 1.2em; cursor: pointer;" title="Zmień na Cardio">🏋️</button>
+                                <button onclick="TemplateBuilderUI.toggleCustomType()" id="builder-custom-type-btn" data-type="strength" style="background: #222; border: 1px solid #444; color: #fff; padding: 0 10px; border-radius: 8px; font-size: 1.0em; cursor: pointer; min-width: 90px; text-align: center;" title="Zmień na Cardio">🏋️ Siłowe</button>
                                 <button onclick="TemplateBuilderUI.addCustomToCart()" style="background: #2ECC71; color: #000; border: none; font-weight: bold; padding: 0 15px; border-radius: 8px; cursor: pointer;">Dodaj</button>
                             </div>
                         </div>
@@ -84,12 +84,16 @@ export const TemplateBuilderUI = {
 
     toggleCustomType: () => {
         const btn = document.getElementById('builder-custom-type-btn');
-        if (btn.getAttribute('data-type') === 'strength') {
+        const currentType = btn.getAttribute('data-type');
+        if (currentType === 'strength') {
             btn.setAttribute('data-type', 'cardio');
-            btn.innerText = '🏃';
+            btn.innerText = '🏃 Cardio';
+        } else if (currentType === 'cardio') {
+            btn.setAttribute('data-type', 'classes');
+            btn.innerText = '🚴 Zajęcia';
         } else {
             btn.setAttribute('data-type', 'strength');
-            btn.innerText = '🏋️';
+            btn.innerText = '🏋️ Siłowe';
         }
     },
 
@@ -124,7 +128,11 @@ export const TemplateBuilderUI = {
         if (!list) return;
         
         let html = '';
-        ExerciseCatalog.forEach(exName => {
+        let customExercises = [];
+        try { customExercises = JSON.parse(localStorage.getItem('uki_custom_exercises') || '[]'); } catch(e) {}
+        const fullCatalog = [...ExerciseCatalog, ...customExercises];
+        
+        fullCatalog.forEach(exName => {
             html += `<div class="builder-catalog-item" data-name="${exName}" onclick="TemplateBuilderUI.addToCart('${exName}')" style="background: #222; padding: 12px 15px; border-radius: 8px; border: 1px solid #333; cursor: pointer; display: flex; justify-content: space-between; align-items: center;">
                 <span style="color: #ccc; font-size: 0.95em;">${exName}</span>
                 <span style="color: #00BFFF; font-weight: bold; font-size: 1.2em;">+</span>
@@ -200,19 +208,29 @@ export const TemplateBuilderUI = {
         const weightArr = weightRaw.split(/[,;]+/).map(v => v.trim()).filter(v => v !== '');
         const repsArr = repsRaw.split(/[,;]+/).map(v => v.trim()).filter(v => v !== '');
 
-        TemplateBuilderUI.cart.forEach(ex => {
-            ex.sets = [];
-            for(let i=0; i<setsCount; i++) {
-                let w = weightArr.length > 0 ? (weightArr[i] !== undefined ? weightArr[i] : weightArr[weightArr.length - 1]) : "0";
-                let r = repsArr.length > 0 ? (repsArr[i] !== undefined ? repsArr[i] : repsArr[repsArr.length - 1]) : "0";
-                
-                ex.sets.push({
-                    weight: w, 
-                    reps: r,
-                    completed: false
-                });
+        let applied = false;
+        TemplateBuilderUI.cart.forEach((ex, index) => {
+            const cb = document.getElementById(`builder-select-${index}`);
+            if (cb && cb.checked) {
+                applied = true;
+                ex.sets = [];
+                for(let i=0; i<setsCount; i++) {
+                    let w = weightArr.length > 0 ? (weightArr[i] !== undefined ? weightArr[i] : weightArr[weightArr.length - 1]) : "0";
+                    let r = repsArr.length > 0 ? (repsArr[i] !== undefined ? repsArr[i] : repsArr[repsArr.length - 1]) : "0";
+                    
+                    ex.sets.push({
+                        weight: w, 
+                        reps: r,
+                        completed: false
+                    });
+                }
             }
         });
+
+        if (!applied) {
+            alert("Nie zaznaczono żadnego ćwiczenia do ustawienia!");
+            return;
+        }
 
         TemplateBuilderUI.renderCart();
         
@@ -241,10 +259,13 @@ export const TemplateBuilderUI = {
                 setsDesc = `<span style="color: #ff4444; font-size: 0.85em; margin-top: 5px; display: block;">Brak ustawionych serii</span>`;
             }
             
-            const icon = ex.type === 'cardio' ? '🏃' : '🏋️';
+            const icon = ex.type === 'classes' ? '🚴' : (ex.type === 'cardio' ? '🏃' : '🏋️');
 
             html += `
                 <div style="background: rgba(0, 191, 255, 0.05); border: 1px solid #00BFFF; padding: 12px; border-radius: 8px; display: flex; align-items: center; justify-content: space-between;">
+                    <div style="display: flex; align-items: center; margin-right: 10px;">
+                        <input type="checkbox" id="builder-select-${index}" checked style="width: 20px; height: 20px; accent-color: #00BFFF; cursor: pointer;">
+                    </div>
                     <div style="flex: 1;">
                         <div style="color: #fff; font-weight: bold; font-size: 1.0em;">${index + 1}. ${icon} ${ex.name}</div>
                         ${setsDesc}
@@ -275,7 +296,7 @@ export const TemplateBuilderUI = {
 
         const incomplete = TemplateBuilderUI.cart.find(ex => ex.sets.length === 0);
         if (incomplete) {
-            alert(`Ćwiczenie "${incomplete.name}" nie ma ustawionych serii! Użyj "Zastosuj do wszystkich".`);
+            alert(`Ćwiczenie "${incomplete.name}" nie ma ustawionych serii! Użyj "Zastosuj do zaznaczonych".`);
             return;
         }
 
@@ -286,7 +307,7 @@ export const TemplateBuilderUI = {
             exercises: TemplateBuilderUI.cart.map(ex => ({
                 name: ex.name,
                 type: ex.type || 'strength',
-                sets: ex.sets.map(s => ({ ...s }))
+                sets: (ex.sets || []).map(s => ({ ...s }))
             }))
         };
 
