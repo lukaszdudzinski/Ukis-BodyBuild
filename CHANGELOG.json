@@ -1,5 +1,12 @@
 [
   {
+    "version": "v2026.8.24.03",
+    "date": "2026-08-24",
+    "changes": [
+      "🐞 HISTORIA TRENINGÓW (POPRAWKA): Rozszerzono logikę wyświetlania 'Bloków Łączonych' (Superserii) na główny, duży panel podglądu w zakładce Historii (modal po kliknięciu detali treningu). Wcześniej superserie w tym miejscu wyświetlały się błędnie jako 'Nieznane ćwiczenie'. Teraz widzisz piękną listę swoich superserii!"
+    ]
+  },
+  {
     "version": "v2026.8.24.02",
     "date": "2026-08-24",
     "changes": [

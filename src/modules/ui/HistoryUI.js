@@ -108,17 +108,39 @@ export const HistoryUI = {
                             </div>
                             
                             <h4 style="color: #00BFFF; margin-bottom: 10px;">Szczegóły ćwiczeń:</h4>
-                                ${rec.exercises.map((ex, i) => `
-                                    <div style="margin-bottom: 10px; padding: 10px; background: rgba(255,255,255,0.05); border-radius: 5px;">
-                                        <div style="color: #fff; font-weight: bold; margin-bottom: 5px;">${i+1}. ${ex.name || 'Nieznane ćwiczenie'}</div>
-                                        <div style="padding-left: 10px; border-left: 2px solid #00BFFF;">
-                                            ${(!ex.sets || ex.sets.length === 0) ? '<em style="color: #777;">Brak serii (lub inny typ)</em>' : ''}
-                                            ${(ex.sets || []).map((set, sIdx) => `
-                                                <div>Seria ${sIdx + 1}: ${set.weight} kg x ${set.reps} powt.</div>
-                                            `).join('')}
-                                        </div>
-                                    </div>
-                                `).join('')}
+                                ${rec.exercises.map((ex, i) => {
+                                    if (ex.type === 'superset' && ex.exercises && ex.exercises.length > 0) {
+                                        let html = `
+                                            <div style="margin-bottom: 10px; padding: 10px; background: rgba(233, 30, 99, 0.05); border-radius: 5px; border-left: 2px solid #E91E63;">
+                                                <div style="color: #E91E63; font-weight: bold; margin-bottom: 5px; text-transform: uppercase;">${i+1}. Blok Łączony (Superseria)</div>
+                                        `;
+                                        ex.exercises.forEach((nestedEx, nIdx) => {
+                                            html += `
+                                                <div style="margin-bottom: 5px; margin-top: 10px; color: #fff; font-weight: bold;">${i+1}.${nIdx+1}. ${nestedEx.name || 'Nieznane ćwiczenie'}</div>
+                                                <div style="padding-left: 10px; border-left: 2px solid #E91E63;">
+                                                    ${(!nestedEx.sets || nestedEx.sets.length === 0) ? '<em style="color: #777;">Brak serii (lub inny typ)</em>' : ''}
+                                                    ${(nestedEx.sets || []).map((set, sIdx) => `
+                                                        <div>Seria ${sIdx + 1}: ${set.weight} kg x ${set.reps} powt.</div>
+                                                    `).join('')}
+                                                </div>
+                                            `;
+                                        });
+                                        html += `</div>`;
+                                        return html;
+                                    } else {
+                                        return `
+                                            <div style="margin-bottom: 10px; padding: 10px; background: rgba(255,255,255,0.05); border-radius: 5px;">
+                                                <div style="color: #fff; font-weight: bold; margin-bottom: 5px;">${i+1}. ${ex.name || 'Nieznane ćwiczenie'}</div>
+                                                <div style="padding-left: 10px; border-left: 2px solid #00BFFF;">
+                                                    ${(!ex.sets || ex.sets.length === 0) ? '<em style="color: #777;">Brak serii (lub inny typ)</em>' : ''}
+                                                    ${(ex.sets || []).map((set, sIdx) => `
+                                                        <div>Seria ${sIdx + 1}: ${set.weight} kg x ${set.reps} powt.</div>
+                                                    `).join('')}
+                                                </div>
+                                            </div>
+                                        `;
+                                    }
+                                }).join('')}
                             
                             <button onclick="window.HistoryUI.shareTraining('${rec.id}')" class="action-button" style="background-color: #3b5998; border-color: #3b5998; color: white; width: 100%; margin-top: 15px;">
                                 📤 Udostępnij Trening (Obraz)
