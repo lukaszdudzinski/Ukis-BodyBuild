@@ -1,5 +1,12 @@
 [
   {
+    "version": "v2026.8.25.01",
+    "date": "2026-08-25",
+    "changes": [
+      "📸 DIETA: Dodano podgląd miniatur dla analizowanych posiłków ze zdjęć oraz nowe okno potwierdzenia wyniku sztucznej inteligencji, pozwalające ręcznie dostosować (+/-) wykryte kalorie przed zapisaniem ich do dziennika!"
+    ]
+  },
+  {
     "version": "v2026.8.24.04",
     "date": "2026-08-24",
     "changes": [

@@ -250,12 +250,15 @@ export const DietUI = {
                     item.className = 'diet-log-item';
                     item.style.cssText = 'background: rgba(255,255,255,0.05); padding: 15px; border-radius: 8px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; border-left: 4px solid #FF9800;';
                     item.innerHTML = `
-                        <div>
-                            <div style="font-weight: bold; font-size: 1.2em; color: #fff;">${log.food_name}</div>
-                            <div style="font-size: 1.05em; color: #ddd; margin-top: 8px; display: flex; gap: 15px; font-weight: 500;">
-                                <span><strong style="color: #4CAF50; font-size: 1.1em;">B:</strong> ${log.protein}g</span>
-                                <span><strong style="color: #2196F3; font-size: 1.1em;">W:</strong> ${log.carbs}g</span>
-                                <span><strong style="color: #E91E63; font-size: 1.1em;">T:</strong> ${log.fat}g</span>
+                        <div style="display: flex; align-items: center; flex: 1; max-width: 70%;">
+                            ${log.thumbnail ? `<img src="${log.thumbnail}" style="width: 50px; height: 50px; object-fit: cover; border-radius: 8px; margin-right: 15px; border: 1px solid #FF9800; flex-shrink: 0;">` : ''}
+                            <div>
+                                <div style="font-weight: bold; font-size: 1.2em; color: #fff; word-break: break-word;">${log.food_name}</div>
+                                <div style="font-size: 1.05em; color: #ddd; margin-top: 8px; display: flex; gap: 15px; font-weight: 500;">
+                                    <span><strong style="color: #4CAF50; font-size: 1.1em;">B:</strong> ${log.protein}g</span>
+                                    <span><strong style="color: #2196F3; font-size: 1.1em;">W:</strong> ${log.carbs}g</span>
+                                    <span><strong style="color: #E91E63; font-size: 1.1em;">T:</strong> ${log.fat}g</span>
+                                </div>
                             </div>
                         </div>
                         <div style="text-align: right;">
@@ -290,7 +293,8 @@ export const DietUI = {
                                 calories: log.calories,
                                 protein: log.protein,
                                 carbs: log.carbs,
-                                fat: log.fat
+                                fat: log.fat,
+                                thumbnail: log.thumbnail || null
                             });
                             DietUI.loadTodayData();
                         } catch (err) {
@@ -448,23 +452,8 @@ export const DietUI = {
         try {
             const result = await DietAIEngine.analyzeImage(DietUI.attachedImages, contextText);
             
-            const today = new Date().toISOString().split('T')[0];
-            await DatabaseManager.addDietLog({
-                date: today,
-                meal_type: 'Inny',
-                food_name: result.food_name || 'Nieznany posiłek',
-                calories: parseInt(result.calories) || 0,
-                protein: parseInt(result.protein) || 0,
-                carbs: parseInt(result.carbs) || 0,
-                fat: parseInt(result.fat) || 0
-            });
-
-            if (contextInput) contextInput.value = '';
-            DietUI.attachedImages = [];
-            DietUI.renderImagePreviews();
-            
-            alert(`Dodano: ${result.food_name} (${result.calories} kcal)`);
-            DietUI.loadTodayData();
+            const thumbnail = DietUI.attachedImages.length > 0 ? DietUI.attachedImages[0] : null;
+            DietUI.showResultConfirmation(result, thumbnail, contextInput);
 
         } catch (error) {
             if (window.ukiLogError) window.ukiLogError('DietAI Error', error.toString());
@@ -473,6 +462,89 @@ export const DietUI = {
             if (loading) loading.style.display = 'none';
             if (analyzeBtn) analyzeBtn.style.display = 'block';
         }
+    },
+
+    showResultConfirmation: (result, thumbnail, contextInput) => {
+        let currentKcal = parseInt(result.calories) || 0;
+        
+        const modal = document.createElement('div');
+        modal.id = 'diet-result-modal-overlay';
+        modal.style.cssText = 'position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 10000; display: flex; justify-content: center; align-items: center; padding: 20px; box-sizing: border-box;';
+        
+        modal.innerHTML = `
+            <div style="background: #1e1e1e; padding: 20px; border-radius: 12px; border: 1px solid #FF9800; max-width: 400px; width: 100%; text-align: center; color: #fff; position: relative;">
+                <h3 style="color: #FF9800; margin-top: 0; margin-bottom: 15px;">Potwierdź Posiłek</h3>
+                ${thumbnail ? `<img src="${thumbnail}" style="width: 100px; height: 100px; object-fit: cover; border-radius: 8px; margin-bottom: 15px; border: 2px solid #FF9800;">` : ''}
+                
+                <div style="font-size: 1.2em; font-weight: bold; margin-bottom: 15px; color: #fff; word-break: break-word;">
+                    ${result.food_name || 'Nieznany posiłek'}
+                </div>
+                
+                <div style="background: rgba(255,152,0,0.1); border: 1px solid rgba(255,152,0,0.3); border-radius: 8px; padding: 15px; margin-bottom: 20px;">
+                    <div style="margin-bottom: 10px; color: #aaa;">Kalorie:</div>
+                    <div style="display: flex; align-items: center; justify-content: center; gap: 15px;">
+                        <button id="btn-minus-kcal" style="background: rgba(255, 68, 68, 0.2); border: 1px solid #ff4444; color: #ff4444; width: 40px; height: 40px; border-radius: 50%; font-size: 1.5em; cursor: pointer; display: flex; justify-content: center; align-items: center; padding-bottom: 3px;">-</button>
+                        <div id="diet-result-kcal-display" style="font-size: 2em; font-weight: bold; color: #FF9800; min-width: 100px;">${currentKcal}</div>
+                        <button id="btn-plus-kcal" style="background: rgba(76, 175, 80, 0.2); border: 1px solid #4CAF50; color: #4CAF50; width: 40px; height: 40px; border-radius: 50%; font-size: 1.5em; cursor: pointer; display: flex; justify-content: center; align-items: center; padding-bottom: 3px;">+</button>
+                    </div>
+                </div>
+
+                <div style="font-size: 0.9em; color: #ddd; margin-bottom: 20px; display: flex; justify-content: space-between; padding: 0 20px;">
+                    <span><strong style="color: #4CAF50;">B:</strong> ${parseInt(result.protein) || 0}g</span>
+                    <span><strong style="color: #2196F3;">W:</strong> ${parseInt(result.carbs) || 0}g</span>
+                    <span><strong style="color: #E91E63;">T:</strong> ${parseInt(result.fat) || 0}g</span>
+                </div>
+
+                <div style="display: flex; gap: 10px;">
+                    <button id="diet-result-cancel" style="flex: 1; padding: 12px; background: transparent; border: 1px solid #555; color: #ccc; border-radius: 8px; cursor: pointer; font-weight: bold;">Anuluj</button>
+                    <button id="diet-result-save" style="flex: 2; padding: 12px; background: #FF9800; border: none; color: #000; border-radius: 8px; cursor: pointer; font-weight: bold;">Zapisz</button>
+                </div>
+            </div>
+        `;
+        
+        document.body.appendChild(modal);
+
+        const updateKcalDisplay = () => {
+            document.getElementById('diet-result-kcal-display').textContent = currentKcal;
+        };
+
+        document.getElementById('btn-minus-kcal').addEventListener('click', () => {
+            currentKcal = Math.max(0, currentKcal - 50);
+            updateKcalDisplay();
+        });
+
+        document.getElementById('btn-plus-kcal').addEventListener('click', () => {
+            currentKcal += 50;
+            updateKcalDisplay();
+        });
+
+        document.getElementById('diet-result-cancel').addEventListener('click', () => {
+            modal.remove();
+        });
+
+        document.getElementById('diet-result-save').addEventListener('click', async () => {
+            modal.remove();
+            
+            // Adjust macros proportionally if calories changed? 
+            // Or just save the manually adjusted calories. Let's just save the calories.
+            const today = new Date().toISOString().split('T')[0];
+            await DatabaseManager.addDietLog({
+                date: today,
+                meal_type: 'Inny',
+                food_name: result.food_name || 'Nieznany posiłek',
+                calories: currentKcal,
+                protein: parseInt(result.protein) || 0,
+                carbs: parseInt(result.carbs) || 0,
+                fat: parseInt(result.fat) || 0,
+                thumbnail: thumbnail
+            });
+
+            if (contextInput) contextInput.value = '';
+            DietUI.attachedImages = [];
+            DietUI.renderImagePreviews();
+            
+            DietUI.loadTodayData();
+        });
     },
 
     loadHistoryChart: async (tdee) => {

@@ -128,6 +128,13 @@ export const DatabaseManager = {
                 created_at DATETIME DEFAULT CURRENT_TIMESTAMP
             );
         `);
+
+        // Migration for thumbnail
+        try {
+            db.exec("ALTER TABLE diet_logs ADD COLUMN thumbnail TEXT;");
+        } catch (e) {
+            // column might already exist
+        }
     },
 
     addMeasurement: async (data) => {
@@ -317,8 +324,8 @@ export const DatabaseManager = {
         await DatabaseManager.init();
         
         db.exec({
-            sql: `INSERT INTO diet_logs (date, meal_type, food_name, calories, protein, carbs, fat) 
-                  VALUES (?, ?, ?, ?, ?, ?, ?)`,
+            sql: `INSERT INTO diet_logs (date, meal_type, food_name, calories, protein, carbs, fat, thumbnail) 
+                  VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
             bind: [
                 data.date, 
                 data.meal_type, 
@@ -326,7 +333,8 @@ export const DatabaseManager = {
                 data.calories || 0, 
                 data.protein || 0, 
                 data.carbs || 0, 
-                data.fat || 0
+                data.fat || 0,
+                data.thumbnail || null
             ]
         });
         
