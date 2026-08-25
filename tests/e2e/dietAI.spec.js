@@ -30,20 +30,24 @@ test.describe('Diet AI Result Confirmation Modal', () => {
     const modal = page.locator('#diet-result-modal-overlay');
     await modal.waitFor({ state: 'visible' });
 
-    // Sprawdzamy początkową wartość kalorii
+    // Sprawdzamy początkową wartość kalorii (teraz to input)
     const kcalDisplay = page.locator('#diet-result-kcal-display');
-    await expect(kcalDisplay).toHaveText('300');
+    await expect(kcalDisplay).toHaveValue('300');
 
-    // Klikamy "+" by zwiększyć kalorie o 50
+    // Klikamy "+" by zwiększyć kalorie (o 1)
     const btnPlus = page.locator('#btn-plus-kcal');
     await btnPlus.click();
-    await expect(kcalDisplay).toHaveText('350');
+    await expect(kcalDisplay).toHaveValue('301');
 
-    // Klikamy "-" by zmniejszyć kalorie o 50 (wraca do 300) i jeszcze raz (250)
+    // Klikamy "-" by zmniejszyć kalorie o 1 (wraca do 300) i jeszcze raz (299)
     const btnMinus = page.locator('#btn-minus-kcal');
     await btnMinus.click();
     await btnMinus.click();
-    await expect(kcalDisplay).toHaveText('250');
+    await expect(kcalDisplay).toHaveValue('299');
+
+    // Test wpisywania wartości z ręki (bo to teraz input)
+    await kcalDisplay.fill('400');
+    await expect(kcalDisplay).toHaveValue('400');
 
     // Klikamy "Zapisz"
     await page.locator('#diet-result-save').click();
@@ -51,9 +55,11 @@ test.describe('Diet AI Result Confirmation Modal', () => {
     // Modal powinien zniknąć
     await modal.waitFor({ state: 'hidden' });
 
-    // Sprawdzamy czy posiłek pojawił się na liście (nie wymuszamy widoczności, by uniknąć problemu hidden parent)
+    // Sprawdzamy czy posiłek pojawił się na liście
     const todayList = page.locator('#diet-today-list');
     await expect(todayList.locator('text=Sałatka z kurczakiem').first()).toBeAttached();
-    await expect(todayList.locator('text=250 kcal').first()).toBeAttached();
+    
+    // Sprawdzamy, czy kalorie to 400 (po modyfikacji)
+    await expect(todayList.locator('text=400 kcal').first()).toBeAttached();
   });
 });

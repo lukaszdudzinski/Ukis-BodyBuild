@@ -483,38 +483,45 @@ export const DietUI = {
                 <div style="background: rgba(255,152,0,0.1); border: 1px solid rgba(255,152,0,0.3); border-radius: 8px; padding: 15px; margin-bottom: 20px;">
                     <div style="margin-bottom: 10px; color: #aaa;">Kalorie:</div>
                     <div style="display: flex; align-items: center; justify-content: center; gap: 15px;">
-                        <button id="btn-minus-kcal" style="background: rgba(255, 68, 68, 0.2); border: 1px solid #ff4444; color: #ff4444; width: 40px; height: 40px; border-radius: 50%; font-size: 1.5em; cursor: pointer; display: flex; justify-content: center; align-items: center; padding-bottom: 3px;">-</button>
-                        <div id="diet-result-kcal-display" style="font-size: 2em; font-weight: bold; color: #FF9800; min-width: 100px;">${currentKcal}</div>
-                        <button id="btn-plus-kcal" style="background: rgba(76, 175, 80, 0.2); border: 1px solid #4CAF50; color: #4CAF50; width: 40px; height: 40px; border-radius: 50%; font-size: 1.5em; cursor: pointer; display: flex; justify-content: center; align-items: center; padding-bottom: 3px;">+</button>
+                        <button id="btn-minus-kcal" style="background: rgba(255, 68, 68, 0.2); border: 1px solid #ff4444; color: #ff4444; width: 45px; height: 45px; border-radius: 50%; font-size: 1.8em; cursor: pointer; display: flex; justify-content: center; align-items: center; padding-bottom: 3px;">-</button>
+                        <input type="number" id="diet-result-kcal-display" value="${currentKcal}" style="font-size: 2em; font-weight: bold; color: #FF9800; min-width: 100px; width: 120px; text-align: center; background: transparent; border: none; outline: none; -moz-appearance: textfield;">
+                        <button id="btn-plus-kcal" style="background: rgba(76, 175, 80, 0.2); border: 1px solid #4CAF50; color: #4CAF50; width: 45px; height: 45px; border-radius: 50%; font-size: 1.8em; cursor: pointer; display: flex; justify-content: center; align-items: center; padding-bottom: 3px;">+</button>
                     </div>
                 </div>
 
-                <div style="font-size: 0.9em; color: #ddd; margin-bottom: 20px; display: flex; justify-content: space-between; padding: 0 20px;">
-                    <span><strong style="color: #4CAF50;">B:</strong> ${parseInt(result.protein) || 0}g</span>
-                    <span><strong style="color: #2196F3;">W:</strong> ${parseInt(result.carbs) || 0}g</span>
-                    <span><strong style="color: #E91E63;">T:</strong> ${parseInt(result.fat) || 0}g</span>
+                <div style="font-size: 1.25em; color: #ddd; margin-bottom: 25px; display: flex; justify-content: space-between; padding: 0 10px;">
+                    <span><strong style="color: #4CAF50; font-size: 1.1em;">B:</strong> ${parseInt(result.protein) || 0}g</span>
+                    <span><strong style="color: #2196F3; font-size: 1.1em;">W:</strong> ${parseInt(result.carbs) || 0}g</span>
+                    <span><strong style="color: #E91E63; font-size: 1.1em;">T:</strong> ${parseInt(result.fat) || 0}g</span>
                 </div>
 
-                <div style="display: flex; gap: 10px;">
-                    <button id="diet-result-cancel" style="flex: 1; padding: 12px; background: transparent; border: 1px solid #555; color: #ccc; border-radius: 8px; cursor: pointer; font-weight: bold;">Anuluj</button>
-                    <button id="diet-result-save" style="flex: 2; padding: 12px; background: #FF9800; border: none; color: #000; border-radius: 8px; cursor: pointer; font-weight: bold;">Zapisz</button>
+                <div style="display: flex; gap: 15px;">
+                    <button id="diet-result-cancel" style="flex: 1; padding: 15px; font-size: 1.1em; background: transparent; border: 1px solid #555; color: #ccc; border-radius: 8px; cursor: pointer; font-weight: bold;">Anuluj</button>
+                    <button id="diet-result-save" style="flex: 1; padding: 15px; font-size: 1.1em; background: #FF9800; border: none; color: #000; border-radius: 8px; cursor: pointer; font-weight: bold;">Zapisz</button>
                 </div>
             </div>
         `;
         
         document.body.appendChild(modal);
 
+        const inputKcal = document.getElementById('diet-result-kcal-display');
+
         const updateKcalDisplay = () => {
-            document.getElementById('diet-result-kcal-display').textContent = currentKcal;
+            inputKcal.value = currentKcal;
         };
 
+        inputKcal.addEventListener('change', (e) => {
+            currentKcal = Math.max(0, parseInt(e.target.value) || 0);
+            updateKcalDisplay();
+        });
+
         document.getElementById('btn-minus-kcal').addEventListener('click', () => {
-            currentKcal = Math.max(0, currentKcal - 50);
+            currentKcal = Math.max(0, currentKcal - 1);
             updateKcalDisplay();
         });
 
         document.getElementById('btn-plus-kcal').addEventListener('click', () => {
-            currentKcal += 50;
+            currentKcal += 1;
             updateKcalDisplay();
         });
 

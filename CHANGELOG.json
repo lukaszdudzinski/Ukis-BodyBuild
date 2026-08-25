@@ -1,5 +1,12 @@
 [
   {
+    "version": "v2026.8.25.02",
+    "date": "2026-08-25",
+    "changes": [
+      "🥗 DIETA UI: Powiększono czcionki dla makro i przycisków akcji, wyrównano szerokość przycisków, a korekta kalorii działa teraz precyzyjnie (o 1 kcal) z możliwością wpisania z klawiatury!"
+    ]
+  },
+  {
     "version": "v2026.8.25.01",
     "date": "2026-08-25",
     "changes": [

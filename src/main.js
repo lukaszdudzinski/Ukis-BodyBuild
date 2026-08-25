@@ -39,6 +39,7 @@ window.addEventListener('unhandledrejection', function(event) {
 window.DatabaseManager = DatabaseManager;
 window.APP_VERSION = APP_VERSION;
 window.AiAnalyticsUI = AiAnalyticsUI;
+window.DietUI = DietUI;
 
 // Initialize Application
 const initApp = () => {
