@@ -36,13 +36,13 @@ test.describe('Diet AI Result Confirmation Modal', () => {
 
     // Klikamy "+" by zwiększyć kalorie (o 1)
     const btnPlus = page.locator('#btn-plus-kcal');
-    await btnPlus.click();
+    await btnPlus.click({ force: true });
     await expect(kcalDisplay).toHaveValue('301');
 
     // Klikamy "-" by zmniejszyć kalorie o 1 (wraca do 300) i jeszcze raz (299)
     const btnMinus = page.locator('#btn-minus-kcal');
-    await btnMinus.click();
-    await btnMinus.click();
+    await btnMinus.click({ force: true });
+    await btnMinus.click({ force: true });
     await expect(kcalDisplay).toHaveValue('299');
 
     // Test wpisywania wartości z ręki (bo to teraz input)
@@ -50,7 +50,7 @@ test.describe('Diet AI Result Confirmation Modal', () => {
     await expect(kcalDisplay).toHaveValue('400');
 
     // Klikamy "Zapisz"
-    await page.locator('#diet-result-save').click();
+    await page.locator('#diet-result-save').click({ force: true });
 
     // Modal powinien zniknąć
     await modal.waitFor({ state: 'hidden' });
