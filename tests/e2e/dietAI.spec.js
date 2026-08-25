@@ -6,6 +6,9 @@ test.describe('Diet AI Result Confirmation Modal', () => {
     await page.addInitScript(() => { window.localStorage.setItem('tutorial_global_v22', 'true'); });
     await page.goto('http://127.0.0.1:8080/');
 
+    // Poczekaj na załadowanie głównego panelu (zakończenie init)
+    await page.waitForSelector('#welcome-dashboard', { state: 'visible' });
+    
     // Przejdź do zakładki Dieta
     await page.evaluate(() => window.switchTab('diet-dashboard'));
     await page.waitForSelector('#diet-dashboard', { state: 'visible' });
