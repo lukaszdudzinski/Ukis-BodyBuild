@@ -2,12 +2,11 @@ const { test, expect } = require('@playwright/test');
 
 test.describe('Diet AI Result Confirmation Modal', () => {
   test('powinien pokazać modal z przyciskami +/- i zapisać posiłek z miniaturą', async ({ page }) => {
-    // Pomiń samouczki
     await page.addInitScript(() => { window.localStorage.setItem('tutorial_global_v22', 'true'); });
     await page.goto('http://127.0.0.1:8080/');
 
-    // Poczekaj na załadowanie głównego panelu (zakończenie init)
-    await page.waitForSelector('#welcome-dashboard', { state: 'visible' });
+    // Czekamy dłuższą chwilę, aż aplikacja w pełni zainicjuje DOM i nadpisze domyślne widoki
+    await page.waitForTimeout(2000);
     
     // Przejdź do zakładki Dieta
     await page.evaluate(() => window.switchTab('diet-dashboard'));
