@@ -1,5 +1,12 @@
 [
   {
+    "version": "v2026.8.26.07",
+    "date": "2026-08-26",
+    "changes": [
+      "🧨 Wdrożono narzędzie awaryjnego formatowania bazy danych z poziomu Diagnostyki i naprawiono błędy cichego zapisu treningu."
+    ]
+  },
+  {
     "version": "v2026.8.26.06",
     "date": "2026-08-26",
     "changes": [

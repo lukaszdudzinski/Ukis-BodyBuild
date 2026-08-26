@@ -1916,6 +1916,7 @@ export const TrainingUI = {
 
             } catch (err) {
                 console.error("Error saving training:", err);
+                alert("Wystąpił błąd podczas zapisu treningu! (Prawdopodobnie limit miejsca - disk I/O). Trening został zachowany w pamięci jako szkic.");
                 
                 // Awaryjne zrzucenie treningu do logów i pliku lokalnego
                 try {
