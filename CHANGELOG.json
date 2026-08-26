@@ -1,5 +1,12 @@
 [
   {
+    "version": "v2026.8.26.08",
+    "date": "2026-08-26",
+    "changes": [
+      "🔥 Hotfix 4: Naprawa białych znaków (Enter) w zmiennej confirm w zakładce Diagnostyka."
+    ]
+  },
+  {
     "version": "v2026.8.26.07",
     "date": "2026-08-26",
     "changes": [

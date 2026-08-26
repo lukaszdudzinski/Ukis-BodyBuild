@@ -132,9 +132,7 @@ export const DiagnosticsUI = {
         const factoryBtn = document.getElementById('db-factory-reset-btn');
         if (factoryBtn) {
             factoryBtn.addEventListener('click', async () => {
-                const confirmed = confirm("UWAGA! Stracisz wszystkie dane jeśli nie utworzyłeś Archiwum JSON!
-
-Czy pobrałeś Archiwum i chcesz sformatować bazę zwalniając 100% miejsca?");
+                const confirmed = confirm("UWAGA! Stracisz wszystkie dane jeśli nie utworzyłeś Archiwum JSON!\n\nCzy pobrałeś Archiwum i chcesz sformatować bazę zwalniając 100% miejsca?");
                 if (confirmed) {
                     try {
                         const root = await navigator.storage.getDirectory();
