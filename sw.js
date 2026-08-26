@@ -1,4 +1,4 @@
-const CACHE_NAME = 'ukis-bodybuild-v2026.8.26.09';
+const CACHE_NAME = 'ukis-bodybuild-v2026.8.26.13';
 // Core assets that MUST be cached immediately
 const CORE_ASSETS = [
     './',
@@ -29,8 +29,13 @@ const CORE_ASSETS = [
     './src/modules/diet/DietAIEngine.js',
     './src/modules/ai/AiAnalyticsEngine.js',
     './src/modules/db/DatabaseManager.js',
+    './src/modules/db/dbWorker.js',
     './src/modules/data/LogbookDB.js',
-    './src/modules/data/CalendarDB.js'
+    './src/modules/data/CalendarDB.js',
+    './libs/sqlite/sqlite3.mjs',
+    './libs/sqlite/sqlite3-worker1-promiser.js',
+    './libs/sqlite/sqlite3-worker1.js',
+    './libs/sqlite/sqlite3.js'
 ];
 
 self.addEventListener('install', (e) => {
@@ -74,6 +79,13 @@ self.addEventListener('fetch', (e) => {
         return;
     }
 
+    // Zawsze pobieraj pliki WASM bezpośrednio z sieci - nie cachuj ich przez SW
+    // (plik jest duży i może być błędnie cachowany jako HTML, co niszczy WebAssembly)
+    if (e.request.url.endsWith('.wasm')) {
+        e.respondWith(fetch(e.request, { cache: 'no-store' }));
+        return;
+    }
+
     e.respondWith(
         caches.match(e.request).then((response) => {
             if (response) {
@@ -82,6 +94,13 @@ self.addEventListener('fetch', (e) => {
             return fetch(e.request).then((fetchResponse) => {
                 // Return if not valid
                 if (!fetchResponse || fetchResponse.status !== 200 || fetchResponse.type !== 'basic') {
+                    return fetchResponse;
+                }
+
+                // NIE cachuj plików binarnych które mogą być błędnie zwrócone jako HTML
+                const contentType = fetchResponse.headers.get('content-type') || '';
+                if (contentType.includes('text/html') && e.request.url.match(/\.(wasm|js|json)$/)) {
+                    console.warn('[SW] Suspicious response for', e.request.url, '- skipping cache');
                     return fetchResponse;
                 }
 

@@ -11,6 +11,11 @@ self.onmessage = async function(e) {
                 sqlite3 = await self.sqlite3InitModule({
                     print: console.log,
                     printErr: console.error,
+                    locateFile: (file) => {
+                        // W klasycznym workerze self.location.href wskazuje na dbWorker.js,
+                        // więc musimy ręcznie wskazać właściwy folder z plikiem sqlite3.wasm
+                        return '../../../libs/sqlite/' + file;
+                    }
                 });
                 
                 if (sqlite3.opfs) {
