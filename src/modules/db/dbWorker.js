@@ -8,14 +8,17 @@ self.onmessage = async function(e) {
     try {
         if (action === 'init') {
             if (!db) {
+                // Pobierz plik WASM samodzielnie z absolutnym URL
+                // (locateFile nie działa w klasycznym workerze na iOS Safari - sqlite3.js go nadpisuje)
+                const wasmUrl = new URL('../../../libs/sqlite/sqlite3.wasm', self.location.href).href;
+                const wasmResponse = await fetch(wasmUrl, { cache: 'no-store' });
+                if (!wasmResponse.ok) throw new Error('Failed to fetch sqlite3.wasm: ' + wasmResponse.status);
+                const wasmBinary = await wasmResponse.arrayBuffer();
+                
                 sqlite3 = await self.sqlite3InitModule({
                     print: console.log,
                     printErr: console.error,
-                    locateFile: (file) => {
-                        // W klasycznym workerze self.location.href wskazuje na dbWorker.js,
-                        // więc musimy ręcznie wskazać właściwy folder z plikiem sqlite3.wasm
-                        return '../../../libs/sqlite/' + file;
-                    }
+                    wasmBinary: wasmBinary
                 });
                 
                 if (sqlite3.opfs) {
