@@ -1,5 +1,12 @@
 [
   {
+    "version": "v2026.8.26.02",
+    "date": "2026-08-26",
+    "changes": [
+      "🛠️ Wdrożono narzędzie automatycznej migracji i defragmentacji bazy danych naprawiające błędy 'disk I/O error'. Dodano eksport i import Planów Treningowych do JSON oraz poprawiono klawiaturę Numpad i Kreator Koszyka."
+    ]
+  },
+  {
     "version": "v2026.8.26.01",
     "date": "2026-08-26",
     "changes": [

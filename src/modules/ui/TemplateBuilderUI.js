@@ -232,6 +232,12 @@ export const TemplateBuilderUI = {
             return;
         }
 
+        // Oznacz ćwiczenia jako ustawione (odznacz checkboxa) by łatwiej konfigurować kolejne
+        TemplateBuilderUI.cart.forEach((ex, index) => {
+            const cb = document.getElementById(`builder-select-${index}`);
+            if (cb && cb.checked) cb.checked = false;
+        });
+
         TemplateBuilderUI.renderCart();
         
         if (window.navigator && window.navigator.vibrate) {
@@ -264,7 +270,7 @@ export const TemplateBuilderUI = {
             html += `
                 <div style="background: rgba(0, 191, 255, 0.05); border: 1px solid #00BFFF; padding: 12px; border-radius: 8px; display: flex; align-items: center; justify-content: space-between;">
                     <div style="display: flex; align-items: center; margin-right: 10px;">
-                        <input type="checkbox" id="builder-select-${index}" checked style="width: 20px; height: 20px; accent-color: #00BFFF; cursor: pointer;">
+                        <input type="checkbox" id="builder-select-${index}" ${ex.sets.length === 0 ? 'checked' : ''} style="width: 20px; height: 20px; accent-color: #00BFFF; cursor: pointer;">
                     </div>
                     <div style="flex: 1;">
                         <div style="color: #fff; font-weight: bold; font-size: 1.0em;">${index + 1}. ${icon} ${ex.name}</div>

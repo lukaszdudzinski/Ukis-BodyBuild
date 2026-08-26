@@ -105,7 +105,9 @@ export const NumpadUI = {
                 return;
             }
             
-            if (NumpadUI.targetInput.value.length < 6) {
+            if (NumpadUI.targetInput.value === '0' && char !== '.') {
+                NumpadUI.targetInput.value = char;
+            } else if (NumpadUI.targetInput.value.length < 6) {
                 NumpadUI.targetInput.value += char;
             }
         }
