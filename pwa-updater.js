@@ -146,7 +146,6 @@
                             const localVersion = document.querySelector('meta[name="app-version"]')?.content;
                             
                             if (localVersion && serverVersion !== localVersion) {
-                                window.PWAUpdateUI.showUpdateBanner(registration.waiting); 
                                 registration.update();
                             }
                         } catch(e) {}
