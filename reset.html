@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reset Uki's BodyBuild PWA</title>
+    <style>
+        body {
+            background: #1a1a2e;
+            color: #fff;
+            font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            margin: 0;
+            text-align: center;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+        .card { background: rgba(255,255,255,0.05); border-radius: 16px; padding: 40px 30px; max-width: 400px; width: 100%; }
+        h1 { font-size: 2em; margin-bottom: 10px; }
+        p { color: #aaa; margin-bottom: 30px; }
+        #status { font-size: 1.1em; color: #FF9800; font-weight: bold; min-height: 60px; }
+        .spinner { display: inline-block; width: 40px; height: 40px; border: 4px solid rgba(255,152,0,0.3); border-radius: 50%; border-top-color: #FF9800; animation: spin 1s ease-in-out infinite; margin-bottom: 20px; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .success { color: #4CAF50 !important; }
+        .error { color: #E74C3C !important; }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <div class="spinner" id="spinner"></div>
+        <h1>🔄 Reset PWA</h1>
+        <p>Usuwam stare pliki aplikacji i wymuszam pobranie najnowszej wersji. Twoje dane treningowe i dieta są bezpieczne!</p>
+        <div id="status">Wyrejestrowuję stary Service Worker...</div>
+    </div>
+    <script>
+    (async function() {
+        const status = document.getElementById('status');
+        const spinner = document.getElementById('spinner');
+        try {
+            if ('serviceWorker' in navigator) {
+                const regs = await navigator.serviceWorker.getRegistrations();
+                status.textContent = 'Usuwam ' + regs.length + ' stare Service Worker(y)...';
+                for (let r of regs) { await r.unregister(); }
+            }
+            status.textContent = 'Czyszczę pamięć podręczną...';
+            const keys = await caches.keys();
+            await Promise.all(keys.map(k => caches.delete(k)));
+            spinner.style.display = 'none';
+            status.className = 'success';
+            status.innerHTML = '✅ Gotowe! Za 3 sekundy wrócisz do aplikacji z najnowszą wersją.';
+            setTimeout(() => { window.location.href = './index.html?_reset=' + Date.now(); }, 3000);
+        } catch (err) {
+            spinner.style.display = 'none';
+            status.className = 'error';
+            status.innerHTML = '❌ Błąd: ' + err.message + '<br><br><a href="./index.html" style="color:#FF9800">Wróć do aplikacji</a>';
+        }
+    })();
+    </script>
+</body>
+</html>
