@@ -1,5 +1,12 @@
 [
   {
+    "version": "v2026.8.26.05",
+    "date": "2026-08-26",
+    "changes": [
+      "🔥 Hotfix 2: Naprawa błędu składni (Missing }) w TrainingUI."
+    ]
+  },
+  {
     "version": "v2026.8.26.04",
     "date": "2026-08-26",
     "changes": [

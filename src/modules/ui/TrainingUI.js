@@ -1596,7 +1596,7 @@ export const TrainingUI = {
                             📷 Zrób zdjęcie maszyny
                             <input type="file" accept="image/*" capture="environment" style="display: none;" onchange="window.TrainingUI.handleMachinePhoto(event, '${ex.id}')">
                         </label>
-                        ${ex.machinePhoto ? `<img data-media-id="${ex.machinePhoto}" src="" ${ style="width: 100px; height: 100px; object-fit: cover; border-radius: 8px; margin-top: 10px; border: 1px solid ${isNested ? '#E91E63' : '#00BFFF'};" alt="Maszyna"}>` : ''}
+                        ${ex.machinePhoto ? `<img data-media-id="${ex.machinePhoto}" src="" style="width: 100px; height: 100px; object-fit: cover; border-radius: 8px; margin-top: 10px; border: 1px solid ${isNested ? '#E91E63' : '#00BFFF'};" alt="Maszyna">` : ''}
                     </div>
                     ${exerciseDetailsHtml}
                 </div>
