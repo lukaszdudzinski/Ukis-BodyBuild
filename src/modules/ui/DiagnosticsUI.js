@@ -209,23 +209,27 @@ export const DiagnosticsUI = {
             });
         }
 
-        // Import/Export
         const exportBtn = document.getElementById('db-export-btn');
         if (exportBtn) {
             exportBtn.addEventListener('click', async () => {
-                const dataStr = await DatabaseManager.exportDatabase();
-                const blob = new Blob([dataStr], {type: "application/json"});
-                const url = URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = url;
-                const now = new Date();
-                const dateStr = now.toISOString().split('T')[0];
-                const timeStr = now.toTimeString().split(' ')[0].replace(/:/g, '-'); // HH-mm-ss
-                a.download = `bodybuild_backup_${dateStr}_${timeStr}.json`;
-                document.body.appendChild(a);
-                a.click();
-                document.body.removeChild(a);
-                URL.revokeObjectURL(url);
+                try {
+                    const dataStr = await DatabaseManager.exportDatabase();
+                    const blob = new Blob([dataStr], {type: "application/json"});
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    const now = new Date();
+                    const dateStr = now.toISOString().split('T')[0];
+                    const timeStr = now.toTimeString().split(' ')[0].replace(/:/g, '-'); // HH-mm-ss
+                    a.download = `bodybuild_backup_${dateStr}_${timeStr}.json`;
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                    URL.revokeObjectURL(url);
+                } catch (err) {
+                    alert("KRYTYCZNY BŁĄD: Nie udało się wyeksportować danych! Twoja baza prawdopodobnie jest uszkodzona (Disk I/O). Nie wykonuj formatowania, dopóki nie skonsultujesz się z pomocą techniczną, w przeciwnym razie stracisz dane.");
+                    console.error("Export Error: ", err);
+                }
             });
         }
 
