@@ -22,6 +22,7 @@ export const DiagnosticsUI = {
                     <button id="db-import-btn" style="flex: 1; padding: 13px 10px; background: #222; border: 1px solid #FF9800; color: #FF9800; border-radius: 5px; cursor: pointer; font-size: 1em; font-weight: bold; text-align: center;">📥 Przywróć z Pliku</button>
                     <input type="file" id="db-import-file" accept=".json" style="display: none;">
                 </div>
+                <button id="db-export-raw-btn" style="width: 100%; margin-top: 10px; padding: 13px 10px; background: #222; border: 1px dashed #E74C3C; color: #E74C3C; border-radius: 5px; cursor: pointer; font-size: 0.9em; font-weight: bold; text-align: center;">🆘 Pobierz fizyczny plik bazy (Tryb Awaryjny RAW)</button>
             </div>
 
             <div style="background: rgba(231,76,60,0.1); padding: 15px; border-radius: 8px; border: 1px solid #E74C3C; margin-bottom: 20px;">
@@ -229,6 +230,30 @@ export const DiagnosticsUI = {
                 } catch (err) {
                     alert("KRYTYCZNY BŁĄD: Nie udało się wyeksportować danych! Twoja baza prawdopodobnie jest uszkodzona (Disk I/O). Nie wykonuj formatowania, dopóki nie skonsultujesz się z pomocą techniczną, w przeciwnym razie stracisz dane.");
                     console.error("Export Error: ", err);
+                }
+            });
+        }
+
+        const rawExportBtn = document.getElementById('db-export-raw-btn');
+        if (rawExportBtn) {
+            rawExportBtn.addEventListener('click', async () => {
+                try {
+                    const root = await navigator.storage.getDirectory();
+                    const handle = await root.getFileHandle('ukis_bodybuild.sqlite3', { create: false });
+                    const file = await handle.getFile();
+                    const url = URL.createObjectURL(file);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    const now = new Date();
+                    const dateStr = now.toISOString().split('T')[0];
+                    a.download = `ukis_bodybuild_raw_backup_${dateStr}.sqlite3`;
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                    URL.revokeObjectURL(url);
+                    alert("Pobrano fizyczny plik bazy! Prześlij go do wsparcia technicznego, spróbujemy go naprawić.");
+                } catch (err) {
+                    alert("Nie udało się odczytać fizycznego pliku! Twój system operacyjny wyczyścił pamięć przeglądarki (OPFS) albo plik nigdy nie istniał. Kod błędu: " + err.message);
                 }
             });
         }
