@@ -1,4 +1,4 @@
-import sqlite3InitModule from '../../../libs/sqlite/sqlite3.mjs';
+self.importScripts('../../../libs/sqlite/sqlite3.js');
 
 let db = null;
 let sqlite3 = null;
@@ -8,7 +8,7 @@ self.onmessage = async function(e) {
     try {
         if (action === 'init') {
             if (!db) {
-                sqlite3 = await sqlite3InitModule({
+                sqlite3 = await self.sqlite3InitModule({
                     print: console.log,
                     printErr: console.error,
                 });

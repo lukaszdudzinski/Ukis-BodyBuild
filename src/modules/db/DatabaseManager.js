@@ -104,7 +104,7 @@ export const DatabaseManager = {
         initPromise = new Promise(async (resolve, reject) => {
             try {
                 if (!worker) {
-                    worker = new Worker(new URL('./dbWorker.js', import.meta.url), { type: 'module' });
+                    worker = new Worker(new URL('./dbWorker.js', import.meta.url));
                     worker.onmessage = (e) => {
                         const { id, success, result, lastInsertId, error } = e.data;
                         if (resolvers[id]) {
