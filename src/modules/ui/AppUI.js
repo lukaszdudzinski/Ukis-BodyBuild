@@ -1,6 +1,6 @@
 import { PremiumUI } from "./PremiumUI.js";
 
-export const APP_VERSION = 'v2026.8.26.08'; // Faza 6.2: Katalog z podziałem na partie i Fixy UI
+export const APP_VERSION = 'v2026.8.26.09'; // Faza 6.2: Katalog z podziałem na partie i Fixy UI
 
 // Obsługa błędów globalnych — zdefiniowana w main.js (klucz: uki_error_logs)
 

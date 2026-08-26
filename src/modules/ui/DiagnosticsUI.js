@@ -136,7 +136,11 @@ export const DiagnosticsUI = {
                 if (confirmed) {
                     try {
                         const root = await navigator.storage.getDirectory();
-                        await root.removeEntry('ukis_bodybuild.sqlite3', { recursive: true });
+                        // Usuń wszystkie pliki SQLite (z journalem i wal)
+                        const files = ['ukis_bodybuild.sqlite3', 'ukis_bodybuild.sqlite3-journal', 'ukis_bodybuild.sqlite3-wal', 'ukis_bodybuild.sqlite3-shm'];
+                        for (const f of files) {
+                            try { await root.removeEntry(f, { recursive: true }); } catch(e) {}
+                        }
                         alert("Baza została pomyślnie sformatowana. Aplikacja zostanie zrestartowana.");
                         window.location.reload(true);
                     } catch(e) {

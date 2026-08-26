@@ -287,29 +287,20 @@ export const DietUI = {
                     btn.addEventListener('click', async (e) => {
                         const log = JSON.parse(e.target.getAttribute('data-log'));
                         try {
-                            try {
-                await DatabaseManager.addDietLog({
-                    date: today,
-                    meal_type: 'Inny',
-                    food_name: result.food_name || 'Nieznany posiłek',
-                    calories: currentKcal,
-                    protein: parseInt(result.protein) || 0,
-                    carbs: parseInt(result.carbs) || 0,
-                    fat: parseInt(result.fat) || 0,
-                    thumbnail: thumbnail
-                });
-                
-                if (contextInput) contextInput.value = '';
-                DietUI.attachedImages = [];
-                DietUI.renderImagePreviews();
-                
-                DietUI.loadTodayData();
-            } catch(e) {
-                alert("Wystąpił błąd podczas zapisu posiłku. Prawdopodobnie brak miejsca (Disk I/O). Odśwież aplikację.");
-                console.error(e);
-            }
-                        } catch (err) {
-                            console.error('Klonowanie błąd:', err);
+                            await DatabaseManager.addDietLog({
+                                date: today,
+                                meal_type: log.meal_type || 'Inny',
+                                food_name: log.food_name || 'Nieznany posiłek',
+                                calories: log.calories || 0,
+                                protein: log.protein || 0,
+                                carbs: log.carbs || 0,
+                                fat: log.fat || 0,
+                                thumbnail: log.thumbnail || null
+                            });
+                            DietUI.loadTodayData();
+                        } catch(e) {
+                            alert("Wystąpił błąd podczas zapisu posiłku. Prawdopodobnie brak miejsca (Disk I/O). Odśwież aplikację.");
+                            console.error(e);
                         }
                     });
                 });
