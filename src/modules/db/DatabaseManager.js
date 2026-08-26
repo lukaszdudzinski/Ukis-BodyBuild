@@ -1,8 +1,16 @@
-import sqlite3InitModule from '../../../libs/sqlite/sqlite3.mjs';
-
-let db = null;
+let worker = null;
 let isReady = false;
 let initPromise = null;
+let msgId = 0;
+const resolvers = {};
+
+function sendMessage(action, payload = {}) {
+    return new Promise((resolve, reject) => {
+        const id = ++msgId;
+        resolvers[id] = { resolve, reject };
+        worker.postMessage({ id, action, payload });
+    });
+}
 
 export const DatabaseManager = {
     init: async () => {
@@ -11,48 +19,36 @@ export const DatabaseManager = {
 
         initPromise = new Promise(async (resolve, reject) => {
             try {
-                // Initialize the sqlite3 module
-                const sqlite3 = await sqlite3InitModule({
-                    print: console.log,
-                    printErr: console.error,
-                });
-
-                console.log('SQLite3 version', sqlite3.version.libVersion);
-
-                // Check for OPFS availability
-                if (sqlite3.opfs) {
-                    db = new sqlite3.oo1.OpfsDb('/ukis_bodybuild.sqlite3');
-                    console.log('The OPFS is available. Opened OPFS database.');
-                } else {
-                    console.warn('OPFS is not available. Falling back to kvvfs or memory.');
-                    try {
-                        db = new sqlite3.oo1.DB('local', 'c', 'kvvfs');
-                        console.log('Opened kvvfs (localStorage-backed) database.');
-                    } catch (e) {
-                         db = new sqlite3.oo1.DB(':memory:');
-                         console.warn('Fell back to in-memory database.', e);
-                    }
+                if (!worker) {
+                    worker = new Worker(new URL('./dbWorker.js', import.meta.url), { type: 'module' });
+                    worker.onmessage = (e) => {
+                        const { id, success, result, lastInsertId, error } = e.data;
+                        if (resolvers[id]) {
+                            if (success) {
+                                resolvers[id].resolve({ result, lastInsertId });
+                            } else {
+                                resolvers[id].reject(new Error(error));
+                            }
+                            delete resolvers[id];
+                        }
+                    };
                 }
-
-                // Initialize tables
-                DatabaseManager.createTables();
-                DatabaseManager.db = db;
+                
+                await sendMessage('init');
+                await DatabaseManager.createTables();
                 isReady = true;
                 resolve(true);
             } catch (err) {
-                console.error('Failed to initialize SQLite:', err);
+                console.error('Failed to initialize SQLite Worker:', err);
                 reject(err);
             }
         });
         return initPromise;
     },
 
-    createTables: () => {
-        if (!db) return;
-        
-        // Pomiary Ciała (Measurements)
-        db.exec(`
-            CREATE TABLE IF NOT EXISTS measurements (
+    createTables: async () => {
+        const queries = [
+            { sql: `CREATE TABLE IF NOT EXISTS measurements (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 date TEXT NOT NULL,
                 weight REAL NOT NULL,
@@ -63,49 +59,16 @@ export const DatabaseManager = {
                 biceps REAL,
                 photo TEXT,
                 created_at DATETIME DEFAULT CURRENT_TIMESTAMP
-            );
-        `);
-        
-        
-        // Treningi (Trainings)
-        db.exec(`
-            CREATE TABLE IF NOT EXISTS trainings (
+            );` },
+            { sql: `CREATE TABLE IF NOT EXISTS trainings (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 date TEXT NOT NULL,
                 duration_seconds INTEGER NOT NULL,
                 exercises_json TEXT NOT NULL,
                 name TEXT,
                 created_at DATETIME DEFAULT CURRENT_TIMESTAMP
-            );
-        `);
-        
-        try {
-            db.exec(`ALTER TABLE trainings ADD COLUMN name TEXT;`);
-        } catch(e) {}
-
-        try {
-            db.exec(`ALTER TABLE trainings ADD COLUMN type TEXT;`);
-        } catch(e) {}
-
-        try {
-            db.exec(`ALTER TABLE trainings ADD COLUMN social_photos_json TEXT;`);
-        } catch(e) {}
-
-        try {
-            db.exec(`ALTER TABLE trainings ADD COLUMN smartwatch_json TEXT;`);
-        } catch(e) {}
-
-        try {
-            db.exec(`ALTER TABLE measurements ADD COLUMN height REAL;`);
-        } catch(e) {}
-
-        try {
-            db.exec(`ALTER TABLE measurements ADD COLUMN neck REAL;`);
-        } catch(e) {}
-
-        // Dieta (Diet Logs)
-        db.exec(`
-            CREATE TABLE IF NOT EXISTS diet_logs (
+            );` },
+            { sql: `CREATE TABLE IF NOT EXISTS diet_logs (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 date TEXT NOT NULL,
                 meal_type TEXT NOT NULL,
@@ -115,32 +78,40 @@ export const DatabaseManager = {
                 carbs INTEGER DEFAULT 0,
                 fat INTEGER DEFAULT 0,
                 created_at DATETIME DEFAULT CURRENT_TIMESTAMP
-            );
-        `);
-
-        // AI Analyses History
-        db.exec(`
-            CREATE TABLE IF NOT EXISTS ai_analyses (
+            );` },
+            { sql: `CREATE TABLE IF NOT EXISTS ai_analyses (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 date TEXT NOT NULL,
                 type TEXT NOT NULL,
                 content TEXT NOT NULL,
                 created_at DATETIME DEFAULT CURRENT_TIMESTAMP
-            );
-        `);
+            );` }
+        ];
 
-        // Migration for thumbnail
-        try {
-            db.exec("ALTER TABLE diet_logs ADD COLUMN thumbnail TEXT;");
-        } catch (e) {
-            // column might already exist
+        await sendMessage('exec_multiple', { queries });
+
+        const migrations = [
+            `ALTER TABLE trainings ADD COLUMN name TEXT;`,
+            `ALTER TABLE trainings ADD COLUMN type TEXT;`,
+            `ALTER TABLE trainings ADD COLUMN social_photos_json TEXT;`,
+            `ALTER TABLE trainings ADD COLUMN smartwatch_json TEXT;`,
+            `ALTER TABLE measurements ADD COLUMN height REAL;`,
+            `ALTER TABLE measurements ADD COLUMN neck REAL;`,
+            `ALTER TABLE diet_logs ADD COLUMN thumbnail TEXT;`
+        ];
+
+        for (let m of migrations) {
+            try {
+                await sendMessage('exec', { sql: m });
+            } catch (e) {
+                // column might already exist
+            }
         }
     },
 
     addMeasurement: async (data) => {
         await DatabaseManager.init();
-        
-        db.exec({
+        const response = await sendMessage('exec', {
             sql: `INSERT INTO measurements (date, weight, chest, waist, hips, thigh, biceps, photo, height, neck) 
                   VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
             bind: [
@@ -154,25 +125,15 @@ export const DatabaseManager = {
                 data.photo || null,
                 data.height || null,
                 data.neck || null
-            ]
+            ],
+            needLastInsertId: true
         });
-        
-        let newId = null;
-        db.exec({
-            sql: `SELECT last_insert_rowid() as id`,
-            rowMode: 'object',
-            callback: function (row) {
-                newId = row.id;
-            }
-        });
-        
-        return { ...data, id: newId };
+        return { ...data, id: response.lastInsertId };
     },
     
     addTraining: async (data) => {
         await DatabaseManager.init();
-        
-        db.exec({
+        const response = await sendMessage('exec', {
             sql: `INSERT INTO trainings (date, duration_seconds, exercises_json, name, type, social_photos_json, smartwatch_json) VALUES (?, ?, ?, ?, ?, ?, ?)`,
             bind: [
                 data.date, 
@@ -182,25 +143,15 @@ export const DatabaseManager = {
                 data.type || 'strength',
                 data.socialPhotos ? JSON.stringify(data.socialPhotos) : null,
                 data.smartwatch ? JSON.stringify(data.smartwatch) : null
-            ]
+            ],
+            needLastInsertId: true
         });
-        
-        let newId = null;
-        db.exec({
-            sql: `SELECT last_insert_rowid() as id`,
-            rowMode: 'object',
-            callback: function (row) {
-                newId = row.id;
-            }
-        });
-        
-        return { ...data, id: newId };
+        return { ...data, id: response.lastInsertId };
     },
 
     updateTraining: async (data) => {
         await DatabaseManager.init();
-        
-        db.exec({
+        await sendMessage('exec', {
             sql: `UPDATE trainings SET duration_seconds = ?, exercises_json = ?, name = ?, type = ?, social_photos_json = ?, smartwatch_json = ? WHERE id = ?`,
             bind: [
                 isNaN(data.duration_seconds) ? 0 : data.duration_seconds, 
@@ -212,31 +163,26 @@ export const DatabaseManager = {
                 data.id
             ]
         });
-        
         return data;
     },
 
     getTrainings: async () => {
         await DatabaseManager.init();
-        const records = [];
-        db.exec({
+        const response = await sendMessage('exec', {
             sql: `SELECT * FROM trainings ORDER BY date DESC, created_at DESC`,
-            rowMode: 'object',
-            callback: function (row) {
-                records.push({
-                    ...row,
-                    exercises: JSON.parse(row.exercises_json),
-                    socialPhotos: row.social_photos_json ? JSON.parse(row.social_photos_json) : [],
-                    smartwatch: row.smartwatch_json ? JSON.parse(row.smartwatch_json) : { calories: null, hr: null }
-                });
-            }
+            rowMode: 'object'
         });
-        return records;
+        return response.result.map(row => ({
+            ...row,
+            exercises: JSON.parse(row.exercises_json),
+            socialPhotos: row.social_photos_json ? JSON.parse(row.social_photos_json) : [],
+            smartwatch: row.smartwatch_json ? JSON.parse(row.smartwatch_json) : { calories: null, hr: null }
+        }));
     },
 
     deleteTraining: async (id) => {
         await DatabaseManager.init();
-        db.exec({
+        await sendMessage('exec', {
             sql: `DELETE FROM trainings WHERE id = ?`,
             bind: [id]
         });
@@ -301,20 +247,16 @@ export const DatabaseManager = {
 
     getMeasurements: async () => {
         await DatabaseManager.init();
-        const records = [];
-        db.exec({
+        const response = await sendMessage('exec', {
             sql: `SELECT * FROM measurements ORDER BY date DESC, created_at DESC`,
-            rowMode: 'object',
-            callback: function (row) {
-                records.push(row);
-            }
+            rowMode: 'object'
         });
-        return records;
+        return response.result;
     },
 
     deleteMeasurement: async (id) => {
         await DatabaseManager.init();
-        db.exec({
+        await sendMessage('exec', {
             sql: `DELETE FROM measurements WHERE id = ?`,
             bind: [id]
         });
@@ -322,8 +264,7 @@ export const DatabaseManager = {
 
     addDietLog: async (data) => {
         await DatabaseManager.init();
-        
-        db.exec({
+        const response = await sendMessage('exec', {
             sql: `INSERT INTO diet_logs (date, meal_type, food_name, calories, protein, carbs, fat, thumbnail) 
                   VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
             bind: [
@@ -335,24 +276,14 @@ export const DatabaseManager = {
                 data.carbs || 0, 
                 data.fat || 0,
                 data.thumbnail || null
-            ]
+            ],
+            needLastInsertId: true
         });
-        
-        let newId = null;
-        db.exec({
-            sql: `SELECT last_insert_rowid() as id`,
-            rowMode: 'object',
-            callback: function (row) {
-                newId = row.id;
-            }
-        });
-        
-        return { ...data, id: newId };
+        return { ...data, id: response.lastInsertId };
     },
 
     getDietLogs: async (date = null) => {
         await DatabaseManager.init();
-        const records = [];
         let query = `SELECT * FROM diet_logs ORDER BY date DESC, created_at DESC`;
         let bindParams = [];
         
@@ -361,20 +292,17 @@ export const DatabaseManager = {
             bindParams = [date];
         }
 
-        db.exec({
+        const response = await sendMessage('exec', {
             sql: query,
             bind: bindParams,
-            rowMode: 'object',
-            callback: function (row) {
-                records.push(row);
-            }
+            rowMode: 'object'
         });
-        return records;
+        return response.result;
     },
 
     deleteDietLog: async (id) => {
         await DatabaseManager.init();
-        db.exec({
+        await sendMessage('exec', {
             sql: `DELETE FROM diet_logs WHERE id = ?`,
             bind: [id]
         });
@@ -382,20 +310,16 @@ export const DatabaseManager = {
 
     getDietLogsHistory: async (days = 30) => {
         await DatabaseManager.init();
-        const records = [];
         const cutoffDate = new Date();
         cutoffDate.setDate(cutoffDate.getDate() - days);
         const cutoffStr = cutoffDate.toISOString().split('T')[0];
 
-        db.exec({
+        const response = await sendMessage('exec', {
             sql: `SELECT date, SUM(calories) as total_calories FROM diet_logs WHERE date >= ? GROUP BY date ORDER BY date ASC`,
             bind: [cutoffStr],
-            rowMode: 'object',
-            callback: function (row) {
-                records.push(row);
-            }
+            rowMode: 'object'
         });
-        return records;
+        return response.result;
     },
 
     exportDatabase: async () => {
@@ -405,20 +329,14 @@ export const DatabaseManager = {
         
         let dietLogs = [];
         try {
-            db.exec({
-                sql: "SELECT * FROM diet_logs ORDER BY date DESC, created_at DESC",
-                rowMode: "object",
-                callback: function (row) { dietLogs.push(row); }
-            });
+            const resp = await sendMessage('exec', { sql: "SELECT * FROM diet_logs ORDER BY date DESC, created_at DESC", rowMode: 'object' });
+            dietLogs = resp.result;
         } catch(e) {}
         
         let aiAnalyses = [];
         try {
-            db.exec({
-                sql: "SELECT * FROM ai_analyses ORDER BY created_at DESC",
-                rowMode: "object",
-                callback: function (row) { aiAnalyses.push(row); }
-            });
+            const resp = await sendMessage('exec', { sql: "SELECT * FROM ai_analyses ORDER BY created_at DESC", rowMode: 'object' });
+            aiAnalyses = resp.result;
         } catch(e) {}
 
         const settings = {
@@ -453,24 +371,22 @@ export const DatabaseManager = {
                 throw new Error("Nieprawidłowy format pliku archiwum bazy.");
             }
 
-            db.exec(`DELETE FROM measurements`);
-            db.exec(`DELETE FROM trainings`);
-            
-            try { db.exec(`DELETE FROM diet_logs`); } catch(e) {}
-            try { db.exec(`DELETE FROM ai_analyses`); } catch(e) {}
+            const queries = [];
+            queries.push({ sql: `DELETE FROM measurements` });
+            queries.push({ sql: `DELETE FROM trainings` });
+            queries.push({ sql: `DELETE FROM diet_logs` });
+            queries.push({ sql: `DELETE FROM ai_analyses` });
 
-            // Import Pomiarów
             (data.measurements || []).forEach(m => {
-                db.exec({
+                queries.push({
                     sql: `INSERT INTO measurements (id, date, weight, chest, waist, hips, thigh, biceps, photo, created_at, height, neck) 
                           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
                     bind: [m.id, m.date, m.weight, m.chest, m.waist, m.hips, m.thigh, m.biceps, m.photo, m.created_at, m.height || null, m.neck || null]
                 });
             });
 
-            // Import Treningów
             (data.trainings || []).forEach(t => {
-                db.exec({
+                queries.push({
                     sql: `INSERT INTO trainings (id, date, duration_seconds, exercises_json, name, type, social_photos_json, smartwatch_json) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
                     bind: [
                         t.id, 
@@ -485,10 +401,9 @@ export const DatabaseManager = {
                 });
             });
             
-            // Import Dziennika Diety
             if (data.dietLogs && Array.isArray(data.dietLogs)) {
                 data.dietLogs.forEach(d => {
-                    db.exec({
+                    queries.push({
                         sql: `INSERT INTO diet_logs (id, date, meal_type, food_name, calories, protein, carbs, fat, created_at) 
                               VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
                         bind: [
@@ -506,17 +421,18 @@ export const DatabaseManager = {
                 });
             }
             
-            // Import Raportów AI
             if (data.aiAnalyses && Array.isArray(data.aiAnalyses)) {
                 data.aiAnalyses.forEach(a => {
-                    db.exec({
+                    queries.push({
                         sql: `INSERT INTO ai_analyses (id, date, type, content, created_at) VALUES (?, ?, ?, ?, ?)`,
                         bind: [a.id, a.date, a.type, a.content, a.created_at || new Date().toISOString()]
                     });
                 });
             }
             
-            // Import Ustawień i Szablonów
+            // Execute all as a transaction in the worker!
+            await sendMessage('exec_multiple', { queries });
+            
             if (data.settings) {
                 if (data.settings.nickname) {
                     localStorage.setItem("uki-nickname", data.settings.nickname);
@@ -534,30 +450,25 @@ export const DatabaseManager = {
             return true;
         } catch (e) {
             console.error("Błąd podczas importu bazy:", e);
-            throw e; // Throw so that DiagnosticsUI can catch it
+            throw e;
         }
     },
 
     getDietLogsByDateRange: async (startDate, endDate) => {
         await DatabaseManager.init();
         let query = `SELECT * FROM diet_logs WHERE date >= ? AND date <= ? ORDER BY date DESC, created_at DESC`;
-        const records = [];
-        db.exec({
+        const response = await sendMessage('exec', {
             sql: query,
             bind: [startDate, endDate],
-            rowMode: 'object',
-            callback: function (row) {
-                records.push(row);
-            }
+            rowMode: 'object'
         });
-        return records;
+        return response.result;
     },
 
-    // --- AI Analyses ---
     saveAiAnalysis: async (type, content) => {
         await DatabaseManager.init();
         const dateStr = new Date().toISOString().split('T')[0];
-        db.exec({
+        await sendMessage('exec', {
             sql: `INSERT INTO ai_analyses (date, type, content) VALUES (?, ?, ?)`,
             bind: [dateStr, type, content]
         });
@@ -567,20 +478,16 @@ export const DatabaseManager = {
 
     getAiAnalyses: async () => {
         await DatabaseManager.init();
-        const records = [];
-        db.exec({
+        const response = await sendMessage('exec', {
             sql: `SELECT * FROM ai_analyses ORDER BY created_at DESC`,
-            rowMode: 'object',
-            callback: function (row) {
-                records.push(row);
-            }
+            rowMode: 'object'
         });
-        return records;
+        return response.result;
     },
 
     deleteAiAnalysis: async (id) => {
         await DatabaseManager.init();
-        db.exec({
+        await sendMessage('exec', {
             sql: `DELETE FROM ai_analyses WHERE id = ?`,
             bind: [id]
         });

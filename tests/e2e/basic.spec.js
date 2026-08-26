@@ -5,7 +5,7 @@ test.describe('Uki BodyBuild E2E', () => {
     test('Powinien poprawnie załadować aplikację i wstrzyknąć komponenty', async ({ page }) => {
         // Assume the dev server is running on localhost:8080
         await page.addInitScript(() => { window.localStorage.setItem('tutorial_global_v22', 'true'); window.localStorage.setItem('uki-bodybuild-last-version', 'v2026.8.13.01'); });
-    await page.goto('http://localhost:8080/');
+    page.on('console', msg => console.log('PAGE LOG:', msg.text())); page.on('pageerror', err => console.log('PAGE ERROR:', err.message)); await page.goto('http://localhost:8080/');
 
         // Check if welcome screen is visible
         await expect(page.locator('#welcome-screen')).toBeVisible();
@@ -21,7 +21,7 @@ test.describe('Uki BodyBuild E2E', () => {
 
     test('Powinien pozwalać na wpisanie wagi', async ({ page }) => {
         await page.addInitScript(() => { window.localStorage.setItem('tutorial_global_v22', 'true'); window.localStorage.setItem('uki-bodybuild-last-version', 'v2026.8.13.01'); });
-    await page.goto('http://localhost:8080/');
+    page.on('console', msg => console.log('PAGE LOG:', msg.text())); page.on('pageerror', err => console.log('PAGE ERROR:', err.message)); await page.goto('http://localhost:8080/');
         await page.click('text="Pomiary Ciała"');
         
         // Fill the weight

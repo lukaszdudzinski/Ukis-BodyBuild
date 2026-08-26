@@ -1,4 +1,5 @@
 import { DatabaseManager } from '../db/DatabaseManager.js';
+import { MediaManager } from '../db/MediaManager.js';
 import { TrainingComponent } from '../../components/TrainingComponent.js';
 import { ExerciseCatalog, ExerciseCategories } from '../../data/ExerciseCatalog.js';
 
@@ -1550,7 +1551,7 @@ export const TrainingUI = {
                             📷 Zrób zdjęcie maszyny
                             <input type="file" accept="image/*" capture="environment" style="display: none;" onchange="window.TrainingUI.handleMachinePhoto(event, '${ex.id}')">
                         </label>
-                        ${ex.machinePhoto ? `<img src="${ex.machinePhoto}" style="width: 100px; height: 100px; object-fit: cover; border-radius: 8px; margin-top: 10px; border: 1px solid ${isNested ? '#E91E63' : '#00BFFF'};" alt="Maszyna">` : ''}
+                        ${ex.machinePhoto ? `<img data-media-id="${ex.machinePhoto}" src="" ${ style="width: 100px; height: 100px; object-fit: cover; border-radius: 8px; margin-top: 10px; border: 1px solid ${isNested ? '#E91E63' : '#00BFFF'};" alt="Maszyna"}>` : ''}
                     </div>
                     ${exerciseDetailsHtml}
                 </div>
@@ -1597,6 +1598,18 @@ export const TrainingUI = {
         });
         
         list.innerHTML = html;
+        
+        // Resolve media URLs
+        const mediaImgs = list.querySelectorAll('img[data-media-id]');
+        mediaImgs.forEach(img => {
+            const id = img.getAttribute('data-media-id');
+            if (id) {
+                MediaManager.getMediaUrl(id).then(url => {
+                    if (url) img.src = url;
+                });
+            }
+        });
+
         TrainingUI.saveDraft();
     },
 
@@ -1620,19 +1633,25 @@ export const TrainingUI = {
         };
     },
 
-    handleMachinePhoto: (event, exerciseId) => {
+    handleMachinePhoto: async (event, exerciseId) => {
         const file = event.target.files[0];
         if (!file) return;
-        TrainingUI.compressImage(file, (compressedDataUrl) => {
-            const exercise = TrainingUI.getExerciseById(exerciseId);
-            if (exercise) {
-                exercise.machinePhoto = compressedDataUrl;
-                TrainingUI.renderCurrentExercises();
+        
+        TrainingUI.compressImage(file, async (compressedDataUrl) => {
+            try {
+                const id = await MediaManager.saveMedia(compressedDataUrl);
+                const exercise = TrainingUI.getExerciseById(exerciseId);
+                if (exercise) {
+                    exercise.machinePhoto = id;
+                    TrainingUI.renderCurrentExercises();
+                }
+            } catch(e) {
+                alert("Błąd zapisu zdjęcia: " + e.message);
             }
         });
     },
 
-    handleTrainingPhoto: (event) => {
+    handleTrainingPhoto: async (event) => {
         const file = event.target.files[0];
         if (!file) return;
         if (!currentTraining.socialPhotos) currentTraining.socialPhotos = [];
@@ -1641,9 +1660,14 @@ export const TrainingUI = {
             return;
         }
 
-        TrainingUI.compressImage(file, (compressedDataUrl) => {
-            currentTraining.socialPhotos.push(compressedDataUrl);
-            TrainingUI.renderTrainingPhotos();
+        TrainingUI.compressImage(file, async (compressedDataUrl) => {
+            try {
+                const id = await MediaManager.saveMedia(compressedDataUrl);
+                currentTraining.socialPhotos.push(id);
+                TrainingUI.renderTrainingPhotos();
+            } catch(e) {
+                alert("Błąd zapisu zdjęcia: " + e.message);
+            }
         });
     },
 
@@ -1655,46 +1679,42 @@ export const TrainingUI = {
     },
 
     renderTrainingPhotos: () => {
-        const container = document.getElementById('training-photos-container');
-        if(!container) return;
-        let html = '';
-        const photos = currentTraining.socialPhotos || [];
-        
-        photos.forEach((photo, idx) => {
-            html += `
-                <div style="position: relative; width: 80px; height: 100px;">
-                    <img src="${photo}" style="width: 100%; height: 100%; object-fit: cover; border-radius: 6px; border: 1px solid #00BFFF;">
-                    <button onclick="window.TrainingUI.removeTrainingPhoto(${idx})" style="position: absolute; top: -5px; right: -5px; background: red; color: white; border: none; border-radius: 50%; width: 20px; height: 20px; cursor: pointer; font-weight: bold; font-size: 12px; display: flex; align-items: center; justify-content: center;">x</button>
-                </div>
-            `;
-        });
+        const list = document.getElementById('training-social-photos-list');
+        if (!list) return;
+        list.innerHTML = '';
+        if (currentTraining.socialPhotos && currentTraining.socialPhotos.length > 0) {
+            currentTraining.socialPhotos.forEach((photoId, index) => {
+                const imgWrap = document.createElement('div');
+                imgWrap.style.position = 'relative';
+                
+                const img = document.createElement('img');
+                img.style.width = '60px';
+                img.style.height = '60px';
+                img.style.objectFit = 'cover';
+                img.style.borderRadius = '8px';
+                
+                MediaManager.getMediaUrl(photoId).then(url => {
+                    if (url) img.src = url;
+                });
 
-        if (photos.length < 3) {
-            html += `
-                <label style="display: flex; flex-direction: column; justify-content: center; align-items: center; width: 80px; height: 100px; border: 1px dashed #00BFFF; border-radius: 6px; cursor: pointer; background: rgba(0, 191, 255, 0.1);">
-                    <span style="font-size: 1.5em; color: #00BFFF;">+</span>
-                    <input type="file" accept="image/*" style="display: none;" onchange="window.TrainingUI.handleTrainingPhoto(event)">
-                </label>
-            `;
-        }
-        container.innerHTML = html;
-    },
+                const delBtn = document.createElement('button');
+                delBtn.innerText = 'X';
+                delBtn.style.position = 'absolute';
+                delBtn.style.top = '-5px';
+                delBtn.style.right = '-5px';
+                delBtn.style.background = 'red';
+                delBtn.style.color = 'white';
+                delBtn.style.border = 'none';
+                delBtn.style.borderRadius = '50%';
+                delBtn.style.width = '20px';
+                delBtn.style.height = '20px';
+                delBtn.style.fontSize = '10px';
+                delBtn.onclick = () => window.TrainingUI.removeTrainingPhoto(index);
 
-    handleTypeChange: (type) => {
-        if (!currentTraining) return;
-        currentTraining.type = type;
-        const exercisesContainer = document.getElementById('exercises-container-section');
-        const classContainer = document.getElementById('class-type-container');
-        
-        if (type === 'strength') {
-            exercisesContainer.style.display = 'block';
-            classContainer.style.display = 'none';
-        } else if (type === 'cardio') {
-            exercisesContainer.style.display = 'none';
-            classContainer.style.display = 'none';
-        } else if (type === 'class') {
-            exercisesContainer.style.display = 'none';
-            classContainer.style.display = 'block';
+                imgWrap.appendChild(img);
+                imgWrap.appendChild(delBtn);
+                list.appendChild(imgWrap);
+            });
         }
     },
 

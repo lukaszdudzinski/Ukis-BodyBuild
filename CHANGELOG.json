@@ -1,5 +1,19 @@
 [
   {
+    "version": "v2026.8.26.01",
+    "date": "2026-08-26",
+    "changes": [
+      "🛠️ Przebudowano silnik multimedialny (Faza 2). Zdjęcia są teraz przechowywane asynchronicznie w przestrzeni OPFS/IndexedDB. Znacznie zmniejszono obciążenie bazy SQL i przyspieszono ładowanie aplikacji!"
+    ]
+  },
+  {
+    "version": "v2026.8.25.03",
+    "date": "2026-08-25",
+    "changes": [
+      "🚀 BAZA DANYCH 2.0 (OPFS): Przeniesiono silnik bazy SQLite z głównego wątku do Web Workera (dbWorker). Odblokowano bezstratny zapis gigabajtów danych bez ryzyka wyczerpania localStorage! Ponadto operacje masowe zyskały asynchroniczne transakcje, co czyni apkę diabelnie szybką. ⚡"
+    ]
+  },
+  {
     "version": "v2026.8.25.02",
     "date": "2026-08-25",
     "changes": [

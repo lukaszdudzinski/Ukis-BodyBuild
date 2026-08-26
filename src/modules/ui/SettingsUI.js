@@ -1,4 +1,5 @@
 import { DatabaseManager } from '../db/DatabaseManager.js';
+import { MediaManager } from '../db/MediaManager.js';
 import { ShareUtils } from '../../utils/ShareUtils.js';
 
 export const SettingsUI = {
@@ -241,8 +242,12 @@ export const SettingsUI = {
         }
         
         if (savedAvatar && avatarPreview) {
-            avatarPreview.style.backgroundImage = `url(${savedAvatar})`;
-            avatarPreview.innerHTML = ''; // Hide emoji
+            MediaManager.getMediaUrl(savedAvatar).then(url => {
+                if (url) {
+                    avatarPreview.style.backgroundImage = `url(${url})`;
+                    avatarPreview.innerHTML = ''; // Hide emoji
+                }
+            });
             SettingsUI.applyProfileAvatar(savedAvatar);
         }
 
@@ -278,49 +283,48 @@ export const SettingsUI = {
         }
 
         if (avatarUpload) {
-            avatarUpload.addEventListener('change', (e) => {
+            avatarUpload.addEventListener('change', async (e) => {
                 const file = e.target.files[0];
                 if (file) {
-                    const reader = new FileReader();
-                    reader.onload = (event) => {
-                        const base64 = event.target.result;
-                        localStorage.setItem('uki-bodybuild-avatar', base64);
-                        if (avatarPreview) {
-                            avatarPreview.style.backgroundImage = `url(${base64})`;
+                    try {
+                        const id = await MediaManager.saveMedia(file);
+                        localStorage.setItem('uki-bodybuild-avatar', id);
+                        const url = await MediaManager.getMediaUrl(id);
+                        if (avatarPreview && url) {
+                            avatarPreview.style.backgroundImage = `url(${url})`;
                             avatarPreview.innerHTML = '';
                         }
-                        SettingsUI.applyProfileAvatar(base64);
-                    };
-                    reader.readAsDataURL(file);
+                        SettingsUI.applyProfileAvatar(id);
+                    } catch(err) {
+                        alert('Błąd zapisu avatara.');
+                    }
                 }
             });
         }
 
         if (wallpaperUpload) {
-            wallpaperUpload.addEventListener('change', (e) => {
+            wallpaperUpload.addEventListener('change', async (e) => {
                 const file = e.target.files[0];
                 if (file) {
-                    const saveWallpaper = (base64) => {
+                    const saveWallpaper = async (blobOrBase64) => {
                         try {
-                            localStorage.setItem('uki-bodybuild-wallpaper', base64);
+                            const id = await MediaManager.saveMedia(blobOrBase64);
+                            localStorage.setItem('uki-bodybuild-wallpaper', id);
                             SettingsUI.applyWallpaper();
                             if (wallpaperRemove) wallpaperRemove.style.display = 'block';
                         } catch(err) {
                             if (window.ukiLogError) window.ukiLogError('Wallpaper save error', err.toString());
-                            alert('Błąd zapisu tapety. Zdjęcie jest zbyt duże dla lokalnej bazy przeglądarki.');
+                            alert('Błąd zapisu tapety. Zdjęcie jest zbyt duże dla bazy.');
                         }
                     };
 
                     if (window.TrainingUI && window.TrainingUI.compressImage) {
                         window.TrainingUI.compressImage(file, saveWallpaper);
                     } else {
-                        const reader = new FileReader();
-                        reader.onload = (event) => saveWallpaper(event.target.result);
-                        reader.readAsDataURL(file);
+                        saveWallpaper(file);
                     }
                 }
             });
-        }
 
         if (wallpaperRemove) {
             wallpaperRemove.addEventListener('click', () => {
@@ -328,7 +332,6 @@ export const SettingsUI = {
                 SettingsUI.applyWallpaper();
                 wallpaperRemove.style.display = 'none';
             });
-            // Show remove button initially if wallpaper exists
             if (localStorage.getItem('uki-bodybuild-wallpaper')) {
                 wallpaperRemove.style.display = 'block';
             }
@@ -392,17 +395,18 @@ export const SettingsUI = {
         }
     },
 
-    applyWallpaper: () => {
-        const base64 = localStorage.getItem('uki-bodybuild-wallpaper');
-        if (base64) {
-            // Apply to body without dark overlay to show full image
-            document.body.style.backgroundImage = `url(${base64})`;
-            document.body.style.backgroundSize = 'cover';
-            document.body.style.backgroundAttachment = 'fixed';
-            document.body.style.backgroundPosition = 'center';
-            document.body.classList.add('has-custom-wallpaper');
+    applyWallpaper: async () => {
+        const savedId = localStorage.getItem('uki-bodybuild-wallpaper');
+        if (savedId) {
+            const url = await MediaManager.getMediaUrl(savedId);
+            if (url) {
+                document.body.style.backgroundImage = `url(${url})`;
+                document.body.style.backgroundSize = 'cover';
+                document.body.style.backgroundAttachment = 'fixed';
+                document.body.style.backgroundPosition = 'center';
+                document.body.classList.add('has-custom-wallpaper');
+            }
         } else {
-            // Reset to default
             document.body.style.backgroundImage = '';
             document.body.style.backgroundSize = '';
             document.body.style.backgroundAttachment = '';

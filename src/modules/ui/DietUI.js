@@ -1,5 +1,6 @@
 import { DatabaseManager } from '../db/DatabaseManager.js';
 import { DietAIEngine } from '../diet/DietAIEngine.js';
+import { MediaManager } from '../db/MediaManager.js';
 
 export const DietUI = {
     attachedImages: [],
@@ -412,19 +413,21 @@ export const DietUI = {
                     break;
                 }
                 const base64 = await DietUI.resizeAndToBase64(file);
-                DietUI.attachedImages.push(base64);
+                const id = await MediaManager.saveMedia(base64);
+                DietUI.attachedImages.push(id);
             }
             DietUI.renderImagePreviews();
         } catch (error) {
             alert('Błąd podczas ładowania zdjęcia: ' + error.message);
         }
         
-        // Reset input tak by można było wgrać te same zdjęcia ponownie po usunięciu
         const cameraInput = document.getElementById('diet-camera-input');
         if (cameraInput) cameraInput.value = '';
     },
 
     removeAttachedImage: (index) => {
+        const id = DietUI.attachedImages[index];
+        MediaManager.deleteMedia(id);
         DietUI.attachedImages.splice(index, 1);
         DietUI.renderImagePreviews();
     },
@@ -450,7 +453,9 @@ export const DietUI = {
         if (analyzeBtn) analyzeBtn.style.display = 'none';
 
         try {
-            const result = await DietAIEngine.analyzeImage(DietUI.attachedImages, contextText);
+            // Resolve base64 for AI Engine
+            const base64Images = await Promise.all(DietUI.attachedImages.map(id => MediaManager.getBase64(id)));
+            const result = await DietAIEngine.analyzeImage(base64Images.filter(Boolean), contextText);
             
             const thumbnail = DietUI.attachedImages.length > 0 ? DietUI.attachedImages[0] : null;
             DietUI.showResultConfirmation(result, thumbnail, contextInput);
@@ -474,7 +479,7 @@ export const DietUI = {
         modal.innerHTML = `
             <div style="background: #1e1e1e; padding: 20px; border-radius: 12px; border: 1px solid #FF9800; max-width: 400px; width: 100%; text-align: center; color: #fff; position: relative;">
                 <h3 style="color: #FF9800; margin-top: 0; margin-bottom: 15px;">Potwierdź Posiłek</h3>
-                ${thumbnail ? `<img src="${thumbnail}" style="width: 100px; height: 100px; object-fit: cover; border-radius: 8px; margin-bottom: 15px; border: 2px solid #FF9800;">` : ''}
+                <div id="diet-result-thumbnail-container" style="margin-bottom: 15px;"></div>
                 
                 <div style="font-size: 1.2em; font-weight: bold; margin-bottom: 15px; color: #fff; word-break: break-word;">
                     ${result.food_name || 'Nieznany posiłek'}
@@ -503,6 +508,14 @@ export const DietUI = {
         `;
         
         document.body.appendChild(modal);
+        if (thumbnail) {
+            const container = document.getElementById('diet-result-thumbnail-container');
+            MediaManager.getMediaUrl(thumbnail).then(url => {
+                if(url && container) {
+                    container.innerHTML = `<img src="${url}" style="width: 100px; height: 100px; object-fit: cover; border-radius: 8px; border: 2px solid #FF9800;">`;
+                }
+            });
+        }
 
         const inputKcal = document.getElementById('diet-result-kcal-display');
 
