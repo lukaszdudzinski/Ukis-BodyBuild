@@ -1,5 +1,12 @@
 [
   {
+    "version": "v2026.8.26.03",
+    "date": "2026-08-26",
+    "changes": [
+      "🔧 Optymalizacja bazy (Retencja zdjęć do 1 dnia) oraz interaktywny wykres Diety pozwalający na przegląd i kasowanie historii posiłków."
+    ]
+  },
+  {
     "version": "v2026.8.26.02",
     "date": "2026-08-26",
     "changes": [

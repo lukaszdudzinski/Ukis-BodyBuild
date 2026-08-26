@@ -73,7 +73,7 @@ export const DatabaseManager = {
 
             // --- DATA RETENTION: Delete old diet log thumbnails (older than 3 days) ---
             const cutoffDate = new Date();
-            cutoffDate.setDate(cutoffDate.getDate() - 3);
+            cutoffDate.setDate(cutoffDate.getDate() - 1);
             const cutoffStr = cutoffDate.toISOString().split('T')[0];
             
             const oldDietResp = await sendMessage('exec', { 
