@@ -1,5 +1,12 @@
 [
   {
+    "version": "v2026.8.26.04",
+    "date": "2026-08-26",
+    "changes": [
+      "🔥 Hotfix: Naprawiono błąd składni 'Unexpected identifier' w DatabaseManager."
+    ]
+  },
+  {
     "version": "v2026.8.26.03",
     "date": "2026-08-26",
     "changes": [

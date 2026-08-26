@@ -120,6 +120,7 @@ export const DatabaseManager = {
                 
                 await sendMessage('init');
                 await DatabaseManager.createTables();
+                DatabaseManager.runMediaMigrationAndCleanup().catch(e => console.error(e));
                 isReady = true;
                 resolve(true);
             } catch (err) {
@@ -327,10 +328,7 @@ export const DatabaseManager = {
         } catch (err) {
             console.error('Migration failed:', err);
         }
-    }
-
-        // Run migration and cleanup
-        DatabaseManager.runMediaMigrationAndCleanup().catch(e => console.error(e));,
+    },
 
     getMeasurements: async () => {
         await DatabaseManager.init();
