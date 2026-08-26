@@ -1,5 +1,12 @@
 [
   {
+    "version": "v2026.8.26.06",
+    "date": "2026-08-26",
+    "changes": [
+      "🔥 Hotfix 3: Naprawa błędu składni blokującego ładowanie aplikacji (SettingsUI)."
+    ]
+  },
+  {
     "version": "v2026.8.26.05",
     "date": "2026-08-26",
     "changes": [

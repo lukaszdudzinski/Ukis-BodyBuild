@@ -326,7 +326,10 @@ export const SettingsUI = {
                 }
             });
 
-        if (wallpaperRemove) {
+        
+            }
+
+            if (wallpaperRemove) {
             wallpaperRemove.addEventListener('click', () => {
                 localStorage.removeItem('uki-bodybuild-wallpaper');
                 SettingsUI.applyWallpaper();
