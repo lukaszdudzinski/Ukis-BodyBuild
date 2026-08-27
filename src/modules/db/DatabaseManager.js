@@ -496,23 +496,27 @@ export const DatabaseManager = {
                 queries.push({
                     sql: `INSERT INTO measurements (id, date, weight, chest, waist, hips, thigh, biceps, photo, created_at, height, neck) 
                           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-                    bind: [m.id, m.date, m.weight, m.chest, m.waist, m.hips, m.thigh, m.biceps, m.photo, m.created_at, m.height || null, m.neck || null]
+                    bind: [m.id, m.date, m.weight, m.chest, m.waist, m.hips, m.thigh, m.biceps, m.photo, m.created_at, m.height, m.neck].map(v => v === undefined ? null : v)
                 });
             });
 
             (data.trainings || []).forEach(t => {
+                let exJson = t.exercises ? (typeof t.exercises === 'string' ? t.exercises : JSON.stringify(t.exercises)) : (t.exercises_json || '[]');
+                let spJson = t.socialPhotos ? JSON.stringify(t.socialPhotos) : (t.social_photos_json || null);
+                let swJson = t.smartwatch ? JSON.stringify(t.smartwatch) : (t.smartwatch_json || null);
+                
                 queries.push({
                     sql: `INSERT INTO trainings (id, date, duration_seconds, exercises_json, name, type, social_photos_json, smartwatch_json) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
                     bind: [
                         t.id, 
                         t.date, 
-                        t.duration_seconds, 
-                        typeof t.exercises === 'string' ? t.exercises : JSON.stringify(t.exercises), 
-                        t.name || null,
+                        t.duration_seconds || 0, 
+                        exJson, 
+                        t.name,
                         t.type || 'strength',
-                        t.socialPhotos ? JSON.stringify(t.socialPhotos) : (t.social_photos_json || null),
-                        t.smartwatch ? JSON.stringify(t.smartwatch) : (t.smartwatch_json || null)
-                    ]
+                        spJson,
+                        swJson
+                    ].map(v => v === undefined ? null : v)
                 });
             });
             
@@ -530,9 +534,9 @@ export const DatabaseManager = {
                             d.protein || 0, 
                             d.carbs || 0, 
                             d.fat || 0, 
-                            d.thumbnail || null,
+                            d.thumbnail,
                             d.created_at || new Date().toISOString()
-                        ]
+                        ].map(v => v === undefined ? null : v)
                     });
                 });
             }
@@ -541,7 +545,7 @@ export const DatabaseManager = {
                 data.aiAnalyses.forEach(a => {
                     queries.push({
                         sql: `INSERT INTO ai_analyses (id, date, type, content, created_at) VALUES (?, ?, ?, ?, ?)`,
-                        bind: [a.id, a.date, a.type, a.content, a.created_at || new Date().toISOString()]
+                        bind: [a.id, a.date, a.type, a.content, a.created_at || new Date().toISOString()].map(v => v === undefined ? null : v)
                     });
                 });
             }

@@ -1,5 +1,12 @@
 [
   {
+    "version": "v2026.8.27.09",
+    "date": "2026-08-27",
+    "changes": [
+      "🐛 Krytyczna naprawa błędu \"Invalid bind type\", który odrzucał import bazy danych (JSON) zawierający pola \"undefined\". Wersja kuloodporna."
+    ]
+  },
+  {
     "version": "v2026.8.27.08",
     "date": "2026-08-27",
     "changes": [
