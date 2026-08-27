@@ -120,9 +120,6 @@ export const DatabaseManager = {
                 
                 await sendMessage('init');
                 
-                // Po inicjalizacji uruchamiamy ewentualną migrację (tylko raz)
-                await DatabaseManager.migrateFromKvvfsIfNeeded().catch(e => console.warn("Migracja KVvfs pominięta:", e));
-                
                 await DatabaseManager.createTables();
                 DatabaseManager.runMediaMigrationAndCleanup().catch(e => console.error(e));
                 isReady = true;
