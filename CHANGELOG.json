@@ -1,5 +1,12 @@
 [
   {
+    "version": "v2026.8.27.10",
+    "date": "2026-08-27",
+    "changes": [
+      "🐛 Naprawa utraty danych na iOS Safari (brak nagłówków COOP/COEP blokował tryb OPFS). Dodano ręczny system automatycznego zapisu i odczytu bazy OPFS z pamięci RAM."
+    ]
+  },
+  {
     "version": "v2026.8.27.09",
     "date": "2026-08-27",
     "changes": [
