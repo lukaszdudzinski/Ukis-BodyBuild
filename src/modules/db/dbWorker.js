@@ -79,7 +79,6 @@ self.onmessage = async function(e) {
                 db.exec('ROLLBACK;');
                 throw err;
             }
-        }
         } else if (action === 'import_raw') {
             const { buffer } = payload;
             try {

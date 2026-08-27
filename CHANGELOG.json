@@ -1,5 +1,12 @@
 [
   {
+    "version": "v2026.8.27.08",
+    "date": "2026-08-27",
+    "changes": [
+      "🐛 Naprawa błędu składni (SyntaxError) w silniku bazy danych dbWorker.js, który blokował import danych."
+    ]
+  },
+  {
     "version": "v2026.8.27.07",
     "date": "2026-08-27",
     "changes": [
