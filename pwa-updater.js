@@ -104,8 +104,28 @@
         },
 
         registerAndMonitor: () => {
+            navigator.serviceWorker.getRegistrations().then(async registrations => {
+                let hadBadWorker = false;
+                for (let reg of registrations) {
+                    const swUrl = reg.active?.scriptURL || reg.installing?.scriptURL || '';
+                    if (!swUrl.includes('sw.js?v=2026.8.27.02')) {
+                        await reg.unregister();
+                        hadBadWorker = true;
+                    }
+                }
+                if (hadBadWorker) {
+                    const keys = await caches.keys();
+                    await Promise.all(keys.map(k => caches.delete(k)));
+                    window.location.reload(true);
+                    return;
+                }
+                window.PWAUpdateUI._doRegister();
+            }).catch(() => window.PWAUpdateUI._doRegister());
+        },
+
+        _doRegister: () => {
             // Standard Registration
-            navigator.serviceWorker.register('sw.js')
+            navigator.serviceWorker.register('sw.js?v=2026.8.27.02')
                 .then(registration => {
                     console.log('PWA Service Worker Registered (Isolated Updater)');
 

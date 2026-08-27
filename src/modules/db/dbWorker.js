@@ -80,6 +80,26 @@ self.onmessage = async function(e) {
                 throw err;
             }
         }
+        } else if (action === 'import_raw') {
+            const { buffer } = payload;
+            try {
+                if (db) {
+                    db.close();
+                    db = null;
+                }
+                const root = await navigator.storage.getDirectory();
+                const handle = await root.getFileHandle('ukis_bodybuild.sqlite3', { create: true });
+                const accessHandle = await handle.createSyncAccessHandle();
+                accessHandle.truncate(0);
+                accessHandle.write(new Uint8Array(buffer));
+                accessHandle.flush();
+                accessHandle.close();
+                
+                self.postMessage({ id, success: true });
+            } catch (err) {
+                throw new Error("Błąd nadpisywania OPFS: " + err.message);
+            }
+        }
     } catch (error) {
         console.error('Worker Error:', error);
         self.postMessage({ id, success: false, error: error.message, name: error.name });

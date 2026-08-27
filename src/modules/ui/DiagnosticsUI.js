@@ -16,13 +16,17 @@ export const DiagnosticsUI = {
         wrapper.innerHTML = `
             <div style="background: rgba(0,0,0,0.3); padding: 15px; border-radius: 8px; border: 1px solid rgba(255,152,0,0.3); margin-bottom: 20px;">
                 <h3 style="color: #FF9800; margin-top: 0;">📦 Pełne Archiwum Bazy Danych</h3>
-                <p style="font-size: 0.9em; color: #ccc;">Utwórz kompletną kopię bezpieczeństwa (pomiary, treningi, szablony, dieta, raporty AI, awatar i ustawienia) lub przywróć całą aplikację z pliku archiwum JSON.</p>
+                <p style="font-size: 0.9em; color: #ccc;">Utwórz kompletną kopię bezpieczeństwa (pomiary, treningi, szablony, dieta, raporty AI, awatar i ustawienia) lub przywróć całą aplikację z pliku archiwum JSON. <br><span id="db-size-display" style="color: #00BFFF; font-weight: bold;">Szacowanie rozmiaru bazy...</span></p>
                 <div style="display: flex; gap: 10px; margin-top: 15px;">
                     <button id="db-export-btn" style="flex: 1; padding: 13px 10px; background: #222; border: 1px solid #00BFFF; color: #00BFFF; border-radius: 5px; cursor: pointer; font-size: 1em; font-weight: bold; text-align: center;">📦 Utwórz Archiwum</button>
                     <button id="db-import-btn" style="flex: 1; padding: 13px 10px; background: #222; border: 1px solid #FF9800; color: #FF9800; border-radius: 5px; cursor: pointer; font-size: 1em; font-weight: bold; text-align: center;">📥 Przywróć z Pliku</button>
                     <input type="file" id="db-import-file" accept=".json" style="display: none;">
                 </div>
-                <button id="db-export-raw-btn" style="width: 100%; margin-top: 10px; padding: 13px 10px; background: #222; border: 1px dashed #E74C3C; color: #E74C3C; border-radius: 5px; cursor: pointer; font-size: 0.9em; font-weight: bold; text-align: center;">🆘 Pobierz fizyczny plik bazy (Tryb Awaryjny RAW)</button>
+                <div style="display: flex; gap: 10px; margin-top: 15px;">
+                    <button id="db-export-raw-btn" style="flex: 1; padding: 13px 10px; background: #222; border: 1px dashed #E74C3C; color: #E74C3C; border-radius: 5px; cursor: pointer; font-size: 0.9em; font-weight: bold; text-align: center;">🆘 Pobierz fizyczny plik bazy (Tryb Awaryjny RAW)</button>
+                    <button id="db-import-raw-btn" style="flex: 1; padding: 13px 10px; background: #222; border: 1px dashed #2ECC71; color: #2ECC71; border-radius: 5px; cursor: pointer; font-size: 0.9em; font-weight: bold; text-align: center;">📥 Przywróć plik RAW (.sqlite3)</button>
+                    <input type="file" id="db-import-raw-file" accept=".sqlite3" style="display: none;">
+                </div>
             </div>
 
             <div style="background: rgba(231,76,60,0.1); padding: 15px; border-radius: 8px; border: 1px solid #E74C3C; margin-bottom: 20px;">
@@ -126,6 +130,21 @@ export const DiagnosticsUI = {
         }
 
         DiagnosticsUI.bindEvents();
+        DiagnosticsUI.loadDbSize();
+    },
+
+    loadDbSize: async () => {
+        const sizeDisplay = document.getElementById('db-size-display');
+        if (!sizeDisplay) return;
+        try {
+            const root = await navigator.storage.getDirectory();
+            const handle = await root.getFileHandle('ukis_bodybuild.sqlite3', { create: false });
+            const file = await handle.getFile();
+            const sizeKB = (file.size / 1024).toFixed(2);
+            sizeDisplay.innerText = \`Rozmiar bazy fizycznej: \${sizeKB} KB\`;
+        } catch(e) {
+            sizeDisplay.innerText = \`Rozmiar bazy fizycznej: Brak pliku OPFS (Fallback)\`;
+        }
     },
 
     bindEvents: () => {
@@ -255,6 +274,33 @@ export const DiagnosticsUI = {
                 } catch (err) {
                     alert("Nie udało się odczytać fizycznego pliku! Twój system operacyjny wyczyścił pamięć przeglądarki (OPFS) albo plik nigdy nie istniał. Kod błędu: " + err.message);
                 }
+            });
+        }
+
+        const rawImportBtn = document.getElementById('db-import-raw-btn');
+        const rawImportFile = document.getElementById('db-import-raw-file');
+        if (rawImportBtn && rawImportFile) {
+            rawImportBtn.addEventListener('click', () => {
+                if (confirm("UWAGA! Ta opcja nadpisze CAŁĄ Twoją obecną bazę danych plikiem z kopii RAW. Upewnij się, że plik jest poprawny.\n\nCzy chcesz kontynuować?")) {
+                    rawImportFile.click();
+                }
+            });
+            rawImportFile.addEventListener('change', (e) => {
+                const file = e.target.files[0];
+                if (!file) return;
+                
+                const reader = new FileReader();
+                reader.onload = async (ev) => {
+                    try {
+                        const buffer = ev.target.result;
+                        await DatabaseManager.importRawDatabase(buffer);
+                        alert("Baza RAW przywrócona pomyślnie! Aplikacja zostanie zrestartowana.");
+                        window.location.reload();
+                    } catch (err) {
+                        alert("Błąd przywracania bazy RAW: " + err.message);
+                    }
+                };
+                reader.readAsArrayBuffer(file);
             });
         }
 

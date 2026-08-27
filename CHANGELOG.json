@@ -1,5 +1,82 @@
 [
   {
+    "version": "v2026.8.27.05",
+    "date": "2026-08-27",
+    "changes": [
+      "🚀 Wdrożono automatyczny migrator bazy danych z LocalStorage (kvvfs) do OPFS (Baza 2.0). Wszyscy dotychczasowi użytkownicy odzyskają dostęp do swoich danych przy pierwszym uruchomieniu nowej wersji!"
+    ]
+  },
+  {
+    "version": "v2026.8.27.04",
+    "date": "2026-08-27",
+    "changes": [
+      "🚀 Dodanie wyświetlania rozmiaru bazy danych oraz naprawa przycisku eksportu pojedynczego szablonu na urządzeniach iOS Safari."
+    ]
+  },
+  {
+    "version": "v2026.8.27.03",
+    "date": "2026-08-27",
+    "changes": [
+      "🚀 Dodano możliwość przywracania fizycznej bazy danych RAW z pliku .sqlite3. Uratowanie użytkowników iOS PWA po awarii cache."
+    ]
+  },
+  {
+    "version": "v2026.8.27.02",
+    "date": "2026-08-27",
+    "changes": [
+      "🚀 Złamanie pętli cache (SW) i agresywny update PWA dla użytkowników iOS Safari."
+    ]
+  },
+  {
+    "version": "v2026.8.27.01",
+    "date": "2026-08-27",
+    "changes": [
+      "🚨 Awaryjne ominięcie cache SW - wymuszenie świeżego dbWorker z naprawą WASM"
+    ]
+  },
+  {
+    "version": "v2026.8.26.15",
+    "date": "2026-08-26",
+    "changes": [
+      "🛠️ Krytyczna naprawa WASM - pobieranie binarnego pliku z absolutnym URL zamiast locateFile"
+    ]
+  },
+  {
+    "version": "v2026.8.26.14",
+    "date": "2026-08-26",
+    "changes": [
+      "🛠️ Krytyczna naprawa ścieżki sqlite3.wasm w workerze - fix dla iOS Safari i WebAssembly"
+    ]
+  },
+  {
+    "version": "v2026.8.26.13",
+    "date": "2026-08-26",
+    "changes": [
+      "🛠️ Krytyczna naprawa silnika bazy dla starszych urządzeń Apple (Safari)"
+    ]
+  },
+  {
+    "version": "v2026.8.26.12",
+    "date": "2026-08-26",
+    "changes": [
+      "🆘 Dodano Tryb Awaryjny zgrywania uszkodzonego pliku bazy SQLite"
+    ]
+  },
+  {
+    "version": "v2026.8.26.11",
+    "date": "2026-08-26",
+    "changes": [
+      "🔒 Dodano zabezpieczenie przycisku eksportu bazy przed uszkodzeniem"
+    ]
+  },
+  {
+    "version": "v2026.8.26.10",
+    "date": "2026-08-26",
+    "changes": [
+      "🔧 Fix: Krytyczne błędy bazy i znikające posiłki"
+    ]
+  },
+  {
     "version": "v2026.8.26.09",
     "date": "2026-08-26",
     "changes": [

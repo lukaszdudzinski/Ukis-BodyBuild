@@ -119,6 +119,10 @@ export const DatabaseManager = {
                 }
                 
                 await sendMessage('init');
+                
+                // Po inicjalizacji uruchamiamy ewentualną migrację (tylko raz)
+                await DatabaseManager.migrateFromKvvfsIfNeeded().catch(e => console.warn("Migracja KVvfs pominięta:", e));
+                
                 await DatabaseManager.createTables();
                 DatabaseManager.runMediaMigrationAndCleanup().catch(e => console.error(e));
                 isReady = true;
@@ -129,6 +133,35 @@ export const DatabaseManager = {
             }
         });
         return initPromise;
+    },
+
+    migrateFromKvvfsIfNeeded: async () => {
+        if (localStorage.getItem('uki_kvvfs_migrated')) return;
+        
+        try {
+            console.log("Checking for legacy KVvfs data...");
+            const sqlite3InitModule = (await import('../../../libs/sqlite/sqlite3.mjs')).default;
+            const sqlite3 = await sqlite3InitModule({ print: console.log, printErr: console.error });
+            
+            const db = new sqlite3.oo1.DB('local', 'c', 'kvvfs');
+            
+            const res = db.exec("SELECT name FROM sqlite_master WHERE type='table' AND name='trainings'", {rowMode: 'array'});
+            if (res && res.length > 0) {
+                console.log("Found legacy KVvfs database! Migrating to OPFS...");
+                const byteArray = sqlite3.capi.sqlite3_js_db_export(db.pointer);
+                if (byteArray && byteArray.byteLength > 0) {
+                    await sendMessage('import_raw', { buffer: byteArray.buffer });
+                    console.log("Migration successful!");
+                }
+            } else {
+                console.log("No legacy KVvfs data found.");
+            }
+            db.close();
+            localStorage.setItem('uki_kvvfs_migrated', 'true');
+        } catch (e) {
+            console.warn("Migration from KVvfs failed or not applicable:", e);
+            localStorage.setItem('uki_kvvfs_migrated', 'failed');
+        }
     },
 
     createTables: async () => {
@@ -538,6 +571,11 @@ export const DatabaseManager = {
             console.error("Błąd podczas importu bazy:", e);
             throw e;
         }
+    },
+
+    importRawDatabase: async (arrayBuffer) => {
+        await DatabaseManager.init();
+        await sendMessage('import_raw', { buffer: arrayBuffer });
     },
 
     getDietLogsByDateRange: async (startDate, endDate) => {

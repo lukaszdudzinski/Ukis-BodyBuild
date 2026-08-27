@@ -250,11 +250,16 @@ export const TrainingUI = {
         const t = templates.find(x => x.id === id);
         if (!t) return;
         
-        const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(t));
+        const blob = new Blob([JSON.stringify(t, null, 2)], { type: "application/json" });
+        const url = URL.createObjectURL(blob);
+        
         const dlAnchorElem = document.createElement('a');
-        dlAnchorElem.setAttribute("href", dataStr);
+        dlAnchorElem.setAttribute("href", url);
         dlAnchorElem.setAttribute("download", "UkiPlan_" + t.name.replace(/\s+/g, '_') + ".json");
+        document.body.appendChild(dlAnchorElem);
         dlAnchorElem.click();
+        document.body.removeChild(dlAnchorElem);
+        URL.revokeObjectURL(url);
     },
 
     importTemplate: () => {

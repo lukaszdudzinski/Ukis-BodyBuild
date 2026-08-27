@@ -1,4 +1,4 @@
-const CACHE_NAME = 'ukis-bodybuild-v2026.8.26.15'; // deployed: 2026-08-27T00:01
+const CACHE_NAME = 'ukis-bodybuild-v2026.8.27.05'; // deployed: 2026-08-27T00:01
 // Core assets that MUST be cached immediately
 const CORE_ASSETS = [
     './',
@@ -82,6 +82,12 @@ self.addEventListener('fetch', (e) => {
     // Zawsze pobieraj pliki WASM bezpośrednio z sieci - nie cachuj ich przez SW
     // (plik jest duży i może być błędnie cachowany jako HTML, co niszczy WebAssembly)
     if (e.request.url.endsWith('.wasm')) {
+        e.respondWith(fetch(e.request, { cache: 'no-store' }));
+        return;
+    }
+
+    // Wyjątek dla sw.js - nigdy go nie cachuj
+    if (e.request.url.endsWith('sw.js')) {
         e.respondWith(fetch(e.request, { cache: 'no-store' }));
         return;
     }
