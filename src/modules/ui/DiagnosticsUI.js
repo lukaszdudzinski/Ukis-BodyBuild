@@ -141,9 +141,9 @@ export const DiagnosticsUI = {
             const handle = await root.getFileHandle('ukis_bodybuild.sqlite3', { create: false });
             const file = await handle.getFile();
             const sizeKB = (file.size / 1024).toFixed(2);
-            sizeDisplay.innerText = \`Rozmiar bazy fizycznej: \${sizeKB} KB\`;
+            sizeDisplay.innerText = `Rozmiar bazy fizycznej: ${sizeKB} KB`;
         } catch(e) {
-            sizeDisplay.innerText = \`Rozmiar bazy fizycznej: Brak pliku OPFS (Fallback)\`;
+            sizeDisplay.innerText = `Rozmiar bazy fizycznej: Brak pliku OPFS (Fallback)`;
         }
     },
 
