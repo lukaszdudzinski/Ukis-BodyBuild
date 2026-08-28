@@ -252,7 +252,7 @@ export const DietUI = {
                     item.style.cssText = 'background: rgba(255,255,255,0.05); padding: 15px; border-radius: 8px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; border-left: 4px solid #FF9800;';
                     item.innerHTML = `
                         <div style="display: flex; align-items: center; flex: 1; max-width: 70%;">
-                            ${log.thumbnail ? `<img src="${log.thumbnail}" style="width: 50px; height: 50px; object-fit: cover; border-radius: 8px; margin-right: 15px; border: 1px solid #FF9800; flex-shrink: 0;">` : ''}
+                            ${log.thumbnail ? `<img id="diet-list-thumb-${log.id}" style="width: 50px; height: 50px; object-fit: cover; border-radius: 8px; margin-right: 15px; border: 1px solid #FF9800; flex-shrink: 0;">` : ''}
                             <div>
                                 <div style="font-weight: bold; font-size: 1.2em; color: #fff; word-break: break-word;">${log.food_name}</div>
                                 <div style="font-size: 1.05em; color: #ddd; margin-top: 8px; display: flex; gap: 15px; font-weight: 500;">
@@ -271,7 +271,17 @@ export const DietUI = {
                         </div>
                     `;
                     listContainer.appendChild(item);
+                    
+                    if (log.thumbnail) {
+                        window.MediaManager.getMedia(log.thumbnail).then(url => {
+                            if (url) {
+                                const img = document.getElementById(`diet-list-thumb-${log.id}`);
+                                if (img) img.src = url;
+                            }
+                        });
+                    }
                 });
+
 
                 document.querySelectorAll('.delete-diet-btn').forEach(btn => {
                     btn.addEventListener('click', async (e) => {

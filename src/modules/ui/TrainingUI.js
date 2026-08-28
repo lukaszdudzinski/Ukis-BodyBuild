@@ -1310,110 +1310,120 @@ export const TrainingUI = {
     },
 
     addSet: (exerciseId, isDropset = false) => {
-        const exercise = TrainingUI.getExerciseById(exerciseId);
-        if (!exercise) return;
-        
-        const weightInput = document.getElementById(`weight-${exerciseId}`);
-        const repsInput = document.getElementById(`reps-${exerciseId}`);
-
-        const bodyweightKeywords = ['brzuch', 'brzus', 'podciąg', 'podciag', 'pompk', 'plank', 'deska', 'drąż', 'draz'];
-        const isBodyweight = exercise.name && bodyweightKeywords.some(kw => exercise.name.toLowerCase().includes(kw));
-
-        let wVal = "0";
-        let rVal = "0";
-
-        if (weightInput && repsInput) {
-            wVal = weightInput.value;
-            rVal = repsInput.value;
-
-            if (isBodyweight) {
-                if (!rVal) { alert("Podaj ilość powtórzeń!"); return; }
-                if (!wVal) wVal = "0";
-            } else {
-                if (!wVal || !rVal) { alert("Podaj ciężar i ilość powtórzeń!"); return; }
-            }
-        } else {
-            // Experimental mode - sklonuj ostatnią serię
-            if (exercise.sets && exercise.sets.length > 0) {
-                const lastSet = exercise.sets[exercise.sets.length - 1];
-                wVal = lastSet.weight;
-                rVal = lastSet.reps;
-            } else {
-                wVal = "0";
-                rVal = "10";
-            }
-        }
-
-        const newSet = {
-            weight: parseFloat(wVal),
-            reps: parseInt(rVal, 10),
-            type: isDropset ? 'dropset' : 'normal'
-        };
-        
-        // 1RM & PR Logic
-        if (!isBodyweight && newSet.weight > 0 && newSet.reps > 0) {
-            const current1RM = newSet.weight * (1 + (newSet.reps / 30));
-            let maxHistorical1RM = 0;
+        try {
+            const exercise = TrainingUI.getExerciseById(exerciseId);
+            if (!exercise) return;
             
-            if (exercise.name && allTrainingsCache) {
-                const exNameLower = exercise.name.toLowerCase().trim();
-                allTrainingsCache.forEach(t => {
-                    if (t.exercises) {
-                        t.exercises.forEach(e => {
-                            const checkExercise = (ex) => {
-                                if (ex.name && ex.name.toLowerCase().trim() === exNameLower && ex.sets) {
-                                    ex.sets.forEach(s => {
-                                        const s1RM = s.weight * (1 + (s.reps / 30));
-                                        if (s1RM > maxHistorical1RM) maxHistorical1RM = s1RM;
-                                    });
-                                }
-                            };
-                            if (e.type === 'superset' && e.exercises) {
-                                e.exercises.forEach(checkExercise);
-                            } else {
-                                checkExercise(e);
-                            }
-                        });
-                    }
-                });
-            }
-            
-            // Check within current training as well, in case they did multiple sets today
-            exercise.sets.forEach(s => {
-                const s1RM = s.weight * (1 + (s.reps / 30));
-                if (s1RM > maxHistorical1RM) maxHistorical1RM = s1RM;
-            });
-            
-            if (current1RM > maxHistorical1RM && maxHistorical1RM > 0) {
-                newSet.isPR = true;
-                if (window.ChatUI) {
-                    window.ChatUI.showContextualBubble(`🏆 Nowy Rekord Życiowy (PR)! 💪 Świetna forma, idziesz jak czołg! 🐗🔥`);
+            const weightInput = document.getElementById(`weight-${exerciseId}`);
+            const repsInput = document.getElementById(`reps-${exerciseId}`);
+
+            const bodyweightKeywords = ['brzuch', 'brzus', 'podciąg', 'podciag', 'pompk', 'plank', 'deska', 'drąż', 'draz'];
+            const isBodyweight = exercise.name && bodyweightKeywords.some(kw => exercise.name.toLowerCase().includes(kw));
+
+            let wVal = "0";
+            let rVal = "0";
+
+            if (weightInput && repsInput) {
+                wVal = weightInput.value;
+                rVal = repsInput.value;
+
+                if (isBodyweight) {
+                    if (!rVal) { alert("Podaj ilość powtórzeń!"); return; }
+                    if (!wVal) wVal = "0";
+                } else {
+                    if (!wVal || !rVal) { alert("Podaj ciężar i ilość powtórzeń!"); return; }
                 }
-            } else if (maxHistorical1RM === 0) {
-                // First time doing this exercise or no history
-                newSet.isPR = true; // First baseline is technically a PR, but maybe we don't spam
+            } else {
+                // Experimental mode - sklonuj ostatnią serię
+                if (exercise.sets && exercise.sets.length > 0) {
+                    const lastSet = exercise.sets[exercise.sets.length - 1];
+                    wVal = lastSet.weight;
+                    rVal = lastSet.reps;
+                } else {
+                    wVal = "0";
+                    rVal = "10";
+                }
             }
-        }
 
-        exercise.sets.push(newSet);
+            const newSet = {
+                weight: parseFloat(wVal) || 0,
+                reps: parseInt(rVal, 10) || 0,
+                type: isDropset ? 'dropset' : 'normal'
+            };
+            
+            // 1RM & PR Logic
+            if (!isBodyweight && newSet.weight > 0 && newSet.reps > 0) {
+                const current1RM = newSet.weight * (1 + (newSet.reps / 30));
+                let maxHistorical1RM = 0;
+                
+                if (exercise.name && allTrainingsCache) {
+                    const exNameLower = exercise.name.toLowerCase().trim();
+                    allTrainingsCache.forEach(t => {
+                        if (t.exercises && Array.isArray(t.exercises)) {
+                            t.exercises.forEach(e => {
+                                const checkExercise = (ex) => {
+                                    if (ex && ex.name && ex.name.toLowerCase().trim() === exNameLower && Array.isArray(ex.sets)) {
+                                        ex.sets.forEach(s => {
+                                            const s1RM = (s.weight || 0) * (1 + ((s.reps || 0) / 30));
+                                            if (s1RM > maxHistorical1RM) maxHistorical1RM = s1RM;
+                                        });
+                                    }
+                                };
+                                if (e && e.type === 'superset' && Array.isArray(e.exercises)) {
+                                    e.exercises.forEach(checkExercise);
+                                } else {
+                                    checkExercise(e);
+                                }
+                            });
+                        }
+                    });
+                }
+                
+                // Check within current training as well, in case they did multiple sets today
+                if (Array.isArray(exercise.sets)) {
+                    exercise.sets.forEach(s => {
+                        const s1RM = (s.weight || 0) * (1 + ((s.reps || 0) / 30));
+                        if (s1RM > maxHistorical1RM) maxHistorical1RM = s1RM;
+                    });
+                }
+                
+                if (current1RM > maxHistorical1RM && maxHistorical1RM > 0) {
+                    newSet.isPR = true;
+                    if (window.ChatUI) {
+                        window.ChatUI.showContextualBubble(`🏆 Nowy Rekord Życiowy (PR)! 💪 Świetna forma, idziesz jak czołg! 🐗🔥`);
+                    }
+                } else if (maxHistorical1RM === 0) {
+                    newSet.isPR = true; 
+                }
+            }
 
-        TrainingUI.renderCurrentExercises();
+            if (!Array.isArray(exercise.sets)) {
+                exercise.sets = [];
+            }
+            exercise.sets.push(newSet);
 
-        // Refill the inputs if autoCopy is enabled
-        if (exercise.autoCopy) {
-            setTimeout(() => {
-                const w = document.getElementById(`weight-${exerciseId}`);
-                const r = document.getElementById(`reps-${exerciseId}`);
-                if(w) w.value = weightInput.value;
-                if(r) r.value = repsInput.value;
-            }, 50);
-        } else {
-            setTimeout(() => {
-                const w = document.getElementById(`weight-${exerciseId}`);
-                const r = document.getElementById(`reps-${exerciseId}`);
-                if(w) w.value = '';
-                if(r) r.value = '';
-            }, 50);
+            TrainingUI.renderCurrentExercises();
+            TrainingUI.saveActiveWorkout(); // <-- KEY FIX!
+
+            // Refill the inputs if autoCopy is enabled
+            if (exercise.autoCopy) {
+                setTimeout(() => {
+                    const w = document.getElementById(`weight-${exerciseId}`);
+                    const r = document.getElementById(`reps-${exerciseId}`);
+                    if(w) w.value = wVal; // use parsed wVal, not weightInput.value which might be detached
+                    if(r) r.value = rVal;
+                }, 50);
+            } else {
+                setTimeout(() => {
+                    const w = document.getElementById(`weight-${exerciseId}`);
+                    const r = document.getElementById(`reps-${exerciseId}`);
+                    if(w) w.value = '';
+                    if(r) r.value = '';
+                }, 50);
+            }
+        } catch (error) {
+            console.error("Error in addSet:", error);
+            alert("Błąd podczas dodawania serii: " + error.message);
         }
     },
 

@@ -58,6 +58,7 @@ const initApp = () => {
     ChatUI.init();
     DiagnosticsUI.init();
     NumpadUI.init();
+    BackupUI.init();
 
     // AI Analytics — renders on tab open
     document.addEventListener('tabChanged', (e) => {

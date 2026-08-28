@@ -22,11 +22,14 @@ export const DiagnosticsUI = {
                     <button id="db-import-btn" style="flex: 1; padding: 13px 10px; background: #222; border: 1px solid #FF9800; color: #FF9800; border-radius: 5px; cursor: pointer; font-size: 1em; font-weight: bold; text-align: center;">📥 Przywróć z Pliku</button>
                     <input type="file" id="db-import-file" accept=".json" style="display: none;">
                 </div>
-                <div style="display: flex; gap: 10px; margin-top: 15px;">
-                    <button id="db-export-raw-btn" style="flex: 1; padding: 13px 10px; background: #222; border: 1px dashed #E74C3C; color: #E74C3C; border-radius: 5px; cursor: pointer; font-size: 0.9em; font-weight: bold; text-align: center;">🆘 Pobierz fizyczny plik bazy (Tryb Awaryjny RAW)</button>
-                    <button id="db-import-raw-btn" style="flex: 1; padding: 13px 10px; background: #222; border: 1px dashed #2ECC71; color: #2ECC71; border-radius: 5px; cursor: pointer; font-size: 0.9em; font-weight: bold; text-align: center;">📥 Przywróć plik RAW (.sqlite3)</button>
-                    <input type="file" id="db-import-raw-file" accept=".sqlite3" style="display: none;">
-                </div>
+                <details style="margin-top: 15px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 10px;">
+                    <summary style="color: #666; font-size: 0.8em; cursor: pointer; user-select: none;">Narzędzia eksperymentalne (Dla deweloperów)</summary>
+                    <div style="display: flex; gap: 10px; margin-top: 15px;">
+                        <button id="db-export-raw-btn" style="flex: 1; padding: 13px 10px; background: #222; border: 1px dashed #E74C3C; color: #E74C3C; border-radius: 5px; cursor: pointer; font-size: 0.9em; font-weight: bold; text-align: center;">🆘 Pobierz fizyczny plik bazy (Tryb Awaryjny RAW)</button>
+                        <button id="db-import-raw-btn" style="flex: 1; padding: 13px 10px; background: #222; border: 1px dashed #2ECC71; color: #2ECC71; border-radius: 5px; cursor: pointer; font-size: 0.9em; font-weight: bold; text-align: center;">📥 Przywróć plik RAW (.sqlite3)</button>
+                        <input type="file" id="db-import-raw-file" accept=".sqlite3" style="display: none;">
+                    </div>
+                </details>
             </div>
 
             <div style="background: rgba(231,76,60,0.1); padding: 15px; border-radius: 8px; border: 1px solid #E74C3C; margin-bottom: 20px;">
