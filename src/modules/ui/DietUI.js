@@ -367,17 +367,20 @@ export const DietUI = {
         previewContainer.innerHTML = '';
         if (DietUI.attachedImages.length > 0) {
             previewContainer.style.display = 'flex';
-            DietUI.attachedImages.forEach((base64, index) => {
+            DietUI.attachedImages.forEach((mediaId, index) => {
                 const wrapper = document.createElement('div');
                 wrapper.style.position = 'relative';
                 
                 const img = document.createElement('img');
-                img.src = base64;
                 img.style.width = '70px';
                 img.style.height = '70px';
                 img.style.objectFit = 'cover';
                 img.style.borderRadius = '5px';
                 img.style.border = '1px solid #555';
+                
+                window.MediaManager.getMediaUrl(mediaId).then(url => {
+                    if (url) img.src = url;
+                });
                 
                 const removeBtn = document.createElement('button');
                 removeBtn.innerHTML = '×';

@@ -620,3 +620,8 @@ export const DatabaseManager = {
 };
 
 window.DatabaseManager = DatabaseManager;
+// Patch to ensure diet_logs works properly
+window.debugDietLogs = async () => {
+    const logs = await DatabaseManager.getDietLogs(new Date().toISOString().split('T')[0]);
+    console.log("Current diet logs:", logs);
+};

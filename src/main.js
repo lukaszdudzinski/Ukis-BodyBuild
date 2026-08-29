@@ -14,6 +14,7 @@ import { AchievementsSystem } from './modules/gamification/AchievementsSystem.js
 import { AiAnalyticsUI } from './modules/ui/AiAnalyticsUI.js';
 import { TemplateBuilderUI } from './modules/ui/TemplateBuilderUI.js';
 import { NumpadUI } from './modules/ui/NumpadUI.js';
+import { BackupUI } from './modules/ui/BackupUI.js';
 
 window.ukiLogError = (msg, stack) => {
     let logs = [];

@@ -1,5 +1,16 @@
 [
   {
+    "version": "v2026.8.29.01",
+    "date": "2026-08-29",
+    "changes": [
+      "🔥 Krytyczny pożar ugaszony: zrzut RAM do OPFS po każdej operacji",
+      "🛟 Wdrożono moduł BackupUI z przypomnieniem JSON",
+      "🐛 Treningi: Naprawiono błędne ładowanie szablonu przy nowej sesji",
+      "🐛 Treningi: Naprawiono błąd dodawania nowych serii",
+      "🖼 Dieta: Naprawiono ładowanie miniatur z bazy MediaManager"
+    ]
+  },
+  {
     "version": "v2026.8.28.01",
     "date": "2026-08-28",
     "changes": [

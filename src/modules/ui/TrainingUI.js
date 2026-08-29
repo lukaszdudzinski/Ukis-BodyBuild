@@ -1403,7 +1403,7 @@ export const TrainingUI = {
             exercise.sets.push(newSet);
 
             TrainingUI.renderCurrentExercises();
-            TrainingUI.saveActiveWorkout(); // <-- KEY FIX!
+            TrainingUI.saveDraft(); 
 
             // Refill the inputs if autoCopy is enabled
             if (exercise.autoCopy) {
@@ -1775,6 +1775,26 @@ export const TrainingUI = {
                 imgWrap.appendChild(delBtn);
                 list.appendChild(imgWrap);
             });
+        }
+    },
+
+    handleTypeChange: (type) => {
+        if (!currentTraining) return;
+        currentTraining.type = type;
+        const exercisesContainer = document.getElementById('exercises-container-section');
+        const classContainer = document.getElementById('class-type-container');
+        
+        if (exercisesContainer && classContainer) {
+            if (type === 'strength') {
+                exercisesContainer.style.display = 'block';
+                classContainer.style.display = 'none';
+            } else if (type === 'cardio') {
+                exercisesContainer.style.display = 'none';
+                classContainer.style.display = 'none';
+            } else if (type === 'class') {
+                exercisesContainer.style.display = 'none';
+                classContainer.style.display = 'block';
+            }
         }
     },
 

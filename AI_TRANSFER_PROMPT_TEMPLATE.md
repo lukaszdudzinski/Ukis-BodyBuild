@@ -6,22 +6,7 @@ Celem promptu transferowego jest płynne przekazanie pałeczki, aby nowy agent o
 
 ---
 
-## 📋 Wytyczne: Co musi zawierać Prompt Transferowy?
-
-1. **Kontekst Projektu i Rola:** Zdefiniowanie tożsamości agenta (Antigravity) oraz przypomnienie, że pracuje nad Uki's BodyBuild.
-2. **ID Poprzedniej Konwersacji & Wersja:** 
-   - `Conversation ID` poprzedniej rozmowy, aby agent w razie potrzeby mógł sięgnąć do historii.
-   - Aktualna wersja aplikacji (np. `v2026.8.20.1`), którą trzeba również uaktualnić w pliku `CHANGELOG.json` i `AppUI.js`.
-3. **Kluczowe Pliki (Workspace):** Lista najważniejszych plików związanych z nadchodzącym zadaniem z jawnym poleceniem `Otwórz je przez view_file przed rozpoczęciem pracy`.
-4. **Co Zostało Zrobione (Stan Obecny):** Zwięzłe podsumowanie ostatnich wdrożeń (np. zakończenie Fazy 6, podział na wersję Light/Heavy).
-5. **Kontekst Architektoniczny:** Krótkie przypomnienie o specyfice projektu (np. brak klasycznego backendu, użycie SQLite przez OPFS w przeglądarce, Cloudflare Workers dla AI, Vanilla JS + PWA).
-6. **Następny Cel / Zadanie:** Dokładne wskazanie od czego agent ma rozpocząć pracę zaraz po przeczytaniu promptu.
-
----
-
-## 📝 Szablon do Skopiowania (Generowany na koniec sesji)
-
-Poniżej znajduje się czysty szablon, który agent będzie wypełniał na Twoją komendę: *"Stwórz prompt transferowy dla nowej konwersacji"*
+## 📝 Szablon do Skopiowania (Wygenerowany z sesji 1c831b05-b16b-411d-9a2e-9438ed58da89)
 
 ```markdown
 # 🚀 PROMPT TRANSFEROWY (Kontekst Projektu Uki's BodyBuild)
@@ -30,27 +15,33 @@ Poniżej znajduje się czysty szablon, który agent będzie wypełniał na Twoj�
 Oto pełny kontekst naszego projektu, abyś mógł płynnie przejąć pałeczkę i kontynuować pracę.
 
 ## 🔗 Powiązania i Metadane
-- **Poprzednia konwersacja (ID):** [TUTAJ_ID_KONWERSACJI]
-- **Aktualna Wersja Aplikacji:** [TUTAJ_WERSJA_NP_v2026.8.20.1]
+- **Poprzednia konwersacja (ID):** 1c831b05-b16b-411d-9a2e-9438ed58da89
+- **Aktualna Wersja Aplikacji:** v2026.8.28.01
 
 ## 📂 Najważniejsze Pliki do Zapoznania się (Otwórz je przez `view_file`)
-Przed rozpoczęciem kodowania użyj narzędzia do odczytania struktury, w szczególności:
-1. [PLIK_1] - [OPIS_DLACZEGO_WAZNY]
-2. [PLIK_2] - [OPIS_DLACZEGO_WAZNY]
-3. `CHANGELOG.json` - zawsze aktualizuj historię zmian po wdrożeniach.
+1. `src/modules/db/DatabaseManager.js` - Rdzeń sqlite3, logiki zapisu, OPFS fallback (bardzo wrażliwe)
+2. `src/modules/ui/BackupUI.js` - Moduł automatycznych dziennych kopii bazy danych
+3. `GEMINI.md` - Zbiór reguł globalnych projektu.
 
 ## ✅ Co Zostało Zrobione (Stan Obecny)
-- [PUNKT_1_Z_OSTATNICH_ZMIAN]
-- [PUNKT_2_Z_OSTATNICH_ZMIAN]
-- [PUNKT_3_Z_OSTATNICH_ZMIAN]
+- 🔥 Krytyczny pożar ugaszony: Brak wsparcia OPFS wymuszał trzymanie bazy w pamięci RAM. Wdrożyliśmy mechanizm `autoSaveOPFS`, który natychmiast zrzuca RAM do OPFS po każdej operacji. 
+- 🛟 Wdrożono moduł `BackupUI` z dziennym przypomnieniem o backupie JSON.
+- 🐛 Treningi: Naprawiono błędne wczytywanie się szablonu treningowego przy starcie "Wolnego Treningu" - brakująca funkcja `handleTypeChange` została przywrócona.
+- 🐛 Treningi: Dodawanie nowych serii działa poprawnie, dzięki wywoływaniu `saveDraft()` zamiast nieistniejącego `saveActiveWorkout()`.
+- 🖼 Dieta: Naprawiono ładowanie miniatur zdjęć z `MediaManager` w podglądzie "Dodaj Posiłek" (formularz AI).
 
 ## 🏗️ Ważny Kontekst Architektoniczny
-Pamiętaj, że aplikacja to PWA w Vanilla JS. Baza danych to SQLite działający lokalnie w przeglądarce (OPFS). Zapytania AI są kierowane do zewnętrznego Cloudflare Workera. Wszelkie nowości muszą wspierać działanie offline.
+Pamiętaj, że aplikacja to PWA w Vanilla JS. Baza danych to lokalne środowisko przeglądarkowe (VFS / OPFS). Dostęp do płatnych funkcji Premium sprawdza `PremiumUI.checkPremium()`.
 
 ## 🗺 Najbliższy Cel / Twoje Zadanie
-Obecnie pracujemy nad Fazą [NUMER].
-Twoim pierwszym zadaniem po przeczytaniu tego promptu będzie:
-[OPIS_PIERWSZEGO_ZADANIA_DO_WYKONANIA]
+Obecnie aplikacja została doprowadzona do **100% sprawności** (wszystkie zgłoszone błędy ui/logiczne z ostatnich pożarów zostały załatane).
+Przechodzimy do wielkiej Fazy: **Rozbudowa Agentów AI, Środowiska QA i Serwerów MCP**.
 
-Zaczynamy!
+Twoje Zadania na tę sesję:
+1. **QA i Środowiska (Staging/Prod):** Skonfigurować z Użytkownikiem oddzielne środowiska QA i Produkcji. Trzeba zbudować proces zabezpieczający przed wgrywaniem uszkodzonego kodu na żywy serwer (żeby uchronić dane klientów).
+2. **Automatyczne Testy (Playwright):** Wymusić automatyczne testy UI po każdej aktualizacji PWA (w tym sprawdzanie pętli odświeżania na podbijaniu wersji w `CHANGELOG.json` - zgodnie z GEMINI.md).
+3. **Rozbudowa Sub-Agentów i Umiejętności (Skills):** Zaplanować poważną rozbudowę ról agentów (np. osobny Tester QA, oddzielny Code Reviewer) i dodać dla nich dedykowane pliki w strukturze projektu.
+4. **Serwer MCP:** Zbadać i wdrożyć lokalny Serwer MCP (Model Context Protocol), aby pomóc AI testować bazy danych SQLite użytkownika w bezpiecznym środowisku.
+
+Zaczynamy! Użytkownik czeka na zaplanowanie środowiska QA.
 ```
