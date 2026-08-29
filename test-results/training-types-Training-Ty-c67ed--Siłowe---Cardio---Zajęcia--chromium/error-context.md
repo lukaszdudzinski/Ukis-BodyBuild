@@ -1,0 +1,1003 @@
+# Instructions
+
+- Following Playwright test failed.
+- Explain why, be concise, respect Playwright best practices.
+- Provide a snippet of code with the fix, if possible.
+
+# Test info
+
+- Name: training-types.spec.js >> Training Types UI >> powinien przełączać typ ćwiczenia w pętli 3-stanowej (Siłowe -> Cardio -> Zajęcia)
+- Location: tests/e2e/training-types.spec.js:50:3
+
+# Error details
+
+```
+Test timeout of 30000ms exceeded.
+```
+
+```
+Error: page.click: Test timeout of 30000ms exceeded.
+Call log:
+  - waiting for locator('#start-new-session-btn')
+    - locator resolved to <button id="start-new-session-btn" class="action-button pulse">➕ Dodaj nową sesję treningową</button>
+  - attempting click action
+    2 × waiting for element to be visible, enabled and stable
+      - element is not stable
+    - retrying click action
+    - waiting 20ms
+    2 × waiting for element to be visible, enabled and stable
+      - element is not stable
+    - retrying click action
+      - waiting 100ms
+    - waiting for element to be visible, enabled and stable
+    - element is not stable
+  13 × retrying click action
+       - waiting 500ms
+       - waiting for element to be visible, enabled and stable
+       - element is visible, enabled and stable
+       - scrolling into view if needed
+       - done scrolling
+       - <div id="changelog-modal-overlay">…</div> intercepts pointer events
+     - retrying click action
+       - waiting 500ms
+       - waiting for element to be visible, enabled and stable
+       - element is visible, enabled and stable
+       - scrolling into view if needed
+       - done scrolling
+       - <li>🖼 Dieta: Naprawiono ładowanie miniatur z bazy Med…</li> from <div id="changelog-modal-overlay">…</div> subtree intercepts pointer events
+     - retrying click action
+       - waiting 500ms
+       - waiting for element to be visible, enabled and stable
+       - element is visible, enabled and stable
+       - scrolling into view if needed
+       - done scrolling
+       - <li>🐛 Treningi: Naprawiono błąd dodawania nowych serii</li> from <div id="changelog-modal-overlay">…</div> subtree intercepts pointer events
+     - retrying click action
+       - waiting 500ms
+       - waiting for element to be visible, enabled and stable
+       - element is visible, enabled and stable
+       - scrolling into view if needed
+       - done scrolling
+       - <li>🐛 Treningi: Naprawiono błąd dodawania nowych serii</li> from <div id="changelog-modal-overlay">…</div> subtree intercepts pointer events
+  - retrying click action
+    - waiting 500ms
+    - waiting for element to be visible, enabled and stable
+    - element is visible, enabled and stable
+    - scrolling into view if needed
+    - done scrolling
+    - <div id="changelog-modal-overlay">…</div> intercepts pointer events
+  - retrying click action
+    - waiting 500ms
+    - waiting for element to be visible, enabled and stable
+    - element is visible, enabled and stable
+    - scrolling into view if needed
+    - done scrolling
+    - <li>🖼 Dieta: Naprawiono ładowanie miniatur z bazy Med…</li> from <div id="changelog-modal-overlay">…</div> subtree intercepts pointer events
+  - retrying click action
+    - waiting 500ms
+    - waiting for element to be visible, enabled and stable
+
+```
+
+# Page snapshot
+
+```yaml
+- generic [ref=e1]:
+  - generic [ref=e2]:
+    - navigation [ref=e3]:
+      - generic "Powrót do ekranu startowego" [ref=e4] [cursor=pointer]:
+        - img "Logo" [ref=e5]
+        - heading "Uki's BodyBuild" [level=1] [ref=e6]
+      - list [ref=e7]:
+        - listitem [ref=e8]:
+          - link "Pulpit Główny" [ref=e9] [cursor=pointer]:
+            - /url: "#"
+        - listitem [ref=e10]:
+          - link "Pomiary Ciała" [ref=e11] [cursor=pointer]:
+            - /url: "#"
+        - listitem [ref=e12]:
+          - link "Trening" [active] [ref=e13] [cursor=pointer]:
+            - /url: "#"
+        - listitem [ref=e14]:
+          - link "Historia Treningów" [ref=e15] [cursor=pointer]:
+            - /url: "#"
+        - listitem [ref=e16]:
+          - link "Analiza Progresu" [ref=e17] [cursor=pointer]:
+            - /url: "#"
+        - listitem [ref=e18]:
+          - link "Dieta i Żywienie" [ref=e19] [cursor=pointer]:
+            - /url: "#"
+        - listitem [ref=e20]:
+          - link "Diagnostyka" [ref=e21] [cursor=pointer]:
+            - /url: "#"
+        - listitem [ref=e22]:
+          - link "Profil i Ustawienia" [ref=e23] [cursor=pointer]:
+            - /url: "#"
+      - generic [ref=e24]:
+        - link [ref=e26] [cursor=pointer]:
+          - /url: https://suppi.pl/ukidives
+          - text: ☕ Podoba Ci się to narzędzie?
+          - strong [ref=e27]: Postaw mi kawę!
+        - generic [ref=e28]: Trial (7 dni) v2026.8.29.01
+    - main [ref=e29]:
+      - generic [ref=e31]:
+        - generic [ref=e32]:
+          - heading "Trening" [level=2] [ref=e33]
+          - paragraph [ref=e34]: Zaplanuj i wykonuj treningi
+        - generic [ref=e35]:
+          - generic [ref=e36]:
+            - button "◀" [ref=e37] [cursor=pointer]
+            - heading "Sierpień 2026" [level=3] [ref=e38]
+            - button "▶" [ref=e39] [cursor=pointer]
+          - generic [ref=e40]:
+            - generic [ref=e41]: Pn
+            - generic [ref=e42]: Wt
+            - generic [ref=e43]: Śr
+            - generic [ref=e44]: Cz
+            - generic [ref=e45]: Pt
+            - generic [ref=e46]: So
+            - generic [ref=e47]: Nd
+            - generic [ref=e48] [cursor=pointer]: "1"
+            - generic [ref=e49] [cursor=pointer]: "2"
+            - generic [ref=e50] [cursor=pointer]: "3"
+            - generic [ref=e51] [cursor=pointer]: "4"
+            - generic [ref=e52] [cursor=pointer]: "5"
+            - generic [ref=e53] [cursor=pointer]: "6"
+            - generic [ref=e54] [cursor=pointer]: "7"
+            - generic [ref=e55] [cursor=pointer]: "8"
+            - generic [ref=e56] [cursor=pointer]: "9"
+            - generic [ref=e57] [cursor=pointer]: "10"
+            - generic [ref=e58] [cursor=pointer]: "11"
+            - generic [ref=e59] [cursor=pointer]: "12"
+            - generic [ref=e60] [cursor=pointer]: "13"
+            - generic [ref=e61] [cursor=pointer]: "14"
+            - generic [ref=e62] [cursor=pointer]: "15"
+            - generic [ref=e63] [cursor=pointer]: "16"
+            - generic [ref=e64] [cursor=pointer]: "17"
+            - generic [ref=e65] [cursor=pointer]: "18"
+            - generic [ref=e66] [cursor=pointer]: "19"
+            - generic [ref=e67] [cursor=pointer]: "20"
+            - generic [ref=e68] [cursor=pointer]: "21"
+            - generic [ref=e69] [cursor=pointer]: "22"
+            - generic [ref=e70] [cursor=pointer]: "23"
+            - generic [ref=e71] [cursor=pointer]: "24"
+            - generic [ref=e72] [cursor=pointer]: "25"
+            - generic [ref=e73] [cursor=pointer]: "26"
+            - generic [ref=e74] [cursor=pointer]: "27"
+            - generic [ref=e75] [cursor=pointer]: "28"
+            - generic [ref=e76] [cursor=pointer]: "29"
+            - generic [ref=e77] [cursor=pointer]: "30"
+            - generic [ref=e78] [cursor=pointer]: "31"
+          - generic [ref=e79]:
+            - 'heading "Opcje dla: 2026-08-15" [level=4] [ref=e80]'
+            - generic [ref=e81]:
+              - button "➕ Dodaj nową sesję treningową" [ref=e82] [cursor=pointer]
+              - button "📄 Wybierz Szablon Treningowy" [ref=e83] [cursor=pointer]
+              - button "✨ Kreator Szablonów (Koszyk)" [ref=e84] [cursor=pointer]
+              - generic [ref=e85]:
+                - heading "📋 Ostatnie treningi (wybierz, aby skopiować na dziś):" [level=5] [ref=e86]
+                - paragraph [ref=e87]: Brak sesji w historii do skopiowania.
+          - generic [ref=e88]:
+            - generic [ref=e89]: Wykonany
+            - generic [ref=e91]: Zaplanowany
+            - generic [ref=e93]: Pominięty
+  - text: ✕
+  - generic [ref=e96]:
+    - generic [ref=e97]:
+      - heading "Co nowego? 🚀" [level=3] [ref=e98]
+      - button "×" [ref=e99] [cursor=pointer]
+    - generic [ref=e101]:
+      - generic [ref=e102]:
+        - heading "Wersja v2026.8.29.01 (2026-08-29)" [level=4] [ref=e103]
+        - list [ref=e104]:
+          - listitem [ref=e105]: "🔥 Krytyczny pożar ugaszony: zrzut RAM do OPFS po każdej operacji"
+          - listitem [ref=e106]: 🛟 Wdrożono moduł BackupUI z przypomnieniem JSON
+          - listitem [ref=e107]: "🐛 Treningi: Naprawiono błędne ładowanie szablonu przy nowej sesji"
+          - listitem [ref=e108]: "🐛 Treningi: Naprawiono błąd dodawania nowych serii"
+          - listitem [ref=e109]: "🖼 Dieta: Naprawiono ładowanie miniatur z bazy MediaManager"
+      - generic [ref=e110]:
+        - heading "Wersja v2026.8.28.01 (2026-08-28)" [level=4] [ref=e111]
+        - list [ref=e112]:
+          - listitem [ref=e113]: 🐛 Naprawa błędu z szablonami treningów (brak możliwości dodawania serii po użyciu szablonu).\n🐛 Naprawa wyświetlania miniatur zdjęć w widoku Diety.\n📦 Dodano system przypomnień o codziennym archiwum bazy danych (BackupUI).\n🧹 Uporządkowano zakładkę Diagnostyka, ukrywając groźne funkcje RAW.
+      - generic [ref=e114]:
+        - heading "Wersja v2026.8.27.10 (2026-08-27)" [level=4] [ref=e115]
+        - list [ref=e116]:
+          - listitem [ref=e117]: 🐛 Naprawa utraty danych na iOS Safari (brak nagłówków COOP/COEP blokował tryb OPFS). Dodano ręczny system automatycznego zapisu i odczytu bazy OPFS z pamięci RAM.
+      - generic [ref=e118]:
+        - heading "Wersja v2026.8.27.09 (2026-08-27)" [level=4] [ref=e119]
+        - list [ref=e120]:
+          - listitem [ref=e121]: 🐛 Krytyczna naprawa błędu "Invalid bind type", który odrzucał import bazy danych (JSON) zawierający pola "undefined". Wersja kuloodporna.
+      - generic [ref=e122]:
+        - heading "Wersja v2026.8.27.08 (2026-08-27)" [level=4] [ref=e123]
+        - list [ref=e124]:
+          - listitem [ref=e125]: 🐛 Naprawa błędu składni (SyntaxError) w silniku bazy danych dbWorker.js, który blokował import danych.
+      - generic [ref=e126]:
+        - heading "Wersja v2026.8.27.07 (2026-08-27)" [level=4] [ref=e127]
+        - list [ref=e128]:
+          - listitem [ref=e129]: 🐛 Naprawa literówki (SyntaxError) w module Diagnostyki, która blokowała ładowanie aplikacji na ekranie powitalnym.
+      - generic [ref=e130]:
+        - heading "Wersja v2026.8.27.06 (2026-08-27)" [level=4] [ref=e131]
+        - list [ref=e132]:
+          - listitem [ref=e133]: 🐛 Usunięto błąd zawieszający aplikację na ekranie startowym (konflikt modułu SQLite z iOS Safari w głównym wątku). Stabilne działanie na iOS przywrócone.
+      - generic [ref=e134]:
+        - heading "Wersja v2026.8.27.05 (2026-08-27)" [level=4] [ref=e135]
+        - list [ref=e136]:
+          - listitem [ref=e137]: 🚀 Wdrożono automatyczny migrator bazy danych z LocalStorage (kvvfs) do OPFS (Baza 2.0). Wszyscy dotychczasowi użytkownicy odzyskają dostęp do swoich danych przy pierwszym uruchomieniu nowej wersji!
+      - generic [ref=e138]:
+        - heading "Wersja v2026.8.27.04 (2026-08-27)" [level=4] [ref=e139]
+        - list [ref=e140]:
+          - listitem [ref=e141]: 🚀 Dodanie wyświetlania rozmiaru bazy danych oraz naprawa przycisku eksportu pojedynczego szablonu na urządzeniach iOS Safari.
+      - generic [ref=e142]:
+        - heading "Wersja v2026.8.27.03 (2026-08-27)" [level=4] [ref=e143]
+        - list [ref=e144]:
+          - listitem [ref=e145]: 🚀 Dodano możliwość przywracania fizycznej bazy danych RAW z pliku .sqlite3. Uratowanie użytkowników iOS PWA po awarii cache.
+      - generic [ref=e146]:
+        - heading "Wersja v2026.8.27.02 (2026-08-27)" [level=4] [ref=e147]
+        - list [ref=e148]:
+          - listitem [ref=e149]: 🚀 Złamanie pętli cache (SW) i agresywny update PWA dla użytkowników iOS Safari.
+      - generic [ref=e150]:
+        - heading "Wersja v2026.8.27.01 (2026-08-27)" [level=4] [ref=e151]
+        - list [ref=e152]:
+          - listitem [ref=e153]: 🚨 Awaryjne ominięcie cache SW - wymuszenie świeżego dbWorker z naprawą WASM
+      - generic [ref=e154]:
+        - heading "Wersja v2026.8.26.15 (2026-08-26)" [level=4] [ref=e155]
+        - list [ref=e156]:
+          - listitem [ref=e157]: 🛠️ Krytyczna naprawa WASM - pobieranie binarnego pliku z absolutnym URL zamiast locateFile
+      - generic [ref=e158]:
+        - heading "Wersja v2026.8.26.14 (2026-08-26)" [level=4] [ref=e159]
+        - list [ref=e160]:
+          - listitem [ref=e161]: 🛠️ Krytyczna naprawa ścieżki sqlite3.wasm w workerze - fix dla iOS Safari i WebAssembly
+      - generic [ref=e162]:
+        - heading "Wersja v2026.8.26.13 (2026-08-26)" [level=4] [ref=e163]
+        - list [ref=e164]:
+          - listitem [ref=e165]: 🛠️ Krytyczna naprawa silnika bazy dla starszych urządzeń Apple (Safari)
+      - generic [ref=e166]:
+        - heading "Wersja v2026.8.26.12 (2026-08-26)" [level=4] [ref=e167]
+        - list [ref=e168]:
+          - listitem [ref=e169]: 🆘 Dodano Tryb Awaryjny zgrywania uszkodzonego pliku bazy SQLite
+      - generic [ref=e170]:
+        - heading "Wersja v2026.8.26.11 (2026-08-26)" [level=4] [ref=e171]
+        - list [ref=e172]:
+          - listitem [ref=e173]: 🔒 Dodano zabezpieczenie przycisku eksportu bazy przed uszkodzeniem
+      - generic [ref=e174]:
+        - heading "Wersja v2026.8.26.10 (2026-08-26)" [level=4] [ref=e175]
+        - list [ref=e176]:
+          - listitem [ref=e177]: "🔧 Fix: Krytyczne błędy bazy i znikające posiłki"
+      - generic [ref=e178]:
+        - heading "Wersja v2026.8.26.09 (2026-08-26)" [level=4] [ref=e179]
+        - list [ref=e180]:
+          - listitem [ref=e181]: 🚀 Krytyczna naprawa pętli aktualizacji PWA i stabilności
+      - generic [ref=e182]:
+        - heading "Wersja v2026.8.26.08 (2026-08-26)" [level=4] [ref=e183]
+        - list [ref=e184]:
+          - listitem [ref=e185]: "🔥 Hotfix 4: Naprawa białych znaków (Enter) w zmiennej confirm w zakładce Diagnostyka."
+      - generic [ref=e186]:
+        - heading "Wersja v2026.8.26.07 (2026-08-26)" [level=4] [ref=e187]
+        - list [ref=e188]:
+          - listitem [ref=e189]: 🧨 Wdrożono narzędzie awaryjnego formatowania bazy danych z poziomu Diagnostyki i naprawiono błędy cichego zapisu treningu.
+      - generic [ref=e190]:
+        - heading "Wersja v2026.8.26.06 (2026-08-26)" [level=4] [ref=e191]
+        - list [ref=e192]:
+          - listitem [ref=e193]: "🔥 Hotfix 3: Naprawa błędu składni blokującego ładowanie aplikacji (SettingsUI)."
+      - generic [ref=e194]:
+        - heading "Wersja v2026.8.26.05 (2026-08-26)" [level=4] [ref=e195]
+        - list [ref=e196]:
+          - listitem [ref=e197]: "🔥 Hotfix 2: Naprawa błędu składni (Missing }) w TrainingUI."
+      - generic [ref=e198]:
+        - heading "Wersja v2026.8.26.04 (2026-08-26)" [level=4] [ref=e199]
+        - list [ref=e200]:
+          - listitem [ref=e201]: "🔥 Hotfix: Naprawiono błąd składni 'Unexpected identifier' w DatabaseManager."
+      - generic [ref=e202]:
+        - heading "Wersja v2026.8.26.03 (2026-08-26)" [level=4] [ref=e203]
+        - list [ref=e204]:
+          - listitem [ref=e205]: 🔧 Optymalizacja bazy (Retencja zdjęć do 1 dnia) oraz interaktywny wykres Diety pozwalający na przegląd i kasowanie historii posiłków.
+      - generic [ref=e206]:
+        - heading "Wersja v2026.8.26.02 (2026-08-26)" [level=4] [ref=e207]
+        - list [ref=e208]:
+          - listitem [ref=e209]: 🛠️ Wdrożono narzędzie automatycznej migracji i defragmentacji bazy danych naprawiające błędy 'disk I/O error'. Dodano eksport i import Planów Treningowych do JSON oraz poprawiono klawiaturę Numpad i Kreator Koszyka.
+      - generic [ref=e210]:
+        - heading "Wersja v2026.8.26.01 (2026-08-26)" [level=4] [ref=e211]
+        - list [ref=e212]:
+          - listitem [ref=e213]: 🛠️ Przebudowano silnik multimedialny (Faza 2). Zdjęcia są teraz przechowywane asynchronicznie w przestrzeni OPFS/IndexedDB. Znacznie zmniejszono obciążenie bazy SQL i przyspieszono ładowanie aplikacji!
+      - generic [ref=e214]:
+        - heading "Wersja v2026.8.25.03 (2026-08-25)" [level=4] [ref=e215]
+        - list [ref=e216]:
+          - listitem [ref=e217]: "🚀 BAZA DANYCH 2.0 (OPFS): Przeniesiono silnik bazy SQLite z głównego wątku do Web Workera (dbWorker). Odblokowano bezstratny zapis gigabajtów danych bez ryzyka wyczerpania localStorage! Ponadto operacje masowe zyskały asynchroniczne transakcje, co czyni apkę diabelnie szybką. ⚡"
+      - generic [ref=e218]:
+        - heading "Wersja v2026.8.25.02 (2026-08-25)" [level=4] [ref=e219]
+        - list [ref=e220]:
+          - listitem [ref=e221]: "🥗 DIETA UI: Powiększono czcionki dla makro i przycisków akcji, wyrównano szerokość przycisków, a korekta kalorii działa teraz precyzyjnie (o 1 kcal) z możliwością wpisania z klawiatury!"
+      - generic [ref=e222]:
+        - heading "Wersja v2026.8.25.01 (2026-08-25)" [level=4] [ref=e223]
+        - list [ref=e224]:
+          - listitem [ref=e225]: "📸 DIETA: Dodano podgląd miniatur dla analizowanych posiłków ze zdjęć oraz nowe okno potwierdzenia wyniku sztucznej inteligencji, pozwalające ręcznie dostosować (+/-) wykryte kalorie przed zapisaniem ich do dziennika!"
+      - generic [ref=e226]:
+        - heading "Wersja v2026.8.24.04 (2026-08-24)" [level=4] [ref=e227]
+        - list [ref=e228]:
+          - listitem [ref=e229]: "🌐 PWA OFFLINE (STABILNOŚĆ): Naprawiono błąd 'DietAI Error', który zawieszał aplikację przy braku dostępu do internetu. Dodano regułę omijającą cache dla wszystkich połączeń z chmurą Cloudflare (workers.dev). Teraz w przypadku braku sieci aplikacja natychmiast wyświetli czytelny komunikat 'No internet connection', pozwalając na dalszą pracę offline!"
+      - generic [ref=e230]:
+        - heading "Wersja v2026.8.24.03 (2026-08-24)" [level=4] [ref=e231]
+        - list [ref=e232]:
+          - listitem [ref=e233]: "🐞 HISTORIA TRENINGÓW (POPRAWKA): Rozszerzono logikę wyświetlania 'Bloków Łączonych' (Superserii) na główny, duży panel podglądu w zakładce Historii (modal po kliknięciu detali treningu). Wcześniej superserie w tym miejscu wyświetlały się błędnie jako 'Nieznane ćwiczenie'. Teraz widzisz piękną listę swoich superserii!"
+      - generic [ref=e234]:
+        - heading "Wersja v2026.8.24.02 (2026-08-24)" [level=4] [ref=e235]
+        - list [ref=e236]:
+          - listitem [ref=e237]: "💪 WŁASNE ĆWICZENIA (Prywatny Katalog): Wszystkie Twoje własne ćwiczenia wpisywane z palca w Treningu i Kreatorze trafiają teraz automatycznie do prywatnego katalogu! Będą pojawiać się jako podpowiedzi przy kolejnych treningach."
+          - listitem [ref=e238]: "📝 KREATOR SZABLONÓW: Opcja masowej edycji 'Zastosuj do wszystkich' została zmieniona na 'Zastosuj do zaznaczonych'. Możesz teraz łatwo odznaczać ćwiczenia, by masowo zmieniać parametry tylko dla wybranych z nich!"
+          - listitem [ref=e239]: "🏃IKONY TYPU ĆWICZENIA: Przycisk zmiany typu (Siłowe 🏋️ / Cardio 🏃) w Kreatorze i podczas Treningu zyskał dodatkowy opis tekstowy, aby było w 100% jasne, że jest on klikalny i do czego służy."
+          - listitem [ref=e240]: "🔎 HISTORIA TRENINGU: Naprawiono błąd wyświetlania 'Nieznane ćwiczenie' w podglądzie historii, gdy wykonywano Superserie (Bloki Łączone). Teraz w podglądzie wyraźnie widać nagłówek 'Blok Łączony' i listę wykonanych pod-ćwiczeń wraz z seriami."
+          - listitem [ref=e241]: "🚴 ZAJĘCIA ZORGANIZOWANE: Powrót kategorii 'Zajęcia zorganizowane' do głównego katalogu (Tabata, Crossfit, Zumba, Spinning itp.)."
+          - listitem [ref=e242]: "🐞 POPRAWKI BŁĘDÓW: Wyeliminowano krytyczny błąd podczas klonowania starych treningów, który powodował załamanie aplikacji (TypeError przy wczytywaniu serii). Twoje stare plany są znów w 100% bezpieczne do klonowania!"
+      - generic [ref=e243]:
+        - heading "Wersja v2026.8.24.01 (2026-08-24)" [level=4] [ref=e244]
+        - list [ref=e245]:
+          - listitem [ref=e246]: "🚀 KREATOR PLANU (KOSZYK): Przebudowa interfejsu (UX). Baza Ćwiczeń uruchamia się teraz eleganckim panelem pop-up (Modal) po kliknięciu 'Dodaj ćwiczenie', eliminując uciążliwe przewijanie ekranu! Pasek 'Zastosuj do wszystkich' powędrował na samą górę, by zawsze był pod ręką. 🛒"
+          - listitem [ref=e247]: "🏋️ WŁASNE ĆWICZENIA: Wprowadzanie własnych nazw ćwiczeń posiada od teraz intuicyjny przełącznik (ikona 🏋️/🏃), który natychmiast klasyfikuje ćwiczenie jako Siłowe lub Cardio, zachowując czystość interfejsu na jednym ekranie (bez zajmującej miejsce listy wyboru)."
+          - listitem [ref=e248]: "🔗 SUPERSERIE (BLOK ŁĄCZONY): Całkowicie przebudowano wygląd bloków łączonych (superserii). Usunięto zbędne boczne marginesy na telefonach, przez co cała szerokość ekranu jest teraz dostępna dla przycisków i nazw - koniec z ucinanymi tekstami na małych urządzeniach! Dodatkowo tworzenie superserii z automatu ładuje 1 ćwiczenie (zamiast 2), przyspieszając pracę."
+          - listitem [ref=e249]: "🐞 HOTFIX (Crash): Naprawiono krytyczny błąd powodujący crash przy klikaniu 'Skopiuj do tego dnia' w starszych treningach posiadających superserie."
+          - listitem [ref=e250]: "🥗 DIETA: Klonowanie (kopiowanie) raz dodanych posiłków jest już dostępne za jednym kliknięciem! Dodatkowo zrezygnowano z wymuszania włączania aparatu przy dodawaniu zdjęć w Diecie – po kliknięciu 'Dodaj zdjęcie' telefon naturalnie zapyta, czy otworzyć aparat, czy wybrać fotkę z galerii. Obliczanie zapotrzebowania jest teraz wspierane dużym, pomarańczowym i soczystym przyciskiem! 🍽️"
+      - generic [ref=e251]:
+        - heading "Wersja v2026.8.22.08 (2026-08-22)" [level=4] [ref=e252]
+        - list [ref=e253]:
+          - listitem [ref=e254]: "🐞 HOTFIX (Numpad): Zastosowano ostateczne poprawki blokujące ucinanie i wychodzenie kalkulatora poza prawą krawędź ekranu. Zmieniono pozycjonowanie na elastyczne 'width: 100vw' w połączeniu z blokadą 'max-width' – koniec ze znikającymi przyciskami 'Zamknij' oraz cyframi, formatka idealnie wpasowuje się w każdy smartfon! 📱💪"
+      - generic [ref=e255]:
+        - heading "Wersja v2026.8.22.07 (2026-08-22)" [level=4] [ref=e256]
+        - list [ref=e257]:
+          - listitem [ref=e258]: "🛡️ Dodatkowe zabezpieczenie RWD: Zastosowano pozycjonowanie 'left/right' (zamiast sztywnego width) dla Eksperymentalnego Numpada, by gwarantować idealne dopasowanie kalkulatora na absolutnie każdym modelu smartfona."
+      - generic [ref=e259]:
+        - heading "Wersja v2026.8.22.06 (2026-08-22)" [level=4] [ref=e260]
+        - list [ref=e261]:
+          - listitem [ref=e262]: "📱 Poprawiono responsywność Eksperymentalnego Numpada: Klawiatura i ekran z wpisywaną wartością (kg) idealnie dopasowują się teraz do szerokości każdego ekranu (naprawiono ucinanie prawej krawędzi)."
+      - generic [ref=e263]:
+        - heading "Wersja v2026.8.22.05 (2026-08-22)" [level=4] [ref=e264]
+        - list [ref=e265]:
+          - listitem [ref=e266]: "📟 Kalkulator z prawdziwego zdarzenia: Dodano duży ekran wyświetlający aktualnie wpisywane wartości bezpośrednio nad Eksperymentalnym Numpadem!"
+          - listitem [ref=e267]: "🧹 Minimalizm: Usunięto przestarzałe i nieużywane przyciski Spotify i YT Music, robiąc miejsce na to co ważne - trening."
+          - listitem [ref=e268]: 📝 Wybaczcie błąd techniczny! Poprawiono usterkę z wersji .04, która wyświetlała roboczy tekst w okienku zmian.
+      - generic [ref=e269]:
+        - heading "Wersja v2026.8.22.04 (2026-08-22)" [level=4] [ref=e270]
+        - list [ref=e271]:
+          - listitem [ref=e272]: Wdrożenie techniczne ekranu Numpada i czyszczenie interfejsu (Brak opisu).
+      - generic [ref=e273]:
+        - heading "Wersja v2026.8.22.03 (2026-08-22)" [level=4] [ref=e274]
+        - list [ref=e275]:
+          - listitem [ref=e276]: "🛠️ HOTFIX: Naprawiono krytyczny błąd w Laboratorium (Brak zdefiniowanej zmiennej isBodyweight), który powodował brak reakcji przycisku 'Dodaj Serię' na całkowicie pustym ćwiczeniu."
+      - generic [ref=e277]:
+        - heading "Wersja v2026.8.22.02 (2026-08-22)" [level=4] [ref=e278]
+        - list [ref=e279]:
+          - listitem [ref=e280]: "🚀 Laboratorium (BETA): Całkowicie nowy, eksperymentalny interfejs Numpada i Smart Stepperów podczas treningu! (Włączysz go w Ustawieniach)"
+          - listitem [ref=e281]: "📈 Kreator Szablonów: Dodano obsługę wartości po przecinku podczas masowego ustawiania serii, by jednym kliknięciem budować piramidy (np. 100,110,120 kg)!"
+          - listitem [ref=e282]: 🐞 Poprawiono zgłaszany błąd w kalendarzu, w którym po udanym zakończeniu treningu system nie odświeżał zielonej kropki bez twardego restartu.
+          - listitem [ref=e283]: 👑 Zaktualizowano system weryfikacji tokenów PRO - aplikacja już prawidłowo wyświetla wersję Heavy na panelu głównym po wpisaniu ważnego hasła!
+      - generic [ref=e284]:
+        - heading "Wersja v2026.8.22.01 (2026-08-22)" [level=4] [ref=e285]
+        - list [ref=e286]:
+          - listitem [ref=e287]: "✨ Wdrożenie Fazy Opcji 3: Dedykowany, nowiutki Kreator Szablonów (Koszyk) na nowej, przejrzystej karcie!"
+          - listitem [ref=e288]: "🛒 Przebudowany interfejs koszykowy: Wybierasz ćwiczenia z bazy i masowo aplikujesz wszystkim ilość serii, powtórzeń, oraz ciężar (z uwzględnieniem wartości na minus dla maszyn ze wspomaganiem!)."
+          - listitem [ref=e289]: 🔗 Kreator można odpalić prosto z panelu treningowego jako nowy, bezpieczny widok.
+      - generic [ref=e290]:
+        - heading "Wersja v2026.8.21.03 (2026-08-21)" [level=4] [ref=e291]
+        - list [ref=e292]:
+          - listitem [ref=e293]: "🕵️‍♂️ Analityk w akcji: System otrzymał głęboki raport UX dotyczący obsługi dotykowej, co przygotowuje grunt pod wielkie zmiany w interfejsie dodawania ćwiczeń (Swipe, Numpad, Smart Steppery)!"
+          - listitem [ref=e294]: "📝 Changelog na sterydach: Załataliśmy lukę, przez którą system wrzucał domyślny i 'suchy' opis przy nowych aktualizacjach. Od teraz każda łatka musi mieć pełne opisy z emotikonami, bo tak rzecze prawo! ⚖️"
+      - generic [ref=e295]:
+        - heading "Wersja v2026.8.21.02 (2026-08-21)" [level=4] [ref=e296]
+        - list [ref=e297]:
+          - listitem [ref=e298]: "⏱️ Czas trwania powiadomień: Zoptymalizowaliśmy trenera Edwarda. Jego chmurki z podpowiedziami znikają teraz po idealnych 6 sekundach."
+          - listitem [ref=e299]: "📅 Przypomnienie o Trialu: Dodaliśmy mechanizm, który po wygaśnięciu okresu próbnego (status Light) przypomina o możliwości odblokowania wersji PRO tylko raz dziennie na starcie aplikacji, szanując Twój czas."
+          - listitem [ref=e300]: "🚀 Kolejne szlify aktualizatora: Wypuściliśmy wersję .02, aby upewnić się, że pobieranie PWA działa już całkowicie bezproblemowo!"
+      - generic [ref=e301]:
+        - heading "Wersja v2026.8.21.01 (2026-08-21)" [level=4] [ref=e302]
+        - list [ref=e303]:
+          - listitem [ref=e304]: "👑 Zmiana formatowania licencji: Informacja o dostępie (Heavy / Trial / Light) została przeniesiona na dół pulpitu, tuż przed numerem wersji (np. Trial v2026.8.21.01)."
+          - listitem [ref=e305]: "📜 Czytelniejszy pulpit: Link 'Zobacz co nowego (Changelog)' oraz okno z odliczaniem dni próbnych przeniesiono do sekcji 'Ustawienia i Profil', aby zapewnić maksymalny minimalizm na głównym ekranie."
+          - listitem [ref=e306]: "🛠️ Naprawa okienek do wpisywania ciężaru: Zwiększyliśmy szerokość pól tekstowych dla obciążeń z 48px na 62px – teraz trzycyfrowe wartości (np. 135 kg) mieszczą się idealnie i cyfry nie są ucinane!"
+          - listitem [ref=e307]: "🐞 Krytyczna poprawka aktualizacji (Bugfix): Naprawiono błąd w systemie wersjonowania, który powodował irytującą 'pętlę aktualizacji' oraz błędy Service Workera."
+      - generic [ref=e308]:
+        - heading "Wersja v2026.8.20.03 (2026-08-20)" [level=4] [ref=e309]
+        - list [ref=e310]:
+          - listitem [ref=e311]: 🔧 Wdrożenie dedykowanego narzędzia (w zakładce Diagnostyka) do automatycznego mapowania i unifikacji starych nazw ćwiczeń (np. 'wyciskanie płaska' -> 'Klatka - Wyciskanie sztangi - Ławka płaska') we wszystkich Twoich historycznych treningach.
+          - listitem [ref=e312]: "📈 Wdrożenie Fazy 8 (Analityka): Dodano interaktywny Wykres Progresu dla konkretnych ćwiczeń w zakładce Analiza Progresu."
+          - listitem [ref=e313]: 📊 Możliwość wyboru dowolnego ćwiczenia z rozwijanej listy i śledzenia historii maksymalnego podniesionego ciężaru (oraz powtórzeń) na przestrzenni czasu w formie estetycznego wykresu słupkowego.
+      - generic [ref=e314]:
+        - heading "Wersja v2026.8.20.01 (2026-08-20)" [level=4] [ref=e315]
+        - list [ref=e316]:
+          - listitem [ref=e317]: "👑 Wdrożenie Fazy 7: Model Freemium. Aplikacja rozróżnia wersję Light oraz Heavy (PRO). Użytkownicy Light nie mają dostępu do funkcji AI po 7 dniach."
+          - listitem [ref=e318]: Dodanie banera Premium na ekranie startowym (Dashboard), który odlicza dni Trial i informuje o statusie (Trial / Light / PRO).
+          - listitem [ref=e319]: "Poprawa działania Superserii: Dodawany jest jeden pusty blok ćwiczenia z możliwością rozszerzania go za pomocą dedykowanego przycisku '+ Kolejne ćwiczenie (Superseria)'."
+          - listitem [ref=e320]: Przebudowa wyglądu okna Superserii (ujednolicona szerokość i usunięto podwójne obramowanie, które sprawiało problemy na mniejszych ekranach).
+          - listitem [ref=e321]: "Cardio: Umożliwienie ręcznego wpisania czasu treningu w minutach zamiast używania stopera."
+          - listitem [ref=e322]: "Interfejs: Nowy, ładniejszy wygląd przycisków odtwarzaczy Spotify oraz YouTube Music."
+      - generic [ref=e323]:
+        - heading "Wersja v2026.8.19.1 (2026-08-19)" [level=4] [ref=e324]
+        - list [ref=e325]:
+          - listitem [ref=e326]: "📚 Wygodny Katalog Ćwiczeń: Zamiast ukrytej listy (która nie chciała działać na iPhone'ach), obok nazwy ćwiczenia znajdziesz teraz dedykowany przycisk '📚 Katalog', który otwiera czytelne okno wyboru."
+          - listitem [ref=e327]: "🗂️ Podział na partie mięśniowe: Katalog w pierwszej kolejności pozwala wybrać partię (np. Plecy, Klatka), a dopiero potem konkretne ćwiczenie, skracając listę i ułatwiając szukanie."
+          - listitem [ref=e328]: "📱 Ulepszona Responsywność Serii: Pola ciężaru i powtórzeń zostały zwężone i ciaśniej ułożone, dzięki czemu nawet przy dużym skalowaniu czcionki na ekranach iPhone'a przyciski się nie nachodzą i nie uciekają z ekranu."
+          - listitem [ref=e329]: "🔄 Fix Aktualizacji: Ostatecznie naprawiono błąd powodujący ciągłe pojawianie się paska 'Dostępna nowa aktualizacja' mimo poprawnego zainstalowania nowej wersji."
+      - generic [ref=e330]:
+        - heading "Wersja v2026.8.18.1 (2026-08-18)" [level=4] [ref=e331]
+        - list [ref=e332]:
+          - listitem [ref=e333]: "📚 Wbudowany Katalog Ćwiczeń: dodając ćwiczenie otrzymujesz inteligentne podpowiedzi z ujednoliconego słownika."
+          - listitem [ref=e334]: "🚀 Automatyczna Migracja Historii: Twoje stare nazwy ćwiczeń (np. Klatka płaska) zostały zaktualizowane w całej historii do profesjonalnych odpowiedników z katalogu."
+          - listitem [ref=e335]: "🏆 Czytelniejsze Rekordy Siłowe: W Analizie Progresu główny wynik (Ciężar x Powtórzenia) jest teraz na pierwszym planie, a szacowane 1RM pełni rolę wspierającą."
+          - listitem [ref=e336]: "📱 Ulepszona Responsywność: Rekordy wyświetlają się perfekcyjnie na każdym ekranie i przy dużej czcionce dzięki płynnemu zawijaniu (flex-wrap)."
+          - listitem [ref=e337]: "🎨 Szlify estetyczne udostępniania: Z karty podsumowującej treningi do social mediów zniknęła nadmiarowa, niebieska stopka."
+      - generic [ref=e338]:
+        - heading "Wersja v2026.8.17.4 (2026-08-17)" [level=4] [ref=e339]
+        - list [ref=e340]:
+          - listitem [ref=e341]: "🎨 Czysty layout grafiki do social mediów: Usunięto nakładający się niebieski napis ze stopki wygenerowanego obrazu."
+          - listitem [ref=e342]: "📐 Inteligentne skalowanie: Rekordy siłowe na wygenerowanej karcie są teraz dynamicznie rozmieszczane, aby idealnie wypełniać kadr bez obcinania tekstu."
+      - generic [ref=e343]:
+        - heading "Wersja v2026.8.17.3 (2026-08-17)" [level=4] [ref=e344]
+        - list [ref=e345]:
+          - listitem [ref=e346]: "📤 Udostępnianie Rekordów Siłowych: Dodano dedykowany przycisk generujący estetyczną grafikę z Twoimi najlepszymi wynikami siłowymi, gotową do publikacji na Instagramie lub Facebooku."
+      - generic [ref=e347]:
+        - heading "Wersja v2026.8.17.2 (2026-08-17)" [level=4] [ref=e348]
+        - list [ref=e349]:
+          - listitem [ref=e350]: "🏆 Precyzja faktów: Kafelki Rekordów Siłowych pokazują teraz Rzeczywisty Podniesiony Ciężar (np. 100 kg w 10 powtórzeniach), a szacowany wskaźnik 1RM prezentowany jest jako dodatkowa, czytelna ciekawostka."
+      - generic [ref=e351]:
+        - heading "Wersja v2026.8.17.1 (2026-08-17)" [level=4] [ref=e352]
+        - list [ref=e353]:
+          - listitem [ref=e354]: "🏆 Nowa sekcja w Analizie Progresu: Twoje Rekordy Siłowe (Szacowane 1RM). Aplikacja automatycznie wylicza Twój szacowany maksymalny ciężar na 1 powtórzenie (wzorem Epleya) z najlepszych serii roboczych."
+          - listitem [ref=e355]: "💡 Wyczerpujące wyjaśnienie wskaźnika 1RM: Dodano interaktywny modal informacyjny wyjaśniający, czym jest 1RM, dlaczego szacujemy go matematycznie zamiast ryzykować kontuzję oraz jak dobierać obciążenia robocze."
+      - generic [ref=e356]:
+        - heading "Wersja v2026.8.15.3 (2026-08-15)" [level=4] [ref=e357]
+        - list [ref=e358]:
+          - listitem [ref=e359]: "✨ Poprawiono ergonomię ikony Informacji (ℹ️): kliknięcie w ikonę przy Tonażu Ciała otwiera teraz elegancki modal wyjaśniający obliczenia kalisteniczne na urządzeniach mobilnych."
+          - listitem [ref=e360]: 🎩 Ujednolicono ton wypowiedzi Trenera Edwarda w module atlasu mięśni na w pełni profesjonalny i merytoryczny.
+      - generic [ref=e361]:
+        - heading "Wersja v2026.8.15.2 (2026-08-15)" [level=4] [ref=e362]
+        - list [ref=e363]:
+          - listitem [ref=e364]: 🔥 [HOTFIX] Wdrożenie Wykresu Hybrydowego i nowych kafelków w Analizie Progresu.
+      - generic [ref=e365]:
+        - heading "Wersja v2026.8.15.1 (2026-08-15)" [level=4] [ref=e366]
+        - list [ref=e367]:
+          - listitem [ref=e368]: "🔥 Wdrożono Wykres Hybrydowy w Analizie Progresu: pełne wsparcie dla treningów Cardio oraz Zajęć Zorganizowanych (Hyrox, Crossfit, Zumba, Spinning)."
+          - listitem [ref=e369]: 📈 Koniec z 0 kg! Paski dla aktywności tlenowych mają teraz dedykowane kolory (Ognisty dla Zajęć, Niebieski dla Cardio) i prezentują spalone kalorie (kcal), średnie tętno (bpm) oraz czas trwania.
+          - listitem [ref=e370]: 📊 Dodano nowy kafelek analityczny ze statystykami spalonych kalorii z zegarków (Smartwatch) na samej górze ekranu analizy.
+          - listitem [ref=e371]: "🧠 Inteligentny komparator trendu: aplikacja rozróżnia sesje siłowe od tlenowych, nie porównując błędnie tonażu między różnymi dyscyplinami."
+      - generic [ref=e372]:
+        - heading "Wersja v2026.8.14.22 (2026-08-14)" [level=4] [ref=e373]
+        - list [ref=e374]:
+          - listitem [ref=e375]: 🛠 Poprawiono kolejny błąd mapowania danych bazy podczas importu, tym razem w obrębie tabel dziennika diety (usunięto nieistniejące kolumny ze skryptu wczytującego).
+          - listitem [ref=e376]: "📝 Ulepszono moduł logowania błędów: błędy podczas przywracania danych będą teraz zawsze poprawnie zapisywane w systemie logów Diagnostyki."
+      - generic [ref=e377]:
+        - heading "Wersja v2026.8.14.21 (2026-08-14)" [level=4] [ref=e378]
+        - list [ref=e379]:
+          - listitem [ref=e380]: 🛠 Naprawiono schemat importu bazy danych, który blokował prawidłowe przywrócenie archiwum z powodu niedopasowania nazw nowych kolumn z typami treningów.
+      - generic [ref=e381]:
+        - heading "Wersja v2026.8.14.20 (2026-08-14)" [level=4] [ref=e382]
+        - list [ref=e383]:
+          - listitem [ref=e384]: "🛠 Naprawiono krytyczny błąd w zakładce Diagnostyka: przyciski (np. Przywróć z Pliku, Utwórz Archiwum) przestały reagować na kliknięcia, jeśli system nie miał zapisanych żadnych logów błędów."
+      - generic [ref=e385]:
+        - heading "Wersja v2026.8.14.19 (2026-08-14)" [level=4] [ref=e386]
+        - list [ref=e387]:
+          - listitem [ref=e388]: "📱 Poprawiono układ graficzny wizytówki: Przycisk wsparcia (Postaw Kawę) teraz perfekcyjnie dopasowuje się do szerokości ekranów smartfonów, unikając niepotrzebnego ucinania."
+      - generic [ref=e389]:
+        - heading "Wersja v2026.8.14.18 (2026-08-14)" [level=4] [ref=e390]
+        - list [ref=e391]:
+          - listitem [ref=e392]: ☕ Wdrożenie Modułu Monetyzacji (AI Premium). Narzędzia sztucznej inteligencji (Trener Edward oraz Analiza Zdjec Diety) są teraz dostępne za darmo przez pierwsze 7 dni od uruchomienia aplikacji. Następnie wymagają odblokowania tokenem wsparcia poprzez Suppi (Postaw Kawę).
+          - listitem [ref=e393]: 🔗 Dodano dedykowany przycisk wsparcia (Postaw Kawę) bezpośrednio na ekranie startowym (Wizytówce) aplikacji.
+      - generic [ref=e394]:
+        - heading "Wersja v2026.8.14.17 (2026-08-14)" [level=4] [ref=e395]
+        - list [ref=e396]:
+          - listitem [ref=e397]: 📅 Wprowadzono opcję *Przywracania* odwołanych treningów. Usunięto błąd logiki, przez który odwołany z harmonogramu trening wciąż świecił się na czerwono bez możliwości interakcji.
+          - listitem [ref=e398]: 📱 Poprawiono szerokość wierszy dla Dropsetów wewnątrz Super-Serii. Słowo *Dropset* zostało zastąpione intuicyjnym *↳ 🔥*, co wraz z redukcją marginesu całkowicie eliminuje problem nie mieszczących się elementów na małych ekranach przy dużej czcionce.
+      - generic [ref=e399]:
+        - heading "Wersja v2026.8.14.16 (2026-08-14)" [level=4] [ref=e400]
+        - list [ref=e401]:
+          - listitem [ref=e402]: "📅 Aktualizacja logiczna kalendarza: Od teraz automatyczne harmonogramy nie wypełniają już sztucznie minionych dni miesiąca (wstecz). Pokazują się tylko od dnia dzisiejszego w przód!"
+          - listitem [ref=e403]: "⚡ Natychmiastowe odświeżanie: Zmiana dni w harmonogramie modalu ładuje widok kalendarza w czasie rzeczywistym zaraz po zamknięciu okna (bez konieczności ręcznego przeładowywania)."
+      - generic [ref=e404]:
+        - heading "Wersja v2026.8.14.15 (2026-08-14)" [level=4] [ref=e405]
+        - list [ref=e406]:
+          - listitem [ref=e407]: 📅 Kalendarz Faza 4 - Harmonogramy Treningów! Dodano możliwość przypisania Szablonu Planu Treningowego do konkretnych dni tygodnia (np. każdy Poniedziałek i Środa).
+          - listitem [ref=e408]: "🟢 Kalendarz zyskał inteligentne kropki: pomarańczowa (zaplanowany trening), zielona (trening zrealizowany), czerwona (trening pominięty)."
+          - listitem [ref=e409]: "🏃 Automatyczne uruchamianie: Kliknięcie w zaplanowany dzień w kalendarzu pozwala od razu wczytać i rozpocząć dedykowany plan z opcją przełożenia na inny dzień."
+          - listitem [ref=e410]: 🐛 Naprawiono błąd załamywania się wierszy i spadania przycisku X w widoku serii podczas skalowania dużych czcionek.
+          - listitem [ref=e411]: 💾 Udoskonalono formatowanie nazwy pobieranego pełnego archiwum bazy danych o sekundy (HH-mm-ss).
+      - generic [ref=e412]:
+        - heading "Wersja v2026.8.14.14 (2026-08-14)" [level=4] [ref=e413]
+        - list [ref=e414]:
+          - listitem [ref=e415]: "📦 Pełne Archiwum Danych (Kopia Bezpieczeństwa v2.0): Udoskonalono silnik kopii zapasowej – archiwum obejmuje teraz 100% bazy SQLite (pomiary, treningi, pełną historię diety, raporty AI) oraz wszystkie ustawienia i szablony!"
+          - listitem [ref=e416]: "✨ Nowoczesne Okno Szablonów Planów Treningowych: Przywrócono pełną nazwę modułu, dodano stały nagłówek z przyciskiem zamknięcia (X) oraz możliwość zamknięcia okna jednym tapnięciem w tło!"
+      - generic [ref=e417]:
+        - heading "Wersja v2026.8.14.13 (2026-08-14)" [level=4] [ref=e418]
+        - list [ref=e419]:
+          - listitem [ref=e420]: "📐 Perfekcyjne Wyrównanie w Wierszu Serii: Checkbox, numer serii, pola ciężaru/powtórzeń oraz przycisk usunięcia są teraz idealnie wyśrodkowane w pionie na jednej linii wzroku!"
+          - listitem [ref=e421]: "🎯 Szablony Treningowe: Przyciski \"Wybierz\" i \"Usuń\" mają teraz idealnie równe proporcje (50%/50%) i zawsze mieszczą się w kafelku bez wyjeżdżania poza obrys."
+          - listitem [ref=e422]: "✨ Symetria Przycisków Analiz: Przycisk \"Analiza Miesięczna\" zyskał identyczny, zbalansowany dwuliniowy układ jak \"Analiza Tygodniowa\"."
+          - listitem [ref=e423]: "🥋 Profesjonalna Komunikacja Trenera: Oczyszczono wszystkie dymki Trenera Edwarda z wulgaryzmów – teraz komunikaty są w 100% profesjonalne, motywujące i z lekkim, sportowym humorem!"
+      - generic [ref=e424]:
+        - heading "Wersja v2026.8.14.12 (2026-08-14)" [level=4] [ref=e425]
+        - list [ref=e426]:
+          - listitem [ref=e427]: "🧠 Pełny Wywiad i Makroskładniki u Trenera Edwarda: Edward przed każdą analizą pyta teraz o sen, staż treningowy i cel sylwetkowy! Dodatkowo silnik AI przekazuje pełną gramaturę makroskładników (Białko, Węglowodany, Tłuszcze oraz Kalorie ze szczegółami każdego posiłku). Koniec z narzekaniem Edwarda na brak rozbicia makro!"
+          - listitem [ref=e428]: "📋 Import Planu Treningowego z Analizy AI: Każdy trening zaproponowany przez Trenera Edwarda możesz teraz jednym kliknięciem (\"📋 Plan\") zapisać jako gotowy Szablon Treningowy i od razu załadować go na siłowni!"
+          - listitem [ref=e429]: "🔙 Intuicyjna Nawigacja w Raporcie: Dodano wyraźny przycisk powrotu do aplikacji u góry i na samym dole raportu z zachowaniem bezpiecznego marginesu pod Dynamic Island / Notch na iPhone."
+      - generic [ref=e430]:
+        - heading "Wersja v2026.8.14.11 (2026-08-14)" [level=4] [ref=e431]
+        - list [ref=e432]:
+          - listitem [ref=e433]: "🛠️ Dopracowanie layoutu Serii: Zastosowano zaawansowany CSS, dzięki któremu, jeśli wiersz z Serią, polami wagi/powtórzeń i ikoną usuwania zmieści się na ekranie – zostanie ułożony elegancko w jednym wierszu. Dopiero gdy czcionka jest za duża i brakuje miejsca, inputy naturalnie centrują się pod spodem. Czysta magia front-endu!"
+      - generic [ref=e434]:
+        - heading "Wersja v2026.8.14.10 (2026-08-14)" [level=4] [ref=e435]
+        - list [ref=e436]:
+          - listitem [ref=e437]: "🔥 Responsywny formularz Serii: Całkowicie przebudowano wygląd wprowadzania powtórzeń i ciężaru. Pola są teraz niezależne i pięknie wyśrodkowane na ekranie. Koniec z nachodzącymi na siebie przyciskami (szczególnie widocznymi przy dużych czcionkach w systemie iOS!)."
+          - listitem [ref=e438]: "🎨 Nowy wygląd Szablonów: Przebudowano modal z zapisanymi planami treningowymi. O wiele czystszy układ z nazwą jako tytułem na środku, dokładnymi informacjami o przewidywanym czasie (jeśli zapisano z historii) oraz z wygodnymi przyciskami na całą szerokość ekranu."
+      - generic [ref=e439]:
+        - heading "Wersja v2026.8.14.09 (2026-08-14)" [level=4] [ref=e440]
+        - list [ref=e441]:
+          - listitem [ref=e442]: "🛠️ Potężna Kopii Zapasowa (Diagnoza): Teraz funkcja Eksportu w zakładce Diagnostyka zapisuje absolutnie WSZYSTKO – treningi, pomiary, ustawienia (awatar, nick, szablony), dziennik diety oraz analizy Trenera Edwarda. Śmiało możesz reinstalować aplikację z czystym sumieniem!"
+          - listitem [ref=e443]: "🎨 Kolejne szlify Treningu: Poprawiono wyrównanie pól wprowadzania ciężaru przy dużym rozmiarze czcionki na ekranie (zawijanie wierszy z zachowaniem wyśrodkowania)."
+      - generic [ref=e444]:
+        - heading "Wersja v2026.8.14.08 (2026-08-14)" [level=4] [ref=e445]
+        - list [ref=e446]:
+          - listitem [ref=e447]: "🎨 Szlify interfejsu (UX/UI): Zoptymalizowano rozmiar i proporcje nowych, powiększonych pól wprowadzania ciężaru i powtórzeń w trakcie treningu (pozbyto się czarnych kwadratów), żeby aplikacja wyglądała świetnie i profesjonalnie na ekranie smartfona!"
+      - generic [ref=e448]:
+        - heading "Wersja v2026.8.14.07 (2026-08-14)" [level=4] [ref=e449]
+        - list [ref=e450]:
+          - listitem [ref=e451]: "🛠️ Hotfix: Szybka naprawa krytycznego błędu (tzw. zawieszenie na Loading), który wdarł się do najnowszego modułu treningowego. Teraz wszystko znowu śmiga płynnie! Przepraszamy za usterkę."
+      - generic [ref=e452]:
+        - heading "Wersja v2026.8.14.06 (2026-08-14)" [level=4] [ref=e453]
+        - list [ref=e454]:
+          - listitem [ref=e455]: "✨ NOWOŚĆ: Przebudowano interfejs aktywnego treningu — powiększono pola wprowadzania wagi i powtórzeń dla lepszej widoczności podczas ćwiczeń (Styl 'Large Input')."
+          - listitem [ref=e456]: "✨ NOWOŚĆ: Kalendarz Historii Treningów wzbogacony o nowy przycisk '🔍 Podgląd'. Kliknięcie pozwala na szybkie podejrzenie pełnych statystyk odbytego treningu w formie estetycznego modala, bez opuszczania widoku kalendarza."
+          - listitem [ref=e457]: "✨ NOWOŚĆ: Historia Treningów zyskała przycisk '📝 Zapisz jako plan treningowy'. Możesz teraz jednym kliknięciem przerobić swój wyśmienity trening w gotowy do powtórzenia szablon na przyszłość!"
+          - listitem [ref=e458]: "✨ NOWOŚĆ: Możliwość określenia swojego 'Stażu Treningowego' w Profilu. Informacja ta w połączeniu z historią jest przekazywana do Trenera Edwarda, aby ten celniej dobierał obciążenia i złożoność ćwiczeń."
+          - listitem [ref=e459]: "✨ NOWOŚĆ: Panel Trenera Edwarda zyskał przycisk '💾 Zapisz raport (TXT)'. Teraz każdą cenną analizę AI możesz wyeksportować i zabrać ze sobą w pliku."
+          - listitem [ref=e460]: "🚨 HOTFIX: Całkowicie wyeliminowano problem braku reakcji aplikacji przy wyczerpanym limicie 429 API, dodano czytelne ekrany informujące o przekroczeniu darmowej puli (Quota)."
+          - listitem [ref=e461]: "🚨 HOTFIX: Usunięto krytyczny błąd w Diagnostyce, który uniemożliwiał wyeksportowanie kopii zapasowej całej bazy danych w formacie JSON."
+      - generic [ref=e462]:
+        - heading "Wersja v2026.8.14.04 (2026-08-14)" [level=4] [ref=e463]
+        - list [ref=e464]:
+          - listitem [ref=e465]: "✨ NOWOŚĆ: Przebudowano Szablony Treningowe na Plany Treningowe z edycją ćwiczeń w locie (Checkboxy)."
+          - listitem [ref=e466]: 🤖 Trener Edward po szkoleniu! Oferuje teraz głębszą, profesjonalną analizę medyczną z uwzględnieniem objętości i splitu.
+          - listitem [ref=e467]: "🚨 HOTFIX: Wymuszona aktualizacja naprawiająca zaciętą pętlę ekranu nowości PWA (Problem wersji .03 rozwiązywany bezwzględnie)."
+      - generic [ref=e468]:
+        - heading "Wersja v2026.8.14.03 (2026-08-14)" [level=4] [ref=e469]
+        - list [ref=e470]:
+          - listitem [ref=e471]: "🚨 HOTFIX: Poprawa obsługi błędów 429 dla Trenera Edwarda (Komunikaty o limitach API)."
+      - generic [ref=e472]:
+        - heading "Wersja v2026.8.14.02 (2026-08-14)" [level=4] [ref=e473]
+        - list [ref=e474]:
+          - listitem [ref=e475]: "🚨 HOTFIX: Wymuszona aktualizacja z lepszą obsługą komunikatów o wyczerpaniu limitów API oraz poprawionym tekstem w analityce."
+      - generic [ref=e476]:
+        - heading "Wersja v2026.8.14.01 (2026-08-14)" [level=4] [ref=e477]
+        - list [ref=e478]:
+          - listitem [ref=e479]: "✨ NOWOŚĆ: Strona Wizytówkowa (Landing Page). Od teraz aplikacja dostępna jest w 100% z poziomu ikony PWA, a w przeglądarce wyświetla instrukcję instalacji."
+      - generic [ref=e480]:
+        - heading "Wersja v2026.8.13.04 (2026-08-13)" [level=4] [ref=e481]
+        - list [ref=e482]:
+          - listitem [ref=e483]: "🚨 HOTFIX: Wymuszona nowa aktualizacja, w której ostatecznie zsynchronizowaliśmy typy danych (images) dla serwera AI."
+      - generic [ref=e484]:
+        - heading "Wersja v2026.8.13.03 (2026-08-13)" [level=4] [ref=e485]
+        - list [ref=e486]:
+          - listitem [ref=e487]: "🚨 HOTFIX: Ostateczna naprawa komunikacji analiz AI z bazą SQLite oraz prawidłowe przesyłanie kontekstu do Cloudflare Workera."
+      - generic [ref=e488]:
+        - heading "Wersja v2026.8.13.02 (2026-08-13)" [level=4] [ref=e489]
+        - list [ref=e490]:
+          - listitem [ref=e491]: "✨ UX: Ujednolicono i powiększono czcionkę we wszystkich polach konfiguracji Profilu (Pomiary, Cele) oraz Ustawień."
+          - listitem [ref=e492]: "🚨 HOTFIX: Złagodzono irytujące zjeżdżanie ekranu (focus) na 'Opcje Treningu' po kliknięciu głównego kafelka 'Treningi', co pozwala teraz normalnie obejrzeć kalendarz."
+          - listitem [ref=e493]: "🚨 HOTFIX: Przycisk 'Pochwal się odznakami' w Ustawieniach znowu działa i generuje Twoje zrzuty z pucharami!"
+          - listitem [ref=e494]: "🧪 TESTY: 100% stabilności E2E Playwright - środowisko przygotowane do wypuszczenia sub-agentów!"
+      - generic [ref=e495]:
+        - heading "Wersja v2026.8.13.01 (2026-08-13)" [level=4] [ref=e496]
+        - list [ref=e497]:
+          - listitem [ref=e498]: "🚨 HOTFIX: Naprawiono błąd 'Brak zdjęcia lub tekstu' wyskakujący po wysłaniu samego zdjęcia jedzenia do Trenera Edwarda."
+          - listitem [ref=e499]: "🚨 HOTFIX: Naprawiono błąd braku odpowiedzi (i błędów 500) od chmury Trenera Edwarda z powodu zmian w obiekcie wyjściowym (obsługa samego tekstu)."
+          - listitem [ref=e500]: "🚨 HOTFIX: Zabezpieczenie przed niewidzialnym błędem podczas zapisu pustych danych tętna/kalorii z zegarka do starszych treningów."
+          - listitem [ref=e501]: "✨ NOWOŚĆ: Generowanie 'Paragonu treningowego' podczas udostępniania – dzieli się z przyjaciółmi pełną listą ćwiczeń i serii, a nie tylko suchymi statystykami!"
+          - listitem [ref=e502]: "✨ NOWOŚĆ: Eksport i Import Treningu – łatwo prześlesz znajomym wybitny plan treningowy, z możliwością jednoklikowego importu u nich."
+          - listitem [ref=e503]: "✨ UX: Ujednolicono i powiększono czcionkę we wszystkich polach konfiguracji Profilu oraz Ustawień."
+      - generic [ref=e504]:
+        - heading "Wersja v2026.8.10.05 (2026-08-13)" [level=4] [ref=e505]
+        - list [ref=e506]:
+          - listitem [ref=e507]: "✨ UX: Zwiększono czytelność numeru wersji na dole ekranu głównego (jaśniejszy kolor, cień)."
+          - listitem [ref=e508]: "✨ UX: Zmiana nazewnictwa znaczka 'PR! (1RM: X)' na bardziej zrozumiałe '🏆 Rekord! (Max: X kg)'."
+          - listitem [ref=e509]: "✨ UX: Poprawiono niejasny opis nagłówka nad starszymi treningami (zmieniono na 'Ostatnie treningi (wybierz, aby skopiować na dziś)')."
+          - listitem [ref=e510]: "✨ UX: Dodano wyświetlanie nazwy i typu treningu, a także statystyk z zegarka (Spalone kalorie i Średnie tętno) w podglądzie Historii Treningów."
+          - listitem [ref=e511]: "✨ UX: Zwiększono czcionkę pola wpisywania Nicku w ustawieniach Profilu."
+          - listitem [ref=e512]: "🚨 HOTFIX: Naprawiono błąd 'Nie znaleziono treningu w pamięci' podczas udostępniania pojedynczego treningu z ekranu Historii."
+          - listitem [ref=e513]: "🚨 HOTFIX: Złagodzono błąd (zamiast alertu prompt), gdy użytkownik przerwie udostępnianie ekranu w module Profilu i Analizy Progresu na niektórych przeglądarkach."
+      - generic [ref=e514]:
+        - heading "Wersja v2026.8.10.04 (2026-08-12)" [level=4] [ref=e515]
+        - list [ref=e516]:
+          - listitem [ref=e517]: "🚨 HOTFIX: Naprawiono błąd 'dietLogs.reduce is not a function' przy generowaniu analiz AI po stronie przeglądarek opartych na nowym cache'u (poprawiony sposób wyciągania wierszy z SQLite)."
+      - generic [ref=e518]:
+        - heading "Wersja v2026.8.10.03 (2026-08-12)" [level=4] [ref=e519]
+        - list [ref=e520]:
+          - listitem [ref=e521]: "🚨 HOTFIX KRYTYCZNY: Naprawiono błąd 'DatabaseManager is not a function' blokujący Analizę AI u niektórych użytkowników."
+          - listitem [ref=e522]: 🛠️ Usprawniono system cache'owania PWA. Aplikacja upewnia się teraz, że pobiera absolutnie najświeższe wersje modułów wewnętrznych (jak baza danych) po każdej aktualizacji, aby uniknąć konfliktów ze starymi wersjami.
+      - generic [ref=e523]:
+        - heading "Wersja v2026.8.10.02 (2026-08-10)" [level=4] [ref=e524]
+        - list [ref=e525]:
+          - listitem [ref=e526]: 📸 Przycisk ZRÓB FOTĘ wyrównany obok pola tekstowego — koniec z nachodzeniem na tekst!
+          - listitem [ref=e527]: "🤖 Walidacja AI: Jeśli brak treningów w wybranym okresie, Edward uprzejmie informuje że potrzebuje danych, zanim ruszy z analizą."
+          - listitem [ref=e528]: 😴 Sen jest teraz OPCJONALNY w analizie AI! Jeśli nie znasz swojego snu, kliknij 'Pomiń sen' — analiza powstanie z adnotacją o brakujących danych.
+          - listitem [ref=e529]: 🔢 Numer wersji aplikacji widoczny teraz pod kafelkami na pulpicie głównym.
+          - listitem [ref=e530]: 🗑️ Burger menu usunięty! Nawigacja tylko przez kafelki — szybciej, prościej, czyściej. Kliknij logo żeby wrócić na pulpit.
+          - listitem [ref=e531]: "🛠️ Naprawiony system aktualizacji: meta tag, service worker i CHANGELOG teraz zawsze zsynchronizowane."
+      - generic [ref=e532]:
+        - heading "Wersja v2026.8.10.01 (2026-08-10)" [level=4] [ref=e533]
+        - list [ref=e534]:
+          - listitem [ref=e535]: "🤖 NOWY MODUŁ: Analizy AI Trenera Edwarda! Własna zakładka na pulpicie z analizą tygodniową i miesięczną."
+          - listitem [ref=e536]: 📋 Historia analiz AI grupowana po roku i miesiącu — przejrzysta, z panelami do rozwijania.
+          - listitem [ref=e537]: "🏠 Nowy układ kafelków: Trening | Historia / Pomiary | Analiza / Dieta | Profil / Analizy AI | Diagnostyka / ☕ Postaw Kawę."
+          - listitem [ref=e538]: ☕ Postaw Kawę na pełną szerokość pod kafelkami!
+          - listitem [ref=e539]: 🐛 Naprawiono duplikat window.onerror (utrata logów w Diagnostyce).
+          - listitem [ref=e540]: 🐛 Usunięto zbędne script tagi AI z HTML (podwójne ładowanie modułów).
+          - listitem [ref=e541]: 🐛 Ujednolicone przyciski w Diagnostyce — spójny rozmiar i czcionka.
+          - listitem [ref=e542]: 📊 Wykres objętości zamieniony na czytelną listę sesji treningowych.
+      - generic [ref=e543]:
+        - heading "Wersja v.2026.8.9.12 (2026-08-09)" [level=4] [ref=e544]
+        - list [ref=e545]:
+          - listitem [ref=e546]: 🐛 Naprawiono pustą kartę Diagnostyki (brakujący HTML i renderowanie logów).
+          - listitem [ref=e547]: 🐛 Naprawiono błąd przy udostępnianiu treningów z widoku Historii (brak przypisania do obiektu window).
+          - listitem [ref=e548]: 🔥 Przygotowania pod wdrożenie Fazy 4.
+      - generic [ref=e549]:
+        - heading "Wersja v.2026.8.9.11 (2026-08-09)" [level=4] [ref=e550]
+        - list [ref=e551]:
+          - listitem [ref=e552]: "🛠️ Nowy Moduł Diagnostyki: Całkowicie wyizolowaliśmy funkcje techniczne (Eksport Bazy, Twardy Reset, Logi) do nowej, bezpiecznej zakładki na Ekranie Głównym."
+          - listitem [ref=e553]: "🛡️ Poprawki stabilności: ChatUI już nie zawiesza okna przy otwieraniu szablonów w tle, a PWA Updater agresywniej czyści pamięć podręczną by pobrać najnowszą wersję."
+      - generic [ref=e554]:
+        - heading "Wersja v.2026.8.9.10 (2026-08-09)" [level=4] [ref=e555]
+        - list [ref=e556]:
+          - listitem [ref=e557]: 🐛 Naprawiono widok Historii Treningów (błąd renderowania UI po wdrożeniu przycisku ratunkowego).
+          - listitem [ref=e558]: "📝 Wdrożono Złotą Zasadę Wersjonowania: PWA wymusza aktualizację z pominięciem starych cache'y."
+      - generic [ref=e559]:
+        - heading "Wersja v.2026.8.9.09 (2026-08-09)" [level=4] [ref=e560]
+        - list [ref=e561]:
+          - listitem [ref=e562]: "🚨 HOTFIX KRYTYCZNY: Naprawiono błąd układu graficznego, który powodował wyrzucenie Profilu i Ustawień na główny ekran, ukrywając Awatar i Nick. Twoje statystyki są całkowicie bezpieczne i wracają na swoje miejsce!"
+          - listitem [ref=e563]: 🐞 Ostateczne zsynchronizowanie wersji, aby Przycisk Paniki w końcu u każdego działał. Przepraszamy za usterki, lecimy dalej z formą!
+      - generic [ref=e564]:
+        - heading "Wersja v.2026.8.9.08 (2026-08-09)" [level=4] [ref=e565]
+        - list [ref=e566]:
+          - listitem [ref=e567]: 🚀 SZABLONY TRENINGOWE! Koniec z nudnym wklepywaniem tego samego co wtorek. Zapisz swój wymarzony trening jako szablon, nazwij go jak dzik i ładuj jednym kliknięciem! Lecimy z tematem!
+          - listitem [ref=e568]: 🏆 INTELIGENTNY SYSTEM PR i 1RM! Od dzisiaj wyliczamy Twoje szacowane maksymalne obciążenie w czasie rzeczywistym. Co więcej? Ustanów nowy rekord i spodziewaj się fajerwerków wprost od Trenera Edwarda! 🐗🔥
+          - listitem [ref=e569]: 🗺️ MAPA CIAŁA! Zastanawiasz się, co dzisiaj trenować? Odwiedź Analizę Progresu, a nasz system na podstawie Twoich wyczynów z ostatnich 48h wskaże, które partie aż proszą o litość na czerwono, a które są świeżutkie jak po 8h snu (zielone). Trener Edward już pędzi by dać Ci wskazówkę, kiedy robisz overtraining!
+          - listitem [ref=e570]: "🛠️ Przycisk Ratunkowy (Twardy Reset): Do sekcji Ustawień trafił nowy, czerwony przycisk 'Twardy Reset', który ratuje Cię, jeśli starsza wersja się zawiesi. Cache aplikacji wyparuje w sekundę bez utraty Twoich statystyk i wyników!"
+      - generic [ref=e571]:
+        - heading "Wersja v.2026.8.9.07 (2026-08-09)" [level=4] [ref=e572]
+        - list [ref=e573]:
+          - listitem [ref=e574]: "🛡️ Potężniejszy Brudnopis: Twój Draft zapamiętuje teraz absolutnie wszystko - od ćwiczeń, przez ręcznie wpisany czas, po kalorie ze smartwatcha i nazwę treningu! Nic nie zginie."
+          - listitem [ref=e575]: "🔍 Koniec z irytującym przybliżaniem: Zablokowaliśmy automatyczne powiększanie ekranu (zoom) na urządzeniach iOS podczas wpisywania danych z palca."
+      - generic [ref=e576]:
+        - heading "Wersja v.2026.8.9.06 (2026-08-09)" [level=4] [ref=e577]
+        - list [ref=e578]:
+          - listitem [ref=e579]: 🚑 Gorąca poprawka! Naprawiliśmy mały, ale złośliwy błąd, który powodował zawieszanie się zapisu treningu tuż po uruchomieniu (niezainicjowany moduł smartwatcha). Możesz już zapisywać bez żadnych przeszkód!
+      - generic [ref=e580]:
+        - heading "Wersja v.2026.8.9.05 (2026-08-09)" [level=4] [ref=e581]
+        - list [ref=e582]:
+          - listitem [ref=e583]: "💪 Ewolucja Treningów: Wprowadziliśmy długo wyczekiwany podział na Trening Siłowy, Cardio oraz Zajęcia Zorganizowane! Aplikacja sama dostosuje interfejs do tego, co właśnie ćwiczysz."
+          - listitem [ref=e584]: "🚴‍♂️ Gotowi na zajęcia: Wybierz z gotowej listy takie sztosy jak Tabata, HYROX, Les Mills CORE, Pośladki i Brzuch czy Rowery/Spinning, a jeśli brakuje Twoich - wpisz je ręcznie jednym kliknięciem!"
+          - listitem [ref=e585]: "🎶 Muzyka pod ręką: Do głównego panelu pod stoperem dodaliśmy skróty odpalszające Spotify i YT Music. Muza i pompa w jednym miejscu!"
+          - listitem [ref=e586]: "📱 Inteligentny Edward: Twój osobisty asystent nie śpi! Jeśli zminimalizujesz aplikację by odpisać na SMS-a, po powrocie Edward szybko doliczy czas i pogoni Cię do dalszej pracy nad formą!"
+          - listitem [ref=e587]: "🛠️ Żelazna Baza Danych: Załataliśmy lukę, przez którą specyficznie mierzone czasy z Cardio (i wartości NaN) potrafiły wysadzić zapis. Twoja baza SQLite jest teraz kuloodporna!"
+      - generic [ref=e588]:
+        - heading "Wersja v.2026.8.9.04 (2026-08-09)" [level=4] [ref=e589]
+        - list [ref=e590]:
+          - listitem [ref=e591]: 🛡️ Twój trening jest teraz niezniszczalny! Wdrożyliśmy zaawansowany system 'Brudnopisu' (Auto-Save), który w tle zabezpiecza każdą Twoją serię. Nawet jeśli napotkasz jakiś błąd, Twoje wpisy zostaną uratowane i odzyskasz je jednym kliknięciem. Dodatkowo ulepszyliśmy numerację Dropsetów. Trenuj bez obaw! 🚀
+      - generic [ref=e592]:
+        - heading "Wersja v.2026.8.9.03 (2026-08-09)" [level=4] [ref=e593]
+        - list [ref=e594]:
+          - listitem [ref=e595]: "🔄 Super Szybkie Aktualizacje: Zauważyliśmy, że przeglądarki czasami bywają zbyt uparte i uparcie trzymają starą pamięć podręczną (cache), ukrywając przed Wami najświeższe nowości. Daliśmy naszemu modułowi aktualizacji PWA potężnego kopa! Od teraz nowe wersje aplikacji bezbłędnie przebijają się przez cache i od razu pojawiają się na Twoim telefonie. Koniec z blokowaniem się aktualizacji! 🚀"
+      - generic [ref=e596]:
+        - heading "Wersja v.2026.8.9.02 (2026-08-09)" [level=4] [ref=e597]
+        - list [ref=e598]:
+          - listitem [ref=e599]: "🎯 Idealne Wyśrodkowanie: Okna w Analizie Progresu na telefonach nie uciekają już do prawej krawędzi. Zrozumieliśmy aluzję - wielki przycisk 'Zrozumiałem' zamieniliśmy na smuklejszy i zgrabniejszy przycisk 'Zamknij'."
+          - listitem [ref=e600]: "💎 Krystaliczna Tapeta: Efekt matowego szkła (blur) został całkowicie usunięty dla własnych tapet. Teraz Twoje zdjęcie jest ostre jak brzytwa i idealnie czytelne prosto pod kafelkami aplikacji!"
+      - generic [ref=e601]:
+        - heading "Wersja v.2026.8.9.01 (2026-08-09)" [level=4] [ref=e602]
+        - list [ref=e603]:
+          - listitem [ref=e604]: "🎯 Idealne Wyśrodkowanie: Okna w Analizie Progresu na telefonach nie uciekają już do prawej krawędzi. Zrozumieliśmy aluzję - wielki przycisk \"Zrozumiałem\" zamieniliśmy na smuklejszy i zgrabniejszy przycisk \"Zamknij\"."
+          - listitem [ref=e605]: "💎 Krystaliczna Tapeta: Efekt matowego szkła (blur) został zdjęty dla własnych tapet. Teraz Twoje zdjęcie jest ostre jak brzytwa i idealnie czytelne prosto pod kafelkami aplikacji!"
+      - generic [ref=e606]:
+        - heading "Wersja v.2026.8.8.03 (2026-08-08)" [level=4] [ref=e607]
+        - list [ref=e608]:
+          - listitem [ref=e609]: "🎨 Szlify Graficzne: Poprawiliśmy zawijanie tekstów w Analizie Progresu. Nawet najmniejsze ekrany telefonów bezbłędnie wyświetlają teraz opisy stref (np. Atletyczna)! 📱"
+          - listitem [ref=e610]: "🖼️ Własna Tapeta: Usunęliśmy gęstą mgłę z tła! Teraz wrzucając własną fotkę jako tapetę, cieszysz się jej widokiem w pełnej krasie za wszystkimi kafelkami."
+          - listitem [ref=e611]: "📖 Księga Uki'ego (Help): Instrukcja obsługi została gigantycznie rozbudowana! Każdy kafelek, każda opcja ma tam teraz swój zabawny i treściwy opis. Żaden ficzer Ci nie umknie!"
+          - listitem [ref=e612]: "📸 Gotowi na Insta: Twój system udostępniania statystyk na Social Media działa doskonale, ustawiając Twoje fotki z treningu jako epickie tło z mrocznym filtrem. Szpanuj formą bez przeszkód!"
+      - generic [ref=e613]:
+        - heading "Wersja v.2026.8.8.02 (2026-08-08)" [level=4] [ref=e614]
+        - list [ref=e615]:
+          - listitem [ref=e616]: "📊 Analityka Progresu: Całkowicie przebudowaliśmy analitykę! Zapomnij o nudnych powiadomieniach - witajcie piękne, kolorowe wskaźniki (gauge bars) pokazujące Twój poziom!"
+          - listitem [ref=e617]: "🧠 Instrukcja Obsługi: Dodaliśmy w Ustawieniach potężną dawkę wiedzy! Znajdziesz tam zabawną instrukcję pełną wskazówek i ukrytych ficzerów."
+          - listitem [ref=e618]: "🧮 Magiczny Minus: Poprawiliśmy działanie przycisku +/- dla ćwiczeń z ciężarem własnym. Nieważne czy wpiszesz 'podciąganie' z polskimi znakami czy bez - system to wychwyci!"
+          - listitem [ref=e619]: "⏱️ Precyzyjny Czas Treningu: Ręczne wpisywanie czasu treningu podzieliliśmy na przejrzyste godziny i minuty. Pełna kontrola nad Twoimi danymi!"
+      - generic [ref=e620]:
+        - heading "Wersja v.2026.8.8.01 (2026-08-08)" [level=4] [ref=e621]
+        - list [ref=e622]:
+          - listitem [ref=e623]: "🛠️ Stabilność Treningów: Szybko załataliśmy błąd wywalający trening przy łączeniu superserii z dropsetami. Twój progres znów jest bezpieczny!"
+          - listitem [ref=e624]: "📸 Dieta 2.0: Sztuczna inteligencja przeanalizuje teraz do 3 zdjęć posiłku naraz. Dodawaj składniki jak chcesz!"
+          - listitem [ref=e625]: "👤 Mój Profil, Mój Nick: Zmieniliśmy mechanizm zapisu danych – teraz Twój własny pseudonim ładuje się bezbłędnie."
+          - listitem [ref=e626]: "🕵️ Asystent Diagnostyczny: Usprawniliśmy logowanie awarii w tle, aby jeszcze szybciej wyłapywać i niszczyć błędy."
+          - listitem [ref=e627]: "⏱️ Kontrola Czasu: Zapomniałeś kliknąć stop? Od teraz przed zapisem treningu możesz ręcznie wpisać jego faktyczny czas trwania."
+          - listitem [ref=e628]: "🗣️ Gadatliwy Edward: Wydłużyliśmy czas wyświetlania motywacyjnych dymków trenera w trakcie ćwiczeń. Teraz na pewno niczego nie przegapisz!"
+      - generic [ref=e629]:
+        - heading "Wersja v.2026.8.7.28 (2026-08-07)" [level=4] [ref=e630]
+        - list [ref=e631]:
+          - listitem [ref=e632]: "🤖 Trener Edward 2.0: Inteligentny system reagujący na Twoje postępy! Spodziewaj się motywujących dymków po treningu."
+          - listitem [ref=e633]: "🎓 Kontekstowy Samouczek: Stary, inwazyjny samouczek odszedł w niepamięć. Apka podpowiada najważniejsze funkcje dokładnie wtedy, gdy ich potrzebujesz."
+          - listitem [ref=e634]: "🏆 System nagród za konsekwencję: Edward policzy Twoje treningi i co tydzień (po 7 sesjach) rzuci specjalnymi gratulacjami!"
+          - listitem [ref=e635]: "🛠️ Testy E2E zaktualizowane: Playwright w pełni wspiera nowe, bezpieczniejsze menu nawigacyjne aplikacji."
+      - generic [ref=e636]:
+        - heading "Wersja v.2026.8.7.27 (2026-08-07)" [level=4] [ref=e637]
+        - list [ref=e638]:
+          - listitem [ref=e639]: Wydanie nowej wersji poprawkowej.
+      - generic [ref=e640]:
+        - heading "Wersja v.2026.8.7.26 (2026-08-07)" [level=4] [ref=e641]
+        - list [ref=e642]:
+          - listitem [ref=e643]: "🔥 Naprawa mechanizmu aktualizacji PWA: Baner 'Co nowego?' będzie się teraz pojawiał znacznie skuteczniej i bez pętli."
+          - listitem [ref=e644]: 🛠️ Rozwiązano problem z zablokowaniem aplikacji (błąd ładowania ekranu) dla nowych użytkowników wywołany przez samouczek.
+          - listitem [ref=e645]: 🤖 Wdrożono środowisko testowe Playwright zapobiegające podobnym awariom w przyszłości.
+      - generic [ref=e646]:
+        - heading "Wersja v.2026.8.7.25 (2026-08-07)" [level=4] [ref=e647]
+        - list [ref=e648]:
+          - listitem [ref=e649]: "🔥 Błyskawiczny Hotfix: Naprawiono błąd 'SyntaxError' zablokowania aplikacji podczas ładowania samouczka."
+          - listitem [ref=e650]: 📱 Poprawiono układ graficzny ('Średnie Tętno' wychodzące poza ekran) w widoku dodawania parametrów ze smartwatcha dla mniejszych ekranów.
+      - generic [ref=e651]:
+        - heading "Wersja v.2026.8.7.24 (2026-08-07)" [level=4] [ref=e652]
+        - list [ref=e653]:
+          - listitem [ref=e654]: 🔦 Zmieniono sposób podświetlania elementów w samouczku. Zamiast zmieniać z-index warstw, tło tworzy teraz idealnie dociętą, przeźroczystą dziurę z efektem ostrości nad klikalnym elementem, rozwiązując wszystkie problemy z czarnym przykryciem.
+      - generic [ref=e655]:
+        - heading "Wersja v.2026.8.7.23 (2026-08-07)" [level=4] [ref=e656]
+        - list [ref=e657]:
+          - listitem [ref=e658]: 🛠️ Naprawiono ucinanie się dymków z samouczkiem na ekranach telefonów poprzez precyzyjne wyśrodkowanie okienek.
+          - listitem [ref=e659]: 🛠️ Zaktualizowano przycisk 'Zaktualizuj' w panelu 'Co nowego?' - teraz od razu prawidłowo instaluje PWA (wcześniej jedynie odświeżał widok).
+      - generic [ref=e660]:
+        - heading "Wersja v.2026.8.7.22 (2026-08-07)" [level=4] [ref=e661]
+        - list [ref=e662]:
+          - listitem [ref=e663]: 🎓 Nowy i ulepszony interaktywny Samouczek w stylu 'Liquid Glass' z pełnymi informacjami o wszystkich najważniejszych modułach, w tym o Diecie!
+          - listitem [ref=e664]: 🗑️ Naprawiono błąd, który powodował brak reakcji na przycisk 'Usuń' w widoku kalendarza treningowego.
+      - generic [ref=e665]:
+        - heading "Wersja v.2026.8.7.21 (2026-08-07)" [level=4] [ref=e666]
+        - list [ref=e667]:
+          - listitem [ref=e668]: 🔥 Krytyczna poprawka aktualizatora PWA. Wymuszono usunięcie błędnych skryptów z pamięci, co odblokowuje instalację przyszłych aktualizacji bez pętli komunikatów.
+          - listitem [ref=e669]: "✨ Elegancja dla treningu: Superserie zostały zebrane w jeden, podświetlany 'Blok Łączony' dla lepszej widoczności w trakcie ćwiczeń."
+          - listitem [ref=e670]: "🧠 Trening bez ciężaru: Ćwiczenia typu podciąganie, pompki, brzuszki, deska od teraz nie krzyczą o podanie ilości kilogramów (możesz to pole zostawić puste)."
+      - generic [ref=e671]:
+        - heading "Wersja v.2026.8.7.20 (2026-08-07)" [level=4] [ref=e672]
+        - list [ref=e673]:
+          - listitem [ref=e674]: "🚑 Hotfix (x2): Usunięcie krytycznych błędów blokujących Kafelki Nawigacyjne."
+          - listitem [ref=e675]: "🎓 Nowość: Dodano Interaktywny Samouczek oprowadzający po systemie, zbudowany w czystym JS!"
+      - generic [ref=e676]:
+        - heading "Wersja v.2026.8.7.18 (2026-08-07)" [level=4] [ref=e677]
+        - list [ref=e678]:
+          - listitem [ref=e679]: "💪 Inteligentna analiza Tonażu: od teraz pompki i podciągania wliczają masę Twojego ciała do przerzuconego ciężaru!"
+          - listitem [ref=e680]: 📸 Możliwość dodania do 3 zdjęć z treningu (dostępne tuż przed zakończeniem sesji).
+          - listitem [ref=e681]: 📤 Zdjęcia treningowe są automatycznie ustawiane jako tło przy udostępnianiu treningu!
+          - listitem [ref=e682]: "⌚ Dane ze Smartwatcha: Dodano pola Kalorii i Średniego Tętna."
+          - listitem [ref=e683]: ⏱️ Osobny Stoper start/stop dla ćwiczeń typu Cardio.
+          - listitem [ref=e684]: "🗣️ Trener Edward: odzywa się co 15 minut podczas aktywnego treningu."
+          - listitem [ref=e685]: 🛠️ Nowy panel diagnostyczny w 'Ustawieniach' i naprawa błędu crashowania superserii.
+      - generic [ref=e686]:
+        - heading "Wersja v.2026.8.7.16 (2026-08-07)" [level=4] [ref=e687]
+        - list [ref=e688]:
+          - listitem [ref=e689]: 🛠️ drobne zmiany w aplikacji (test logów v.16)
+      - generic [ref=e690]:
+        - heading "Wersja v.2026.8.7.10 (2026-08-07)" [level=4] [ref=e691]
+        - list [ref=e692]:
+          - listitem [ref=e693]: 🔥 Masywna Rewolucja Dietetyczna 3.0!
+          - listitem [ref=e694]: "🎯 Nowość: Edward przejął całkowitą kontrolę nad liczeniem Kalorii - Możesz podyktować co zjadłeś i jednocześnie cyknąć temu zdjęcie! Jedno kliknięcie wystarczy by obliczyć wszystko do zera."
+          - listitem [ref=e695]: "🔴 Nowość: Alarm nadmiarowy. System będzie intensywnie pulsował na czerwono powiadamiając Cię gdy tylko przekroczysz swój plan dietetyczny TDEE."
+          - listitem [ref=e696]: "📊 Nowość: Wbudowany 30-dniowy wykres słupkowy na zakładce Dieta pokazuje Twoje zjedzone kalorie byś idealnie widział całą historię."
+      - generic [ref=e697]:
+        - heading "Wersja v.2026.8.7.09 (2026-08-07)" [level=4] [ref=e698]
+        - list [ref=e699]:
+          - listitem [ref=e700]: ✨ Perfekcja tkwi w detalach! Wyrównaliśmy wizualnie przyciski kontynuacji i usuwania treningów, by interfejs cieszył oko jeszcze bardziej w każdej rozdzielczości.
+      - generic [ref=e701]:
+        - heading "Wersja v.2026.8.7.08 (2026-08-07)" [level=4] [ref=e702]
+        - list [ref=e703]:
+          - listitem [ref=e704]: 📡 Połączenie z centralą przywrócone! Usunęliśmy przeszkodę wymagającą ręcznej konfiguracji połączeń sieciowych z Cloudflare. Edward odpala się natychmiast, z użyciem dedykowanego tunelu!
+      - generic [ref=e705]:
+        - heading "Wersja v.2026.8.7.07 (2026-08-07)" [level=4] [ref=e706]
+        - list [ref=e707]:
+          - listitem [ref=e708]: 🎨 Szlify interfejsu (UX/UI)! Ikona wywołująca Edwarda chowa się inteligentnie po rozpoczęciu czatu, udostępniając maksymalną możliwą przestrzeń na ekranie Twojego smartfona. Rozmowy są teraz znacznie czystsze i wyraźniejsze!
+      - generic [ref=e709]:
+        - heading "Wersja v.2026.8.7.06 (2026-08-07)" [level=4] [ref=e710]
+        - list [ref=e711]:
+          - listitem [ref=e712]: 🗑 Zrobiliśmy porządki! Omyłkowo zdublowane lub niechciane treningi usuniesz teraz jednym kliknięciem z panelu dnia (z wbudowanym bezpiecznym oknem potwierdzenia). Twoja historia, Twoje zasady! 🧹
+      - generic [ref=e713]:
+        - heading "Wersja v.2026.8.7.05 (2026-08-07)" [level=4] [ref=e714]
+        - list [ref=e715]:
+          - listitem [ref=e716]: 📱 Zoptymalizowaliśmy pływające okno Trenera Edwarda pod telefony (iOS/Android)! Koniec z niepotrzebnie przybliżającym się ekranem podczas pisania na wirtualnej klawiaturze.
+      - generic [ref=e717]:
+        - heading "Wersja v.2026.8.7.04 (2026-08-07)" [level=4] [ref=e718]
+        - list [ref=e719]:
+          - listitem [ref=e720]: 🤖 Poznaj Edwarda! Twój nowy osobisty Trener AI jest gotowy do akcji. Znajdziesz go w prawym dolnym rogu ekranu – zadawaj pytania o dietę, trening lub po prostu poproś o dawkę motywacji!
+          - listitem [ref=e721]: "⚙️ Zaktualizowany silnik AI: Upewnij się, że Twój Cloudflare Worker posiada najnowszą łatkę obsługującą czat, którą przygotowaliśmy."
+      - generic [ref=e722]:
+        - heading "Wersja v.2026.8.7.03 (2026-08-07)" [level=4] [ref=e723]
+        - list [ref=e724]:
+          - listitem [ref=e725]: 👋 Witamy Cię osobiście! Nasz nowy system powitań zapamięta Twoje imię, aby aplikacja stała się jeszcze bardziej osobista.
+          - listitem [ref=e726]: 🔥 Wkraczamy na wyższy poziom! Dodaliśmy długo oczekiwane Dropsety oraz Superserie – buduj formę jeszcze intensywniej!
+          - listitem [ref=e727]: ✨ Drobne usprawnienia interfejsu (m.in. ułatwiony dostęp do nowych bloków ćwiczeń).
+      - generic [ref=e728]:
+        - heading "Wersja v.2026.8.7.02 (2026-08-07)" [level=4] [ref=e729]
+        - list [ref=e730]:
+          - listitem [ref=e731]: 🛠 Szybka poprawka wydajnościowa! Usunęliśmy drobne problemy, byś mógł skupić się wyłącznie na treningu.
+      - generic [ref=e732]:
+        - heading "Wersja v.2026.8.7.01 (2026-08-07)" [level=4] [ref=e733]
+        - list [ref=e734]:
+          - listitem [ref=e735]: "🔄 Wygodne powtórzenia: w treningu dodaliśmy nowy przełącznik 'Kopiuj ciężar do następnej serii', który oszczędzi Ci wpisywania tych samych liczb!"
+          - listitem [ref=e736]: "📅 Więcej na luzie: teraz możesz rozbić trening na części i dodać drugą (a nawet kolejną!) sesję treningową w tym samym dniu."
+          - listitem [ref=e737]: "🎤 AI rozumie kontekst: moduł rozpoznawania posiłków ze zdjęcia ma teraz dodatkowe pole - podyktuj lub wpisz opcjonalny kontekst (np. niewidoczne składniki sosu) przed wysłaniem do analizy AI!"
+      - generic [ref=e738]:
+        - heading "Wersja v.2026.8.6.16 (2026-08-06)" [level=4] [ref=e739]
+        - list [ref=e740]:
+          - listitem [ref=e741]: "✨ Szlify Social Media: udostępnianie Twoich postępów wygląda teraz obłędnie i obsługuje gramatykę zależną od płci!"
+          - listitem [ref=e742]: "👤 Nowość w Pomiarach: dodano wybór płci (Kobieta/Mężczyzna) z automatycznym zapamiętywaniem."
+          - listitem [ref=e743]: "🧠 Mądrzejsza Analityka: wbudowaliśmy specjalny wariant wzoru US Navy dla Pań (uwzględniający biodra) oraz dostosowane progi formy (FFMI, BF%, WHR)."
+      - generic [ref=e744]:
+        - heading "Wersja v.2026.8.6.15 (2026-08-06)" [level=4] [ref=e745]
+        - list [ref=e746]:
+          - listitem [ref=e747]: 🐛 Koniec z dublowaniem treningów! Funkcja 'Kontynuuj Trening' teraz idealnie zlicza czas i nadpisuje jeden wpis w historii.
+          - listitem [ref=e748]: "📷 Miniaturki w Treningu: po zrobieniu zdjęcia maszyny od razu zobaczysz jej zgrabny podgląd na liście ćwiczeń."
+          - listitem [ref=e749]: "🎨 Lifting Diety: większe czcionki, jaskrawe kolory makro i czytelniejsze kółko kaloryczne dla jeszcze lepszego UX."
+      - generic [ref=e750]:
+        - heading "Wersja v.2026.8.6.14 (2026-08-06)" [level=4] [ref=e751]
+        - list [ref=e752]:
+          - listitem [ref=e753]: "📈 Potężna aktualizacja Analityki: dodaliśmy wyliczanie poziomu tkanki tłuszczowej (BF%), indeksu FFMI i WHR, wraz z interpretacją Twojej formy!"
+          - listitem [ref=e754]: "📊 Wykresy historii: śledź swoje postępy na eleganckim wykresie słupkowym."
+      - generic [ref=e755]:
+        - heading "Wersja v.2026.8.6.13 (2026-08-06)" [level=4] [ref=e756]
+        - list [ref=e757]:
+          - listitem [ref=e758]: 🔧 Szlifujemy kody! Wprowadziliśmy optymalizacje, by apka działała płynniej i oszczędzała baterię.
+      - generic [ref=e759]:
+        - heading "Wersja v.2026.8.6.12 (2026-08-06)" [level=4] [ref=e760]
+        - list [ref=e761]:
+          - listitem [ref=e762]: ⚡ Przyspieszyliśmy działanie interfejsu. Ekran wczytuje się błyskawicznie!
+      - generic [ref=e763]:
+        - heading "Wersja v.2026.8.6.11 (2026-08-06)" [level=4] [ref=e764]
+        - list [ref=e765]:
+          - listitem [ref=e766]: 🛡️ Poprawiliśmy stabilność. Twoje dane są jeszcze bezpieczniejsze!
+      - generic [ref=e767]:
+        - heading "Wersja v.2026.8.6.10 (2026-08-06)" [level=4] [ref=e768]
+        - list [ref=e769]:
+          - listitem [ref=e770]: 🎨 Delikatny lifting interfejsu. Zadbaliśmy o spójność detali wizualnych.
+      - generic [ref=e771]:
+        - heading "Wersja v.2026.8.6.09 (2026-08-06)" [level=4] [ref=e772]
+        - list [ref=e773]:
+          - listitem [ref=e774]: ⚙️ Małe ulepszenia, wielka różnica! Przebudowaliśmy silnik pod maską dla jeszcze większej wydajności.
+      - generic [ref=e775]:
+        - heading "Wersja v.2026.8.6.08 (2026-08-06)" [level=4] [ref=e776]
+        - list [ref=e777]:
+          - listitem [ref=e778]: 🚀 Stabilność na medal! Rozwiązaliśmy rzadko spotykane błędy zgłaszane przez społeczność.
+      - generic [ref=e779]:
+        - heading "Wersja v.2026.8.6.07 (2026-08-06)" [level=4] [ref=e780]
+        - list [ref=e781]:
+          - listitem [ref=e782]: 📱 Lepsze wsparcie dla różnych rozdzielczości ekranu - każdy szczegół ma znaczenie!
+      - generic [ref=e783]:
+        - heading "Wersja v.2026.8.6.06 (2026-08-06)" [level=4] [ref=e784]
+        - list [ref=e785]:
+          - listitem [ref=e786]: 💪 Niezawodność to nasz cel - zoptymalizowaliśmy bazy danych dla szybszego zapisu.
+      - generic [ref=e787]:
+        - heading "Wersja v.2026.8.6.05 (2026-08-06)" [level=4] [ref=e788]
+        - list [ref=e789]:
+          - listitem [ref=e790]: ✨ Drobne, ale istotne poprawki, które usprawniają codzienne korzystanie z narzędzia.
+      - generic [ref=e791]:
+        - heading "Wersja v.2026.8.6.04 (2026-08-06)" [level=4] [ref=e792]
+        - list [ref=e793]:
+          - listitem [ref=e794]: 🔧 Stabilizacja logiki systemowej, dzięki której wszystko chodzi jak w szwajcarskim zegarku.
+      - generic [ref=e795]:
+        - heading "Wersja v.2026.8.6.03 (2026-08-06)" [level=4] [ref=e796]
+        - list [ref=e797]:
+          - listitem [ref=e798]: 🔧 Szlifujemy kody! Wprowadziliśmy optymalizacje, by apka działała płynniej i oszczędzała baterię.
+      - generic [ref=e799]:
+        - heading "Wersja v.2026.8.6.02 (2026-08-06)" [level=4] [ref=e800]
+        - list [ref=e801]:
+          - listitem [ref=e802]: Wdrożono inteligentny moduł Diety z rozpoznawaniem posiłków AI.
+          - listitem [ref=e803]: Dodano wyliczanie celu kalorycznego TDEE w zakładce Ustawienia.
+          - listitem [ref=e804]: Integracja z bezpiecznym serwerem pośredniczącym Cloudflare.
+          - listitem [ref=e805]: Poprawiono formatowanie numeru wersji w systemie.
+      - generic [ref=e806]:
+        - heading "Wersja v.2026.8.6.01 (2026-08-06)" [level=4] [ref=e807]
+        - list [ref=e808]:
+          - listitem [ref=e809]: Poprawiono proporcje kalendarza (skalowanie na urządzeniach mobilnych).
+          - listitem [ref=e810]: "Dodano zaawansowaną analitykę: wyliczanie BF% (US Navy) oraz FFMI."
+          - listitem [ref=e811]: Udostępnianie treningów i wyników w mediach społecznościowych z generowaniem grafiki z awatarem.
+          - listitem [ref=e812]: Naprawiono krytyczny błąd blokujący przełączanie zakładek.
+          - listitem [ref=e813]: Wdrożono zaawansowany baner aktualizacji PWA (w tym changelog).
+      - generic [ref=e814]:
+        - heading "Wersja v.2026.8.5.13 (2026-08-05)" [level=4] [ref=e815]
+        - list [ref=e816]:
+          - listitem [ref=e817]: Dodano pole 'Szyja' w pomiarach ciała (niezbędne do wyliczania BF%).
+          - listitem [ref=e818]: Dodano Wzrost w pomiarach ciała.
+          - listitem [ref=e819]: Poprawki formularzy w urządzeniach z systemem iOS (skalowanie paska daty).
+          - listitem [ref=e820]: Zoptymalizowano proces ładowania danych w historii pomiarów.
+  - button "🤖" [ref=e822] [cursor=pointer]
+```
+
+# Test source
+
+```ts
+  1  | const { test, expect } = require('@playwright/test');
+  2  | 
+  3  | test.describe('Training Types UI', () => {
+  4  |   test('should show and hide exercises container based on training type', async ({ page }) => {
+  5  |     // We mock the DB init to not fail if OPFS is weird in headless
+  6  |     // We can just rely on the static HTML for this UI test.
+  7  |     await page.addInitScript(() => { window.localStorage.setItem('tutorial_global_v22', 'true'); window.localStorage.setItem('uki-bodybuild-last-version', 'v2026.8.13.01'); });
+  8  |     await page.goto('http://127.0.0.1:8080/');
+  9  | 
+  10 |     // Click the Training tile to go to Training dashboard
+  11 |     await page.click('a[data-tab="training-dashboard"]');
+  12 | 
+  13 |     // Wait for the calendar view to be visible
+  14 |     await page.waitForSelector('#training-calendar-view', { state: 'visible' });
+  15 | 
+  16 |     // Select day 15 first
+  17 |     await page.evaluate(() => window.TrainingUI.handleDayClick('2026-08-15'));
+  18 | 
+  19 |     // Click "Add new session" button
+  20 |     await page.click('#start-new-session-btn');
+  21 | 
+  22 |     // Wait for active training view to be visible
+  23 |     await page.waitForSelector('#active-training-view', { state: 'visible' });
+  24 | 
+  25 |     // Default type should be 'strength', so exercises container should be visible
+  26 |     const exercisesSection = page.locator('#exercises-container-section');
+  27 |     await expect(exercisesSection).toBeVisible();
+  28 |     
+  29 |     // Class container should be hidden
+  30 |     const classContainer = page.locator('#class-type-container');
+  31 |     await expect(classContainer).toBeHidden();
+  32 | 
+  33 |     // Select 'cardio' type
+  34 |     await page.selectOption('#training-type-select', 'cardio');
+  35 |     
+  36 |     // Exercises section should be hidden
+  37 |     await expect(exercisesSection).toBeHidden();
+  38 |     // Class container should still be hidden
+  39 |     await expect(classContainer).toBeHidden();
+  40 | 
+  41 |     // Select 'class' type
+  42 |     await page.selectOption('#training-type-select', 'class');
+  43 |     
+  44 |     // Exercises section should be hidden
+  45 |     await expect(exercisesSection).toBeHidden();
+  46 |     // Class container should be visible
+  47 |     await expect(classContainer).toBeVisible();
+  48 |   });
+  49 | 
+  50 |   test('powinien przełączać typ ćwiczenia w pętli 3-stanowej (Siłowe -> Cardio -> Zajęcia)', async ({ page }) => {
+  51 |     await page.addInitScript(() => { window.localStorage.setItem('tutorial_global_v22', 'true'); });
+  52 |     await page.goto('http://127.0.0.1:8080/');
+  53 | 
+  54 |     await page.click('a[data-tab="training-dashboard"]');
+  55 |     await page.waitForSelector('#training-calendar-view', { state: 'visible' });
+  56 |     await page.evaluate(() => window.TrainingUI.handleDayClick('2026-08-15'));
+> 57 |     await page.click('#start-new-session-btn');
+     |                ^ Error: page.click: Test timeout of 30000ms exceeded.
+  58 |     await page.waitForSelector('#active-training-view', { state: 'visible' });
+  59 | 
+  60 |     // Click dodaj własne ćwiczenie
+  61 |     await page.click('button:has-text("➕ Dodaj nowe ćwiczenie")');
+  62 | 
+  63 |     // Znajdź przycisk typu. Posiada on title="Zmień typ"
+  64 |     const toggleBtn = page.locator('button[title="Zmień typ"]');
+  65 |     await expect(toggleBtn).toBeVisible();
+  66 | 
+  67 |     // Default: Siłowe
+  68 |     await expect(toggleBtn).toContainText('Siłowe');
+  69 |     await expect(toggleBtn).toContainText('🏋️');
+  70 | 
+  71 |     // Click 1: Cardio
+  72 |     await toggleBtn.click();
+  73 |     await expect(toggleBtn).toContainText('Cardio');
+  74 |     await expect(toggleBtn).toContainText('🏃');
+  75 | 
+  76 |     // Click 2: Zajęcia
+  77 |     await toggleBtn.click();
+  78 |     await expect(toggleBtn).toContainText('Zajęcia');
+  79 |     await expect(toggleBtn).toContainText('🚴');
+  80 | 
+  81 |     // Click 3: Back to Siłowe
+  82 |     await toggleBtn.click();
+  83 |     await expect(toggleBtn).toContainText('Siłowe');
+  84 |     await expect(toggleBtn).toContainText('🏋️');
+  85 |   });
+  86 | });
+  87 | 
+```

@@ -273,7 +273,7 @@ export const DietUI = {
                     listContainer.appendChild(item);
                     
                     if (log.thumbnail) {
-                        window.MediaManager.getMedia(log.thumbnail).then(url => {
+                        MediaManager.getMediaUrl(log.thumbnail).then(url => {
                             if (url) {
                                 const img = document.getElementById(`diet-list-thumb-${log.id}`);
                                 if (img) img.src = url;

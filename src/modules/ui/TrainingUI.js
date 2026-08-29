@@ -1327,6 +1327,13 @@ export const TrainingUI = {
                 wVal = weightInput.value;
                 rVal = repsInput.value;
 
+                // Fallback do ostatniej serii jeśli pola są puste (szczególnie przydatne przy szablonach)
+                if ((!wVal || !rVal) && exercise.sets && exercise.sets.length > 0) {
+                    const lastSet = exercise.sets[exercise.sets.length - 1];
+                    if (!wVal && lastSet.weight !== undefined) wVal = lastSet.weight;
+                    if (!rVal && lastSet.reps !== undefined) rVal = lastSet.reps;
+                }
+
                 if (isBodyweight) {
                     if (!rVal) { alert("Podaj ilość powtórzeń!"); return; }
                     if (!wVal) wVal = "0";

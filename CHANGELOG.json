@@ -1,5 +1,12 @@
 [
   {
+    "version": "v2026.8.29.02",
+    "date": "2026-08-29",
+    "changes": [
+      "🐞 Naprawa ładowania miniatur w podglądzie diety (zastąpienie nieistniejącej funkcji MediaManager.getMedia) oraz naprawa przycisków dodawania serii (+ Seria / Dropset) dla treningów uruchamianych z utworzonych szablonów."
+    ]
+  },
+  {
     "version": "v2026.8.29.01",
     "date": "2026-08-29",
     "changes": [
