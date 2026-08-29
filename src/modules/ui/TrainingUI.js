@@ -1227,7 +1227,7 @@ export const TrainingUI = {
     },
 
     addNestedSuperset: (supersetId) => {
-        const superset = currentTraining.exercises.find(e => e.id === supersetId);
+        const superset = currentTraining.exercises.find(e => String(e.id) === String(supersetId));
         if (superset) {
             superset.exercises.push({
                 id: Date.now().toString() + '-' + Math.random().toString(36).substr(2,5),
@@ -1241,9 +1241,9 @@ export const TrainingUI = {
 
     getExerciseById: (id) => {
         for (let ex of currentTraining.exercises) {
-            if (ex.id === id) return ex;
+            if (String(ex.id) === String(id)) return ex;
             if (ex.type === 'superset' && ex.exercises) {
-                const nested = ex.exercises.find(e => e.id === id);
+                const nested = ex.exercises.find(e => String(e.id) === String(id));
                 if (nested) return nested;
             }
         }

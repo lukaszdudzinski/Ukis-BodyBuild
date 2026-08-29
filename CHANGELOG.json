@@ -1,5 +1,12 @@
 [
   {
+    "version": "v2026.8.29.03",
+    "date": "2026-08-29",
+    "changes": [
+      "🐞 Naprawa braku animacji ładowania w module AI oraz naprawa dodawania serii dla bardzo starych szablonów (problem z typowaniem ID ćwiczenia)."
+    ]
+  },
+  {
     "version": "v2026.8.29.02",
     "date": "2026-08-29",
     "changes": [
