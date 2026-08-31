@@ -1,5 +1,12 @@
 [
   {
+    "version": "v2026.8.31.02",
+    "date": "2026-08-31",
+    "changes": [
+      "🩹 Automatyczna naprawa starych, zepsutych \"brudnopisów\" treningów (problem z usuwaniem serii w 2 i 3 ćwiczeniu na starych urządzeniach)."
+    ]
+  },
+  {
     "version": "v2026.8.31.01",
     "date": "2026-08-31",
     "changes": [

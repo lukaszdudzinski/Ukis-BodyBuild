@@ -465,7 +465,19 @@ export const TrainingUI = {
             date: selectedDate, // Use selected day instead of today!
             startTime: Date.now(),
             timerInterval: null,
-            exercises: JSON.parse(JSON.stringify(template.exercises || [])), // deep copy
+            exercises: (template.exercises || []).map(ex => {
+                const newEx = JSON.parse(JSON.stringify(ex));
+                newEx.id = Math.random().toString(36).substr(2, 9);
+                if (newEx.type === 'superset' && Array.isArray(newEx.exercises)) {
+                    newEx.exercises.forEach(nestedEx => {
+                        nestedEx.id = Math.random().toString(36).substr(2, 9);
+                        if (Array.isArray(nestedEx.sets)) nestedEx.sets.forEach(s => s.isCompleted = false);
+                    });
+                } else {
+                    if (Array.isArray(newEx.sets)) newEx.sets.forEach(s => s.isCompleted = false);
+                }
+                return newEx;
+            }),
             name: template.name,
             type: template.type || 'strength',
             isPaused: false,
@@ -565,6 +577,25 @@ export const TrainingUI = {
         document.getElementById('active-training-view').style.display = 'block';
         
         currentTraining = draft;
+        
+        // HEAL: Naprawa uszkodzonych draftów ze starymi "undefined" ID
+        if (currentTraining.exercises) {
+            const seenIds = new Set();
+            currentTraining.exercises.forEach(ex => {
+                if (!ex.id || ex.id === 'undefined' || seenIds.has(ex.id)) {
+                    ex.id = Math.random().toString(36).substr(2, 9);
+                }
+                seenIds.add(ex.id);
+                if (ex.type === 'superset' && Array.isArray(ex.exercises)) {
+                    ex.exercises.forEach(nestedEx => {
+                        if (!nestedEx.id || nestedEx.id === 'undefined' || seenIds.has(nestedEx.id)) {
+                            nestedEx.id = Math.random().toString(36).substr(2, 9);
+                        }
+                        seenIds.add(nestedEx.id);
+                    });
+                }
+            });
+        }
         
         const nameInput = document.getElementById('training-name-input');
         if (nameInput) nameInput.value = currentTraining.name || '';
