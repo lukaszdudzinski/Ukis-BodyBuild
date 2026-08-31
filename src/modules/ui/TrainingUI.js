@@ -470,7 +470,8 @@ export const TrainingUI = {
             type: template.type || 'strength',
             isPaused: false,
             pauseStartTime: null,
-            totalPausedTime: 0
+            totalPausedTime: 0,
+            templateId: templateId
         };
 
         const nameInput = document.getElementById('training-name-input');
@@ -1439,6 +1440,7 @@ export const TrainingUI = {
         if (exercise) {
             exercise.sets.splice(setIndex, 1);
             TrainingUI.renderCurrentExercises();
+            TrainingUI.saveDraft();
         }
     },
 
@@ -1923,6 +1925,19 @@ export const TrainingUI = {
                         socialPhotos: currentTraining.socialPhotos,
                         smartwatch: currentTraining.smartwatch
                     });
+                }
+                
+                if (currentTraining.templateId) {
+                    if (confirm("Ten trening został utworzony z szablonu. Czy zapisać wprowadzone modyfikacje (ćwiczenia, serie, ciężary) z powrotem do szablonu? Zmiany zostaną uwzględnione w przyszłych treningach w kalendarzu.")) {
+                        let templates = TrainingUI.getTemplates();
+                        const templateIndex = templates.findIndex(t => t.id === currentTraining.templateId);
+                        if (templateIndex > -1) {
+                            templates[templateIndex].exercises = JSON.parse(JSON.stringify(exercisesToSave));
+                            templates[templateIndex].name = trainingName;
+                            templates[templateIndex].type = currentTraining.type || 'strength';
+                            localStorage.setItem('uki_workout_templates', JSON.stringify(templates));
+                        }
+                    }
                 }
                 
                 if (window.AchievementsSystem) {

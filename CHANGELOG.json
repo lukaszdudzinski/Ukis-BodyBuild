@@ -1,5 +1,12 @@
 [
   {
+    "version": "v2026.8.31.01",
+    "date": "2026-08-31",
+    "changes": [
+      "🚀 Dodano konfigurację częstotliwości przypomnień o kopii zapasowej. 🔥 Możliwość pełnej edycji i usuwania serii z szablonu w trakcie treningu, wraz z opcją zapisu modyfikacji do oryginalnego szablonu (automatyczne propagowanie na kalendarz)!"
+    ]
+  },
+  {
     "version": "v2026.8.29.03",
     "date": "2026-08-29",
     "changes": [

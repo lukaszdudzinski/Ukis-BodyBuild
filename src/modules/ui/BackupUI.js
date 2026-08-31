@@ -6,12 +6,38 @@ export const BackupUI = {
     },
     
     checkDailyBackup: async () => {
+        const freq = localStorage.getItem('uki_backup_frequency') || 'activity';
+        if (freq === 'never') return;
+
         const today = new Date().toISOString().split('T')[0];
         const lastBackup = localStorage.getItem('uki_last_backup_date');
         
-        if (lastBackup !== today) {
+        let shouldPrompt = false;
+        
+        if (!lastBackup) {
+            shouldPrompt = true;
+        } else {
+            const lastDate = new Date(lastBackup);
+            const currDate = new Date(today);
+            const diffDays = Math.floor((currDate - lastDate) / (1000 * 60 * 60 * 24));
+            
+            if (freq === 'daily' && diffDays >= 1) shouldPrompt = true;
+            else if (freq === 'weekly' && diffDays >= 7) shouldPrompt = true;
+            else if (freq === 'monthly' && diffDays >= 30) shouldPrompt = true;
+            else if (freq === 'bimonthly' && diffDays >= 60) shouldPrompt = true;
+            else if (freq === 'activity' && diffDays >= 1) {
+                // Sprawdź czy po dacie ostatniego backupu był jakiś trening
+                try {
+                    const trainings = await DatabaseManager.getTrainings();
+                    const hadActivity = trainings.some(t => t.date >= lastBackup && t.date < today);
+                    if (hadActivity) shouldPrompt = true;
+                } catch(e) {}
+            }
+        }
+        
+        if (shouldPrompt) {
             const nickname = localStorage.getItem('uki-nickname') || 'Uki';
-            if (confirm(`Witaj ${nickname}! Zauważyłem, że nie robiłeś dzisiaj kopii zapasowej (archiwum bazy danych). Ze względów bezpieczeństwa zalecamy codzienne pobieranie pliku. Czy utworzyć archiwum teraz?`)) {
+            if (confirm(`Witaj ${nickname}! Zauważyłem, że przydałaby się nowa kopia zapasowa (archiwum bazy danych). Czy utworzyć archiwum teraz?`)) {
                 try {
                     const dataStr = await DatabaseManager.exportDatabase();
                     const blob = new Blob([dataStr], {type: "application/json"});
@@ -33,7 +59,6 @@ export const BackupUI = {
                     alert("Błąd podczas eksportu: " + err.message);
                 }
             } else {
-                // If they decline, we also set it so we don't prompt again today
                 localStorage.setItem('uki_last_backup_date', today);
             }
         }

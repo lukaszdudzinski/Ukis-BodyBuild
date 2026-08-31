@@ -22,6 +22,19 @@ export const DiagnosticsUI = {
                     <button id="db-import-btn" style="flex: 1; padding: 13px 10px; background: #222; border: 1px solid #FF9800; color: #FF9800; border-radius: 5px; cursor: pointer; font-size: 1em; font-weight: bold; text-align: center;">📥 Przywróć z Pliku</button>
                     <input type="file" id="db-import-file" accept=".json" style="display: none;">
                 </div>
+                
+                <div style="margin-top: 15px;">
+                    <label style="display: block; color: #ccc; font-size: 0.9em; margin-bottom: 5px;">Częstotliwość propozycji archiwizacji:</label>
+                    <select id="backup-frequency-select" style="width: 100%; padding: 10px; background: #222; border: 1px solid #444; border-radius: 5px; color: #fff; font-size: 1em; cursor: pointer;">
+                        <option value="activity">Po aktywności (jeśli był wczoraj trening)</option>
+                        <option value="daily">Codziennie</option>
+                        <option value="weekly">Co tydzień</option>
+                        <option value="monthly">Co miesiąc</option>
+                        <option value="bimonthly">Co dwa miesiące</option>
+                        <option value="never">Nigdy nie proponuj</option>
+                    </select>
+                </div>
+
                 <details style="margin-top: 15px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 10px;">
                     <summary style="color: #666; font-size: 0.8em; cursor: pointer; user-select: none;">Narzędzia eksperymentalne (Dla deweloperów)</summary>
                     <div style="display: flex; gap: 10px; margin-top: 15px;">
@@ -151,6 +164,14 @@ export const DiagnosticsUI = {
     },
 
     bindEvents: () => {
+        const freqSelect = document.getElementById('backup-frequency-select');
+        if (freqSelect) {
+            const currentFreq = localStorage.getItem('uki_backup_frequency') || 'activity';
+            freqSelect.value = currentFreq;
+            freqSelect.addEventListener('change', (e) => {
+                localStorage.setItem('uki_backup_frequency', e.target.value);
+            });
+        }
 
         const factoryBtn = document.getElementById('db-factory-reset-btn');
         if (factoryBtn) {
