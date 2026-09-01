@@ -11,7 +11,10 @@
     "playwright": "^1.62.1",
     "playwright-core": "^1.62.1"
   },
-  "devDependencies": {},
+  "devDependencies": {
+    "@playwright/test": "^1.62.1",
+    "http-server": "^14.1.1"
+  },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },

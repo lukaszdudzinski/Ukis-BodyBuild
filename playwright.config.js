@@ -1,11 +1,11 @@
-const { defineConfig, devices } = require('@playwright/test');
+import { defineConfig, devices } from '@playwright/test';
 
-module.exports = defineConfig({
-  testDir: './tests/e2e',
-  fullyParallel: false,
+export default defineConfig({
+  testDir: './tests',
+  fullyParallel: true,
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 0,
-  workers: 1,
+  workers: process.env.CI ? 1 : undefined,
   reporter: 'html',
   use: {
     trace: 'on-first-retry',
@@ -16,9 +16,13 @@ module.exports = defineConfig({
       name: 'chromium',
       use: { ...devices['Desktop Chrome'] },
     },
+    {
+      name: 'Mobile Chrome',
+      use: { ...devices['Pixel 5'] },
+    },
   ],
   webServer: {
-    command: 'python3 -m http.server 8080',
+    command: 'npx http-server -p 8080 -c-1',
     url: 'http://localhost:8080',
     reuseExistingServer: !process.env.CI,
   },
