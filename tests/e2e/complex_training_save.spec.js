@@ -42,7 +42,7 @@ test.describe('Złożony scenariusz zapisu treningu z draftem', () => {
     await page.locator('input[id^="reps-"]').nth(1).fill('10');
 
     // 3rd Exercise: Superset (Wzno Klatka + Barki)
-    await page.click('#add-superset-to-plan-btn');
+    await page.locator('button:has-text("🔗 Dodaj Superserię")').first().click();
     await exerciseInputs.nth(2).fill('Wzno Klatka (Superseria)');
     await exerciseInputs.nth(3).fill('Barki');
 

@@ -40,7 +40,7 @@ test.describe('Training Save Bug', () => {
     }
     
     // Dodanie superserii
-    await page.click('#add-superset-to-plan-btn');
+    await page.locator('button:has-text("🔗 Dodaj Superserię")').first().click();
     
     // Zakończenie i zapis
     // Akceptacja alertu (confirm) i ewentualnego alertu sukcesu

@@ -84,7 +84,7 @@ export const DietUI = {
 
                     <div id="diet-loading" style="display: none; margin-top: 15px; color: #FF9800; font-weight: bold;">
                         <span class="spinner" style="display: inline-block; width: 20px; height: 20px; border: 3px solid rgba(255,152,0,0.3); border-radius: 50%; border-top-color: #FF9800; animation: spin 1s ease-in-out infinite; vertical-align: middle; margin-right: 8px;"></span>
-                        Edward analizuje...
+                        <span id="diet-loading-text">Edward analizuje...</span>
                     </div>
                 </div>
             </div>
@@ -463,7 +463,11 @@ export const DietUI = {
         const loading = document.getElementById('diet-loading');
         const analyzeBtn = document.getElementById('diet-analyze-btn');
         
-        if (loading) loading.style.display = 'block';
+        if (loading) {
+            loading.style.display = 'block';
+            const loadingText = document.getElementById('diet-loading-text');
+            if (loadingText) loadingText.innerText = 'Edward analizuje...';
+        }
         if (analyzeBtn) analyzeBtn.style.display = 'none';
 
         try {

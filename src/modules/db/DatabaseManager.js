@@ -71,26 +71,7 @@ export const DatabaseManager = {
                 localStorage.setItem('uki-bodybuild-media-migrated-v2', 'true');
             }
 
-            // --- DATA RETENTION: Delete old diet log thumbnails (older than 3 days) ---
-            const cutoffDate = new Date();
-            cutoffDate.setDate(cutoffDate.getDate() - 1);
-            const cutoffStr = cutoffDate.toISOString().split('T')[0];
-            
-            const oldDietResp = await sendMessage('exec', { 
-                sql: "SELECT id, thumbnail FROM diet_logs WHERE date < ? AND thumbnail IS NOT NULL AND thumbnail != ''", 
-                bind: [cutoffStr], 
-                rowMode: 'object' 
-            });
-            
-            if (oldDietResp.result && oldDietResp.result.length > 0) {
-                const { MediaManager } = await import('./MediaManager.js');
-                for (let d of oldDietResp.result) {
-                    if (d.thumbnail.startsWith('media://')) {
-                        MediaManager.deleteMedia(d.thumbnail);
-                    }
-                    await sendMessage('exec', { sql: "UPDATE diet_logs SET thumbnail = NULL WHERE id = ?", bind: [d.id] });
-                }
-            }
+            // Automatyczne usuwanie miniatur diety zostało przeniesione do ręcznego Storage Managera w DiagnosticsUI
 
         } catch(err) {
             console.error("Migration error", err);

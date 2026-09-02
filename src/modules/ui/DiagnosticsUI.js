@@ -55,10 +55,35 @@ export const DiagnosticsUI = {
 
             
             <div style="background: rgba(33, 150, 243, 0.1); padding: 15px; border-radius: 8px; border: 1px solid #2196F3; margin-bottom: 20px;">
-                <h3 style="color: #2196F3; margin-top: 0;">🗑 Wymuś Czyszczenie Zdjęć</h3>
-                <p style="font-size: 0.9em; color: #ccc;">Zwalnia miejsce usuwając zdjęcia posiłków starsze niż 1 dzień. Same dane o makro i kaloriach zostają zachowane na wykresy.</p>
+                <h3 style="color: #2196F3; margin-top: 0;">🗑 Storage Manager (Zarządzanie Pamięcią)</h3>
+                <p style="font-size: 0.9em; color: #ccc;">Wybierz, z jakich modułów chcesz usunąć stare zdjęcia, aby zwolnić miejsce. Usunięte zostaną <b>tylko pliki graficzne</b>, Twoje dane (obwody, historia treningów, makro) pozostaną nienaruszone!</p>
+                <div style="margin-top: 15px; display: flex; flex-direction: column; gap: 10px;">
+                    <label style="display: flex; align-items: center; gap: 10px; cursor: pointer;">
+                        <input type="checkbox" id="sm-diet" checked style="width: 20px; height: 20px;">
+                        <span>Dieta (Zdjęcia posiłków)</span>
+                    </label>
+                    <label style="display: flex; align-items: center; gap: 10px; cursor: pointer;">
+                        <input type="checkbox" id="sm-training" checked style="width: 20px; height: 20px;">
+                        <span>Treningi (Zdjęcia z siłowni)</span>
+                    </label>
+                    <label style="display: flex; align-items: center; gap: 10px; cursor: pointer;">
+                        <input type="checkbox" id="sm-measurements" checked style="width: 20px; height: 20px;">
+                        <span>Pomiary (Zdjęcia sylwetki)</span>
+                    </label>
+                </div>
+                <div style="margin-top: 15px;">
+                    <label style="font-size: 0.9em; color: #aaa;">Okres do wyczyszczenia (starsze niż):</label>
+                    <select id="sm-time-select" style="width: 100%; padding: 10px; border-radius: 5px; background: #222; color: #fff; border: 1px solid #444; margin-top: 5px;">
+                        <option value="1">1 dzień</option>
+                        <option value="7">1 tydzień</option>
+                        <option value="30">1 miesiąc</option>
+                        <option value="90">3 miesiące</option>
+                        <option value="180">6 miesięcy</option>
+                        <option value="9999">Wszystkie</option>
+                    </select>
+                </div>
                 <button id="db-clear-media-btn" style="width: 100%; padding: 13px; background: #2196F3; color: white; border: none; border-radius: 8px; cursor: pointer; margin-top: 15px; font-weight: bold; font-size: 1em; text-align: center;">
-                    Wymuś Czyszczenie Miniatur
+                    Rozpocznij zwalnianie miejsca
                 </button>
             </div>
 
@@ -197,34 +222,89 @@ export const DiagnosticsUI = {
         const clearMediaBtn = document.getElementById('db-clear-media-btn');
         if (clearMediaBtn) {
             clearMediaBtn.addEventListener('click', async () => {
-                const confirmed = confirm("Czy na pewno chcesz usunąć miniatury posiłków starsze niż 1 dzień?");
-                if (confirmed) {
-                    try {
-                        const cutoffDate = new Date();
-                        cutoffDate.setDate(cutoffDate.getDate() - 1);
-                        const cutoffStr = cutoffDate.toISOString().split('T')[0];
-                        
-                        const oldDietResp = await DatabaseManager.sendMessage('exec', { 
+                const doDiet = document.getElementById('sm-diet').checked;
+                const doTraining = document.getElementById('sm-training').checked;
+                const doMeasurements = document.getElementById('sm-measurements').checked;
+                const days = parseInt(document.getElementById('sm-time-select').value);
+
+                if (!doDiet && !doTraining && !doMeasurements) {
+                    alert('Wybierz przynajmniej jeden moduł do oczyszczenia.');
+                    return;
+                }
+
+                const confirmed = confirm("Czy na pewno chcesz bezpowrotnie usunąć wybrane zdjęcia dla zaznaczonych modułów w zadanym okresie?");
+                if (!confirmed) return;
+
+                try {
+                    const cutoffDate = new Date();
+                    cutoffDate.setDate(cutoffDate.getDate() - days);
+                    const cutoffStr = cutoffDate.toISOString().split('T')[0];
+                    const { MediaManager } = await import('../db/MediaManager.js');
+
+                    let deletedDiet = 0;
+                    let deletedTrainings = 0;
+                    let deletedMeasurements = 0;
+
+                    if (doDiet) {
+                        const dietResp = await DatabaseManager.sendMessage('exec', { 
                             sql: "SELECT id, thumbnail FROM diet_logs WHERE date < ? AND thumbnail IS NOT NULL AND thumbnail != ''", 
                             bind: [cutoffStr], 
                             rowMode: 'object' 
                         });
-                        
-                        if (oldDietResp.result && oldDietResp.result.length > 0) {
-                            const { MediaManager } = await import('../db/MediaManager.js');
-                            for (let d of oldDietResp.result) {
+                        if (dietResp.result) {
+                            for (let d of dietResp.result) {
                                 if (d.thumbnail.startsWith('media://')) {
                                     MediaManager.deleteMedia(d.thumbnail);
                                 }
                                 await DatabaseManager.sendMessage('exec', { sql: "UPDATE diet_logs SET thumbnail = NULL WHERE id = ?", bind: [d.id] });
+                                deletedDiet++;
                             }
-                            alert(`Usunięto pomyślnie ${oldDietResp.result.length} zdjęć posiłków. Zwalnianie miejsca powiodło się.`);
-                        } else {
-                            alert("Nie znaleziono żadnych starych miniatur do wyczyszczenia.");
                         }
-                    } catch (e) {
-                        alert("Błąd podczas czyszczenia miniatur: " + e.message);
                     }
+
+                    if (doTraining) {
+                        const trainResp = await DatabaseManager.sendMessage('exec', { 
+                            sql: "SELECT id, social_photos_json FROM trainings WHERE date < ? AND social_photos_json IS NOT NULL AND social_photos_json != '[]'", 
+                            bind: [cutoffStr], 
+                            rowMode: 'object' 
+                        });
+                        if (trainResp.result) {
+                            for (let t of trainResp.result) {
+                                try {
+                                    const photos = JSON.parse(t.social_photos_json);
+                                    if (Array.isArray(photos)) {
+                                        for (const p of photos) {
+                                            if (p.startsWith('media://')) MediaManager.deleteMedia(p);
+                                        }
+                                        await DatabaseManager.sendMessage('exec', { sql: "UPDATE trainings SET social_photos_json = '[]' WHERE id = ?", bind: [t.id] });
+                                        deletedTrainings += photos.length;
+                                    }
+                                } catch(e) {}
+                            }
+                        }
+                    }
+
+                    if (doMeasurements) {
+                        const measResp = await DatabaseManager.sendMessage('exec', { 
+                            sql: "SELECT id, photo FROM measurements WHERE date < ? AND photo IS NOT NULL AND photo != ''", 
+                            bind: [cutoffStr], 
+                            rowMode: 'object' 
+                        });
+                        if (measResp.result) {
+                            for (let m of measResp.result) {
+                                if (m.photo.startsWith('media://')) {
+                                    MediaManager.deleteMedia(m.photo);
+                                }
+                                await DatabaseManager.sendMessage('exec', { sql: "UPDATE measurements SET photo = NULL WHERE id = ?", bind: [m.id] });
+                                deletedMeasurements++;
+                            }
+                        }
+                    }
+
+                    alert(`Zakończono proces zwalniania pamięci:\n- Usunięto ${deletedDiet} zdjęć z Diety\n- Usunięto ${deletedTrainings} zdjęć z Treningów\n- Usunięto ${deletedMeasurements} zdjęć z Pomiarów\nOdśwież zakładkę, aby zaktualizować rozmiar fizyczny bazy.`);
+                    DiagnosticsUI.loadDbSize();
+                } catch (e) {
+                    alert("Błąd podczas zwalniania pamięci: " + e.message);
                 }
             });
         }

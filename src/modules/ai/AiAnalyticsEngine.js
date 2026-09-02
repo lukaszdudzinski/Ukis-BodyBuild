@@ -122,6 +122,7 @@ Twoja analiza w formacie Markdown MUSI pokrywać dokładnie te punkty (bez pomij
 4. **Odżywianie i Pełne Makroskładniki vs Cel (${cel})**: 
    - Dokładnie przeanalizuj zarejestrowane kalorie oraz BIAŁKO, WĘGLOWODANY i TŁUSZCZE (średnie dzienne: ${dietSummary.srednia_dzienna_kalorie_kcal} kcal, B: ${dietSummary.srednia_dzienna_bialko_g}g, W: ${dietSummary.srednia_dzienna_weglowodany_g}g, T: ${dietSummary.srednia_dzienna_tluszcz_g}g). 
    - Skomentuj ilość białka na kg masy ciała i proporcje makroskładników w kontekście celu (${cel}).
+   - Zapytaj użytkownika wprost: "Czy dziennik posiłków był dokładnie wprowadzony, czy nie udało się wszystkiego zapisać?". Zwróć uwagę, że dokładność diety ma kluczowe znaczenie.
    - Jeśli liczba zalogowanych posiłków jest niska (${dietSummary.liczba_zalogowanych_posilkow}) - zaznacz to i zmotywuj do regularnego logowania!
 5. **Analiza Pomiarów Ciała w czasie (Trend)**: 
    - Spójrz na sekcję "pomiary_historia" (ostatnie 5 wpisów).

@@ -6,42 +6,44 @@ Celem promptu transferowego jest płynne przekazanie pałeczki, aby nowy agent o
 
 ---
 
-## 📝 Szablon do Skopiowania (Wygenerowany z sesji 1c831b05-b16b-411d-9a2e-9438ed58da89)
+## 📝 Szablon do Skopiowania (Aktualny Stan Projektu)
 
 ```markdown
 # 🚀 PROMPT TRANSFEROWY (Kontekst Projektu Uki's BodyBuild)
 
-**Jesteś Antigravity, agentem AI pracującym nad aplikacją Uki's BodyBuild.**
-Oto pełny kontekst naszego projektu, abyś mógł płynnie przejąć pałeczkę i kontynuować pracę.
+**Jesteś Antigravity, Głównym Agentem (PM / Lead Developer) w projekcie Uki's BodyBuild.**
+Oto pełny kontekst naszego ekosystemu, abyś mógł płynnie przejąć pałeczkę. W tym projekcie pracuje z nami cały zespół niezależnych sub-agentów!
 
 ## 🔗 Powiązania i Metadane
-- **Poprzednia konwersacja (ID):** 1c831b05-b16b-411d-9a2e-9438ed58da89
-- **Aktualna Wersja Aplikacji:** v2026.8.28.01
+- **Poprzednia konwersacja (ID):** c540fac6-2a8e-43c1-9aa9-6ab6fbf11bf4
+- **Ostatnia Wersja na Produkcji:** v2026.8.31.02
 
-## 📂 Najważniejsze Pliki do Zapoznania się (Otwórz je przez `view_file`)
-1. `src/modules/db/DatabaseManager.js` - Rdzeń sqlite3, logiki zapisu, OPFS fallback (bardzo wrażliwe)
-2. `src/modules/ui/BackupUI.js` - Moduł automatycznych dziennych kopii bazy danych
-3. `GEMINI.md` - Zbiór reguł globalnych projektu.
+## 🏗️ Architektura CI/CD (BARDZO WAŻNE!)
+Wdrożyliśmy rygorystyczny podział środowisk:
+1. **Produkcja (`master`)**: Hostowana na GitHub Pages (`lukaszdudzinski.github.io/Ukis-BodyBuild`). Zabezpieczona.
+2. **Środowisko QA (`staging`)**: Hostowane na Vercel (`ukis-bodybuild-qa.vercel.app`).
+**ZŁOTA ZASADA:** Jako główny programista, piszesz nowy kod WYŁĄCZNIE na gałęzi `staging`. Zmiany na `staging` testujemy ręcznie i za pomocą Playwright. Na środowisku QA NIE używamy modułu podbijania wersji (`node scripts/version.mjs`), aby uniknąć pętli PWA podczas tworzenia nowej funkcji. Skrypt podbijania wersji uruchamiasz dopiero tuż przed (lub w trakcie) tworzenia ostatecznego kodu na `mastera`.
+
+## 🤖 Twój Zespół Agentów (Multi-Agent)
+Konwersacje głównego agenta odchodzą, ale zespół zostaje! Posiadamy stałą orkiestrację opisaną w `.agents/skills/team_orchestration/SKILL.md`. Twoi podopieczni to:
+1. `uki_architect` - Projektuje nowe funkcje (Implementation Plan) i doradza.
+2. `uki_reviewer` - Surowy sprawdzacz kodu. Weryfikuje Twoje Pull Requesty/zmiany.
+3. `uki_qa_tester` - Obala aplikację testami w Playwright. W tym teście produkcyjnym E2E wstrzykuje pliki JSON (`qa_production_data.spec.js`).
+Wywołuj ich narzędziem `invoke_subagent` kiedy tylko potrzebujesz, powołując się na nazwy ról. (Uwaga dla Użytkownika: Ten zespół istnieje tylko w katalogu Uki's BodyBuild. Dla Dive Tools lub Bike Log musisz ich powołać oddzielnie).
+
+## 📂 Najważniejsze Pliki do Zapoznania się (`view_file`)
+1. `.agents/skills/team_orchestration/SKILL.md` - Dokładne zasady pracy zespołowej.
+2. `GEMINI.md` - Zbiór reguł globalnych projektu.
+3. `src/modules/db/DatabaseManager.js` - Rdzeń sqlite3, OPFS, logika czyszczenia miniatur z diety.
 
 ## ✅ Co Zostało Zrobione (Stan Obecny)
-- 🔥 Krytyczny pożar ugaszony: Brak wsparcia OPFS wymuszał trzymanie bazy w pamięci RAM. Wdrożyliśmy mechanizm `autoSaveOPFS`, który natychmiast zrzuca RAM do OPFS po każdej operacji. 
-- 🛟 Wdrożono moduł `BackupUI` z dziennym przypomnieniem o backupie JSON.
-- 🐛 Treningi: Naprawiono błędne wczytywanie się szablonu treningowego przy starcie "Wolnego Treningu" - brakująca funkcja `handleTypeChange` została przywrócona.
-- 🐛 Treningi: Dodawanie nowych serii działa poprawnie, dzięki wywoływaniu `saveDraft()` zamiast nieistniejącego `saveActiveWorkout()`.
-- 🖼 Dieta: Naprawiono ładowanie miniatur zdjęć z `MediaManager` w podglądzie "Dodaj Posiłek" (formularz AI).
-
-## 🏗️ Ważny Kontekst Architektoniczny
-Pamiętaj, że aplikacja to PWA w Vanilla JS. Baza danych to lokalne środowisko przeglądarkowe (VFS / OPFS). Dostęp do płatnych funkcji Premium sprawdza `PremiumUI.checkPremium()`.
+- Utworzono pełne środowisko CI/CD (Vercel na gałęzi `staging`).
+- Naprawiono niszczący błąd "ID undefined" w szablonach treningów (`v2026.8.31.02`). Treningi tworzone z szablonów prawidłowo nadają nowe, unikalne ID każdemu ćwiczeniu, naprawiając propagację danych (usunięcie serii teraz dotyczy konkretnego bloku).
+- Wdrożono i pomyślnie uruchomiono `qa_production_data.spec.js`, które wstrzykuje produkcyjne dane JSON i uodparnia mastera na krytyczne błędy.
+- Zidentyfikowano w `DatabaseManager.js` wbudowany mechanizm usuwania zdjęć (miniatury diety starsze niż 1 dzień są czyszczone), ale NIE obejmuje on zdjęć z treningów i pomiarów.
 
 ## 🗺 Najbliższy Cel / Twoje Zadanie
-Obecnie aplikacja została doprowadzona do **100% sprawności** (wszystkie zgłoszone błędy ui/logiczne z ostatnich pożarów zostały załatane).
-Przechodzimy do wielkiej Fazy: **Rozbudowa Agentów AI, Środowiska QA i Serwerów MCP**.
+Czas obudzić Architekta (`uki_architect`)! Zleć mu napisanie "Implementation Plan" dla nowego Modułu Zarządzania Pamięcią (Storage Manager). Moduł ten ma pojawić się w zakładce Diagnostyka i pozwolić użytkownikowi ręcznie decydować, jak stare zdjęcia z Diety, Treningów i Pomiarów mają zostać usunięte z lokalnej bazy OPFS, by zwolnić miejsce bez utraty danych liczbowych.
 
-Twoje Zadania na tę sesję:
-1. **QA i Środowiska (Staging/Prod):** Skonfigurować z Użytkownikiem oddzielne środowiska QA i Produkcji. Trzeba zbudować proces zabezpieczający przed wgrywaniem uszkodzonego kodu na żywy serwer (żeby uchronić dane klientów).
-2. **Automatyczne Testy (Playwright):** Wymusić automatyczne testy UI po każdej aktualizacji PWA (w tym sprawdzanie pętli odświeżania na podbijaniu wersji w `CHANGELOG.json` - zgodnie z GEMINI.md).
-3. **Rozbudowa Sub-Agentów i Umiejętności (Skills):** Zaplanować poważną rozbudowę ról agentów (np. osobny Tester QA, oddzielny Code Reviewer) i dodać dla nich dedykowane pliki w strukturze projektu.
-4. **Serwer MCP:** Zbadać i wdrożyć lokalny Serwer MCP (Model Context Protocol), aby pomóc AI testować bazy danych SQLite użytkownika w bezpiecznym środowisku.
-
-Zaczynamy! Użytkownik czeka na zaplanowanie środowiska QA.
+Zaczynamy! Użytkownik czeka na raport Architekta na gałęzi `staging`.
 ```

@@ -87,9 +87,24 @@ export const MeasurementsUI = {
         }
 
         try {
-            await DatabaseManager.addMeasurement(data);
-            alert("Pomiary zapisane pomyślnie!");
+            if (window.currentEditMeasurementId) {
+                const q = `UPDATE measurements SET date=?, weight=?, height=?, chest=?, waist=?, hips=?, thigh=?, biceps=?, neck=?, photo=? WHERE id=?`;
+                await DatabaseManager.sendMessage('exec', {
+                    sql: q,
+                    bind: [data.date, data.weight, data.height, data.chest, data.waist, data.hips, data.thigh, data.biceps, data.neck, data.photo, window.currentEditMeasurementId]
+                });
+                alert("Pomiary zaktualizowane pomyślnie!");
+                window.currentEditMeasurementId = null;
+                const submitBtn = e.target.querySelector('button[type="submit"]');
+                if(submitBtn) submitBtn.innerHTML = '💾 Zapisz Pomiary';
+            } else {
+                await DatabaseManager.addMeasurement(data);
+                alert("Pomiary zapisane pomyślnie!");
+            }
             e.target.reset();
+            
+            // Set date back to today after reset
+            document.getElementById('measureDate').value = new Date().toISOString().split('T')[0];
             
             // Reset photo
             if(preview) {
@@ -126,7 +141,11 @@ export const MeasurementsUI = {
                 card.innerHTML = `
                     <div style="display: flex; justify-content: space-between; margin-bottom: 10px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 10px;">
                         <strong style="color: var(--primary-color); font-size: 1.1em;">🗓 ${rec.date}</strong>
-                        <button onclick="window.deleteMeasurement(${rec.id})" style="background: transparent; border: none; color: #ff4444; cursor: pointer;">🗑 Usuń</button>
+                        <div style="display: flex; gap: 10px;">
+                            <button onclick="window.editMeasurement(${rec.id})" style="background: transparent; border: none; color: #2196F3; cursor: pointer;">✏️ Edytuj</button>
+                            <button onclick="window.cloneMeasurement(${rec.id})" style="background: transparent; border: none; color: #4CAF50; cursor: pointer;">📋 Klonuj</button>
+                            <button onclick="window.deleteMeasurement(${rec.id})" style="background: transparent; border: none; color: #ff4444; cursor: pointer;">🗑 Usuń</button>
+                        </div>
                     </div>
                     <div style="display: flex; gap: 15px;">
                         <div id="measure-photo-${rec.id}" style="width: 80px; height: 80px; display: none;"></div>
@@ -163,10 +182,65 @@ export const MeasurementsUI = {
     }
 };
 
-// Expose delete to global scope for inline onclick handler
+// Global handlers
 window.deleteMeasurement = async (id) => {
     if (confirm("Czy na pewno chcesz usunąć ten pomiar?")) {
+        const { DatabaseManager } = await import('../db/DatabaseManager.js');
         await DatabaseManager.deleteMeasurement(id);
+        const { MeasurementsUI } = await import('./MeasurementsUI.js');
         MeasurementsUI.renderHistory();
     }
+};
+
+window.populateMeasurementForm = async (id, isEdit) => {
+    const { DatabaseManager } = await import('../db/DatabaseManager.js');
+    const { MediaManager } = await import('../db/MediaManager.js');
+    const records = await DatabaseManager.getMeasurements();
+    const rec = records.find(r => r.id === id);
+    if (!rec) return;
+
+    if (isEdit) {
+        window.currentEditMeasurementId = id;
+        document.getElementById('measureDate').value = rec.date;
+        const submitBtn = document.querySelector('#measurementsForm button[type="submit"]');
+        if (submitBtn) submitBtn.innerHTML = '💾 Zaktualizuj Pomiary';
+    } else {
+        window.currentEditMeasurementId = null;
+        document.getElementById('measureDate').value = new Date().toISOString().split('T')[0];
+        const submitBtn = document.querySelector('#measurementsForm button[type="submit"]');
+        if (submitBtn) submitBtn.innerHTML = '💾 Zapisz Pomiary';
+    }
+
+    if (rec.weight) document.getElementById('measureWeight').value = rec.weight;
+    if (rec.height) document.getElementById('measureHeight').value = rec.height;
+    if (rec.chest) document.getElementById('measureChest').value = rec.chest;
+    if (rec.waist) document.getElementById('measureWaist').value = rec.waist;
+    if (rec.hips) document.getElementById('measureHips').value = rec.hips;
+    if (rec.thigh) document.getElementById('measureThigh').value = rec.thigh;
+    if (rec.biceps) document.getElementById('measureBiceps').value = rec.biceps;
+    if (rec.neck) document.getElementById('measureNeck').value = rec.neck;
+
+    const preview = document.getElementById('measurePhotoPreview');
+    if (rec.photo && preview) {
+        const url = await MediaManager.getMediaUrl(rec.photo);
+        if (url) {
+            preview.src = url;
+            preview.style.display = 'block';
+            preview.dataset.mediaId = rec.photo;
+        }
+    } else if (preview) {
+        preview.style.display = 'none';
+        preview.dataset.mediaId = '';
+    }
+
+    // Scroll to top
+    document.getElementById('measurements-dashboard').scrollIntoView({ behavior: 'smooth' });
+};
+
+window.editMeasurement = (id) => {
+    window.populateMeasurementForm(id, true);
+};
+
+window.cloneMeasurement = (id) => {
+    window.populateMeasurementForm(id, false);
 };
