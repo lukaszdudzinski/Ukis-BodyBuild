@@ -139,12 +139,14 @@ export const MeasurementsUI = {
                 card.className = "log-card";
                 card.style.cssText = "background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.1); padding: 15px; border-radius: 8px; margin-bottom: 15px;";
                 card.innerHTML = `
-                    <div style="display: flex; justify-content: space-between; margin-bottom: 10px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 10px;">
-                        <strong style="color: var(--primary-color); font-size: 1.1em;">🗓 ${rec.date}</strong>
-                        <div style="display: flex; gap: 10px;">
-                            <button onclick="window.editMeasurement(${rec.id})" style="background: transparent; border: none; color: #2196F3; cursor: pointer;">✏️ Edytuj</button>
-                            <button onclick="window.cloneMeasurement(${rec.id})" style="background: transparent; border: none; color: #4CAF50; cursor: pointer;">📋 Klonuj</button>
-                            <button onclick="window.deleteMeasurement(${rec.id})" style="background: transparent; border: none; color: #ff4444; cursor: pointer;">🗑 Usuń</button>
+                    <div style="margin-bottom: 10px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 10px;">
+                        <div style="text-align: center; margin-bottom: 12px;">
+                            <strong style="color: var(--primary-color); font-size: 1.2em;">🗓 ${rec.date}</strong>
+                        </div>
+                        <div style="display: flex; gap: 8px;">
+                            <button onclick="window.editMeasurement(${rec.id})" class="action-button" style="flex: 1; background: rgba(33, 150, 243, 0.1); border-color: #2196F3; color: #2196F3; font-size: 0.9em; padding: 8px;">✏️ Edytuj</button>
+                            <button onclick="window.cloneMeasurement(${rec.id})" class="action-button" style="flex: 1; background: rgba(76, 175, 80, 0.1); border-color: #4CAF50; color: #4CAF50; font-size: 0.9em; padding: 8px;">📋 Klonuj</button>
+                            <button onclick="window.deleteMeasurement(${rec.id})" class="action-button" style="flex: 1; background: rgba(244, 67, 54, 0.1); border-color: #F44336; color: #F44336; font-size: 0.9em; padding: 8px;">🗑 Usuń</button>
                         </div>
                     </div>
                     <div style="display: flex; gap: 15px;">

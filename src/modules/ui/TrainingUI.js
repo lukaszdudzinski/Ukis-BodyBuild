@@ -1648,14 +1648,6 @@ export const TrainingUI = {
                         <button onclick="window.TrainingUI.addSet('${ex.id}', false)" style="background: #00BFFF; color: #fff; border: none; padding: 12px; border-radius: 4px; cursor: pointer; flex: 1; font-weight: bold; font-size: 1.1em; box-sizing: border-box;">${localStorage.getItem('uki-experimental-numpad') === 'on' ? '➕ Dodaj Serię (Klon)' : '+ Seria'}</button>
                         <button onclick="window.TrainingUI.addSet('${ex.id}', true)" style="background: #FF9800; color: #fff; border: none; padding: 12px; border-radius: 4px; cursor: pointer; flex: 1; font-weight: bold; font-size: 1.1em; box-sizing: border-box;">🔥 Dropset</button>
                     </div>
-                    ${localStorage.getItem('uki-experimental-numpad') === 'on' ? '' : `
-                    <div style="margin-top: 10px; text-align: center;">
-                        <label style="color: #ccc; font-size: 0.9em; display: inline-flex; align-items: center; gap: 8px; cursor: pointer;">
-                            <input type="checkbox" onchange="window.TrainingUI.handleCopyCheckbox('${ex.id}', this.checked)" ${ex.autoCopy ? 'checked' : ''} style="width: 18px; height: 18px;">
-                            Skopiuj dane z poprzedniej serii
-                        </label>
-                    </div>
-                    `}
                 `;
             }
             
@@ -1671,19 +1663,30 @@ export const TrainingUI = {
                             <button onclick="window.TrainingUI.openCatalogModal('${ex.id}')" style="background: rgba(0,191,255,0.1); color: #00BFFF; border: 1px solid ${isNested ? '#E91E63' : '#00BFFF'}; border-radius: 6px; padding: 0 15px; cursor: pointer; font-weight: bold; flex-shrink: 0; display: flex; align-items: center; justify-content: center;">📚<br><span style="font-size: 0.7em;">Katalog</span></button>
                         </div>
                     </div>
-                    <div style="margin-bottom: 15px; display: flex; gap: 10px;">
-                        <label class="action-button" style="flex: 1; display: inline-block; background-color: #333; border-color: #555; color: #fff; cursor: pointer; box-sizing: border-box; text-shadow: 0 1px 3px rgba(0,0,0,0.8); text-align: center; margin: 0;">
+                    <div style="margin-bottom: 15px; text-align: center;">
+                        <label class="action-button" style="display: inline-block; background-color: #333; border-color: #555; color: #fff; cursor: pointer; width: 100%; box-sizing: border-box; text-shadow: 0 1px 3px rgba(0,0,0,0.8);">
                             📷 Zrób zdjęcie maszyny
                             <input type="file" accept="image/*" capture="environment" style="display: none;" onchange="window.TrainingUI.handleMachinePhoto(event, '${ex.id}')">
                         </label>
-                        ${!isNested ? `
-                        <button onclick="window.TrainingUI.addSuperset('${ex.id}')" class="action-button" style="flex: 1; background-color: rgba(233, 30, 99, 0.1); border-color: #E91E63; color: #E91E63; margin: 0;">
-                            🔗 Dodaj Superserię
-                        </button>
-                        ` : ''}
+                        ${ex.machinePhoto ? `<img data-media-id="${ex.machinePhoto}" src="" style="width: 100px; height: 100px; object-fit: cover; border-radius: 8px; margin-top: 10px; border: 1px solid ${isNested ? '#E91E63' : '#00BFFF'};" alt="Maszyna">` : ''}
                     </div>
-                    ${ex.machinePhoto ? `<div style="text-align: center;"><img data-media-id="${ex.machinePhoto}" src="" style="width: 100px; height: 100px; object-fit: cover; border-radius: 8px; margin-bottom: 10px; border: 1px solid ${isNested ? '#E91E63' : '#00BFFF'};" alt="Maszyna"></div>` : ''}
+                    
                     ${exerciseDetailsHtml}
+                    
+                    ${!isNested ? `
+                    <button onclick="window.TrainingUI.addSuperset('${ex.id}')" class="action-button" style="width: 100%; margin-top: 15px; background-color: rgba(233, 30, 99, 0.1); border: 1px solid rgba(233, 30, 99, 0.5); color: #E91E63;">
+                        🔗 Dodaj Superserię
+                    </button>
+                    ` : ''}
+                    
+                    ${(ex.type === 'strength' && localStorage.getItem('uki-experimental-numpad') !== 'on') ? `
+                    <div style="margin-top: 15px; text-align: center;">
+                        <label style="color: #ccc; font-size: 0.9em; display: inline-flex; align-items: center; gap: 8px; cursor: pointer;">
+                            <input type="checkbox" onchange="window.TrainingUI.handleCopyCheckbox('${ex.id}', this.checked)" ${ex.autoCopy ? 'checked' : ''} style="width: 18px; height: 18px;">
+                            Skopiuj dane z poprzedniej serii
+                        </label>
+                    </div>
+                    ` : ''}
                 </div>
             `;
         };
