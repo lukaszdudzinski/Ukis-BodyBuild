@@ -1,5 +1,16 @@
 [
   {
+    "version": "v2026.9.2.01",
+    "date": "2026-09-02",
+    "changes": [
+      "🗄️ Nowość: Moduł Zarządzania Pamięcią! Usuwaj niepotrzebne zdjęcia treningowe i odzyskuj gigabajty przestrzeni na swoim telefonie z poziomu Diagnostyki.",
+      "🤖 Niezawodny DietAI z inteligentną pętlą Retry – aplikacja sama ponowi próbę analizy posiłku w przypadku przeciążenia serwerów Google (High Demand)!",
+      "📈 Pomiary ciała zyskały wyczekiwaną funkcję Edycji oraz Klonowania prosto z kart historii. Błyskawicznie powielaj wczorajsze obwody na dzisiaj.",
+      "📱 Totalny lifting interfejsu treningowego: kompaktowe bloki zdjęciowe i uporządkowane wiersze, które zaoszczędzą Ci masę bezsensownego przewijania ekranu.",
+      "🔗 Rewolucja w Superseriach: przycisk dodawania został przeniesiony do serca każdego ćwiczenia! Jednym kliknięciem stworzysz idealny dropset lub superserię w dowolnym miejscu planu."
+    ]
+  },
+  {
     "version": "v2026.8.31.02",
     "date": "2026-08-31",
     "changes": [
