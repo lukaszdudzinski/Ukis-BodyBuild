@@ -205,17 +205,17 @@ export const AnalyticsUI = {
                         
                         const calVal = w.calories > 0 ? w.calories : (w.durationMinutes ? w.durationMinutes * 7 : 200);
                         barPct = Math.min(100, Math.max(15, Math.round((calVal / Math.max(maxCardioCalories, 500)) * 100)));
-                        displayVal = w.calories > 0 ? \`\${w.calories} kcal\` : (w.durationMinutes ? \`⏱️ \${w.durationMinutes} min\` : \`Aktywność\`);
-                        if (w.hr) displayVal += \` <span style="font-size: 0.85em; opacity: 0.85;">(💓\${w.hr})</span>\`;
+                        displayVal = w.calories > 0 ? `${w.calories} kcal` : (w.durationMinutes ? `⏱️ ${w.durationMinutes} min` : `Aktywność`);
+                        if (w.hr) displayVal += ` <span style="font-size: 0.85em; opacity: 0.85;">(💓${w.hr})</span>`;
                     } else {
                         typeBadge = "🏋️ Siła";
                         barPct = Math.min(100, Math.max(8, Math.round((w.volume / maxStrengthVol) * 100)));
                         barColor = barPct >= 80 ? "#2ECC71" : (barPct >= 50 ? "#FFD700" : "#FF9800");
                         displayVal = w.volume >= 1000 ? (w.volume/1000).toFixed(1) + " t" : Math.round(w.volume) + " kg";
-                        if (w.calories > 0) displayVal += \` <span style="font-size: 0.8em; opacity: 0.85;">(🔥\${w.calories})</span>\`;
+                        if (w.calories > 0) displayVal += ` <span style="font-size: 0.8em; opacity: 0.85;">(🔥${w.calories})</span>`;
                     }
 
-                    const workoutNameDisplay = w.name ? \`<span style="color: #888; font-size: 0.8em; margin-left: 6px;">\${w.name}</span>\` : "";
+                    const workoutNameDisplay = w.name ? `<span style="color: #888; font-size: 0.8em; margin-left: 6px;">${w.name}</span>` : "";
 
                     return '<div style="background: rgba(255,255,255,0.04); border-radius: 6px; padding: 8px 12px; border-left: 3px solid ' + barColor + ';">'
                         + '<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">'
@@ -290,7 +290,7 @@ export const AnalyticsUI = {
                     <div style="background: rgba(255,255,255,0.05); padding: 15px; border-radius: 8px;">
                         <select id="analytics-exercise-select" onchange="window.AnalyticsUI.renderExerciseChart(this.value)" style="width: 100%; padding: 10px; border-radius: 6px; background: #222; border: 1px solid #2ECC71; color: #fff; font-size: 1em; margin-bottom: 15px;">
                             <option value="">-- Wybierz ćwiczenie --</option>
-                            ${exListOptions.map(name => \`<option value="\${name}">\${name}</option>\`).join('')}
+                            ${exListOptions.map(name => `<option value="${name}">${name}</option>`).join('')}
                         </select>
                         <div id="analytics-exercise-chart-container" style="min-height: 160px; display: flex; align-items: center; justify-content: center; color: #888; font-size: 0.9em;">Wybierz ćwiczenie z listy.</div>
                     </div>
