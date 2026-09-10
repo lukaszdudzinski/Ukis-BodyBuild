@@ -1,5 +1,12 @@
 [
   {
+    "version": "v2026.9.10.04",
+    "date": "2026-09-10",
+    "changes": [
+      "💅 UI Tweaks: Ułożenie zakładek w jednej, równej linii oraz naprawa skalowania wykresu dla pojedynczych ćwiczeń."
+    ]
+  },
+  {
     "version": "v2026.9.10.03",
     "date": "2026-09-10",
     "changes": [
