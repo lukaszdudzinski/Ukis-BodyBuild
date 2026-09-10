@@ -247,7 +247,7 @@ export const TrainingUI = {
     
     exportTemplate: (id) => {
         const templates = TrainingUI.getTemplates();
-        const t = templates.find(x => x.id === id);
+        const t = templates.find(x => String(x.id) === String(id));
         if (!t) return;
         
         const blob = new Blob([JSON.stringify(t, null, 2)], { type: "application/json" });
@@ -343,7 +343,7 @@ export const TrainingUI = {
                 const bg = isSelected ? '#FF9800' : 'rgba(255,255,255,0.05)';
                 const col = isSelected ? '#000' : '#888';
                 const border = isSelected ? '#FF9800' : '#444';
-                daysHtml += `<button onclick="window.TrainingUI.toggleScheduleDay(${t.id}, ${d.num})" style="background: ${bg}; color: ${col}; border: 1px solid ${border}; border-radius: 12px; padding: 4px 10px; font-size: 0.85em; font-weight: bold; cursor: pointer; transition: all 0.2s;">${d.name}</button>`;
+                daysHtml += `<button onclick="window.TrainingUI.toggleScheduleDay('${t.id}', ${d.num})" style="background: ${bg}; color: ${col}; border: 1px solid ${border}; border-radius: 12px; padding: 4px 10px; font-size: 0.85em; font-weight: bold; cursor: pointer; transition: all 0.2s;">${d.name}</button>`;
             });
             daysHtml += `</div>`;
 
@@ -351,16 +351,19 @@ export const TrainingUI = {
                 <div style="background: #2a2a2a; padding: 15px; border-radius: 10px; border: 1px solid #444; display: flex; flex-direction: column; gap: 10px;">
                     <div style="text-align: center; border-bottom: 1px solid #444; padding-bottom: 8px;">
                         <strong style="color: #00BFFF; font-size: 1.1em;">${t.name}</strong>
-<button onclick="window.TrainingUI.exportTemplate(${t.id})" style="background: rgba(0, 191, 255, 0.1); border: 1px solid #00BFFF; color: #00BFFF; border-radius: 6px; padding: 3px 8px; font-size: 0.8em; margin-left: 10px; cursor: pointer;">📤 Eksport</button>
+<button onclick="window.TrainingUI.exportTemplate('${t.id}')" style="background: rgba(0, 191, 255, 0.1); border: 1px solid #00BFFF; color: #00BFFF; border-radius: 6px; padding: 3px 8px; font-size: 0.8em; margin-left: 10px; cursor: pointer;">📤 Eksport</button>
                     </div>
                     <div style="font-size: 0.9em; color: #bbb; text-align: center; line-height: 1.5;">
                         Typ: ${typeLabel}<br>
                         Ilość ćwiczeń w treningu: ${t.exercises && t.exercises.length ? t.exercises.length : 0}
                         ${durationInfo}
                     </div>
-                    <div style="display: flex; gap: 10px; width: 100%; margin-top: 4px; box-sizing: border-box;">
-                        <button onclick="window.TrainingUI.startFromTemplate(${t.id})" class="action-button" style="flex: 1; background: #2ECC71; border: 1px solid #2ECC71; color: #fff; padding: 12px 10px; font-weight: bold; border-radius: 8px; font-size: 0.95em; cursor: pointer;">▶ Wybierz</button>
-                        <button onclick="window.TrainingUI.deleteTemplate(${t.id})" class="action-button" style="flex: 1; background: rgba(231, 76, 60, 0.2); border: 1px solid rgba(231, 76, 60, 0.4); color: #E74C3C; padding: 12px 10px; font-weight: bold; border-radius: 8px; font-size: 0.95em; cursor: pointer;">Usuń</button>
+                    <div style="display: flex; flex-direction: column; gap: 8px; width: 100%; margin-top: 8px; box-sizing: border-box;">
+                        <button onclick="window.TrainingUI.startFromTemplate('${t.id}')" class="action-button" style="width: 100%; background: #2ECC71; border: 1px solid #2ECC71; color: #fff; padding: 12px 10px; font-weight: bold; border-radius: 8px; font-size: 0.95em; cursor: pointer;">▶ Wybierz</button>
+                        <div style="display: flex; gap: 8px; width: 100%;">
+                            <button onclick="window.TemplateBuilderUI.editTemplate('${t.id}'); document.getElementById('templates-modal-overlay').remove();" class="action-button" style="flex: 1; background: rgba(0, 191, 255, 0.15); border: 1px solid rgba(0, 191, 255, 0.4); color: #00BFFF; padding: 10px; font-weight: bold; border-radius: 8px; font-size: 0.9em; cursor: pointer;">✏️ Edytuj</button>
+                            <button onclick="window.TrainingUI.deleteTemplate('${t.id}')" class="action-button" style="flex: 1; background: rgba(231, 76, 60, 0.15); border: 1px solid rgba(231, 76, 60, 0.4); color: #E74C3C; padding: 10px; font-weight: bold; border-radius: 8px; font-size: 0.9em; cursor: pointer;">🗑️ Usuń</button>
+                        </div>
                     </div>
                     ${daysHtml}
                 </div>
@@ -387,7 +390,7 @@ export const TrainingUI = {
         let schedules = [];
         try { schedules = JSON.parse(localStorage.getItem("uki_workout_schedules") || "[]"); } catch(e) {}
         
-        let sched = schedules.find(s => s.templateId === templateId);
+        let sched = schedules.find(s => String(s.templateId) === String(templateId));
         if (!sched) {
             sched = { templateId: templateId, daysOfWeek: [] };
             schedules.push(sched);
@@ -441,7 +444,7 @@ export const TrainingUI = {
     deleteTemplate: (id) => {
         if (confirm("Na pewno usunąć ten plan treningowy?")) {
             let templates = TrainingUI.getTemplates();
-            templates = templates.filter(t => t.id !== id);
+            templates = templates.filter(t => String(t.id) !== String(id));
             localStorage.setItem('uki_workout_templates', JSON.stringify(templates));
             const modal = document.getElementById('templates-modal-overlay');
             if (modal) modal.remove();
@@ -454,7 +457,7 @@ export const TrainingUI = {
         if (modal) modal.remove();
 
         const templates = TrainingUI.getTemplates();
-        const template = templates.find(t => t.id === templateId);
+        const template = templates.find(t => String(t.id) === String(templateId));
         if (!template) return;
 
         // Initialize new session from template
@@ -648,11 +651,10 @@ export const TrainingUI = {
             records.forEach(rec => {
                 trainingDates.add(rec.date);
             });
-            TrainingUI.renderCalendar();
-            
-            // Automatically select and show options for the currently selected date (defaults to today)
             if (selectedDate) {
                 TrainingUI.handleDayClick(selectedDate, true);
+            } else {
+                TrainingUI.renderCalendar();
             }
         } catch (err) {
             console.error("Error loading training history:", err);
@@ -799,7 +801,7 @@ export const TrainingUI = {
                                 <strong style="color: #FF9800; font-size: 1.1em;">${tName}</strong><br>
                                 <span style="font-size: 0.9em; color: #aaa;">${typeLabel} ${template && template.exercises ? `| Ćwiczeń: ${template.exercises.length}` : ""}</span>
                                 <div style="margin-top: 10px;">
-                                    <button onclick="window.TrainingUI.startFromTemplate(${sched.templateId})" class="action-button pulse" style="width: 100%; background-color: #FF9800; border-color: #FF9800; color: #000; font-weight: bold; padding: 10px;">▶ Rozpocznij ten plan</button>
+                                    <button onclick="window.TrainingUI.startFromTemplate('${sched.templateId}')" class="action-button pulse" style="width: 100%; background-color: #FF9800; border-color: #FF9800; color: #000; font-weight: bold; padding: 10px;">▶ Rozpocznij ten plan</button>
                                 </div>
                             </div>
                         `;
@@ -1307,6 +1309,31 @@ export const TrainingUI = {
         return null;
     },
 
+    removeExercise: (exerciseId) => {
+        if (confirm("Na pewno usunąć to ćwiczenie?")) {
+            let foundInSuperset = false;
+            for (let i = 0; i < currentTraining.exercises.length; i++) {
+                const ex = currentTraining.exercises[i];
+                if (ex.type === 'superset' && ex.exercises) {
+                    const nestedIdx = ex.exercises.findIndex(e => String(e.id) === String(exerciseId));
+                    if (nestedIdx > -1) {
+                        ex.exercises.splice(nestedIdx, 1);
+                        if (ex.exercises.length === 0) {
+                            currentTraining.exercises.splice(i, 1);
+                        }
+                        foundInSuperset = true;
+                        break;
+                    }
+                }
+            }
+            if (!foundInSuperset) {
+                currentTraining.exercises = currentTraining.exercises.filter(e => String(e.id) !== String(exerciseId));
+            }
+            TrainingUI.saveDraft();
+            TrainingUI.renderCurrentExercises();
+        }
+    },
+
     updateExerciseField: (exerciseId, field, value) => {
         const exercise = TrainingUI.getExerciseById(exerciseId);
         if (exercise) {
@@ -1654,21 +1681,36 @@ export const TrainingUI = {
             return `
                 <div style="background: ${isNested ? 'linear-gradient(145deg, #2a0815, #1a050d)' : '#1e1e1e'}; border: 1px solid ${isNested ? '#E91E63' : '#333'}; padding: 15px; border-radius: 8px; margin-bottom: 15px; ${isNested ? 'box-shadow: 0 0 10px rgba(233, 30, 99, 0.2);' : ''}">
                     <div style="margin-bottom: 15px; position: relative;">
-                        <div style="display: flex; gap: 5px; margin-bottom: 10px; align-items: stretch;">
-                            <button onclick="const newType = '${ex.type}' === 'strength' ? 'cardio' : ('${ex.type}' === 'cardio' ? 'classes' : 'strength'); window.TrainingUI.updateExerciseField('${ex.id}', 'type', newType); window.TrainingUI.renderCurrentExercises();" style="background: #222; border: 1px solid ${isNested ? '#E91E63' : '#00BFFF'}; color: #fff; padding: 0 8px; border-radius: 6px; font-size: 0.9em; cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; flex-shrink: 0; min-width: 60px;" title="Zmień typ">
-                                <span style="font-size: 1.5em; line-height: 1;">${ex.type === 'classes' ? '🚴' : (ex.type === 'cardio' ? '🏃' : '🏋️')}</span>
-                                <span style="font-size: 0.75em; margin-top: 2px;">${ex.type === 'classes' ? 'Zajęcia' : (ex.type === 'cardio' ? 'Cardio' : 'Siłowe')}</span>
-                            </button>
-                            <input type="text" class="exercise-name-input" placeholder="Wpisz nazwę..." value="${ex.name}" onchange="window.TrainingUI.updateExerciseField('${ex.id}', 'name', this.value); window.TrainingUI.renderCurrentExercises();" style="flex: 1; min-width: 0; padding: 15px; border-radius: 6px; border: 1px solid ${isNested ? '#E91E63' : '#00BFFF'}; background: #222; color: #fff; font-size: 1.1em; box-sizing: border-box; text-align: center;">
-                            <button onclick="window.TrainingUI.openCatalogModal('${ex.id}')" style="background: rgba(0,191,255,0.1); color: #00BFFF; border: 1px solid ${isNested ? '#E91E63' : '#00BFFF'}; border-radius: 6px; padding: 0 15px; cursor: pointer; font-weight: bold; flex-shrink: 0; display: flex; align-items: center; justify-content: center;">📚<br><span style="font-size: 0.7em;">Katalog</span></button>
+                        <!-- Wiersz 1: Nazwa ćwiczenia -->
+                        <div style="margin-bottom: 8px;">
+                            <input type="text" class="exercise-name-input" placeholder="Wpisz nazwę..." value="${ex.name}" onchange="window.TrainingUI.updateExerciseField('${ex.id}', 'name', this.value); window.TrainingUI.renderCurrentExercises();" style="width: 100%; padding: 15px; border-radius: 6px; border: 1px solid ${isNested ? '#E91E63' : '#00BFFF'}; background: #222; color: #fff; font-size: 1.1em; box-sizing: border-box; text-align: center;">
                         </div>
-                    </div>
-                    <div style="margin-bottom: 15px; text-align: center;">
-                        <label class="action-button" style="display: inline-block; background-color: #333; border-color: #555; color: #fff; cursor: pointer; width: 100%; box-sizing: border-box; text-shadow: 0 1px 3px rgba(0,0,0,0.8);">
-                            📷 Zrób zdjęcie maszyny
-                            <input type="file" accept="image/*" capture="environment" style="display: none;" onchange="window.TrainingUI.handleMachinePhoto(event, '${ex.id}')">
-                        </label>
-                        ${ex.machinePhoto ? `<img data-media-id="${ex.machinePhoto}" src="" style="width: 100px; height: 100px; object-fit: cover; border-radius: 8px; margin-top: 10px; border: 1px solid ${isNested ? '#E91E63' : '#00BFFF'};" alt="Maszyna">` : ''}
+                        
+                        <!-- Wiersz 2: Typ, Zdjęcie, Katalog, Usuń -->
+                        <div style="display: flex; gap: 5px; align-items: stretch; height: 50px;">
+                            <button onclick="const newType = '${ex.type}' === 'strength' ? 'cardio' : ('${ex.type}' === 'cardio' ? 'classes' : 'strength'); window.TrainingUI.updateExerciseField('${ex.id}', 'type', newType); window.TrainingUI.renderCurrentExercises();" style="flex: 1; background: #222; border: 1px solid ${isNested ? '#E91E63' : '#00BFFF'}; color: #fff; border-radius: 6px; font-size: 0.85em; cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center;" title="Zmień typ">
+                                <span style="font-size: 1.3em; margin-bottom: 2px;">${ex.type === 'classes' ? '🚴' : (ex.type === 'cardio' ? '🏃' : '🏋️')}</span>
+                                <span>${ex.type === 'classes' ? 'Zajęcia' : (ex.type === 'cardio' ? 'Cardio' : 'Siłowe')}</span>
+                            </button>
+                            
+                            <label style="flex: 1; background: #222; border: 1px solid ${isNested ? '#E91E63' : '#00BFFF'}; color: #fff; border-radius: 6px; font-size: 0.85em; cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; margin: 0;">
+                                <span style="font-size: 1.3em; margin-bottom: 2px;">📷</span>
+                                <span>Zdjęcie</span>
+                                <input type="file" accept="image/*" capture="environment" style="display: none;" onchange="window.TrainingUI.handleMachinePhoto(event, '${ex.id}')">
+                            </label>
+                            
+                            <button onclick="window.TrainingUI.openCatalogModal('${ex.id}')" style="flex: 1; background: #222; border: 1px solid ${isNested ? '#E91E63' : '#00BFFF'}; color: #fff; border-radius: 6px; cursor: pointer; font-size: 0.85em; display: flex; flex-direction: column; align-items: center; justify-content: center;">
+                                <span style="font-size: 1.3em; margin-bottom: 2px;">📚</span>
+                                <span>Katalog</span>
+                            </button>
+                            
+                            <button onclick="window.TrainingUI.removeExercise('${ex.id}')" style="flex: 1; background: #222; border: 1px solid ${isNested ? '#E91E63' : '#00BFFF'}; color: #fff; border-radius: 6px; cursor: pointer; font-size: 0.85em; display: flex; flex-direction: column; align-items: center; justify-content: center;" title="Usuń ćwiczenie">
+                                <span style="font-size: 1.3em; margin-bottom: 2px;">🗑️</span>
+                                <span style="color: #E74C3C;">Usuń</span>
+                            </button>
+                        </div>
+                        
+                        ${ex.machinePhoto ? `<div style="text-align: center;"><img data-media-id="${ex.machinePhoto}" src="" style="width: 100px; height: 100px; object-fit: cover; border-radius: 8px; margin-top: 10px; border: 1px solid ${isNested ? '#E91E63' : '#00BFFF'};" alt="Maszyna"></div>` : ''}
                     </div>
                     
                     ${exerciseDetailsHtml}
@@ -1910,6 +1952,35 @@ export const TrainingUI = {
                 }
             }
             
+            // Flush pending exercise names
+            document.querySelectorAll('.exercise-name-input').forEach(input => {
+                input.blur(); // Force onchange if pending
+            });
+
+            // Flush pending sets if they didn't click + Seria (auto-add)
+            currentTraining.exercises.forEach(ex => {
+                const processEx = (exercise) => {
+                    const wInput = document.getElementById(`weight-${exercise.id}`);
+                    const rInput = document.getElementById(`reps-${exercise.id}`);
+                    if (wInput && rInput && wInput.value && rInput.value) {
+                        // Auto-add the set if they typed it but forgot to click +
+                        exercise.sets = exercise.sets || [];
+                        exercise.sets.push({
+                            weight: parseFloat(wInput.value) || 0,
+                            reps: parseInt(rInput.value, 10) || 0,
+                            type: 'normal'
+                        });
+                        wInput.value = '';
+                        rInput.value = '';
+                    }
+                };
+                if (ex.type === 'superset' && Array.isArray(ex.exercises)) {
+                    ex.exercises.forEach(processEx);
+                } else {
+                    processEx(ex);
+                }
+            });
+
             // Filter out empty exercises, supporting nested supersets without throwing TypeError
             const validExercises = currentTraining.exercises.filter(ex => {
                 if (ex.type === 'superset' && Array.isArray(ex.exercises)) {
@@ -1994,7 +2065,7 @@ export const TrainingUI = {
                 if (currentTraining.templateId) {
                     if (confirm("Ten trening został utworzony z szablonu. Czy zapisać wprowadzone modyfikacje (ćwiczenia, serie, ciężary) z powrotem do szablonu? Zmiany zostaną uwzględnione w przyszłych treningach w kalendarzu.")) {
                         let templates = TrainingUI.getTemplates();
-                        const templateIndex = templates.findIndex(t => t.id === currentTraining.templateId);
+                        const templateIndex = templates.findIndex(t => String(t.id) === String(currentTraining.templateId));
                         if (templateIndex > -1) {
                             templates[templateIndex].exercises = JSON.parse(JSON.stringify(exercisesToSave));
                             templates[templateIndex].name = trainingName;

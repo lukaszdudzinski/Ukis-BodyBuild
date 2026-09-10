@@ -1,13 +1,33 @@
 [
   {
-    "version": "v2026.9.2.01",
-    "date": "2026-09-02",
+    "version": "v2026.9.10.04",
+    "date": "2026-09-10",
     "changes": [
-      "🗄️ Nowość: Moduł Zarządzania Pamięcią! Usuwaj niepotrzebne zdjęcia treningowe i odzyskuj gigabajty przestrzeni na swoim telefonie z poziomu Diagnostyki.",
-      "🤖 Niezawodny DietAI z inteligentną pętlą Retry – aplikacja sama ponowi próbę analizy posiłku w przypadku przeciążenia serwerów Google (High Demand)!",
-      "📈 Pomiary ciała zyskały wyczekiwaną funkcję Edycji oraz Klonowania prosto z kart historii. Błyskawicznie powielaj wczorajsze obwody na dzisiaj.",
-      "📱 Totalny lifting interfejsu treningowego: kompaktowe bloki zdjęciowe i uporządkowane wiersze, które zaoszczędzą Ci masę bezsensownego przewijania ekranu.",
-      "🔗 Rewolucja w Superseriach: przycisk dodawania został przeniesiony do serca każdego ćwiczenia! Jednym kliknięciem stworzysz idealny dropset lub superserię w dowolnym miejscu planu."
+      "💅 UI Tweaks: Ułożenie zakładek w jednej, równej linii oraz naprawa skalowania wykresu dla pojedynczych ćwiczeń."
+    ]
+  },
+  {
+    "version": "v2026.9.10.03",
+    "date": "2026-09-10",
+    "changes": [
+      "🎨 UI Redesign: Spójny układ nagłówków ćwiczeń, poprawiony układ zakładek i całkowicie nowe, eleganckie karty historii treningów (Makaron -> Karty)."
+    ]
+  },
+  {
+    "version": "v2026.9.10.02",
+    "date": "2026-09-10",
+    "changes": [
+      "🐞 Załatano krytyczny błąd SyntaxError (Biały ekran) w module Analityki (AnalyticsUI.js) blokujący uruchomienie aplikacji."
+    ]
+  },
+  {
+    "version": "v2026.9.10.01",
+    "date": "2026-09-10",
+    "changes": [
+      "🛠️ Wdrożono nowy, podzielony na czytelne zakładki widok Analizy Progresu.",
+      "👩‍🎤 Wprowadzono Korektę Atletyczną (WHR) dla kobiet we wzorze US Navy, aby sprawiedliwiej oceniać proporcje sylwetkowe u trenujących.",
+      "🗑️ Zreorganizowano UX nagłówka w aktywnym treningu – dodano dedykowany przycisk szybkiego usuwania dla każdego ćwiczenia (również superserii).",
+      "🐞 Załatano błąd, który powodował utratę danych (ciężar/powtórzenia) przy zakańczaniu treningu z niezapisaną superserią."
     ]
   },
   {
