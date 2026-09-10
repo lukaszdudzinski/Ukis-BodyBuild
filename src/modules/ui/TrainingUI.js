@@ -1681,28 +1681,32 @@ export const TrainingUI = {
             return `
                 <div style="background: ${isNested ? 'linear-gradient(145deg, #2a0815, #1a050d)' : '#1e1e1e'}; border: 1px solid ${isNested ? '#E91E63' : '#333'}; padding: 15px; border-radius: 8px; margin-bottom: 15px; ${isNested ? 'box-shadow: 0 0 10px rgba(233, 30, 99, 0.2);' : ''}">
                     <div style="margin-bottom: 15px; position: relative;">
-                        <!-- Wiersz 1: Nazwa ćwiczenia + Usuń -->
-                        <div style="display: flex; gap: 5px; margin-bottom: 8px;">
-                            <input type="text" class="exercise-name-input" placeholder="Wpisz nazwę..." value="${ex.name}" onchange="window.TrainingUI.updateExerciseField('${ex.id}', 'name', this.value); window.TrainingUI.renderCurrentExercises();" style="flex: 1; padding: 15px; border-radius: 6px; border: 1px solid ${isNested ? '#E91E63' : '#00BFFF'}; background: #222; color: #fff; font-size: 1.1em; box-sizing: border-box; text-align: center;">
-                            <button onclick="window.TrainingUI.removeExercise('${ex.id}')" style="background: rgba(231, 76, 60, 0.1); color: #E74C3C; border: 1px solid #E74C3C; border-radius: 6px; padding: 0 15px; cursor: pointer; font-size: 1.3em; display: flex; align-items: center; justify-content: center;" title="Usuń ćwiczenie">🗑️</button>
+                        <!-- Wiersz 1: Nazwa ćwiczenia -->
+                        <div style="margin-bottom: 8px;">
+                            <input type="text" class="exercise-name-input" placeholder="Wpisz nazwę..." value="${ex.name}" onchange="window.TrainingUI.updateExerciseField('${ex.id}', 'name', this.value); window.TrainingUI.renderCurrentExercises();" style="width: 100%; padding: 15px; border-radius: 6px; border: 1px solid ${isNested ? '#E91E63' : '#00BFFF'}; background: #222; color: #fff; font-size: 1.1em; box-sizing: border-box; text-align: center;">
                         </div>
                         
-                        <!-- Wiersz 2: Typ, Zdjęcie, Katalog -->
+                        <!-- Wiersz 2: Typ, Zdjęcie, Katalog, Usuń -->
                         <div style="display: flex; gap: 5px; align-items: stretch; height: 50px;">
                             <button onclick="const newType = '${ex.type}' === 'strength' ? 'cardio' : ('${ex.type}' === 'cardio' ? 'classes' : 'strength'); window.TrainingUI.updateExerciseField('${ex.id}', 'type', newType); window.TrainingUI.renderCurrentExercises();" style="flex: 1; background: #222; border: 1px solid ${isNested ? '#E91E63' : '#00BFFF'}; color: #fff; border-radius: 6px; font-size: 0.85em; cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center;" title="Zmień typ">
                                 <span style="font-size: 1.3em; margin-bottom: 2px;">${ex.type === 'classes' ? '🚴' : (ex.type === 'cardio' ? '🏃' : '🏋️')}</span>
                                 <span>${ex.type === 'classes' ? 'Zajęcia' : (ex.type === 'cardio' ? 'Cardio' : 'Siłowe')}</span>
                             </button>
                             
-                            <label style="flex: 1; background: #333; border: 1px solid #555; color: #fff; border-radius: 6px; font-size: 0.85em; cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; margin: 0;">
+                            <label style="flex: 1; background: #222; border: 1px solid ${isNested ? '#E91E63' : '#00BFFF'}; color: #fff; border-radius: 6px; font-size: 0.85em; cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; margin: 0;">
                                 <span style="font-size: 1.3em; margin-bottom: 2px;">📷</span>
                                 <span>Zdjęcie</span>
                                 <input type="file" accept="image/*" capture="environment" style="display: none;" onchange="window.TrainingUI.handleMachinePhoto(event, '${ex.id}')">
                             </label>
                             
-                            <button onclick="window.TrainingUI.openCatalogModal('${ex.id}')" style="flex: 1; background: rgba(0,191,255,0.1); color: #00BFFF; border: 1px solid ${isNested ? '#E91E63' : '#00BFFF'}; border-radius: 6px; cursor: pointer; font-size: 0.85em; display: flex; flex-direction: column; align-items: center; justify-content: center;">
+                            <button onclick="window.TrainingUI.openCatalogModal('${ex.id}')" style="flex: 1; background: #222; border: 1px solid ${isNested ? '#E91E63' : '#00BFFF'}; color: #fff; border-radius: 6px; cursor: pointer; font-size: 0.85em; display: flex; flex-direction: column; align-items: center; justify-content: center;">
                                 <span style="font-size: 1.3em; margin-bottom: 2px;">📚</span>
                                 <span>Katalog</span>
+                            </button>
+                            
+                            <button onclick="window.TrainingUI.removeExercise('${ex.id}')" style="flex: 1; background: #222; border: 1px solid ${isNested ? '#E91E63' : '#00BFFF'}; color: #fff; border-radius: 6px; cursor: pointer; font-size: 0.85em; display: flex; flex-direction: column; align-items: center; justify-content: center;" title="Usuń ćwiczenie">
+                                <span style="font-size: 1.3em; margin-bottom: 2px;">🗑️</span>
+                                <span style="color: #E74C3C;">Usuń</span>
                             </button>
                         </div>
                         

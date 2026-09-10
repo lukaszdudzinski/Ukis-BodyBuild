@@ -42,7 +42,7 @@ export const AnalyticsUI = {
     renderNewAnalytics: (container, trainings, measurements) => {
         container.innerHTML = `
             <!-- TABS / PILLS NAVIGATION -->
-            <div style="padding: 10px; background: #181818; display: flex; justify-content: center; gap: 8px; overflow-x: auto; border-bottom: 1px solid #333; position: sticky; top: 0; z-index: 10;">
+            <div style="padding: 10px; background: #181818; display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; border-bottom: 1px solid #333; position: sticky; top: 0; z-index: 10;">
                 <button id="btn-tab-1" class="analytics-tab-btn active" onclick="window.AnalyticsUI.switchTab(1)" style="background: rgba(0, 191, 255, 0.15); border: 1px solid #00BFFF; color: #00BFFF; font-weight: bold; padding: 8px 16px; border-radius: 20px; font-size: 0.9em; white-space: nowrap; cursor: pointer;">🏋️ Trening i Siła</button>
                 <button id="btn-tab-2" class="analytics-tab-btn" onclick="window.AnalyticsUI.switchTab(2)" style="background: #222; border: 1px solid #444; color: #aaa; padding: 8px 16px; border-radius: 20px; font-size: 0.9em; white-space: nowrap; cursor: pointer; transition: all 0.2s;">📏 Sylwetka</button>
                 <button id="btn-tab-3" class="analytics-tab-btn" onclick="window.AnalyticsUI.switchTab(3)" style="background: #222; border: 1px solid #444; color: #aaa; padding: 8px 16px; border-radius: 20px; font-size: 0.9em; white-space: nowrap; cursor: pointer; transition: all 0.2s;">🔋 Regeneracja</button>
@@ -188,44 +188,51 @@ export const AnalyticsUI = {
             </div>
             
             <h5 style="color: #FFD700; margin-top: 15px; margin-bottom: 5px;">📈 Ostatnie 10 sesji treningowych</h5>
-            <div style="display: flex; flex-direction: column; gap: 8px; margin-bottom: 25px;">
+            <div style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 25px;">
                 ${workoutsWithVolume.slice(0,10).reverse().map(w => {
                     const dateStr = new Date(w.date).toLocaleDateString('pl-PL', {weekday:'short', day:'numeric', month:'short'});
                     const isCardioOrClasses = (w.type === "cardio" || w.type === "classes") || (w.volume === 0 && (w.calories > 0 || w.duration_seconds > 0));
                     
-                    let barPct = 10;
                     let barColor = "#FF9800";
                     let displayVal = "";
                     let typeBadge = "";
+                    let typeIcon = "🏋️";
 
                     if (isCardioOrClasses) {
                         const isClasses = w.type === "classes" || (!w.type && w.volume === 0);
-                        typeBadge = isClasses ? "🔥 Zajęcia" : "🏃 Cardio";
+                        typeBadge = isClasses ? "Zajęcia" : "Cardio";
+                        typeIcon = isClasses ? "🔥" : "🏃";
                         barColor = isClasses ? "#FF5722" : "#00BFFF";
                         
-                        const calVal = w.calories > 0 ? w.calories : (w.durationMinutes ? w.durationMinutes * 7 : 200);
-                        barPct = Math.min(100, Math.max(15, Math.round((calVal / Math.max(maxCardioCalories, 500)) * 100)));
                         displayVal = w.calories > 0 ? `${w.calories} kcal` : (w.durationMinutes ? `⏱️ ${w.durationMinutes} min` : `Aktywność`);
                         if (w.hr) displayVal += ` <span style="font-size: 0.85em; opacity: 0.85;">(💓${w.hr})</span>`;
                     } else {
-                        typeBadge = "🏋️ Siła";
-                        barPct = Math.min(100, Math.max(8, Math.round((w.volume / maxStrengthVol) * 100)));
+                        typeBadge = "Siłowe";
+                        typeIcon = "🏋️";
+                        const barPct = Math.min(100, Math.max(8, Math.round((w.volume / maxStrengthVol) * 100)));
                         barColor = barPct >= 80 ? "#2ECC71" : (barPct >= 50 ? "#FFD700" : "#FF9800");
                         displayVal = w.volume >= 1000 ? (w.volume/1000).toFixed(1) + " t" : Math.round(w.volume) + " kg";
                         if (w.calories > 0) displayVal += ` <span style="font-size: 0.8em; opacity: 0.85;">(🔥${w.calories})</span>`;
                     }
 
-                    const workoutNameDisplay = w.name ? `<span style="color: #888; font-size: 0.8em; margin-left: 6px;">${w.name}</span>` : "";
+                    const workoutNameDisplay = w.name ? w.name : typeBadge;
 
-                    return '<div style="background: rgba(255,255,255,0.04); border-radius: 6px; padding: 8px 12px; border-left: 3px solid ' + barColor + ';">'
-                        + '<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">'
-                        + '<span style="font-size: 0.85em; color: #ccc;">' + dateStr + ' <span style="font-size: 0.8em; color: #aaa; background: rgba(255,255,255,0.08); padding: 2px 6px; border-radius: 4px; margin-left: 4px;">' + typeBadge + '</span>' + workoutNameDisplay + '</span>'
-                        + '<span style="font-size: 0.85em; color: ' + barColor + '; font-weight: bold;">' + displayVal + '</span>'
-                        + '</div>'
-                        + '<div style="background: rgba(255,255,255,0.08); border-radius: 3px; height: 6px; overflow: hidden;">'
-                        + '<div style="height: 100%; width: ' + barPct + '%; background: ' + barColor + '; border-radius: 3px; transition: width 0.6s ease;"></div>'
-                        + '</div>'
-                        + '</div>';
+                    return `
+                    <div style="display: flex; align-items: center; background: #1a1a1a; border-radius: 12px; padding: 12px; border: 1px solid rgba(255,255,255,0.05); box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+                        <div style="width: 44px; height: 44px; border-radius: 50%; background: ${barColor}15; border: 1px solid ${barColor}40; display: flex; align-items: center; justify-content: center; font-size: 1.3em; flex-shrink: 0;">
+                            ${typeIcon}
+                        </div>
+                        <div style="flex: 1; margin-left: 12px; overflow: hidden;">
+                            <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 4px;">
+                                <span style="font-weight: bold; font-size: 0.95em; color: #eee; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 65%;">${workoutNameDisplay}</span>
+                                <span style="font-size: 0.75em; color: #888;">${dateStr}</span>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; align-items: center;">
+                                <span style="font-size: 0.8em; color: #aaa;">${typeBadge}</span>
+                                <span style="font-weight: bold; font-size: 1em; color: ${barColor};">${displayVal}</span>
+                            </div>
+                        </div>
+                    </div>`;
                 }).join('')}
             </div>
         `;
