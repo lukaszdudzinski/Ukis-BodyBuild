@@ -344,9 +344,12 @@ body {
 }
 
 /* Force flex to override .tab-content block display */
-.glass-dashboard {
+.glass-dashboard.active-tab {
     display: flex !important;
     flex-direction: column !important;
+}
+.glass-dashboard:not(.active-tab) {
+    display: none !important;
 }
 
 /* Ensure grid gap is preserved and grid overrides blocks */
@@ -358,7 +361,7 @@ body {
 
 /* Tools section gap */
 .tools-section {
-    display: flex !important;
+    display: flex;
     flex-direction: column !important;
     gap: 12px !important;
 }
@@ -372,4 +375,25 @@ body {
 }
 .main-cta {
     border-radius: 32px !important;
+}
+
+/* CRITICAL FIX FOR TABS SWITCHING */
+.glass-dashboard.active-tab {
+    display: flex !important;
+    flex-direction: column !important;
+}
+.glass-dashboard:not(.active-tab) {
+    display: none !important;
+}
+
+/* Remove duplicate padding to fix squished layout */
+.glass-dashboard {
+    padding: 0 !important; 
+    padding-bottom: 40px !important; /* Just enough extra for the nav bar over the 80px from wrapper */
+}
+
+/* Fix scrolling jank */
+.glass-dashboard {
+    height: auto !important;
+    min-height: 100%;
 }
