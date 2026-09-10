@@ -20,6 +20,7 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="UkiBodyBuild">
     <meta name="theme-color" content="#00BFFF">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700;800&display=swap" rel="stylesheet">
 </head>
 
 <body class="dark-theme">
@@ -271,46 +272,17 @@
     </script>
     <div class="overlay"></div>
 
+    
+    <!-- Blobs for Glassmorphism -->
+    <div class="blob-1"></div>
+    <div class="blob-2"></div>
+    <div class="blob-3"></div>
+
     <div class="app-wrapper">
 
-        <div class="mobile-header" onclick="switchTab('welcome-screen')" style="cursor: pointer;" title="Powrót do pulpitu">
-            <img src="img/logo.png" alt="Logo" class="logo-img">
-            <h2>Uki's BodyBuild</h2>
-        </div>
+        
 
-        <nav class="sidebar-nav">
-            <div class="sidebar-header" id="home-link-header" title="Powrót do ekranu startowego">
-                <img src="img/logo.png" alt="Logo" class="logo-img-desktop">
-                <h1>Uki's BodyBuild</h1>
-            </div>
-
-
-
-            <ul class="nav-links">
-                <li><a href="#" data-tab="welcome-screen">Pulpit Główny</a></li>
-                <li><a href="#" data-tab="measurements-dashboard">Pomiary Ciała</a></li>
-                <li><a href="#" data-tab="training-dashboard">Trening</a></li>
-                <li><a href="#" data-tab="history-dashboard">Historia Treningów</a></li>
-                <li><a href="#" data-tab="analytics-dashboard">Analiza Progresu</a></li>
-                <li><a href="#" data-tab="diet-dashboard">Dieta i Żywienie</a></li>
-                <li><a href="#" data-tab="diagnostics-dashboard">Diagnostyka</a></li>
-                <li><a href="#" data-tab="settings-panel">Profil i Ustawienia</a></li>
-            </ul>
-
-            <div class="sidebar-footer">
-                <div class="donation-wrapper">
-                    <a href="https://suppi.pl/ukidives" target="_blank" rel="noopener noreferrer" id="donation-link">
-                        Podoba Ci się to narzędzie?
-                        <strong>Postaw mi kawę!</strong>
-                    </a>
-                </div>
-
-                <div class="version-info" style="text-align: center; margin-top: 10px; color: #666; font-size: 0.8em;">
-                    Loading Version...
-                </div>
-            </div>
-
-        </nav>
+        
 
         <main class="app-content">
 
@@ -320,73 +292,84 @@
 
             <div class="tab-content-wrapper">
 
-                <div id="welcome-screen" class="tab-content active-tab">
-                    <!-- Standard Header (Sidebar Mode) -->
-                    <div class="home-header">
-                        <img src="img/logo.png" alt="Logo" class="home-logo">
-                        <h2>Uki's BodyBuild</h2>
-                        <p>Wybierz narzędzie z menu</p>
+                
+                <div id="welcome-screen" class="tab-content active-tab glass-dashboard">
+                    <!-- Top Header -->
+                    <div class="glass-header">
+                        <div class="avatar-circle" onclick="switchTab('settings-panel')">
+                            <img src="https://ui-avatars.com/api/?name=Uki&background=111&color=fff&rounded=true" alt="Avatar">
+                        </div>
+                        <div class="logo-center">
+                            <div class="logo-icon">Uki</div>
+                            <span class="logo-text">BodyBuild</span>
+                        </div>
+                        <div class="header-btn" onclick="switchTab('settings-panel')">⚙️</div>
                     </div>
-                    
-                    <!-- Dashboard Grid -->
-                    <div class="dashboard-grid">
-                        <!-- Wiersz 1: Trening + Historia -->
-                        <div id="tile-training" class="dashboard-card" onclick="switchTab('training-dashboard')">
-                            <h4>🏋️ Trening</h4>
-                            <p>Kalendarz i logi</p>
-                        </div>
-                        <div id="tile-history" class="dashboard-card" onclick="switchTab('history-dashboard')">
-                            <h4>📚 Historia Treningów</h4>
-                            <p>Twoje poprzednie sesje</p>
-                        </div>
 
-                        <!-- Wiersz 2: Pomiary + Analiza -->
-                        <div id="tile-measurements" class="dashboard-card" onclick="switchTab('measurements-dashboard')">
-                            <h4>📏 Pomiary Ciała</h4>
-                            <p>Waga i obwody</p>
+                    <!-- Main CTA -->
+                    <div class="glass-card main-cta" onclick="switchTab('training-dashboard')">
+                        <div class="cta-glow"></div>
+                        <div class="cta-content">
+                            <span class="cta-subtitle">Aktywny proces</span>
+                            <h2 class="cta-title">Trening & Kalendarz</h2>
                         </div>
-                        <div id="tile-analytics" class="dashboard-card" onclick="switchTab('analytics-dashboard')">
-                            <h4>📈 Analiza Progresu</h4>
-                            <p>Wykresy i statystyki</p>
-                        </div>
-
-                        <!-- Wiersz 3: Dieta + Profil -->
-                        <div id="tile-diet" class="dashboard-card" onclick="switchTab('diet-dashboard')">
-                            <h4>🥗 Dieta i Żywienie</h4>
-                            <p>Podgląd i plany</p>
-                        </div>
-                        <div id="tile-settings" class="dashboard-card" onclick="switchTab('settings-panel')">
-                            <h4>👤 Profil i Ustawienia</h4>
-                            <p>Preferencje konta</p>
-                        </div>
-
-                        <!-- Wiersz 4: Analizy AI + Diagnostyka -->
-                        <div id="tile-ai-analytics" class="dashboard-card" onclick="switchTab('ai-analytics-dashboard')" style="border-color: #FF9800; background: linear-gradient(135deg, rgba(255,152,0,0.15) 0%, rgba(0,0,0,0.5) 100%);">
-                            <h4 style="color: #FF9800; text-shadow: 0 0 10px rgba(255,152,0,0.5);">🤖 Analizy AI</h4>
-                            <p>Trener Edward analizuje</p>
-                        </div>
-                        <div id="tile-diagnostics" class="dashboard-card" onclick="switchTab('diagnostics-dashboard')">
-                            <h4 style="color: #E74C3C; text-shadow: 0 0 10px rgba(231,76,60,0.6);">🛠️ Diagnostyka</h4>
-                            <p>Ratunek i dane</p>
-                        </div>
-
-                        <!-- Wiersz 5: Postaw Kawę — pełna szerokość gdy nieparzysta liczba kafelków -->
-                        <div class="dashboard-card tile-coffee tile-full-width"
-                            onclick="window.open('https://suppi.pl/ukidives', '_blank')">
-                            <h4 style="color: #4CAF50; text-shadow: 0 0 10px rgba(76,175,80,0.6);">☕ Postaw Kawę</h4>
-                            <p>Wsparcie projektu</p>
+                        <div class="cta-footer">
+                            <div class="play-btn">▶</div>
+                            <span>Otwórz kalendarz i logi</span>
                         </div>
                     </div>
 
-                    <!-- Numer wersji pod kafelkami -->
-                    <div id="dashboard-version" style="text-align: center; padding: 12px 0 20px 0; color: rgba(255, 255, 255, 0.5); font-size: 0.9em; letter-spacing: 1px; text-shadow: 0 1px 2px rgba(0,0,0,0.8);">
-                        Loading...
+                    <!-- Grid -->
+                    <div class="glass-grid">
+                        <div class="glass-card grid-item" onclick="switchTab('analytics-dashboard')">
+                            <div class="grid-icon text-green">📈</div>
+                            <h3>Analiza</h3>
+                        </div>
+                        <div class="glass-card grid-item" onclick="switchTab('history-dashboard')">
+                            <div class="grid-icon text-purple">📚</div>
+                            <h3>Historia</h3>
+                        </div>
+                        <div class="glass-card grid-item" onclick="switchTab('measurements-dashboard')">
+                            <div class="grid-icon text-yellow">📏</div>
+                            <h3>Pomiary</h3>
+                        </div>
+                        <div class="glass-card grid-item" onclick="switchTab('diet-dashboard')">
+                            <div class="grid-icon text-red">🥗</div>
+                            <h3>Dieta</h3>
+                        </div>
+                    </div>
+
+                    <!-- PRO & Tools -->
+                    <div class="tools-section">
+                        <div class="glass-card list-item ai-coach" onclick="switchTab('ai-analytics-dashboard')">
+                            <div class="ai-glow"></div>
+                            <div class="list-left">
+                                <div class="list-icon ai-icon">🤖</div>
+                                <h3 class="ai-title">Analizy AI <span class="pro-badge">PRO</span></h3>
+                            </div>
+                            <div class="list-right text-orange">→</div>
+                        </div>
+
+                        <div class="glass-card list-item diag-tool" onclick="switchTab('diagnostics-dashboard')">
+                            <div class="diag-glow"></div>
+                            <div class="list-left">
+                                <div class="list-icon diag-icon">🛠️</div>
+                                <h3 class="diag-title">Diagnostyka Systemu</h3>
+                            </div>
+                            <div class="list-right text-red">→</div>
+                        </div>
+                        
+                        <div class="glass-card list-item coffee-tool" onclick="switchTab('help-dashboard')">
+                            <div class="coffee-glow"></div>
+                            <div class="list-left">
+                                <div class="list-icon coffee-icon">☕</div>
+                                <h3 class="coffee-title">Postaw Kawę Twórcom</h3>
+                            </div>
+                            <div class="list-right text-yellow">→</div>
+                        </div>
                     </div>
                 </div>
-
-                
-                <!-- BodyBuild Modules -->
-                <div id="measurements-dashboard" class="tab-content" style="display: none;">
+        <div id="measurements-dashboard" class="tab-content" style="display: none;">
                 </div>
                 
                 <div id="training-dashboard" class="tab-content" style="display: none;">
@@ -652,6 +635,23 @@
 
             </div>
         </main>
+
+        <!-- Bottom Navigation -->
+        <div class="bottom-nav-bar">
+            <div class="nav-btn active" onclick="switchTab('welcome-screen')">
+                <div class="nav-icon">🏠</div>
+                <span>Menu</span>
+            </div>
+            <div class="nav-btn" onclick="switchTab('training-dashboard')">
+                <div class="nav-icon">🏋️</div>
+                <span>Trening</span>
+            </div>
+            <div class="nav-btn" onclick="switchTab('settings-panel')">
+                <div class="nav-icon">⚙️</div>
+                <span>Ustawienia</span>
+            </div>
+        </div>
+    
     </div>
 
     <!-- Global Tooltip / Modal Structure -->
