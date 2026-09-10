@@ -307,7 +307,7 @@ body {
 .glass-dashboard {
     padding-bottom: 120px !important;
     height: 100%;
-    overflow-y: auto;
+    
     overflow-x: hidden;
 }
 
@@ -341,4 +341,35 @@ body {
 .bottom-nav-bar {
     height: 75px;
     padding-bottom: 5px;
+}
+
+/* Force flex to override .tab-content block display */
+.glass-dashboard {
+    display: flex !important;
+    flex-direction: column !important;
+}
+
+/* Ensure grid gap is preserved and grid overrides blocks */
+.glass-grid {
+    display: grid !important;
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 16px !important;
+}
+
+/* Tools section gap */
+.tools-section {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 12px !important;
+}
+
+/* Fix corner overflow on the CTA card */
+.main-cta {
+    position: relative;
+    overflow: hidden !important;
+    transform: translateZ(0); /* Safari border-radius overflow fix */
+    border-radius: 32px;
+}
+.main-cta {
+    border-radius: 32px !important;
 }

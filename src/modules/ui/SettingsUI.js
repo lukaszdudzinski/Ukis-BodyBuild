@@ -365,7 +365,25 @@ export const SettingsUI = {
         }
     },
 
-    applyProfileAvatar: (base64) => {
+    applyProfileAvatar: async (base64) => {
+        let avatarUrl = base64;
+        if (base64 && !base64.startsWith('data:')) {
+            try {
+                if (window.MediaManager) {
+                    avatarUrl = await window.MediaManager.getMediaUrl(base64);
+                } else if (window.DatabaseManager) {
+                    avatarUrl = await window.DatabaseManager.getBase64Image(base64);
+                }
+            } catch (e) {
+                console.warn('Could not load avatar', e);
+            }
+        }
+        
+        const newAvatarImg = document.getElementById('user-avatar-img');
+        if (newAvatarImg && avatarUrl) {
+            newAvatarImg.src = avatarUrl;
+        }
+
         // Create or update avatar in the header
         const headerContainer = document.querySelector('.header-container');
         if (headerContainer) {
@@ -381,7 +399,6 @@ export const SettingsUI = {
                 avatarEl.style.border = '2px solid #00BFFF';
                 avatarEl.style.marginRight = '15px';
                 
-                // Insert it alongside nick
                 const nickEl = document.getElementById('header-user-nick');
                 if (nickEl) {
                     headerContainer.insertBefore(avatarEl, nickEl.nextSibling);
@@ -389,14 +406,13 @@ export const SettingsUI = {
                     headerContainer.appendChild(avatarEl);
                 }
             }
-            if (base64) {
-                avatarEl.style.backgroundImage = `url(${base64})`;
+            if (avatarUrl) {
+                avatarEl.style.backgroundImage = 'url('+avatarUrl+')';
                 avatarEl.style.display = 'block';
             } else {
                 avatarEl.style.display = 'none';
             }
-        }
-    },
+        }    },
 
     applyWallpaper: async () => {
         const savedId = localStorage.getItem('uki-bodybuild-wallpaper');
