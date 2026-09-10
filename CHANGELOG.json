@@ -1,5 +1,12 @@
 [
   {
+    "version": "v2026.9.10.03",
+    "date": "2026-09-10",
+    "changes": [
+      "🎨 UI Redesign: Spójny układ nagłówków ćwiczeń, poprawiony układ zakładek i całkowicie nowe, eleganckie karty historii treningów (Makaron -> Karty)."
+    ]
+  },
+  {
     "version": "v2026.9.10.02",
     "date": "2026-09-10",
     "changes": [
