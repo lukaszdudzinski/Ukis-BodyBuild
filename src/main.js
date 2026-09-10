@@ -48,6 +48,18 @@ const initApp = () => {
     DatabaseManager.migrateExercises();
     ChangelogUI.init();
     AppUI.init();
+    
+    // Set dynamic avatar
+    const base64Id = localStorage.getItem('uki-bodybuild-avatar') || localStorage.getItem('uki-avatar');
+    if (base64Id) {
+        window.DatabaseManager.getBase64Image(base64Id).then(base64 => {
+            if (base64) {
+                const img = document.getElementById('user-avatar-img');
+                if (img) img.src = base64;
+            }
+        });
+    }
+    
     MeasurementsUI.init();
     TrainingUI.init();
     window.SettingsUI = SettingsUI;
