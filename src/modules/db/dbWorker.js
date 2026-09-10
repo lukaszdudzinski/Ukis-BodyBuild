@@ -14,6 +14,7 @@ async function autoSaveOPFS() {
             accessHandle.write(byteArray);
             accessHandle.flush();
             accessHandle.close();
+            sqlite3.wasm.dealloc(byteArray);
         } catch(e) { console.error("Worker: Manual OPFS save failed", e); }
     }
 }

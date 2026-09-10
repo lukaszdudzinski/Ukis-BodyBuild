@@ -49,4 +49,67 @@ test.describe('Kreator Szablonów - Zastosuj do zaznaczonych', () => {
         const ex3Desc = await cartItems.nth(2).innerText();
         expect(ex3Desc).toContain('4 serie');
     });
+
+    test('Powinien edytować i nadpisywać istniejący szablon bez tworzenia klonu', async ({ page }) => {
+        // Wstawienie do Local Storage przykładowego szablonu
+        await page.addInitScript(() => {
+            window.localStorage.setItem('tutorial_global_v22', 'true');
+            window.localStorage.setItem('uki_workout_templates', JSON.stringify([{
+                id: 123456789,
+                name: "Stary Szablon do Edycji",
+                type: "strength",
+                exercises: [{
+                    name: "Wyciskanie",
+                    type: "strength",
+                    sets: [{reps: "10", weight: "50", completed: false}]
+                }]
+            }]));
+        });
+
+        await page.goto('http://127.0.0.1:8080/');
+        
+        // Wejście do zakładki Trening
+        await page.evaluate(() => {
+            document.querySelector('a[data-tab="training-dashboard"]').click();
+        });
+        await page.waitForSelector('#training-calendar-view', { state: 'visible' });
+
+        // Otwarcie okna szablonów
+        await page.evaluate(() => {
+            window.TrainingUI.loadTemplatesDialog();
+        });
+        await page.waitForSelector('#templates-modal-overlay', { state: 'visible' });
+
+        // Zlokalizowanie i kliknięcie przycisku '✏️ Edytuj' przy naszym szablonie
+        await page.evaluate(() => {
+            const buttons = Array.from(document.querySelectorAll('button'));
+            const editBtn = buttons.find(b => b.textContent.includes('✏️ Edytuj'));
+            if(editBtn) editBtn.click();
+        });
+
+        // Odczekanie na załadowanie widoku Koszyka
+        await page.waitForSelector('#template-builder-dashboard', { state: 'visible' });
+
+        // Sprawdzenie, czy załadowano odpowiednią nazwę
+        const nameInput = page.locator('#builder-template-name');
+        await expect(nameInput).toHaveValue('Stary Szablon do Edycji');
+
+        // Modyfikacja nazwy
+        await nameInput.fill('Zaktualizowany Szablon');
+
+        // Akceptacja systemowego powiadomienia (alertu) po pomyślnym zapisie
+        page.once('dialog', dialog => dialog.accept());
+        
+        // Kliknięcie Zapisz
+        await page.click('#template-builder-dashboard button:has-text("Zapisz")');
+
+        // Weryfikacja: sprawdzamy bezpośrednio localStorage
+        const templatesStr = await page.evaluate(() => window.localStorage.getItem('uki_workout_templates'));
+        const templates = JSON.parse(templatesStr);
+
+        // Oczekujemy że stary szablon został zaktualizowany (oraz że NIE powstał zduplikowany klon)
+        expect(templates.length).toBe(1);
+        expect(templates[0].id).toBe(123456789);
+        expect(templates[0].name).toBe('Zaktualizowany Szablon');
+    });
 });

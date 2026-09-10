@@ -31,6 +31,484 @@ export const AnalyticsUI = {
     },
 
     renderAnalytics: (container, trainings, measurements) => {
+        const USE_NEW_ANALYTICS = true;
+        if (!USE_NEW_ANALYTICS) {
+            AnalyticsUI.renderLegacyAnalytics(container, trainings, measurements);
+            return;
+        }
+        AnalyticsUI.renderNewAnalytics(container, trainings, measurements);
+    },
+
+    renderNewAnalytics: (container, trainings, measurements) => {
+        container.innerHTML = `
+            <!-- TABS / PILLS NAVIGATION -->
+            <div style="padding: 10px; background: #181818; display: flex; justify-content: center; gap: 8px; overflow-x: auto; border-bottom: 1px solid #333; position: sticky; top: 0; z-index: 10;">
+                <button id="btn-tab-1" class="analytics-tab-btn active" onclick="window.AnalyticsUI.switchTab(1)" style="background: rgba(0, 191, 255, 0.15); border: 1px solid #00BFFF; color: #00BFFF; font-weight: bold; padding: 8px 16px; border-radius: 20px; font-size: 0.9em; white-space: nowrap; cursor: pointer;">🏋️ Trening i Siła</button>
+                <button id="btn-tab-2" class="analytics-tab-btn" onclick="window.AnalyticsUI.switchTab(2)" style="background: #222; border: 1px solid #444; color: #aaa; padding: 8px 16px; border-radius: 20px; font-size: 0.9em; white-space: nowrap; cursor: pointer; transition: all 0.2s;">📏 Sylwetka</button>
+                <button id="btn-tab-3" class="analytics-tab-btn" onclick="window.AnalyticsUI.switchTab(3)" style="background: #222; border: 1px solid #444; color: #aaa; padding: 8px 16px; border-radius: 20px; font-size: 0.9em; white-space: nowrap; cursor: pointer; transition: all 0.2s;">🔋 Regeneracja</button>
+            </div>
+            
+            <div id="analytics-tab-1" class="analytics-tab-content" style="display: block; padding-top: 15px; animation: fadeIn 0.3s ease-out;">
+                ${AnalyticsUI.buildStrengthTab(trainings, measurements)}
+            </div>
+            <div id="analytics-tab-2" class="analytics-tab-content" style="display: none; padding-top: 15px; animation: fadeIn 0.3s ease-out;">
+                ${AnalyticsUI.buildBodyTab(trainings, measurements)}
+            </div>
+            <div id="analytics-tab-3" class="analytics-tab-content" style="display: none; padding-top: 15px; animation: fadeIn 0.3s ease-out;">
+                ${AnalyticsUI.buildRecoveryTab(trainings)}
+            </div>
+        `;
+        
+        // Resolve media/charts if needed
+        const select = document.getElementById('analytics-exercise-select');
+        if (select && select.value) {
+            setTimeout(() => window.AnalyticsUI.renderExerciseChart(select.value), 100);
+        }
+    },
+
+    switchTab: (index) => {
+        const btns = document.querySelectorAll('.analytics-tab-btn');
+        btns.forEach((btn, i) => {
+            if (i + 1 === index) {
+                btn.classList.add('active');
+                btn.style.background = 'rgba(0, 191, 255, 0.15)';
+                btn.style.borderColor = '#00BFFF';
+                btn.style.color = '#00BFFF';
+                btn.style.fontWeight = 'bold';
+            } else {
+                btn.classList.remove('active');
+                btn.style.background = '#222';
+                btn.style.borderColor = '#444';
+                btn.style.color = '#aaa';
+                btn.style.fontWeight = 'normal';
+            }
+        });
+        
+        const contents = document.querySelectorAll('.analytics-tab-content');
+        contents.forEach((content, i) => {
+            if (i + 1 === index) {
+                content.style.display = 'block';
+            } else {
+                content.style.display = 'none';
+            }
+        });
+    },
+
+    buildStrengthTab: (trainings, measurements) => {
+        let html = '';
+        if (trainings.length === 0) {
+            return "<p style=\"text-align: center; color: #888;\">Za mało danych treningowych do przeprowadzenia analizy.</p>";
+        }
+
+        let totalVolume = 0;
+        let totalWorkouts = trainings.length;
+        let thisMonthWorkouts = [];
+        let thisMonthVolume = 0;
+        let totalCalories = 0;
+
+        const workoutsWithVolume = trainings.map(t => {
+            let vol = 0;
+            let volBody = 0;
+            let volMachine = 0;
+            const exercises = t.exercises || [];
+            exercises.forEach(ex => {
+                const exName = ex.name ? ex.name.toLowerCase() : "";
+                const isBodyweight65 = exName.includes("pompk");
+                const isBodyweight100 = exName.includes("podciąg") || exName.includes("drąż") || exName.includes("brzuszk") || exName.includes("wspięcia");
+                
+                if (ex.sets) {
+                    ex.sets.forEach(set => {
+                        let weightForVolume = (set.weight !== undefined && set.weight !== null) ? Number(set.weight) : 0;
+                        if (isBodyweight65) weightForVolume += (measurements.length > 0 ? (measurements[0].weight * 0.65) : 0);
+                        else if (isBodyweight100) weightForVolume += (measurements.length > 0 ? measurements[0].weight : 0);
+                        
+                        const setTonnage = weightForVolume * (set.reps ? Number(set.reps) : 0);
+                        vol += setTonnage;
+                        if (isBodyweight65 || isBodyweight100) volBody += setTonnage;
+                        else volMachine += setTonnage;
+                    });
+                }
+            });
+
+            const sw = t.smartwatch || {};
+            const calories = sw.calories ? Number(sw.calories) : 0;
+            const hr = sw.hr ? Number(sw.hr) : null;
+            const type = t.type || (vol > 0 ? "strength" : (calories > 0 ? "classes" : "strength"));
+            const durationMinutes = t.duration_seconds ? Math.round(t.duration_seconds / 60) : null;
+
+            return { id: t.id, name: t.name || "", date: new Date(t.date), volume: vol, volBody, volMachine, type, calories, hr, durationMinutes, duration_seconds: t.duration_seconds || 0 };
+        });
+
+        workoutsWithVolume.sort((a, b) => b.date - a.date);
+        
+        let totalVolBody = 0, totalVolMachine = 0;
+        workoutsWithVolume.forEach(w => {
+            totalVolume += w.volume; totalVolBody += w.volBody; totalVolMachine += w.volMachine;
+            if (w.calories > 0) totalCalories += w.calories;
+        });
+
+        const thisMonth = new Date().getMonth();
+        const thisYear = new Date().getFullYear();
+        thisMonthWorkouts = workoutsWithVolume.filter(w => w.date.getMonth() === thisMonth && w.date.getFullYear() === thisYear);
+        thisMonthWorkouts.forEach(w => thisMonthVolume += w.volume);
+
+        const maxStrengthVol = Math.max(...workoutsWithVolume.filter(w => w.type === "strength" || w.volume > 0).map(wo => wo.volume), 1);
+        const maxCardioCalories = Math.max(...workoutsWithVolume.filter(w => w.type === "cardio" || w.type === "classes" || w.volume === 0).map(wo => wo.calories), 1);
+
+        html += `
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 25px;">
+                <div style="background: rgba(0,0,0,0.5); border: 1px solid #00BFFF; padding: 12px; border-radius: 8px; text-align: center;">
+                    <div style="font-size: 1.8em; color: #00BFFF; font-weight: bold; margin-bottom: 3px;">${totalWorkouts}</div>
+                    <div style="font-size: 0.75em; color: #aaa; text-transform: uppercase;">Wszystkich Treningów</div>
+                </div>
+                <div style="background: rgba(0,0,0,0.5); border: 1px solid #FF9800; padding: 12px; border-radius: 8px; text-align: center;">
+                    <div style="font-size: 1.8em; color: #FF9800; font-weight: bold; margin-bottom: 3px;">${totalCalories > 0 ? totalCalories.toLocaleString("pl-PL") : "0"} <span style="font-size: 0.6em;">kcal</span></div>
+                    <div style="font-size: 0.75em; color: #aaa; text-transform: uppercase;">Spalone (Smartwatch)</div>
+                </div>
+                <div style="background: rgba(0,0,0,0.5); border: 1px solid #E91E63; padding: 12px; border-radius: 8px; text-align: center;">
+                    <div style="font-size: 1.4em; color: #E91E63; font-weight: bold; margin-bottom: 3px;">${Math.round(totalVolMachine)} kg</div>
+                    <div style="font-size: 0.7em; color: #aaa; text-transform: uppercase;">Tonaż Żelastwa</div>
+                </div>
+                <div style="background: rgba(0,0,0,0.5); border: 1px solid #2ECC71; padding: 12px; border-radius: 8px; text-align: center;">
+                    <div style="font-size: 1.4em; color: #2ECC71; font-weight: bold; margin-bottom: 3px;">${Math.round(totalVolBody)} kg</div>
+                    <div style="font-size: 0.7em; color: #aaa; text-transform: uppercase; display: flex; align-items: center; justify-content: center; gap: 4px;">
+                    <span>Tonaż Ciała</span>
+                    <button type="button" onclick="window.AnalyticsUI.showBodyweightInfoModal()" style="background: none; border: none; padding: 0; font-size: 1.1em; cursor: pointer; line-height: 1;" title="Informacja o tonażu ciała">ℹ️</button>
+                </div>
+                </div>
+            </div>
+            
+            <h4 style="color: #00BFFF; border-bottom: 1px solid rgba(0,191,255,0.2); padding-bottom: 5px; margin-bottom: 15px;">Zaawansowana Analityka (PRO)</h4>
+            
+            <div style="background: rgba(255,255,255,0.05); padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+                <p style="margin: 0 0 10px 0; font-size: 1.05em; color: #fff;">W tym miesiącu: <strong>${thisMonthWorkouts.length}</strong> aktywności, w tym <strong>${thisMonthVolume > 0 ? (thisMonthVolume >= 1000 ? (thisMonthVolume/1000).toFixed(1) + " t" : thisMonthVolume + " kg") : "0 kg"}</strong> tonażu siłowego!</p>
+                ${thisMonthWorkouts.length >= 8 
+                    ? '<p style="color: #2ECC71; margin: 0; font-weight: bold;">🔥 Konsekwencja mistrza! Świetna robota!</p>' 
+                    : '<p style="color: #00BFFF; margin: 0;">💪 Każda sesja przybliża Cię do życiowej formy. Nie przestawaj!</p>'}
+            </div>
+            
+            <h5 style="color: #FFD700; margin-top: 15px; margin-bottom: 5px;">📈 Ostatnie 10 sesji treningowych</h5>
+            <div style="display: flex; flex-direction: column; gap: 8px; margin-bottom: 25px;">
+                ${workoutsWithVolume.slice(0,10).reverse().map(w => {
+                    const dateStr = new Date(w.date).toLocaleDateString('pl-PL', {weekday:'short', day:'numeric', month:'short'});
+                    const isCardioOrClasses = (w.type === "cardio" || w.type === "classes") || (w.volume === 0 && (w.calories > 0 || w.duration_seconds > 0));
+                    
+                    let barPct = 10;
+                    let barColor = "#FF9800";
+                    let displayVal = "";
+                    let typeBadge = "";
+
+                    if (isCardioOrClasses) {
+                        const isClasses = w.type === "classes" || (!w.type && w.volume === 0);
+                        typeBadge = isClasses ? "🔥 Zajęcia" : "🏃 Cardio";
+                        barColor = isClasses ? "#FF5722" : "#00BFFF";
+                        
+                        const calVal = w.calories > 0 ? w.calories : (w.durationMinutes ? w.durationMinutes * 7 : 200);
+                        barPct = Math.min(100, Math.max(15, Math.round((calVal / Math.max(maxCardioCalories, 500)) * 100)));
+                        displayVal = w.calories > 0 ? \`\${w.calories} kcal\` : (w.durationMinutes ? \`⏱️ \${w.durationMinutes} min\` : \`Aktywność\`);
+                        if (w.hr) displayVal += \` <span style="font-size: 0.85em; opacity: 0.85;">(💓\${w.hr})</span>\`;
+                    } else {
+                        typeBadge = "🏋️ Siła";
+                        barPct = Math.min(100, Math.max(8, Math.round((w.volume / maxStrengthVol) * 100)));
+                        barColor = barPct >= 80 ? "#2ECC71" : (barPct >= 50 ? "#FFD700" : "#FF9800");
+                        displayVal = w.volume >= 1000 ? (w.volume/1000).toFixed(1) + " t" : Math.round(w.volume) + " kg";
+                        if (w.calories > 0) displayVal += \` <span style="font-size: 0.8em; opacity: 0.85;">(🔥\${w.calories})</span>\`;
+                    }
+
+                    const workoutNameDisplay = w.name ? \`<span style="color: #888; font-size: 0.8em; margin-left: 6px;">\${w.name}</span>\` : "";
+
+                    return '<div style="background: rgba(255,255,255,0.04); border-radius: 6px; padding: 8px 12px; border-left: 3px solid ' + barColor + ';">'
+                        + '<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">'
+                        + '<span style="font-size: 0.85em; color: #ccc;">' + dateStr + ' <span style="font-size: 0.8em; color: #aaa; background: rgba(255,255,255,0.08); padding: 2px 6px; border-radius: 4px; margin-left: 4px;">' + typeBadge + '</span>' + workoutNameDisplay + '</span>'
+                        + '<span style="font-size: 0.85em; color: ' + barColor + '; font-weight: bold;">' + displayVal + '</span>'
+                        + '</div>'
+                        + '<div style="background: rgba(255,255,255,0.08); border-radius: 3px; height: 6px; overflow: hidden;">'
+                        + '<div style="height: 100%; width: ' + barPct + '%; background: ' + barColor + '; border-radius: 3px; transition: width 0.6s ease;"></div>'
+                        + '</div>'
+                        + '</div>';
+                }).join('')}
+            </div>
+        `;
+
+        // Add 1RM Records
+        const exerciseMaxMap = {};
+        trainings.forEach(t => {
+            (t.exercises || []).forEach(ex => {
+                if (!ex.name) return;
+                const cleanName = ex.name.trim();
+                if (!cleanName) return;
+                (ex.sets || []).forEach(s => {
+                    const weight = Number(s.weight), reps = Number(s.reps);
+                    if (!isNaN(weight) && weight > 0 && !isNaN(reps) && reps >= 1) {
+                        const estimated1Rm = reps === 1 ? weight : Math.round(weight * (1 + (reps / 30)) * 10) / 10;
+                        if (!exerciseMaxMap[cleanName] || weight > exerciseMaxMap[cleanName].actualWeight || (weight === exerciseMaxMap[cleanName].actualWeight && reps > exerciseMaxMap[cleanName].reps)) {
+                            exerciseMaxMap[cleanName] = { name: cleanName, actualWeight: weight, max1Rm: estimated1Rm, reps: reps, date: t.date };
+                        }
+                    }
+                });
+            });
+        });
+
+        const recordsList = Object.values(exerciseMaxMap).sort((a, b) => b.actualWeight - a.actualWeight);
+        if (recordsList.length > 0) {
+            html += `
+                <div style="margin-top: 25px; margin-bottom: 25px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,215,0,0.3); padding-bottom: 5px; margin-bottom: 8px;">
+                        <h4 style="color: #FFD700; margin: 0; display: flex; align-items: center; gap: 6px; font-size: 1.1em;">🏆 Twoje Rekordy Siłowe</h4>
+                        <button type="button" onclick="window.AnalyticsUI.show1RmInfoModal()" style="background: rgba(255,215,0,0.15); border: 1px solid #FFD700; color: #FFD700; border-radius: 50%; width: 26px; height: 26px; font-size: 0.9em; cursor: pointer; display: flex; align-items: center; justify-content: center; font-weight: bold; line-height: 1;" title="Czym jest 1RM?">ℹ️</button>
+                    </div>
+                    <div style="display: flex; flex-wrap: wrap; gap: 10px;">
+                        ${recordsList.slice(0, 4).map(r => `
+                            <div style="flex: 1 1 calc(50% - 10px); min-width: 140px; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,215,0,0.2); border-radius: 8px; padding: 10px; display: flex; flex-direction: column; justify-content: space-between;">
+                                <div style="font-size: 0.85em; color: #eee; font-weight: bold; margin-bottom: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${r.name}">${r.name}</div>
+                                <div>
+                                    <div style="font-size: 1.25em; color: #FFD700; font-weight: 800; line-height: 1.1; margin-bottom: 4px;">${r.actualWeight} <span style="font-size: 0.65em; color: #fff; font-weight: normal;">kg</span> <span style="font-size: 0.8em; color: #aaa; font-weight: normal;">x ${r.reps}</span></div>
+                                    <div style="font-size: 0.72em; color: #bbb;">${new Date(r.date).toLocaleDateString("pl-PL", {day:"numeric", month:"short"})}</div>
+                                    <div style="font-size: 0.7em; color: #00BFFF; margin-top: 6px; display: flex; align-items: center; gap: 4px;">
+                                        <span style="background: rgba(0, 191, 255, 0.15); padding: 2px 6px; border-radius: 4px; border: 1px solid rgba(0, 191, 255, 0.3);">ℹ️ Szac. 1RM: ~${r.max1Rm.toFixed(1)} kg</span>
+                                    </div>
+                                </div>
+                            </div>
+                        `).join("")}
+                    </div>
+                    <div style="text-align: center; margin-top: 12px;">
+                        <button type="button" onclick="window.AnalyticsUI.shareRecords()" class="action-button" style="background: linear-gradient(135deg, #FFD700, #FF9800); color: #000; font-weight: bold; border: none; padding: 10px 18px; border-radius: 6px; font-size: 0.9em; cursor: pointer; width: 100%; box-shadow: 0 4px 12px rgba(255,215,0,0.25);">📤 Udostępnij swoje rekordy</button>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Add Progress Chart
+        const uniqueExNames = new Set();
+        trainings.forEach(t => (t.exercises || []).forEach(ex => { if(ex.name && ex.name.trim()) uniqueExNames.add(ex.name.trim()); }));
+        const exListOptions = Array.from(uniqueExNames).sort();
+        
+        if (exListOptions.length > 0) {
+            html += `
+                <div style="margin-top: 30px; margin-bottom: 25px;">
+                    <h4 style="color: #2ECC71; border-bottom: 1px solid rgba(46,204,113,0.2); padding-bottom: 5px; margin-bottom: 15px;">📈 Śledzenie Progresu (Wykres Max Ciężaru)</h4>
+                    <div style="background: rgba(255,255,255,0.05); padding: 15px; border-radius: 8px;">
+                        <select id="analytics-exercise-select" onchange="window.AnalyticsUI.renderExerciseChart(this.value)" style="width: 100%; padding: 10px; border-radius: 6px; background: #222; border: 1px solid #2ECC71; color: #fff; font-size: 1em; margin-bottom: 15px;">
+                            <option value="">-- Wybierz ćwiczenie --</option>
+                            ${exListOptions.map(name => \`<option value="\${name}">\${name}</option>\`).join('')}
+                        </select>
+                        <div id="analytics-exercise-chart-container" style="min-height: 160px; display: flex; align-items: center; justify-content: center; color: #888; font-size: 0.9em;">Wybierz ćwiczenie z listy.</div>
+                    </div>
+                </div>
+            `;
+        }
+        return html;
+    },
+
+    buildBodyTab: (trainings, measurements) => {
+        let html = '';
+        if (measurements.length === 0) {
+            return `
+                <div style="background: rgba(255, 165, 0, 0.1); border-left: 4px solid orange; padding: 15px; margin-bottom: 20px; border-radius: 4px;">
+                    <strong style="color: orange;">Brak pomiarów ciała!</strong>
+                    <p style="margin: 5px 0 0 0; font-size: 0.9em; color: #ddd;">Aby śledzić swój progres sylwetkowy, przejdź do zakładki "Pomiary Ciała" i dodaj pierwszy wpis.</p>
+                </div>
+            `;
+        }
+
+        const sortedMeasurements = [...measurements].sort((a, b) => new Date(b.date) - new Date(a.date));
+        const last = sortedMeasurements[0];
+        const first = sortedMeasurements[sortedMeasurements.length - 1];
+        const weight = last.weight, height = last.height, waist = last.waist, neck = last.neck, hips = last.hips;
+        const gender = localStorage.getItem('uki-bodybuild-gender') || 'male';
+
+        let missingForBF = [];
+        if (!height) missingForBF.push("Wzrost");
+        if (!waist) missingForBF.push("Talia");
+        if (!neck) missingForBF.push("Szyja");
+        if (gender === 'female' && !hips) missingForBF.push("Biodra");
+
+        let bfHtml = '';
+        let ffmiHtml = '';
+        let whrHtml = '';
+        let athleticCorrectionHtml = '';
+        let bf = null;
+        let normalizedFfmi = null;
+
+        if (missingForBF.length === 0) {
+            let hipsForCalc = hips;
+            let athleticCorrectionApplied = false;
+
+            if (gender === 'female' && waist && hips) {
+                const whr = waist / hips;
+                if (whr < 0.75) {
+                    hipsForCalc = hips - (hips * 0.05); // 5% reduction for athletic glutes
+                    athleticCorrectionApplied = true;
+                }
+            }
+
+            if (gender === 'male') {
+                const val = 1.0324 - 0.19077 * Math.log10(waist - neck) + 0.15456 * Math.log10(height);
+                bf = (495 / val) - 450;
+            } else {
+                const val = 1.29579 - 0.35004 * Math.log10(waist + hipsForCalc - neck) + 0.22100 * Math.log10(height);
+                bf = (495 / val) - 450;
+            }
+            bf = Math.max(2, Math.min(60, bf));
+
+            let bfText = "";
+            if (gender === 'male') {
+                if(bf < 6) bfText = "Ekstremalnie niski (Startowa forma)";
+                else if(bf < 14) bfText = "Wysportowana sylwetka (Atletyczna)";
+                else if(bf < 18) bfText = "Dobra kondycja (Fitness)";
+                else if(bf < 25) bfText = "Przeciętna sylwetka";
+                else bfText = "Podwyższony poziom tkanki tłuszczowej";
+            } else {
+                if(bf < 16) bfText = "Ekstremalnie niski (Startowa forma)";
+                else if(bf < 22) bfText = "Wysportowana sylwetka (Atletyczna)";
+                else if(bf < 26) bfText = "Dobra kondycja (Fitness)";
+                else if(bf < 32) bfText = "Przeciętna sylwetka";
+                else bfText = "Podwyższony poziom tkanki tłuszczowej";
+            }
+
+            if (athleticCorrectionApplied) {
+                athleticCorrectionHtml = `
+                    <div style="background: rgba(233, 30, 99, 0.1); border: 1px solid rgba(233, 30, 99, 0.5); border-radius: 8px; padding: 12px; margin-bottom: 15px; text-align: center;">
+                        <div style="font-size: 1.5em; margin-bottom: 4px;">👩‍🎤</div>
+                        <div style="color: #E91E63; font-weight: bold; font-size: 0.85em; text-transform: uppercase;">Korekta Atletyczna Aktywna</div>
+                        <div style="font-size: 0.75em; color: #aaa; margin-top: 4px;">Wykryto niski wskaźnik WHR (<0.75). Wzór US Navy został zoptymalizowany (redukcja obwodu bioder), by prawidłowo odzwierciedlić hipertrofię.</div>
+                    </div>
+                `;
+            }
+
+            bfHtml = `
+                <div style="background: rgba(0,0,0,0.5); border: 1px solid #00BFFF; padding: 15px; border-radius: 8px; margin-bottom: 15px; position: relative;">
+                    <strong style="color: #00BFFF; font-size: 1.2em;">Szacunkowy BF%</strong>
+                    <button onclick="window.AnalyticsUI.showInfoModal('bf', ${bf})" style="position: absolute; right: 15px; top: 15px; background: none; border: none; color: #00BFFF; font-size: 1.2em; cursor: pointer;">ℹ️</button>
+                    <div style="font-size: 2em; font-weight: bold; margin: 10px 0;">${bf.toFixed(1)} <span style="font-size: 0.5em; font-weight: normal;">%</span></div>
+                    <p style="margin: 0; font-size: 0.9em; font-weight: bold; color: #fff;">${bfText}</p>
+                </div>
+            `;
+
+            if (weight && height) {
+                const leanMass = weight * (1 - (bf / 100));
+                const heightM = height / 100;
+                let ffmi = leanMass / (heightM * heightM);
+                normalizedFfmi = ffmi + 6.1 * (1.8 - heightM);
+
+                let ffmiText = "";
+                if (gender === 'male') {
+                    if(normalizedFfmi < 18) ffmiText = "Poniżej przeciętnej";
+                    else if(normalizedFfmi < 20) ffmiText = "Przeciętna muskulatura";
+                    else if(normalizedFfmi < 22) ffmiText = "Dobra muskulatura (Wysportowany)";
+                    else if(normalizedFfmi < 25) ffmiText = "Doskonała muskulatura";
+                    else ffmiText = "Genetyczna elita (lub doping)";
+                } else {
+                    if(normalizedFfmi < 15) ffmiText = "Poniżej przeciętnej";
+                    else if(normalizedFfmi < 17) ffmiText = "Przeciętna muskulatura";
+                    else if(normalizedFfmi < 19) ffmiText = "Dobra muskulatura (Wysportowana)";
+                    else if(normalizedFfmi < 21) ffmiText = "Doskonała muskulatura";
+                    else ffmiText = "Genetyczna elita";
+                }
+
+                ffmiHtml = `
+                    <div style="background: rgba(0,0,0,0.5); border: 1px solid #2ECC71; padding: 15px; border-radius: 8px; margin-bottom: 15px; position: relative;">
+                        <strong style="color: #2ECC71; font-size: 1.2em;">FFMI (Index Beztłuszczowy)</strong>
+                        <button onclick="window.AnalyticsUI.showInfoModal('ffmi', ${normalizedFfmi})" style="position: absolute; right: 15px; top: 15px; background: none; border: none; color: #2ECC71; font-size: 1.2em; cursor: pointer;">ℹ️</button>
+                        <div style="font-size: 2em; font-weight: bold; margin: 10px 0;">${normalizedFfmi.toFixed(1)}</div>
+                        <p style="margin: 0; font-size: 0.9em; font-weight: bold; color: #fff;">${ffmiText}</p>
+                    </div>
+                `;
+            }
+        } else {
+            bfHtml = `<div style="background: rgba(255, 68, 68, 0.1); border-left: 4px solid #ff4444; padding: 15px; margin-bottom: 15px; border-radius: 4px;"><strong style="color: #ff4444;">Brak danych BF%</strong><p style="margin: 5px 0 0 0; font-size: 0.9em; color: #ddd;">Uzupełnij: ${missingForBF.join(", ")}.</p></div>`;
+        }
+
+        if (waist && hips) {
+            const whr = waist / hips;
+            let whrText = "";
+            if (gender === 'male') {
+                if(whr < 0.90) whrText = "Zdrowe proporcje (Niskie ryzyko)";
+                else if(whr < 1.0) whrText = "Umiarkowane ryzyko";
+                else whrText = "Typ jabłka (Podwyższone ryzyko)";
+            } else {
+                if(whr < 0.80) whrText = "Zdrowe proporcje (Niskie ryzyko)";
+                else if(whr < 0.85) whrText = "Umiarkowane ryzyko";
+                else whrText = "Typ jabłka (Podwyższone ryzyko)";
+            }
+
+            whrHtml = `
+                <div style="background: rgba(0,0,0,0.5); border: 1px solid #9B59B6; padding: 15px; border-radius: 8px; margin-bottom: 15px; position: relative;">
+                    <strong style="color: #9B59B6; font-size: 1.2em;">WHR (Talia-Biodra)</strong>
+                    <button onclick="window.AnalyticsUI.showInfoModal('whr', ${whr})" style="position: absolute; right: 15px; top: 15px; background: none; border: none; color: #9B59B6; font-size: 1.2em; cursor: pointer;">ℹ️</button>
+                    <div style="font-size: 2em; font-weight: bold; margin: 10px 0;">${whr.toFixed(2)}</div>
+                    <p style="margin: 0; font-size: 0.9em; font-weight: bold; color: #fff;">${whrText}</p>
+                </div>
+            `;
+        }
+
+        let trendsHtml = '';
+        if (sortedMeasurements.length > 1) {
+            trendsHtml += '<h5 style="color: #00BFFF; margin-top: 15px; margin-bottom: 10px;">Zmiany (od pierwszego wpisu)</h5>';
+            const dict = { weight: 'Waga', chest: 'Klatka', waist: 'Talia', hips: 'Biodra', thigh: 'Udo', biceps: 'Biceps', neck: 'Szyja' };
+            let diffs = '';
+            for (const [key, label] of Object.entries(dict)) {
+                if (last[key] && first[key]) {
+                    const v = last[key] - first[key];
+                    if (v !== 0) {
+                        const sign = v > 0 ? '+' : '';
+                        const color = v > 0 ? (key==='waist' ? '#ff4444' : '#2ECC71') : (key==='waist' ? '#2ECC71' : '#ff4444');
+                        diffs += `<div style="display: flex; justify-content: space-between; margin-bottom: 5px; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 5px;"><span>${label}</span><strong style="color: ${color};">${v > 0 ? '↗️' : '↘️'} ${sign}${v.toFixed(1)} ${key==='weight'?'kg':'cm'}</strong></div>`;
+                    }
+                }
+            }
+            if(diffs) trendsHtml += `<div style="background: rgba(255,255,255,0.05); padding: 15px; border-radius: 8px;">${diffs}</div>`;
+        }
+        
+        return athleticCorrectionHtml + bfHtml + ffmiHtml + whrHtml + trendsHtml;
+    },
+
+    buildRecoveryTab: (trainings) => {
+        if (trainings.length === 0) return '<p style="color: #888;">Brak danych treningowych do analizy regeneracji.</p>';
+        const now = Date.now();
+        const last48h = now - (48 * 60 * 60 * 1000);
+        const recentTrainings = trainings.filter(t => (t.startTime || new Date(t.date).getTime()) > last48h);
+
+        const muscles = {
+            chest: { name: 'Klatka Piersiowa', keywords: ['klat', 'wycisk', 'rozpięt', 'pompk'], status: 'green' },
+            back: { name: 'Plecy', keywords: ['plec', 'wiosł', 'drąż', 'martw', 'szrug', 'podciąg'], status: 'green' },
+            legs: { name: 'Nogi', keywords: ['nog', 'przys', 'wykrok', 'suwn', 'łyd'], status: 'green' },
+            shoulders: { name: 'Barki', keywords: ['bark', 'żołnierz', 'unoszen'], status: 'green' },
+            arms: { name: 'Ramiona', keywords: ['bic', 'tric', 'uginan', 'francusk'], status: 'green' },
+            core: { name: 'Brzuch', keywords: ['brzuch', 'plank', 'desk', 'brzus'], status: 'green' }
+        };
+
+        recentTrainings.forEach(t => (t.exercises || []).forEach(ex => {
+            const exName = ex.name ? ex.name.toLowerCase() : '';
+            Object.keys(muscles).forEach(key => { if (muscles[key].keywords.some(kw => exName.includes(kw))) muscles[key].status = 'red'; });
+        }));
+
+        let atlasCards = '';
+        Object.keys(muscles).forEach(key => {
+            const m = muscles[key];
+            const bg = m.status === 'red' ? 'rgba(231, 76, 60, 0.1)' : 'rgba(46, 204, 113, 0.1)';
+            const border = m.status === 'red' ? '#E74C3C' : '#2ECC71';
+            const icon = m.status === 'red' ? '🔴 Zmęczone' : '🟢 Gotowe';
+            const shadow = m.status === 'red' ? 'box-shadow: 0 0 10px rgba(231,76,60,0.2);' : '';
+            atlasCards += `
+                <div style="background: ${bg}; border: 1px solid ${border}; padding: 12px; border-radius: 8px; text-align: center; display: flex; flex-direction: column; justify-content: center; ${shadow}">
+                    <strong style="color: #fff; font-size: 0.9em; margin-bottom: 5px;">${m.name}</strong>
+                    <span style="font-size: 0.8em; color: ${border}; font-weight: bold;">${icon}</span>
+                </div>
+            `;
+        });
+
+        return `
+            <div style="background: rgba(0,0,0,0.3); padding: 15px; border-radius: 8px; border: 1px solid #00BFFF; margin-bottom: 20px;">
+                <p style="margin: 0 0 15px 0; font-size: 0.9em; color: #ccc;">Analiza na podstawie treningów z ostatnich 48 godzin. Partie oznaczone na czerwono (🔴) zaangażowano niedawno i potrzebują czasu na regenerację. Unikaj obciążania ich dzisiaj!</p>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                    ${atlasCards}
+                </div>
+            </div>
+        `;
+    },
+
+    renderLegacyAnalytics: (container, trainings, measurements) => {
         let html = '';
 
         // 1. Measurement Reminder Logic

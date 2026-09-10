@@ -1,5 +1,15 @@
 [
   {
+    "version": "v2026.9.10.01",
+    "date": "2026-09-10",
+    "changes": [
+      "🛠️ Wdrożono nowy, podzielony na czytelne zakładki widok Analizy Progresu.",
+      "👩‍🎤 Wprowadzono Korektę Atletyczną (WHR) dla kobiet we wzorze US Navy, aby sprawiedliwiej oceniać proporcje sylwetkowe u trenujących.",
+      "🗑️ Zreorganizowano UX nagłówka w aktywnym treningu – dodano dedykowany przycisk szybkiego usuwania dla każdego ćwiczenia (również superserii).",
+      "🐞 Załatano błąd, który powodował utratę danych (ciężar/powtórzenia) przy zakańczaniu treningu z niezapisaną superserią."
+    ]
+  },
+  {
     "version": "v2026.8.31.02",
     "date": "2026-08-31",
     "changes": [

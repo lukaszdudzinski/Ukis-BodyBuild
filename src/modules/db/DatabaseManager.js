@@ -131,6 +131,9 @@ export const DatabaseManager = {
                     await sendMessage('import_raw', { buffer: byteArray.buffer });
                     console.log("Migration successful!");
                 }
+                if (byteArray && sqlite3.wasm && sqlite3.wasm.dealloc) {
+                    sqlite3.wasm.dealloc(byteArray);
+                }
             } else {
                 console.log("No legacy KVvfs data found.");
             }

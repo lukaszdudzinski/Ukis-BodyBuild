@@ -2,6 +2,7 @@ import { ExerciseCatalog, ExerciseCategories } from '../../data/ExerciseCatalog.
 
 export const TemplateBuilderUI = {
     cart: [],
+    currentEditId: null,
 
     render: () => {
         const container = document.getElementById('template-builder-dashboard');
@@ -11,7 +12,7 @@ export const TemplateBuilderUI = {
             <div class="view-header" style="position: sticky; top: 0; z-index: 100; background: #121212; padding-bottom: 10px; border-bottom: 1px solid #333;">
                 <div style="display: flex; justify-content: space-between; align-items: center;">
                     <h2 style="margin: 0; color: #00BFFF;">Kreator Planu (Koszyk)</h2>
-                    <button onclick="window.switchTab('training-dashboard')" class="icon-btn" style="color: #ff4444; font-size: 1.5em; border: none; background: none; padding: 0;">&times;</button>
+                    <button onclick="TemplateBuilderUI.cart = []; TemplateBuilderUI.currentEditId = null; window.switchTab('training-dashboard')" class="icon-btn" style="color: #ff4444; font-size: 1.5em; border: none; background: none; padding: 0;">&times;</button>
                 </div>
                 <div style="margin-top: 10px; display: flex; gap: 10px;">
                     <input type="text" id="builder-template-name" placeholder="Nazwa Planu (np. Push Dół)" style="flex: 1; padding: 10px; border-radius: 8px; border: 1px solid #444; background: #222; color: #fff;">
@@ -133,7 +134,9 @@ export const TemplateBuilderUI = {
         const fullCatalog = [...ExerciseCatalog, ...customExercises];
         
         fullCatalog.forEach(exName => {
-            html += `<div class="builder-catalog-item" data-name="${exName}" onclick="TemplateBuilderUI.addToCart('${exName}')" style="background: #222; padding: 12px 15px; border-radius: 8px; border: 1px solid #333; cursor: pointer; display: flex; justify-content: space-between; align-items: center;">
+            const escapedNameForData = exName.replace(/"/g, '&quot;');
+            const escapedNameForJS = exName.replace(/'/g, "\\'").replace(/"/g, '&quot;');
+            html += `<div class="builder-catalog-item" data-name="${escapedNameForData}" onclick="TemplateBuilderUI.addToCart('${escapedNameForJS}')" style="background: #222; padding: 12px 15px; border-radius: 8px; border: 1px solid #333; cursor: pointer; display: flex; justify-content: space-between; align-items: center;">
                 <span style="color: #ccc; font-size: 0.95em;">${exName}</span>
                 <span style="color: #00BFFF; font-weight: bold; font-size: 1.2em;">+</span>
             </div>`;
@@ -321,7 +324,23 @@ export const TemplateBuilderUI = {
         let templates = [];
         try { templates = JSON.parse(templatesStr); } catch(e) {}
         
-        templates.push(template);
+        if (TemplateBuilderUI.currentEditId) {
+            const idx = templates.findIndex(t => String(t.id) === String(TemplateBuilderUI.currentEditId));
+            if (idx > -1) {
+                templates[idx].name = name;
+                templates[idx].exercises = TemplateBuilderUI.cart.map(ex => ({
+                    name: ex.name,
+                    type: ex.type || 'strength',
+                    sets: (ex.sets || []).map(s => ({ ...s }))
+                }));
+            } else {
+                templates.push(template);
+            }
+            TemplateBuilderUI.currentEditId = null;
+        } else {
+            templates.push(template);
+        }
+        
         localStorage.setItem('uki_workout_templates', JSON.stringify(templates));
 
         alert("Szablon zapisany pomyślnie! Znajdziesz go w zakładce Trening -> Szablony Planów Treningowych.");
@@ -334,8 +353,30 @@ export const TemplateBuilderUI = {
     
     openBuilder: () => {
         TemplateBuilderUI.cart = [];
+        TemplateBuilderUI.currentEditId = null;
         window.switchTab('template-builder-dashboard');
         TemplateBuilderUI.render();
+    },
+    
+    editTemplate: (id) => {
+        const templatesStr = localStorage.getItem('uki_workout_templates') || "[]";
+        let templates = [];
+        try { templates = JSON.parse(templatesStr); } catch(e) {}
+        
+        const template = templates.find(t => String(t.id) === String(id));
+        if (!template) {
+            alert("Nie znaleziono szablonu!");
+            return;
+        }
+
+        TemplateBuilderUI.cart = JSON.parse(JSON.stringify(template.exercises || []));
+        TemplateBuilderUI.currentEditId = id;
+        
+        window.switchTab('template-builder-dashboard');
+        TemplateBuilderUI.render();
+        
+        const nameInput = document.getElementById('builder-template-name');
+        if (nameInput) nameInput.value = template.name || '';
     }
 };
 
