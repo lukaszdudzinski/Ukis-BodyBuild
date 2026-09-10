@@ -42,10 +42,19 @@ export const AnalyticsUI = {
     renderNewAnalytics: (container, trainings, measurements) => {
         container.innerHTML = `
             <!-- TABS / PILLS NAVIGATION -->
-            <div style="padding: 10px; background: #181818; display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; border-bottom: 1px solid #333; position: sticky; top: 0; z-index: 10;">
-                <button id="btn-tab-1" class="analytics-tab-btn active" onclick="window.AnalyticsUI.switchTab(1)" style="background: rgba(0, 191, 255, 0.15); border: 1px solid #00BFFF; color: #00BFFF; font-weight: bold; padding: 8px 16px; border-radius: 20px; font-size: 0.9em; white-space: nowrap; cursor: pointer;">🏋️ Trening i Siła</button>
-                <button id="btn-tab-2" class="analytics-tab-btn" onclick="window.AnalyticsUI.switchTab(2)" style="background: #222; border: 1px solid #444; color: #aaa; padding: 8px 16px; border-radius: 20px; font-size: 0.9em; white-space: nowrap; cursor: pointer; transition: all 0.2s;">📏 Sylwetka</button>
-                <button id="btn-tab-3" class="analytics-tab-btn" onclick="window.AnalyticsUI.switchTab(3)" style="background: #222; border: 1px solid #444; color: #aaa; padding: 8px 16px; border-radius: 20px; font-size: 0.9em; white-space: nowrap; cursor: pointer; transition: all 0.2s;">🔋 Regeneracja</button>
+            <div style="padding: 10px; background: #181818; display: flex; gap: 6px; border-bottom: 1px solid #333; position: sticky; top: 0; z-index: 10;">
+                <button id="btn-tab-1" class="analytics-tab-btn active" onclick="window.AnalyticsUI.switchTab(1)" style="flex: 1; background: rgba(0, 191, 255, 0.15); border: 1px solid #00BFFF; color: #00BFFF; font-weight: bold; padding: 10px 2px; border-radius: 12px; font-size: 0.75em; cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; box-sizing: border-box;">
+                    <span style="font-size: 1.6em;">🏋️</span>
+                    <span style="white-space: nowrap;">Trening & Siła</span>
+                </button>
+                <button id="btn-tab-2" class="analytics-tab-btn" onclick="window.AnalyticsUI.switchTab(2)" style="flex: 1; background: #222; border: 1px solid #444; color: #aaa; padding: 10px 2px; border-radius: 12px; font-size: 0.75em; cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; box-sizing: border-box; transition: all 0.2s;">
+                    <span style="font-size: 1.6em;">📏</span>
+                    <span style="white-space: nowrap;">Sylwetka</span>
+                </button>
+                <button id="btn-tab-3" class="analytics-tab-btn" onclick="window.AnalyticsUI.switchTab(3)" style="flex: 1; background: #222; border: 1px solid #444; color: #aaa; padding: 10px 2px; border-radius: 12px; font-size: 0.75em; cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; box-sizing: border-box; transition: all 0.2s;">
+                    <span style="font-size: 1.6em;">🔋</span>
+                    <span style="white-space: nowrap;">Regeneracja</span>
+                </button>
             </div>
             
             <div id="analytics-tab-1" class="analytics-tab-content" style="display: block; padding-top: 15px; animation: fadeIn 0.3s ease-out;">
@@ -1253,7 +1262,7 @@ export const AnalyticsUI = {
         const absoluteMax = Math.max(...chartData.map(d => d.maxWeight));
         
         let chartHtml = `
-            <div style="width: 100%; display: flex; align-items: flex-end; gap: 6px; height: 180px; padding: 10px 10px 45px 10px; background: rgba(0,0,0,0.3); border-radius: 8px; overflow-x: auto; margin-top: 10px; position: relative; border-bottom: 1px solid #2ECC71;">
+            <div style="width: 100%; display: flex; align-items: flex-end; justify-content: flex-start; gap: 8px; height: 180px; padding: 10px 10px 35px 10px; background: rgba(0,0,0,0.3); border-radius: 8px; overflow-x: auto; margin-top: 10px; position: relative; border-bottom: 1px solid #2ECC71;">
         `;
         
         chartData.forEach(d => {
@@ -1261,11 +1270,11 @@ export const AnalyticsUI = {
             const dateShort = new Date(d.date).toLocaleDateString('pl-PL', {day:'numeric', month:'short'});
             
             chartHtml += `
-                <div style="display: flex; flex-direction: column; align-items: center; flex: 1; min-width: 40px; position: relative;">
+                <div style="display: flex; flex-direction: column; justify-content: flex-end; align-items: center; flex: 1; min-width: 40px; max-width: 60px; height: 100%; position: relative;">
                     <div style="font-size: 0.75em; color: #2ECC71; font-weight: bold; margin-bottom: 2px;">${d.maxWeight} <span style="font-size:0.7em;color:#aaa;">kg</span></div>
                     <div style="font-size: 0.65em; color: #888; margin-bottom: 5px;">x${d.reps}</div>
-                    <div style="width: 100%; max-width: 30px; height: ${heightPct}%; background: linear-gradient(to top, rgba(46,204,113,0.3), #2ECC71); border-radius: 4px 4px 0 0; min-height: 5px; max-height: 120px; box-shadow: 0 0 5px rgba(46,204,113,0.2);"></div>
-                    <div style="font-size: 0.65em; color: #aaa; margin-top: 8px; transform: rotate(-45deg); transform-origin: top left; position: absolute; bottom: -35px; left: 50%; white-space: nowrap;">${dateShort}</div>
+                    <div style="width: 100%; max-width: 30px; height: ${heightPct}%; background: linear-gradient(to top, rgba(46,204,113,0.3), #2ECC71); border-radius: 4px 4px 0 0; min-height: 5px; box-shadow: 0 0 5px rgba(46,204,113,0.2);"></div>
+                    <div style="font-size: 0.65em; color: #aaa; margin-top: 8px; position: absolute; bottom: -25px; white-space: nowrap;">${dateShort}</div>
                 </div>
             `;
         });
