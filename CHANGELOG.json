@@ -1,5 +1,12 @@
 [
   {
+    "version": "v2026.9.11.09",
+    "date": "2026-09-11",
+    "changes": [
+      "🚀 UX Polish: Powrót Katalogu, białe ikony, stopka z wersją"
+    ]
+  },
+  {
     "version": "v2026.9.11.08",
     "date": "2026-09-11",
     "changes": [
