@@ -1,5 +1,12 @@
 [
   {
+    "version": "v2026.9.11.02",
+    "date": "2026-09-11",
+    "changes": [
+      "🚀 Native iOS Fixes: Poprawa kolorystyki (solidne czarne tła kart), dodanie aparatu, przywrócenie stopki z Pauzą, link do kawy"
+    ]
+  },
+  {
     "version": "v2026.9.11.01",
     "date": "2026-09-11",
     "changes": [

@@ -1574,7 +1574,7 @@ export const TrainingUI = {
             const isMainForSuperset = nextEx && nextEx.type === 'superset';
 
             if (isMainForSuperset && ex.type !== 'superset') {
-                html += `<div style="background: rgba(255,255,255,0.02); border-radius: 20px; padding: 15px; margin-bottom: 20px; position: relative;">`;
+                html += `<div style="background: #111118; border-radius: 16px; padding: 15px; margin-bottom: 20px; position: relative; border: 1px solid #333;">`;
                 html += `<div style="position: absolute; top: -10px; left: 20px; background: #E91E63; color: #FFF; padding: 2px 10px; font-size: 10px; font-weight: 800; border-radius: 10px; text-transform: uppercase;">Superseria</div>`;
                 inSupersetGroup = true;
             }
@@ -1583,36 +1583,33 @@ export const TrainingUI = {
                 if (inSupersetGroup) {
                     html += `<div style="height: 1px; background: rgba(255,255,255,0.1); margin: 15px 0;"></div>`;
                 } else {
-                    html += `<div style="background: rgba(255,255,255,0.02); border-radius: 20px; padding: 15px; margin-bottom: 20px; position: relative;">`;
+                    html += `<div style="background: #111118; border-radius: 16px; padding: 15px; margin-bottom: 20px; position: relative; border: 1px solid #333;">`;
                     html += `<div style="position: absolute; top: -10px; left: 20px; background: #E91E63; color: #FFF; padding: 2px 10px; font-size: 10px; font-weight: 800; border-radius: 10px; text-transform: uppercase;">Superseria (Błąd)</div>`;
                 }
             }
 
-            // Exercise Block Layout
+            // Exercise Header (Wpisz nazwę + Camera + Trash)
             html += `
                 <div style="margin-bottom: ${inSupersetGroup && ex.type !== 'superset' ? '0' : '20px'};">
                     <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px;">
-                        <input type="text" placeholder="Wpisz nazwę..." value="${ex.name}" onchange="window.TrainingUI.updateExerciseField('${ex.id}', 'name', this.value); window.TrainingUI.renderCurrentExercises();" style="flex: 1; background: transparent; border: none; color: #FFF; font-size: 20px; font-weight: 600; outline: none; min-width: 0;">
-                        <button onclick="window.TrainingUI.removeExercise('${ex.id}')" style="background: transparent; border: none; color: #E74C3C; font-size: 14px; padding: 5px; cursor: pointer;">Usuń</button>
-                    </div>
-
-                    <div style="display: flex; gap: 8px; margin-bottom: 15px;">
-                        <button onclick="const newType = '${ex.type}' === 'strength' ? 'cardio' : ('${ex.type}' === 'cardio' ? 'classes' : 'strength'); window.TrainingUI.updateExerciseField('${ex.id}', 'type', newType); window.TrainingUI.renderCurrentExercises();" style="background: rgba(255,255,255,0.05); border: none; color: #888; border-radius: 8px; padding: 6px 12px; font-size: 12px; cursor: pointer; display: flex; align-items: center; gap: 4px;">
-                            <span>${ex.type === 'classes' ? '🚴' : (ex.type === 'cardio' ? '🏃' : '🏋️')}</span> ${ex.type === 'classes' ? 'Zajęcia' : (ex.type === 'cardio' ? 'Cardio' : 'Siłowe')}
-                        </button>
-                        <button onclick="window.TrainingUI.openCatalogModal('${ex.id}')" style="background: rgba(255,255,255,0.05); border: none; color: #888; border-radius: 8px; padding: 6px 12px; font-size: 12px; cursor: pointer; display: flex; align-items: center; gap: 4px;">
-                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20"/></svg> Katalog
-                        </button>
+                        <input type="text" placeholder="Wpisz nazwę..." value="${ex.name}" onchange="window.TrainingUI.updateExerciseField('${ex.id}', 'name', this.value); window.TrainingUI.renderCurrentExercises();" style="flex: 1; background: transparent; border: none; color: #FFF; font-size: 22px; font-weight: 700; outline: none; min-width: 0;">
+                        <div style="display: flex; gap: 10px; align-items: center;">
+                            <label style="cursor: pointer; display: flex; align-items: center; justify-content: center;">
+                                <span style="font-size: 20px; filter: grayscale(100%); opacity: 0.7;">📷</span>
+                                <input type="file" accept="image/*" style="display: none;" onchange="window.TrainingUI.handleTrainingPhoto(event)">
+                            </label>
+                            <button onclick="window.TrainingUI.removeExercise('${ex.id}')" style="background: transparent; border: none; color: #888; font-size: 20px; padding: 5px; cursor: pointer;">🗑</button>
+                        </div>
                     </div>`;
 
             if (ex.type === 'cardio') {
                 const cTime = ex.cardioSeconds || (ex.duration_minutes ? ex.duration_minutes * 60 : 0);
                 html += `
-                    <div style="background: rgba(255,255,255,0.02); border-radius: 12px; padding: 15px; text-align: center;">
+                    <div style="background: rgba(255,255,255,0.05); border-radius: 12px; padding: 15px; text-align: center;">
                         <div style="color: #888; font-size: 12px; margin-bottom: 10px;">Czas trwania (Stoper lub wpisz ręcznie)</div>
                         <div style="font-size: 32px; color: #00D26A; font-family: monospace; font-weight: 700; display: ${ex.cardioInterval ? 'block' : 'none'};" id="cardio-display-${ex.id}">${window.TrainingUI.formatTime(cTime)}</div>
                         <div style="display: ${ex.cardioInterval ? 'none' : 'flex'}; align-items: center; justify-content: center; gap: 5px;">
-                            <input type="number" id="cardio-manual-min-${ex.id}" value="${Math.floor(cTime/60)}" onchange="window.TrainingUI.updateCardioManual('${ex.id}', this.value)" style="width: 80px; padding: 10px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1); background: transparent; color: #00D26A; font-size: 24px; text-align: center; font-weight: 700;" inputmode="numeric">
+                            <input type="number" id="cardio-manual-min-${ex.id}" value="${Math.floor(cTime/60)}" onchange="window.TrainingUI.updateCardioManual('${ex.id}', this.value)" style="width: 80px; padding: 10px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1); background: #222; color: #FFF; font-size: 24px; text-align: center; font-weight: 700;" inputmode="numeric">
                             <span style="color: #888; font-size: 16px;">min</span>
                         </div>
                         <div style="display: flex; gap: 10px; justify-content: center; margin-top: 15px;">
@@ -1626,47 +1623,43 @@ export const TrainingUI = {
                 (ex.sets || []).forEach((set, i) => {
                     const isDropset = set.type === 'dropset';
                     if (!isDropset) seriesCount++;
-                    const rowStyle = isDropset ? 'padding-left: 20px; border-left: 2px solid #FF9800;' : '';
-                    const idxLabel = isDropset ? '🔥' : `${seriesCount}`;
-
+                    const rowStyle = isDropset ? 'padding-left: 15px;' : '';
+                    
                     html += `
-                        <div style="display: flex; align-items: center; justify-content: space-between; background: rgba(255,255,255,0.03); border-radius: 12px; padding: 8px 12px; ${rowStyle} ${set.isCompleted ? 'opacity: 0.4;' : ''}">
-                            <div style="display: flex; align-items: center; gap: 10px; flex: 1;">
-                                <div style="background: ${set.isCompleted ? '#00D26A' : 'rgba(255,255,255,0.1)'}; width: 24px; height: 24px; border-radius: 6px; display: flex; align-items: center; justify-content: center; cursor: pointer;" onclick="window.TrainingUI.toggleSetCompletion('${ex.id}', ${i}, ${!set.isCompleted})">
-                                    <span style="color: ${set.isCompleted ? '#000' : '#888'}; font-size: 12px; font-weight: 700;">${idxLabel}</span>
-                                </div>
-                                <div style="display: flex; align-items: center; gap: 4px; flex: 1; justify-content: center;">
-                                    <input type="number" value="${set.weight}" onchange="window.TrainingUI.updateSetInline('${ex.id}', ${i}, 'weight', this.value)" style="width: 60px; background: transparent; border: none; color: ${isDropset ? '#FF9800' : '#FFF'}; font-size: 18px; font-weight: 700; text-align: right; padding: 0;" inputmode="decimal">
-                                    <span style="color: #888; font-size: 12px;">kg</span>
-                                    <span style="color: #555; margin: 0 4px;">x</span>
-                                    <input type="number" value="${set.reps}" onchange="window.TrainingUI.updateSetInline('${ex.id}', ${i}, 'reps', this.value)" style="width: 50px; background: transparent; border: none; color: #FFF; font-size: 18px; font-weight: 700; text-align: left; padding: 0;" inputmode="numeric">
-                                    <span style="color: #888; font-size: 12px;">powt</span>
+                        <div style="display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.05); padding: 12px 0; ${rowStyle} ${set.isCompleted ? 'opacity: 0.4;' : ''}">
+                            <div style="display: flex; align-items: center; gap: 12px; flex: 1;">
+                                <!-- Checkbox circle -->
+                                <div onclick="window.TrainingUI.toggleSetCompletion('${ex.id}', ${i}, ${!set.isCompleted})" style="width: 20px; height: 20px; border-radius: 50%; border: 1px solid #555; display: flex; align-items: center; justify-content: center; cursor: pointer; background: ${set.isCompleted ? '#555' : 'transparent'}; flex-shrink: 0;"></div>
+                                
+                                <div style="display: flex; align-items: center; gap: 8px; flex: 1; justify-content: flex-start;">
+                                    <div style="background: #2C2C2E; border-radius: 8px; padding: 6px 12px; display: flex; align-items: center;">
+                                        <input type="number" value="${set.weight || ''}" placeholder="Ciężar (kg)" onchange="window.TrainingUI.updateSetInline('${ex.id}', ${i}, 'weight', this.value)" style="width: 75px; background: transparent; border: none; color: ${isDropset ? '#FF9800' : '#FFF'}; font-size: 15px; font-weight: 400; text-align: center; padding: 0; outline: none;" inputmode="decimal">
+                                    </div>
+                                    <span style="color: #666; font-size: 14px; font-weight: 300;">×</span>
+                                    <div style="background: #2C2C2E; border-radius: 8px; padding: 6px 12px; display: flex; align-items: center;">
+                                        <input type="number" value="${set.reps || ''}" placeholder="Powtórzenia" onchange="window.TrainingUI.updateSetInline('${ex.id}', ${i}, 'reps', this.value)" style="width: 85px; background: transparent; border: none; color: #FFF; font-size: 15px; font-weight: 400; text-align: center; padding: 0; outline: none;" inputmode="numeric">
+                                    </div>
                                 </div>
                             </div>
-                            <button onclick="window.TrainingUI.removeSet('${ex.id}', ${i})" style="background: transparent; border: none; color: #888; font-size: 18px; cursor: pointer; padding: 5px;">&times;</button>
+                            <button onclick="window.TrainingUI.removeSet('${ex.id}', ${i})" style="background: transparent; border: none; color: #666; font-size: 18px; cursor: pointer; padding: 5px; flex-shrink: 0;">🗑</button>
                         </div>`;
                 });
                 html += `</div>`; // End sets
 
                 html += `
-                    <div style="display: flex; gap: 10px; margin-top: 10px;">
-                        <button onclick="window.TrainingUI.addSet('${ex.id}', false)" style="flex: 1; background: rgba(255,255,255,0.05); color: #FFF; border: none; border-radius: 8px; padding: 10px; font-size: 14px; font-weight: 600; cursor: pointer;">+ Seria</button>
-                        <button onclick="window.TrainingUI.addSet('${ex.id}', true)" style="flex: 1; background: rgba(255,152,0,0.1); color: #FF9800; border: none; border-radius: 8px; padding: 10px; font-size: 14px; font-weight: 600; cursor: pointer;">Dropset</button>
+                    <div style="display: flex; gap: 10px; margin-top: 15px; flex-wrap: wrap;">
+                        <button onclick="window.TrainingUI.addSet('${ex.id}', false)" style="background: #FFF; color: #000; border: none; border-radius: 8px; padding: 8px 16px; font-size: 14px; font-weight: 600; cursor: pointer;">[ + Seria ]</button>
+                        <button onclick="window.TrainingUI.addSet('${ex.id}', true)" style="background: #2C2C2E; color: #FFF; border: none; border-radius: 8px; padding: 8px 16px; font-size: 14px; font-weight: 500; cursor: pointer; display: flex; align-items: center; gap: 6px;">🔥 Dropset</button>
+                        ${!isMainForSuperset && ex.type !== 'superset' ? `
+                            <button onclick="window.TrainingUI.addSuperset('${ex.id}')" style="background: #2C2C2E; color: #FFF; border: none; border-radius: 8px; padding: 8px 16px; font-size: 14px; font-weight: 500; cursor: pointer; display: flex; align-items: center; gap: 6px;">🔗 Dodaj Superserię</button>
+                        ` : ''}
                     </div>`;
                 
-                // Opcjonalny checkbox "Skopiuj dane" (minimalistyczny)
                 html += `
-                    <div style="margin-top: 10px; display: flex; align-items: center; gap: 8px;">
-                        <input type="checkbox" onchange="window.TrainingUI.handleCopyCheckbox('${ex.id}', this.checked)" ${ex.autoCopy ? 'checked' : ''} style="accent-color: #00D26A;">
+                    <div style="margin-top: 15px; display: flex; align-items: center; gap: 8px;">
+                        <input type="checkbox" onchange="window.TrainingUI.handleCopyCheckbox('${ex.id}', this.checked)" ${ex.autoCopy ? 'checked' : ''} style="accent-color: #00D26A; width: 16px; height: 16px;">
                         <span style="color: #888; font-size: 12px;">Auto-kopiuj serię</span>
                     </div>`;
-            }
-
-            if (!isMainForSuperset && ex.type !== 'superset') {
-                html += `
-                    <button onclick="window.TrainingUI.addSuperset('${ex.id}')" style="width: 100%; margin-top: 15px; background: rgba(233, 30, 99, 0.1); color: #E91E63; border: none; border-radius: 8px; padding: 10px; font-size: 14px; font-weight: 600; cursor: pointer;">
-                        🔗 Dodaj Superserię
-                    </button>`;
             }
 
             html += `</div>`; // End exercise container
