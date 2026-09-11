@@ -54,7 +54,7 @@ export const TrainingComponent = {
             <!-- Active Training View -->
             <div id="active-training-view" style="display: none;">
                 <div style="margin-bottom: 15px;">
-                    <input type="text" id="training-name-input" placeholder="Wpisz nazwę treningu..." style="width: 100%; padding: 16px; border-radius: 16px; border: 1px solid rgba(255,255,255,0.05); background: #111118; color: #FFF; font-size: 18px; font-weight: 600; text-align: center; box-sizing: border-box; box-shadow: 0 4px 15px rgba(0,0,0,0.2);">
+                    <input type="text" id="training-name-input" placeholder="Wpisz nazwę treningu..." style="width: 100%; padding: 16px; border-radius: 16px; border: 1px solid rgba(255,255,255,0.05); background: rgba(10, 10, 15, 0.65); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); color: #FFF; font-size: 18px; font-weight: 600; text-align: center; box-sizing: border-box; box-shadow: 0 4px 15px rgba(0,0,0,0.2);">
                 </div>
 
                 <div style="margin-bottom: 15px;">
@@ -78,7 +78,7 @@ export const TrainingComponent = {
                     </select>
                 </div>
                 
-                <div style="background: #111118; padding: 15px; border-radius: 16px; border: 1px solid rgba(255,255,255,0.05); text-align: center; margin-bottom: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.2);">
+                <div style="background: rgba(10, 10, 15, 0.65); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); padding: 15px; border-radius: 16px; border: 1px solid rgba(255,255,255,0.05); text-align: center; margin-bottom: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.2);">
                     <div style="color: #888; font-size: 12px; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 5px;">Czas trwania</div>
                     <h3 style="margin: 0; color: #FFF; font-size: 28px; font-weight: 700; font-variant-numeric: tabular-nums;"><span id="training-timer">00:00:00</span></h3>
                     <div style="display: flex; flex-direction: column; align-items: center; gap: 10px;">
@@ -112,7 +112,7 @@ export const TrainingComponent = {
                 <div class="bottom-sheet-wrapper" style="position: fixed; bottom: 0; left: 0; width: 100%; z-index: 100; pointer-events: none;">
                     
                     <!-- Szufladka (Bottom Sheet) z rzadkimi opcjami -->
-                    <div id="training-bottom-sheet" style="background: #111118; border-top-left-radius: 20px; border-top-right-radius: 20px; padding: 20px; transform: translateY(100%); transition: transform 0.3s ease-out; pointer-events: auto; border: 1px solid rgba(255,255,255,0.05); border-bottom: none; box-shadow: 0 -5px 25px rgba(0,0,0,0.8);">
+                    <div id="training-bottom-sheet" style="background: rgba(10, 10, 15, 0.65); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border-top-left-radius: 20px; border-top-right-radius: 20px; padding: 20px; transform: translateY(100%); transition: transform 0.3s ease-out; pointer-events: auto; border: 1px solid rgba(255,255,255,0.05); border-bottom: none; box-shadow: 0 -5px 25px rgba(0,0,0,0.8);">
                         <div style="width: 40px; height: 5px; background: #333; border-radius: 3px; margin: 0 auto 20px auto; cursor: pointer;" onclick="document.getElementById('training-bottom-sheet').style.transform = 'translateY(100%)'"></div>
                         
                         <!-- Elementy w szufladzie -->

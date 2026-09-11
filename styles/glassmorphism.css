@@ -6,7 +6,7 @@
 /* Global Body/App Wrappers */
 body {
     font-family: 'Outfit', sans-serif !important;
-    background-color: #0A0A0F;
+    background-color: #000; /* Fallback */
 }
 
 .blob-1 { display: none; }
