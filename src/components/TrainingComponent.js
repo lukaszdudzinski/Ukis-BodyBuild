@@ -54,7 +54,7 @@ export const TrainingComponent = {
             <!-- Active Training View -->
             <div id="active-training-view" style="display: none;">
                 <div style="margin-bottom: 15px;">
-                    <input type="text" id="training-name-input" placeholder="NAZWA Treningu (opcjonalnie)" style="width: 100%; padding: 12px; border-radius: 4px; border: 1px solid #ff4444; background: #222; color: #ff4444; font-size: 1.1em; text-align: center; box-sizing: border-box;">
+                    <input type="text" id="training-name-input" placeholder="Wpisz nazwę treningu..." style="width: 100%; padding: 16px; border-radius: 16px; border: 1px solid rgba(255,255,255,0.05); background: #111118; color: #FFF; font-size: 18px; font-weight: 600; text-align: center; box-sizing: border-box; box-shadow: 0 4px 15px rgba(0,0,0,0.2);">
                 </div>
 
                 <div style="margin-bottom: 15px;">
@@ -78,8 +78,9 @@ export const TrainingComponent = {
                     </select>
                 </div>
                 
-                <div style="background: rgba(0,0,0,0.5); padding: 15px; border-radius: 8px; border: 1px solid #00BFFF; text-align: center; margin-bottom: 20px;">
-                    <h3 style="margin: 0; color: #00BFFF; margin-bottom: 10px;">Czas trwania: <span id="training-timer">00:00:00</span></h3>
+                <div style="background: #111118; padding: 15px; border-radius: 16px; border: 1px solid rgba(255,255,255,0.05); text-align: center; margin-bottom: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.2);">
+                    <div style="color: #888; font-size: 12px; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 5px;">Czas trwania</div>
+                    <h3 style="margin: 0; color: #FFF; font-size: 28px; font-weight: 700; font-variant-numeric: tabular-nums;"><span id="training-timer">00:00:00</span></h3>
                     <div style="display: flex; flex-direction: column; align-items: center; gap: 10px;">
                         <label style="display: flex; align-items: center; gap: 8px; color: #ccc; font-size: 0.9em; cursor: pointer;">
                             <input type="checkbox" id="manual-duration-toggle" onchange="document.getElementById('manual-duration-inputs').style.display = this.checked ? 'flex' : 'none'" style="cursor: pointer;">
@@ -103,7 +104,7 @@ export const TrainingComponent = {
                     </div>
                     
                     <div style="margin-top: 15px;">
-                        <button type="button" id="add-exercise-to-plan-btn" class="action-button" style="width: 100%; background-color: rgba(0, 191, 255, 0.1); border-color: #00BFFF; color: #00BFFF;">+ Dodaj ćwiczenie</button>
+                        <button type="button" id="add-exercise-to-plan-btn" class="action-button" style="width: 100%; background-color: #00D26A; border: none; border-radius: 12px; color: #000; font-weight: 700; font-size: 16px; padding: 14px;">+ Dodaj ćwiczenie</button>
                     </div>
                 </div>
 

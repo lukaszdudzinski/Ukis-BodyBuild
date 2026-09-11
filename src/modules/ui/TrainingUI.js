@@ -1597,7 +1597,7 @@ export const TrainingUI = {
                             return (ex.sets || []).map((set, i) => {
                                 const isDropset = set.type === 'dropset';
                                 if (!isDropset) seriesCount++;
-                                const style = isDropset ? 'padding: 6px 0 6px 4px; border-bottom: 1px dashed rgba(255,152,0,0.3); font-size: 0.95em; color: #ccc; border-left: 3px solid #FF9800;' : 'padding: 8px 0; border-bottom: 1px solid rgba(0,191,255,0.2); font-size: 1em;';
+                                const style = isDropset ? 'padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.05); color: #FFF; border-left: 2px solid #FF9800; padding-left: 8px;' : 'padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.05); color: #FFF;';
                                 const prefix = isDropset ? '↳ 🔥' : `Seria ${seriesCount}:`;
                                 
                                 let prBadge = '';
@@ -1613,12 +1613,12 @@ export const TrainingUI = {
                                 }
 
                                 return `
-                                    <div style="padding: 6px 0; border-bottom: 1px solid rgba(255,255,255,0.05); width: 100%; box-sizing: border-box; ${style} ${set.isCompleted ? 'background: rgba(46, 204, 113, 0.15); border-radius: 4px;' : ''}">
+                                    <div style="display: flex; flex-direction: column; width: 100%; box-sizing: border-box; ${style} ${set.isCompleted ? 'opacity: 0.5;' : ''}">
                                         
                                         <div style="display: flex; align-items: center; justify-content: space-between; gap: 2px; width: 100%; flex-wrap: nowrap; overflow: hidden;">
                                             <!-- Lewa strona: Checkbox + Seria -->
                                             <div style="display: flex; align-items: center; gap: 2px; flex-shrink: 0;">
-                                                <input type="checkbox" ${set.isCompleted ? 'checked' : ''} onchange="window.TrainingUI.toggleSetCompletion('${ex.id}', ${i}, this.checked)" style="transform: scale(1.2); cursor: pointer; accent-color: #2ECC71; margin-right: 2px;">
+                                                <input type="checkbox" ${set.isCompleted ? 'checked' : ''} onchange="window.TrainingUI.toggleSetCompletion('${ex.id}', ${i}, this.checked)" style="transform: scale(1.2); cursor: pointer; accent-color: #00D26A; margin-right: 2px;">
                                                 <span style="font-size: 0.9em; font-weight: bold; white-space: nowrap; ${set.isCompleted ? 'opacity: 0.6;' : ''}">${prefix}</span>
                                             </div>
                                             
@@ -1626,7 +1626,7 @@ export const TrainingUI = {
                                             <div style="display: flex; align-items: center; justify-content: center; gap: 2px; flex: 1; min-width: 0;">
                                                 ${localStorage.getItem('uki-experimental-numpad') === 'on' ? `
                                                     <!-- Numpad dla Ciężaru -->
-                                                    <input type="text" readonly id="exp-weight-${ex.id}-${i}" class="training-input-large" value="${set.weight}" onclick="window.NumpadUI.open(this, '${ex.id}', ${i}, 'Podaj ciężar (kg)')" style="width: 70px; box-sizing: border-box; background: rgba(0,0,0,0.3); border: 1px solid #444; color: ${isDropset ? '#FF9800' : '#00BFFF'}; font-weight: bold; text-align: center; border-radius: 6px; font-size: 1.1em; padding: 6px; cursor: pointer;"> 
+                                                    <input type="text" readonly id="exp-weight-${ex.id}-${i}" class="training-input-large" value="${set.weight}" onclick="window.NumpadUI.open(this, '${ex.id}', ${i}, 'Podaj ciężar (kg)')" style="width: 70px; box-sizing: border-box; background: rgba(255,255,255,0.05); border: none; color: ${isDropset ? '#FF9800' : '#FFF'}; font-weight: bold; text-align: center; border-radius: 6px; font-size: 1.1em; padding: 6px; cursor: pointer;"> 
                                                     <span style="font-size: 0.85em; color: #888;">kg</span>
                                                     <span style="color: #666; font-size: 0.85em; margin: 0 4px;">x</span>
                                                     <!-- Steppery dla Powtórzeń -->
@@ -1637,7 +1637,7 @@ export const TrainingUI = {
                                                     </div>
                                                 ` : `
                                                     <!-- Klasyczne inputy -->
-                                                    <input type="number" class="training-input-large" value="${set.weight}" onchange="window.TrainingUI.updateSetInline('${ex.id}', ${i}, 'weight', this.value)" style="width: 62px; box-sizing: border-box; background: rgba(0,0,0,0.3); border: 1px solid #444; color: ${isDropset ? '#FF9800' : '#00BFFF'}; font-weight: bold; text-align: center; border-radius: 6px; font-size: 1.05em; padding: 2px;" inputmode="decimal"> 
+                                                    <input type="number" class="training-input-large" value="${set.weight}" onchange="window.TrainingUI.updateSetInline('${ex.id}', ${i}, 'weight', this.value)" style="width: 62px; box-sizing: border-box; background: rgba(255,255,255,0.05); border: none; color: ${isDropset ? '#FF9800' : '#FFF'}; font-weight: bold; text-align: center; border-radius: 6px; font-size: 1.05em; padding: 2px;" inputmode="decimal"> 
                                                     <span style="font-size: 0.85em; color: #888;">kg</span>
                                                     <span style="color: #666; font-size: 0.85em; margin: 0 2px;">x</span>
                                                     <input type="number" class="training-input-large" value="${set.reps}" onchange="window.TrainingUI.updateSetInline('${ex.id}', ${i}, 'reps', this.value)" style="width: 54px; box-sizing: border-box; background: rgba(0,0,0,0.3); border: 1px solid #444; color: #fff; font-weight: bold; text-align: center; border-radius: 6px; font-size: 1.05em; padding: 2px;" inputmode="numeric">
@@ -1659,21 +1659,10 @@ export const TrainingUI = {
                         })()}
                     </div>
 
-                    ${localStorage.getItem('uki-experimental-numpad') === 'on' ? '' : `
-                    <div style="display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-top: 15px;">
-                        <div style="display: flex; flex: 1; min-width: 80px; gap: 5px;">
-                            ${(ex.name && ['brzuch', 'brzus', 'podciąg', 'podciag', 'pompk', 'plank', 'deska', 'drąż', 'draz'].some(kw => ex.name.toLowerCase().includes(kw))) ? 
-                            `<button onclick="window.TrainingUI.toggleSign('weight-${ex.id}')" style="background: #444; color: #fff; border: none; padding: 12px; border-radius: 4px; font-weight: bold; cursor: pointer; border: 1px solid #666;" title="Zmień ciężar na ujemny (odciążenie z gum)">+/-</button>` 
-                            : ''}
-                            <input type="${(ex.name && ['brzuch', 'brzus', 'podciąg', 'podciag', 'pompk', 'plank', 'deska', 'drąż', 'draz'].some(kw => ex.name.toLowerCase().includes(kw))) ? 'text' : 'number'}" id="weight-${ex.id}" class="training-input-large" placeholder="kg" style="flex: 1; min-width: 40px; padding: 12px; border-radius: 4px; border: 1px solid #444; background: #222; color: #fff; font-size: 1.4em; text-align: center; box-sizing: border-box;" inputmode="decimal">
-                        </div>
-                        <span style="color: #aaa; font-weight: bold; font-size: 1.25em;">X</span>
-                        <input type="number" id="reps-${ex.id}" class="training-input-large" placeholder="powt" style="min-width: 60px; flex: 1; padding: 12px; border-radius: 4px; border: 1px solid #444; background: #222; color: #fff; font-size: 1.4em; text-align: center; box-sizing: border-box;" inputmode="numeric">
-                    </div>
-                    `}
+
                     <div style="display: flex; gap: 10px; margin-top: 10px;">
-                        <button onclick="window.TrainingUI.addSet('${ex.id}', false)" style="background: #00BFFF; color: #fff; border: none; padding: 12px; border-radius: 4px; cursor: pointer; flex: 1; font-weight: bold; font-size: 1.1em; box-sizing: border-box;">${localStorage.getItem('uki-experimental-numpad') === 'on' ? '➕ Dodaj Serię (Klon)' : '+ Seria'}</button>
-                        <button onclick="window.TrainingUI.addSet('${ex.id}', true)" style="background: #FF9800; color: #fff; border: none; padding: 12px; border-radius: 4px; cursor: pointer; flex: 1; font-weight: bold; font-size: 1.1em; box-sizing: border-box;">🔥 Dropset</button>
+                        <button onclick="window.TrainingUI.addSet('${ex.id}', false)" style="background: rgba(255,255,255,0.05); color: #FFF; border: none; padding: 10px; border-radius: 8px; cursor: pointer; flex: 1; font-weight: 500; font-size: 14px; box-sizing: border-box;">+ Seria</button>
+                        <button onclick="window.TrainingUI.addSet('${ex.id}', true)" style="background: rgba(255,152,0,0.1); color: #FF9800; border: none; padding: 10px; border-radius: 8px; cursor: pointer; flex: 1; font-weight: 500; font-size: 14px; box-sizing: border-box;">Dropset</button>
                     </div>
                 `;
             }
@@ -1683,32 +1672,21 @@ export const TrainingUI = {
                     <div style="margin-bottom: 15px; position: relative;">
                         <!-- Wiersz 1: Nazwa ćwiczenia -->
                         <div style="margin-bottom: 8px;">
-                            <input type="text" class="exercise-name-input" placeholder="Wpisz nazwę..." value="${ex.name}" onchange="window.TrainingUI.updateExerciseField('${ex.id}', 'name', this.value); window.TrainingUI.renderCurrentExercises();" style="width: 100%; padding: 15px; border-radius: 6px; border: 1px solid ${isNested ? '#E91E63' : '#00BFFF'}; background: #222; color: #fff; font-size: 1.1em; box-sizing: border-box; text-align: center;">
+                            <input type="text" class="exercise-name-input" placeholder="Wpisz nazwę..." value="${ex.name}" onchange="window.TrainingUI.updateExerciseField('${ex.id}', 'name', this.value); window.TrainingUI.renderCurrentExercises();" style="width: 100%; padding: 0; border: none; background: transparent; color: #FFF; font-size: 20px; font-weight: 600; text-align: left; margin-bottom: 10px;">
                         </div>
                         
                         <!-- Wiersz 2: Typ, Zdjęcie, Katalog, Usuń -->
-                        <div style="display: flex; gap: 5px; align-items: stretch; height: 50px;">
-                            <button onclick="const newType = '${ex.type}' === 'strength' ? 'cardio' : ('${ex.type}' === 'cardio' ? 'classes' : 'strength'); window.TrainingUI.updateExerciseField('${ex.id}', 'type', newType); window.TrainingUI.renderCurrentExercises();" style="flex: 1; background: #222; border: 1px solid ${isNested ? '#E91E63' : '#00BFFF'}; color: #fff; border-radius: 6px; font-size: 0.85em; cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center;" title="Zmień typ">
-                                <span style="font-size: 1.3em; margin-bottom: 2px;">${ex.type === 'classes' ? '🚴' : (ex.type === 'cardio' ? '🏃' : '🏋️')}</span>
-                                <span>${ex.type === 'classes' ? 'Zajęcia' : (ex.type === 'cardio' ? 'Cardio' : 'Siłowe')}</span>
-                            </button>
-                            
-                            <label style="flex: 1; background: #222; border: 1px solid ${isNested ? '#E91E63' : '#00BFFF'}; color: #fff; border-radius: 6px; font-size: 0.85em; cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; margin: 0;">
-                                <span style="font-size: 1.3em; margin-bottom: 2px;">📷</span>
-                                <span>Zdjęcie</span>
-                                <input type="file" accept="image/*" capture="environment" style="display: none;" onchange="window.TrainingUI.handleMachinePhoto(event, '${ex.id}')">
-                            </label>
-                            
-                            <button onclick="window.TrainingUI.openCatalogModal('${ex.id}')" style="flex: 1; background: #222; border: 1px solid ${isNested ? '#E91E63' : '#00BFFF'}; color: #fff; border-radius: 6px; cursor: pointer; font-size: 0.85em; display: flex; flex-direction: column; align-items: center; justify-content: center;">
-                                <span style="font-size: 1.3em; margin-bottom: 2px;">📚</span>
-                                <span>Katalog</span>
-                            </button>
-                            
-                            <button onclick="window.TrainingUI.removeExercise('${ex.id}')" style="flex: 1; background: #222; border: 1px solid ${isNested ? '#E91E63' : '#00BFFF'}; color: #fff; border-radius: 6px; cursor: pointer; font-size: 0.85em; display: flex; flex-direction: column; align-items: center; justify-content: center;" title="Usuń ćwiczenie">
-                                <span style="font-size: 1.3em; margin-bottom: 2px;">🗑️</span>
-                                <span style="color: #E74C3C;">Usuń</span>
-                            </button>
-                        </div>
+                        <div style="display: flex; gap: 8px; margin-bottom: 15px;">
+        <button onclick="const newType = '${ex.type}' === 'strength' ? 'cardio' : ('${ex.type}' === 'cardio' ? 'classes' : 'strength'); window.TrainingUI.updateExerciseField('${ex.id}', 'type', newType); window.TrainingUI.renderCurrentExercises();" style="flex: 0 1 auto; background: rgba(255,255,255,0.05); border: none; color: #888; border-radius: 8px; padding: 6px 12px; font-size: 12px; cursor: pointer; display: flex; align-items: center; gap: 4px;">
+            <span>${ex.type === 'classes' ? '🚴' : (ex.type === 'cardio' ? '🏃' : '🏋️')}</span> ${ex.type === 'classes' ? 'Zajęcia' : (ex.type === 'cardio' ? 'Cardio' : 'Siłowe')}
+        </button>
+        <button onclick="window.TrainingUI.openCatalogModal('${ex.id}')" style="flex: 0 1 auto; background: rgba(255,255,255,0.05); border: none; color: #888; border-radius: 8px; padding: 6px 12px; font-size: 12px; cursor: pointer; display: flex; align-items: center; gap: 4px;">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20"/></svg> Katalog
+        </button>
+        <button onclick="window.TrainingUI.removeExercise('${ex.id}')" style="flex: 0 1 auto; background: rgba(231, 76, 60, 0.1); border: none; color: #E74C3C; border-radius: 8px; padding: 6px 12px; font-size: 12px; cursor: pointer; display: flex; align-items: center; gap: 4px; margin-left: auto;">
+            Usuń
+        </button>
+    </div>
                         
                         ${ex.machinePhoto ? `<div style="text-align: center;"><img data-media-id="${ex.machinePhoto}" src="" style="width: 100px; height: 100px; object-fit: cover; border-radius: 8px; margin-top: 10px; border: 1px solid ${isNested ? '#E91E63' : '#00BFFF'};" alt="Maszyna"></div>` : ''}
                     </div>
