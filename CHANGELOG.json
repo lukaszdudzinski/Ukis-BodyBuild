@@ -1,5 +1,12 @@
 [
   {
+    "version": "v2026.9.11.07",
+    "date": "2026-09-11",
+    "changes": [
+      "🔧 PWA Sync: Wymuszenie pobrania nowej wersji (Diet Dashboard)"
+    ]
+  },
+  {
     "version": "v2026.9.11.06",
     "date": "2026-09-11",
     "changes": [
