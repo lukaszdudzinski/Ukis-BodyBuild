@@ -13,6 +13,12 @@ export const AppUI = {
         AppUI.initMobileMenu();
         AppUI.initPWA();
         
+        // Inicjalnie aktywuj welcome-screen (ustawia display:flex i active na nav-btn)
+        if (window.switchTab) {
+            window.switchTab('welcome-screen');
+        }
+
+        
         // Expose do global scope dla index.html
         window.APP_VERSION = APP_VERSION;
 
@@ -130,6 +136,17 @@ export const AppUI = {
         function switchTab(tabId) {
             navLinks.forEach(l => {
                 l.classList.toggle('active', l.getAttribute('data-tab') === tabId);
+            });
+
+            // Aktualizuj stan active na bottom-nav-bar
+            const navBtns = document.querySelectorAll('.bottom-nav-bar .nav-btn');
+            navBtns.forEach(btn => {
+                const btnTab = btn.getAttribute('data-tab') || btn.getAttribute('onclick');
+                // Sprawdź onclick="switchTab('X')" i wyciągnij tabId
+                const onclickAttr = btn.getAttribute('onclick') || '';
+                const match = onclickAttr.match(/switchTab\(['"]([^'"]+)['"]\)/);
+                const btnTabId = match ? match[1] : null;
+                btn.classList.toggle('active', btnTabId === tabId);
             });
 
             // Scroll the wrapper (reset to top on tab change)
