@@ -108,75 +108,39 @@ export const TrainingComponent = {
                     </div>
                 </div>
 
-                <!-- BOTTOM SHEET WRAPPER -->
-                <div class="bottom-sheet-wrapper" style="position: fixed; bottom: 0; left: 0; width: 100%; z-index: 100; pointer-events: none;">
+                <!-- UNIFIED BOTTOM SHEET (EXACT MOCKUP MATCH) -->
+                <div id="unified-bottom-sheet" style="position: fixed; bottom: 0; left: 0; right: 0; width: 100%; max-width: 800px; margin: 0 auto; z-index: 2000; background: #1C1C1E; border-top-left-radius: 24px; border-top-right-radius: 24px; box-shadow: 0 -5px 25px rgba(0,0,0,0.5); padding: 15px 20px 30px 20px; box-sizing: border-box; display: flex; flex-direction: column; gap: 15px;">
                     
-                    <!-- Szufladka (Bottom Sheet) z rzadkimi opcjami -->
-                    <div id="training-bottom-sheet" style="background: #111118; border-top-left-radius: 20px; border-top-right-radius: 20px; padding: 20px; transform: translateY(100%); transition: transform 0.3s ease-out; pointer-events: auto; border: 1px solid rgba(255,255,255,0.05); border-bottom: none; box-shadow: 0 -5px 25px rgba(0,0,0,0.8);">
-                        <div style="width: 40px; height: 5px; background: #333; border-radius: 3px; margin: 0 auto 20px auto; cursor: pointer;" onclick="document.getElementById('training-bottom-sheet').style.transform = 'translateY(100%)'"></div>
-                        
-                        <!-- Elementy w szufladzie -->
-                        <div style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 90px;"> <!-- Margin bottom for sticky footer clearance -->
-                            <details style="background: rgba(255,255,255,0.05); border-radius: 12px; border: 1px solid rgba(255,255,255,0.1);">
-                                <summary style="padding: 15px; color: #FFF; font-weight: 500; cursor: pointer; user-select: none; list-style: none; display: flex; align-items: center; gap: 10px;">
-                                    <span style="font-size: 1.2em;">📸</span> Załącz zdjęcia z treningu
-                                </summary>
-                                <div style="padding: 15px; border-top: 1px solid rgba(255,255,255,0.05);">
-                                    <div style="display: flex; gap: 10px; justify-content: flex-start; flex-wrap: wrap;" id="training-photos-container">
-                                        <label style="display: flex; flex-direction: column; justify-content: center; align-items: center; width: 70px; height: 70px; border: 1px dashed rgba(255,255,255,0.2); border-radius: 8px; cursor: pointer; background: rgba(255,255,255,0.02);">
-                                            <span style="font-size: 1.5em; color: #FFF;">+</span>
-                                            <input type="file" accept="image/*" style="display: none;" onchange="window.TrainingUI.handleTrainingPhoto(event)">
-                                        </label>
-                                    </div>
-                                </div>
-                            </details>
-
-                            <details style="background: rgba(255,255,255,0.05); border-radius: 12px; border: 1px solid rgba(255,255,255,0.1);">
-                                <summary style="padding: 15px; color: #FFF; font-weight: 500; cursor: pointer; user-select: none; list-style: none; display: flex; align-items: center; gap: 10px;">
-                                    <span style="font-size: 1.2em;">⌚</span> Dodaj dane ze Smartwatcha
-                                </summary>
-                                <div style="padding: 15px; border-top: 1px solid rgba(255,255,255,0.05);">
-                                    <div style="display: flex; gap: 10px;">
-                                        <div style="flex: 1;">
-                                            <label style="color: #888; font-size: 0.8em;">Kalorie (kcal)</label>
-                                            <input type="number" id="smartwatch-calories" style="width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #333; background: #000; color: #FFF; margin-top: 5px; box-sizing: border-box;" inputmode="numeric">
-                                        </div>
-                                        <div style="flex: 1;">
-                                            <label style="color: #888; font-size: 0.8em;">Tętno (bpm)</label>
-                                            <input type="number" id="smartwatch-hr" style="width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #333; background: #000; color: #FFF; margin-top: 5px; box-sizing: border-box;" inputmode="numeric">
-                                        </div>
-                                    </div>
-                                </div>
-                            </details>
-
-                            <button type="button" id="save-as-template-btn" style="width: 100%; padding: 15px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; color: #FFF; font-weight: 500; text-align: left; display: flex; align-items: center; gap: 10px; cursor: pointer;">
-                                <span style="font-size: 1.2em;">💾</span> Zapisz jako Plan Treningowy
-                            </button>
-                            
-                            <button type="button" id="cancel-training-btn" style="width: 100%; padding: 15px; background: rgba(231, 76, 60, 0.1); border: 1px solid rgba(231, 76, 60, 0.2); border-radius: 12px; color: #E74C3C; font-weight: 500; text-align: left; display: flex; align-items: center; gap: 10px; cursor: pointer;">
-                                <span style="font-size: 1.2em;">❌</span> Anuluj Trening
-                            </button>
+                    <!-- Drag handle -->
+                    <div style="width: 40px; height: 5px; background: #555; border-radius: 3px; margin: 0 auto 5px auto;"></div>
+                    
+                    <!-- List items -->
+                    <div style="display: flex; flex-direction: column; gap: 15px;">
+                        <div style="display: flex; align-items: center; gap: 15px; cursor: pointer;">
+                            <span style="font-size: 20px; opacity: 0.8; filter: grayscale(100%);">📷</span>
+                            <span style="color: #FFF; font-size: 16px; font-weight: 400; flex: 1;">Załącz zdjęcia z treningu</span>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 15px; cursor: pointer;">
+                            <span style="font-size: 20px; opacity: 0.8; filter: grayscale(100%);">⌚</span>
+                            <span style="color: #FFF; font-size: 16px; font-weight: 400; flex: 1;">Dodaj dane ze Smartwatcha</span>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 15px; cursor: pointer;">
+                            <span style="font-size: 20px; opacity: 0.8; filter: grayscale(100%);">💾</span>
+                            <span style="color: #FFF; font-size: 16px; font-weight: 400; flex: 1;">Zapisz jako Plan Treningowy</span>
                         </div>
                     </div>
 
-                    <!-- Pływający pasek akcji (Sticky Footer) -->
-                    <div style="background: #111118; backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); padding: 15px; border-top: 1px solid rgba(255,255,255,0.05); pointer-events: auto; position: fixed; bottom: 0; left: 0; right: 0; z-index: 1000; margin: 0 auto; max-width: 800px; width: 100%; box-sizing: border-box;">
-                        
-                        <!-- Toggle szuflady -->
-                        <div style="display: flex; justify-content: center; margin-bottom: 10px;">
-                            <div onclick="const sheet = document.getElementById('training-bottom-sheet'); sheet.style.transform = sheet.style.transform === 'translateY(0%)' ? 'translateY(100%)' : 'translateY(0%)'" style="width: 50px; height: 6px; background: #333; border-radius: 3px; cursor: pointer;"></div>
-                        </div>
-
-                        <div style="display: flex; gap: 10px;">
-                            <button type="button" id="pause-training-btn" style="flex: 1; padding: 16px; background: #FFC107; color: #000; border: none; border-radius: 12px; font-weight: bold; font-size: 1.1em; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px;">
-                                <span>⏸</span> Pauza
-                            </button>
-                            <button type="button" id="finish-training-btn" style="flex: 1; padding: 16px; background: #00D26A; color: #000; border: none; border-radius: 12px; font-weight: bold; font-size: 1.1em; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px;">
-                                <span style="display:inline-block; transform: scale(1.2);">⏹</span> Zakończ
-                            </button>
-                        </div>
+                    <!-- Buttons -->
+                    <div style="display: flex; gap: 10px; margin-top: 10px;">
+                        <button type="button" id="pause-training-btn" style="flex: 1; padding: 16px; background: rgba(255,193,7,0.15); border: 1px solid #FFC107; color: #FFC107; border-radius: 12px; font-weight: 600; font-size: 16px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px;">
+                            <span>⏸</span> Pauza
+                        </button>
+                        <button type="button" id="finish-training-btn" style="flex: 1; padding: 16px; background: #E74C3C; border: none; color: #FFF; border-radius: 12px; font-weight: 600; font-size: 16px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px;">
+                            <span>⏹</span> Zakończ Trening
+                        </button>
                     </div>
                 </div>
+
                 <!-- Dodatkowy padding na dole, by nie przysłaniać ostatniego ćwiczenia -->
                 <div style="height: 120px;"></div>
             </div>
