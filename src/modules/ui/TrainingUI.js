@@ -1601,7 +1601,7 @@ export const TrainingUI = {
                                 <span style="font-size: 20px; filter: grayscale(100%); opacity: 0.7;">📷</span>
                                 <input type="file" accept="image/*" style="display: none;" onchange="window.TrainingUI.handleTrainingPhoto(event)">
                             </label>
-                            <button onclick="window.TrainingUI.removeExercise('${ex.id}')" style="background: transparent; border: none; color: #666; font-size: 20px; cursor: pointer; padding: 0;">🗑</button>
+                            <button onclick="window.TrainingUI.removeExercise('${ex.id}')" style="background: transparent; border: none; color: #666; font-size: 20px; cursor: pointer; padding: 0;"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/></svg></button>
                         </div>
                     </div>
                     <div style="color: #888; font-size: 16px; margin-bottom: 15px; padding-left: 2px;">
@@ -1635,10 +1635,10 @@ export const TrainingUI = {
                     const borderBottom = i < (ex.sets.length - 1) ? 'border-bottom: 1px solid rgba(255,255,255,0.05);' : '';
 
                     html += `
-                        <div style="display: flex; align-items: center; justify-content: space-between; padding: 15px; ${borderBottom} ${rowStyle} ${set.isCompleted ? 'opacity: 0.4;' : ''}">
+                        <div style="display: flex; align-items: center; justify-content: space-between; padding: 15px; ${borderBottom} ${rowStyle} ${set.isCompleted ? 'background: rgba(0, 210, 106, 0.05); box-shadow: inset 2px 0 0 #00D26A;' : ''}">
                             <div style="display: flex; align-items: center; gap: 15px; flex: 1;">
                                 <!-- Checkbox circle -->
-                                <div onclick="window.TrainingUI.toggleSetCompletion('${ex.id}', ${i}, ${!set.isCompleted})" style="width: 24px; height: 24px; border-radius: 50%; border: 1px solid #555; display: flex; align-items: center; justify-content: center; cursor: pointer; background: ${set.isCompleted ? '#555' : 'transparent'}; flex-shrink: 0;"></div>
+                                <div onclick="window.TrainingUI.toggleSetCompletion('${ex.id}', ${i}, ${!set.isCompleted})" style="width: 24px; height: 24px; border-radius: 50%; border: 1px solid #555; display: flex; align-items: center; justify-content: center; cursor: pointer; background: ${set.isCompleted ? '#00D26A' : 'transparent'}; border-color: ${set.isCompleted ? '#00D26A' : '#555'}; color: #000; font-weight: bold; font-size: 14px;; flex-shrink: 0;"></div>
                                 
                                 <div style="display: flex; align-items: center; gap: 10px; flex: 1; justify-content: flex-start;">
                                     <div style="display: flex; flex-direction: column; align-items: center;">
@@ -1656,18 +1656,18 @@ export const TrainingUI = {
                                     </div>
                                 </div>
                             </div>
-                            <button onclick="window.TrainingUI.removeSet('${ex.id}', ${i})" style="background: transparent; border: none; color: #555; font-size: 20px; cursor: pointer; padding: 5px 10px; margin-bottom: 15px;">🗑</button>
+                            <button onclick="window.TrainingUI.removeSet('${ex.id}', ${i})" style="background: transparent; border: none; color: #555; font-size: 20px; cursor: pointer; padding: 5px 10px; margin-bottom: 15px;"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/></svg></button>
                         </div>`;
                 });
                 html += `</div>`; // End sets dark card wrapper
 
                 // Buttons OUTSIDE the card
                 html += `
-                    <div style="display: flex; gap: 10px; flex-wrap: wrap;">
-                        <button onclick="window.TrainingUI.addSet('${ex.id}', false)" style="background: #FFF; color: #000; border: none; border-radius: 8px; padding: 10px 16px; font-size: 14px; font-weight: 700; cursor: pointer;">[ + Seria ]</button>
-                        <button onclick="window.TrainingUI.addSet('${ex.id}', true)" style="background: #1C1C1E; color: #FFF; border: none; border-radius: 8px; padding: 10px 16px; font-size: 14px; font-weight: 500; cursor: pointer; display: flex; align-items: center; gap: 6px;">🔥 Dropset</button>
+                    <div style="display: flex; gap: 6px; flex-wrap: nowrap; overflow-x: auto; padding-bottom: 5px;">
+                        <button onclick="window.TrainingUI.addSet('${ex.id}', false)" style="background: #FFF; color: #000; border: none; border-radius: 8px; padding: 8px 12px; font-size: 13px; white-space: nowrap; flex: 1; justify-content: center; font-weight: 700; cursor: pointer;">[ + Seria ]</button>
+                        <button onclick="window.TrainingUI.addSet('${ex.id}', true)" style="background: #1C1C1E; color: #FFF; border: none; border-radius: 8px; padding: 8px 12px; font-size: 13px; white-space: nowrap; flex: 1; justify-content: center; font-weight: 500; cursor: pointer; display: flex; align-items: center; gap: 6px;">🔥 Dropset</button>
                         ${!isMainForSuperset && ex.type !== 'superset' ? `
-                            <button onclick="window.TrainingUI.addSuperset('${ex.id}')" style="background: #1C1C1E; color: #FFF; border: none; border-radius: 8px; padding: 10px 16px; font-size: 14px; font-weight: 500; cursor: pointer; display: flex; align-items: center; gap: 6px;">🔗 Dodaj Superserię</button>
+                            <button onclick="window.TrainingUI.addSuperset('${ex.id}')" style="background: #1C1C1E; color: #FFF; border: none; border-radius: 8px; padding: 8px 12px; font-size: 13px; white-space: nowrap; flex: 1; justify-content: center; font-weight: 500; cursor: pointer; display: flex; align-items: center; gap: 6px;">🔗 Superseria</button>
                         ` : ''}
                     </div>`;
                 
