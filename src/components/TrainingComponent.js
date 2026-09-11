@@ -107,51 +107,77 @@ export const TrainingComponent = {
                     </div>
                 </div>
 
-                <!-- Elementy dodatkowe - schowane pod rozwijanymi paskami -->
-                <div style="margin-top: 15px; display: flex; flex-direction: column; gap: 10px;">
+                <!-- BOTTOM SHEET WRAPPER -->
+                <div class="bottom-sheet-wrapper" style="position: fixed; bottom: 0; left: 0; width: 100%; z-index: 100; pointer-events: none;">
                     
-                    <details style="background: rgba(0,0,0,0.3); border-radius: 8px; border: 1px solid #00BFFF;">
-                        <summary style="padding: 15px; color: #00BFFF; font-weight: bold; cursor: pointer; user-select: none; list-style: none; text-align: center;">
-                            📸 Załącz zdjęcia z treningu
-                        </summary>
-                        <div style="padding: 15px; border-top: 1px dashed rgba(0, 191, 255, 0.3);">
-                            <p style="color: #aaa; font-size: 0.8em; text-align: center; margin-bottom: 10px; margin-top: 0;">Dodaj foty by wleciały jako tło w Raportach Progresu!</p>
-                            <div style="display: flex; gap: 10px; justify-content: center; flex-wrap: wrap;" id="training-photos-container">
-                                <label style="display: flex; flex-direction: column; justify-content: center; align-items: center; width: 80px; height: 100px; border: 1px dashed #00BFFF; border-radius: 6px; cursor: pointer; background: rgba(0, 191, 255, 0.1);">
-                                    <span style="font-size: 1.5em; color: #00BFFF;">+</span>
-                                    <input type="file" accept="image/*" style="display: none;" onchange="window.TrainingUI.handleTrainingPhoto(event)">
-                                </label>
-                            </div>
-                        </div>
-                    </details>
-
-                    <details style="background: rgba(0,0,0,0.3); border-radius: 8px; border: 1px solid #E91E63;">
-                        <summary style="padding: 15px; color: #E91E63; font-weight: bold; cursor: pointer; user-select: none; list-style: none; text-align: center;">
-                            ⌚ Dodaj dane ze Smartwatcha
-                        </summary>
-                        <div style="padding: 15px; border-top: 1px dashed rgba(233, 30, 99, 0.3);">
-                            <div style="display: flex; gap: 10px; flex-wrap: wrap;">
-                                <div style="flex: 1; min-width: 120px; text-align: center;">
-                                    <label style="color: #ccc; font-size: 0.85em;">Kalorie Aktywności</label>
-                                    <input type="number" id="smartwatch-calories" placeholder="kcal" style="width: 100%; padding: 10px; border-radius: 4px; border: 1px solid #444; background: #222; color: #fff; font-size: 1.1em; text-align: center; margin-top: 5px; box-sizing: border-box;" inputmode="numeric">
+                    <!-- Szufladka (Bottom Sheet) z rzadkimi opcjami -->
+                    <div id="training-bottom-sheet" style="background: #111118; border-top-left-radius: 20px; border-top-right-radius: 20px; padding: 20px; transform: translateY(100%); transition: transform 0.3s ease-out; pointer-events: auto; border: 1px solid rgba(255,255,255,0.05); border-bottom: none; box-shadow: 0 -5px 25px rgba(0,0,0,0.8);">
+                        <div style="width: 40px; height: 5px; background: #333; border-radius: 3px; margin: 0 auto 20px auto; cursor: pointer;" onclick="document.getElementById('training-bottom-sheet').style.transform = 'translateY(100%)'"></div>
+                        
+                        <!-- Elementy w szufladzie -->
+                        <div style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 90px;"> <!-- Margin bottom for sticky footer clearance -->
+                            <details style="background: rgba(255,255,255,0.05); border-radius: 12px; border: 1px solid rgba(255,255,255,0.1);">
+                                <summary style="padding: 15px; color: #FFF; font-weight: 500; cursor: pointer; user-select: none; list-style: none; display: flex; align-items: center; gap: 10px;">
+                                    <span style="font-size: 1.2em;">📸</span> Załącz zdjęcia z treningu
+                                </summary>
+                                <div style="padding: 15px; border-top: 1px solid rgba(255,255,255,0.05);">
+                                    <div style="display: flex; gap: 10px; justify-content: flex-start; flex-wrap: wrap;" id="training-photos-container">
+                                        <label style="display: flex; flex-direction: column; justify-content: center; align-items: center; width: 70px; height: 70px; border: 1px dashed rgba(255,255,255,0.2); border-radius: 8px; cursor: pointer; background: rgba(255,255,255,0.02);">
+                                            <span style="font-size: 1.5em; color: #FFF;">+</span>
+                                            <input type="file" accept="image/*" style="display: none;" onchange="window.TrainingUI.handleTrainingPhoto(event)">
+                                        </label>
+                                    </div>
                                 </div>
-                                <div style="flex: 1; min-width: 120px; text-align: center;">
-                                    <label style="color: #ccc; font-size: 0.85em;">Średnie Tętno</label>
-                                    <input type="number" id="smartwatch-hr" placeholder="bpm" style="width: 100%; padding: 10px; border-radius: 4px; border: 1px solid #444; background: #222; color: #fff; font-size: 1.1em; text-align: center; margin-top: 5px; box-sizing: border-box;" inputmode="numeric">
-                                </div>
-                            </div>
-                        </div>
-                    </details>
-                </div>
+                            </details>
 
-                <div class="form-full-width" style="margin-top: 30px;">
-                    <button type="button" id="save-as-template-btn" class="action-button" style="width: 100%; margin-bottom: 10px; background-color: rgba(156, 39, 176, 0.2); border-color: #9c27b0; color: #e1bee7;">💾 Zapisz jako Plan Treningowy</button>
-                    <div style="display: flex; gap: 10px; margin-bottom: 10px;">
-                        <button type="button" id="pause-training-btn" class="action-button" style="flex: 1; background-color: #f39c12; border-color: #f39c12; color: #fff;">⏸ Pauza</button>
-                        <button type="button" id="cancel-training-btn" class="action-button" style="flex: 1; background-color: rgba(231, 76, 60, 0.2); border-color: #E74C3C; color: #E74C3C;">❌ Anuluj</button>
+                            <details style="background: rgba(255,255,255,0.05); border-radius: 12px; border: 1px solid rgba(255,255,255,0.1);">
+                                <summary style="padding: 15px; color: #FFF; font-weight: 500; cursor: pointer; user-select: none; list-style: none; display: flex; align-items: center; gap: 10px;">
+                                    <span style="font-size: 1.2em;">⌚</span> Dodaj dane ze Smartwatcha
+                                </summary>
+                                <div style="padding: 15px; border-top: 1px solid rgba(255,255,255,0.05);">
+                                    <div style="display: flex; gap: 10px;">
+                                        <div style="flex: 1;">
+                                            <label style="color: #888; font-size: 0.8em;">Kalorie (kcal)</label>
+                                            <input type="number" id="smartwatch-calories" style="width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #333; background: #000; color: #FFF; margin-top: 5px; box-sizing: border-box;" inputmode="numeric">
+                                        </div>
+                                        <div style="flex: 1;">
+                                            <label style="color: #888; font-size: 0.8em;">Tętno (bpm)</label>
+                                            <input type="number" id="smartwatch-hr" style="width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #333; background: #000; color: #FFF; margin-top: 5px; box-sizing: border-box;" inputmode="numeric">
+                                        </div>
+                                    </div>
+                                </div>
+                            </details>
+
+                            <button type="button" id="save-as-template-btn" style="width: 100%; padding: 15px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; color: #FFF; font-weight: 500; text-align: left; display: flex; align-items: center; gap: 10px; cursor: pointer;">
+                                <span style="font-size: 1.2em;">💾</span> Zapisz jako Plan Treningowy
+                            </button>
+                            
+                            <button type="button" id="cancel-training-btn" style="width: 100%; padding: 15px; background: rgba(231, 76, 60, 0.1); border: 1px solid rgba(231, 76, 60, 0.2); border-radius: 12px; color: #E74C3C; font-weight: 500; text-align: left; display: flex; align-items: center; gap: 10px; cursor: pointer;">
+                                <span style="font-size: 1.2em;">❌</span> Anuluj Trening
+                            </button>
+                        </div>
                     </div>
-                    <button type="button" id="finish-training-btn" class="action-button" style="width: 100%; background-color: #ff4444; border-color: #ff4444;">⏹ Zakończ Trening</button>
+
+                    <!-- Pływający pasek akcji (Sticky Footer) -->
+                    <div style="background: rgba(10, 10, 15, 0.95); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); padding: 15px; border-top: 1px solid rgba(255,255,255,0.05); pointer-events: auto; position: absolute; bottom: 0; width: 100%; box-sizing: border-box;">
+                        
+                        <!-- Toggle szuflady -->
+                        <div style="display: flex; justify-content: center; margin-bottom: 10px;">
+                            <div onclick="const sheet = document.getElementById('training-bottom-sheet'); sheet.style.transform = sheet.style.transform === 'translateY(0%)' ? 'translateY(100%)' : 'translateY(0%)'" style="width: 50px; height: 6px; background: #333; border-radius: 3px; cursor: pointer;"></div>
+                        </div>
+
+                        <div style="display: flex; gap: 10px;">
+                            <button type="button" id="pause-training-btn" style="flex: 1; padding: 16px; background: #FFC107; color: #000; border: none; border-radius: 12px; font-weight: bold; font-size: 1.1em; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px;">
+                                <span>⏸</span> Pauza
+                            </button>
+                            <button type="button" id="finish-training-btn" style="flex: 1; padding: 16px; background: #00D26A; color: #000; border: none; border-radius: 12px; font-weight: bold; font-size: 1.1em; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px;">
+                                <span style="display:inline-block; transform: scale(1.2);">⏹</span> Zakończ
+                            </button>
+                        </div>
+                    </div>
                 </div>
+                <!-- Dodatkowy padding na dole, by nie przysłaniać ostatniego ćwiczenia -->
+                <div style="height: 120px;"></div>
             </div>
         `;
     }
