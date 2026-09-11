@@ -389,7 +389,8 @@
 
     .tab-content-wrapper {
         padding: 15px;
-        padding-bottom: 80px;
+        /* padding-bottom jest teraz obsługiwany przez glassmorphism.css (bottom:70px na wrapperze) */
+        padding-bottom: 15px;
     }
 }
 

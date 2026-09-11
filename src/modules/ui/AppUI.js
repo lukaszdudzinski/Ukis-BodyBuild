@@ -132,16 +132,23 @@ export const AppUI = {
                 l.classList.toggle('active', l.getAttribute('data-tab') === tabId);
             });
 
-            // Scroll the wrapper
+            // Scroll the wrapper (reset to top on tab change)
             const wrapper = document.querySelector('.tab-content-wrapper');
-            if (wrapper) wrapper.scrollTo({ top: 0, behavior: 'auto' });
+            if (wrapper) {
+                wrapper.scrollTop = 0;
+            }
 
             tabContents.forEach(content => {
                 content.classList.remove('active-tab');
                 content.style.display = 'none';
                 if (content.id === tabId) {
                     content.classList.add('active-tab');
-                    content.style.display = 'block';
+                    // glass-dashboard potrzebuje display:flex, reszta block
+                    if (content.classList.contains('glass-dashboard')) {
+                        content.style.display = 'flex';
+                    } else {
+                        content.style.display = 'block';
+                    }
                 }
             });
 

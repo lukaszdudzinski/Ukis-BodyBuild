@@ -1,5 +1,6 @@
 /* ============================================================
    GLASSMORPHISM PRO - GŁÓWNE STYLE
+   Refactored: usunięto konflikty z switchTab() i podwójny scroll
    ============================================================ */
 
 /* Global Body/App Wrappers */
@@ -17,6 +18,7 @@ body {
     bottom: 0;
     left: 0;
     width: 100%;
+    height: 70px;
     background: rgba(5, 5, 5, 0.95);
     backdrop-filter: blur(24px);
     -webkit-backdrop-filter: blur(24px);
@@ -24,9 +26,10 @@ body {
     display: flex;
     justify-content: space-around;
     align-items: center;
-    padding: 10px 0 20px 0;
+    padding: 8px 0 12px 0;
     z-index: 1000;
     box-shadow: 0 -10px 40px rgba(0,0,0,0.8);
+    box-sizing: border-box;
 }
 
 .nav-btn {
@@ -37,6 +40,8 @@ body {
     cursor: pointer;
     opacity: 0.5;
     transition: opacity 0.3s;
+    -webkit-tap-highlight-color: transparent;
+    user-select: none;
 }
 
 .nav-btn.active, .nav-btn:hover {
@@ -45,7 +50,6 @@ body {
 
 .nav-btn .nav-icon {
     font-size: 24px;
-    drop-shadow: 0 2px 5px rgba(0,0,0,0.5);
 }
 
 .nav-btn span {
@@ -66,15 +70,21 @@ body {
     border-radius: 24px;
 }
 
-/* Dashboard Specific Layout */
+/* ============================================================
+   GLASS DASHBOARD - UKŁAD GŁÓWNEGO EKRANU (WELCOME-SCREEN)
+   UWAGA: Brak display !important - to zarządza switchTab() w JS.
+   ============================================================ */
 .glass-dashboard {
-    padding: 20px;
-    padding-bottom: 100px !important; /* Space for bottom nav */
+    padding: 16px;
+    padding-bottom: 90px;
     display: flex;
     flex-direction: column;
     gap: 20px;
     position: relative;
-    z-index: 10;
+    z-index: 1;
+    box-sizing: border-box;
+    overflow-x: hidden;
+    min-height: 100%;
 }
 
 /* Glass Header */
@@ -148,6 +158,8 @@ body {
     position: relative;
     overflow: hidden;
     cursor: pointer;
+    transform: translateZ(0);
+    -webkit-tap-highlight-color: transparent;
 }
 
 .cta-glow {
@@ -159,6 +171,7 @@ body {
     background: rgba(0, 191, 255, 0.2);
     filter: blur(40px);
     border-radius: 50%;
+    pointer-events: none;
 }
 
 .cta-content {
@@ -226,6 +239,7 @@ body {
     align-items: center;
     text-align: center;
     cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
 }
 
 .grid-icon {
@@ -267,6 +281,7 @@ body {
     position: relative;
     overflow: hidden;
     cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
 }
 
 .list-left {
@@ -288,38 +303,31 @@ body {
 }
 
 .ai-coach { border-color: rgba(255, 152, 0, 0.3); box-shadow: 0 4px 20px rgba(255, 152, 0, 0.1); }
-.ai-glow { position: absolute; left: -40px; bottom: -40px; width: 128px; height: 128px; background: rgba(255, 152, 0, 0.2); filter: blur(40px); border-radius: 50%; }
+.ai-glow { position: absolute; left: -40px; bottom: -40px; width: 128px; height: 128px; background: rgba(255, 152, 0, 0.2); filter: blur(40px); border-radius: 50%; pointer-events: none; }
 .ai-icon { background: rgba(255, 152, 0, 0.2); border: 1px solid rgba(255, 152, 0, 0.4); }
 .ai-title { color: #fff; font-weight: 700; font-size: 0.875rem; margin: 0; display: flex; align-items: center; gap: 8px; }
 .pro-badge { background: rgba(255, 152, 0, 0.2); color: #FF9800; font-size: 0.55rem; padding: 2px 8px; border-radius: 9999px; text-transform: uppercase; font-weight: 800; border: 1px solid rgba(255, 152, 0, 0.3); }
 
 .diag-tool { border-color: rgba(231, 76, 60, 0.3); }
-.diag-glow { position: absolute; right: -40px; bottom: -40px; width: 128px; height: 128px; background: rgba(231, 76, 60, 0.1); filter: blur(40px); border-radius: 50%; }
+.diag-glow { position: absolute; right: -40px; bottom: -40px; width: 128px; height: 128px; background: rgba(231, 76, 60, 0.1); filter: blur(40px); border-radius: 50%; pointer-events: none; }
 .diag-icon { background: rgba(231, 76, 60, 0.2); border: 1px solid rgba(231, 76, 60, 0.4); }
 .diag-title { color: #E74C3C; font-weight: 700; font-size: 0.875rem; margin: 0; }
 
 .coffee-tool { border-color: rgba(241, 196, 15, 0.3); }
-.coffee-glow { position: absolute; left: 50%; bottom: -40px; width: 128px; height: 128px; background: rgba(241, 196, 15, 0.1); filter: blur(40px); border-radius: 50%; transform: translateX(-50%); }
+.coffee-glow { position: absolute; left: 50%; bottom: -40px; width: 128px; height: 128px; background: rgba(241, 196, 15, 0.1); filter: blur(40px); border-radius: 50%; transform: translateX(-50%); pointer-events: none; }
 .coffee-icon { background: rgba(241, 196, 15, 0.2); border: 1px solid rgba(241, 196, 15, 0.4); }
 .coffee-title { color: #F1C40F; font-weight: 700; font-size: 0.875rem; margin: 0; }
 
-/* V4 Overrides */
-.glass-dashboard {
-    padding-bottom: 120px !important;
-    height: 100%;
-    
-    overflow-x: hidden;
-}
-
 .uniform-tool {
-    border-color: rgba(255,255,255,0.08) !important;
+    border-color: rgba(255,255,255,0.08);
     transition: background 0.3s;
 }
 
 .uniform-tool:hover {
-    background: rgba(255,255,255,0.08) !important;
+    background: rgba(255,255,255,0.06);
 }
 
+/* Home Logo z pulsacją */
 .home-logo {
     width: 100px;
     height: 100px;
@@ -330,6 +338,7 @@ body {
     animation: pulse-scale 3s infinite ease-in-out;
     object-fit: contain;
     background-color: #000;
+    display: block;
 }
 
 @keyframes pulse-scale {
@@ -338,62 +347,78 @@ body {
     100% { transform: scale(1); box-shadow: 0 0 15px #00BFFF, 0 0 30px rgba(0, 191, 255, 0.6); }
 }
 
-.bottom-nav-bar {
-    height: 75px;
-    padding-bottom: 5px;
-}
+/* ============================================================
+   MOBILE OVERRIDES - GLASS LAYOUT
+   Na mobilnym: jeden kontener z overflow-y, bottom-nav fixed
+   ============================================================ */
+@media (max-width: 768px) {
+    /* App wrapper = pełen ekran, zero marginesów */
+    .app-wrapper {
+        position: fixed !important;
+        top: 0 !important;
+        left: 0 !important;
+        right: 0 !important;
+        bottom: 0 !important;
+        width: 100% !important;
+        height: 100% !important;
+        margin: 0 !important;
+        border-radius: 0 !important;
+        border: none !important;
+        overflow: hidden !important;
+        max-width: 100% !important;
+    }
 
-/* Force flex to override .tab-content block display */
-.glass-dashboard.active-tab {
-    display: flex !important;
-    flex-direction: column !important;
-}
-.glass-dashboard:not(.active-tab) {
-    display: none !important;
-}
+    /* app-content = bez własnego scrolla */
+    .app-content {
+        position: relative !important;
+        height: 100% !important;
+        overflow: hidden !important;
+        width: 100% !important;
+    }
 
-/* Ensure grid gap is preserved and grid overrides blocks */
-.glass-grid {
-    display: grid !important;
-    grid-template-columns: repeat(2, 1fr) !important;
-    gap: 16px !important;
-}
+    /* JEDYNY SCROLL: tab-content-wrapper jako viewport treści */
+    .tab-content-wrapper {
+        position: absolute !important;
+        top: 0 !important;
+        left: 0 !important;
+        right: 0 !important;
+        bottom: 70px !important; /* miejsce na bottom-nav-bar */
+        height: auto !important;
+        overflow-y: auto !important;
+        overflow-x: hidden !important;
+        -webkit-overflow-scrolling: touch !important;
+        padding: 0 !important;
+        box-sizing: border-box !important;
+        scrollbar-width: none;
+    }
 
-/* Tools section gap */
-.tools-section {
-    display: flex;
-    flex-direction: column !important;
-    gap: 12px !important;
-}
+    .tab-content-wrapper::-webkit-scrollbar {
+        display: none;
+    }
 
-/* Fix corner overflow on the CTA card */
-.main-cta {
-    position: relative;
-    overflow: hidden !important;
-    transform: translateZ(0); /* Safari border-radius overflow fix */
-    border-radius: 32px;
-}
-.main-cta {
-    border-radius: 32px !important;
-}
+    /* Glass Dashboard (welcome-screen) - pełna wysokość, flex kolumna */
+    .glass-dashboard {
+        padding: 16px !important;
+        padding-bottom: 20px !important;
+        min-height: 100% !important;
+        height: auto !important;
+        box-sizing: border-box !important;
+    }
 
-/* CRITICAL FIX FOR TABS SWITCHING */
-.glass-dashboard.active-tab {
-    display: flex !important;
-    flex-direction: column !important;
-}
-.glass-dashboard:not(.active-tab) {
-    display: none !important;
-}
+    /* Wszystkie inne zakładki - padding bottom na nawigację */
+    .tab-content:not(.glass-dashboard) {
+        padding: 15px !important;
+        padding-bottom: 20px !important;
+        box-sizing: border-box !important;
+        min-height: 100% !important;
+    }
 
-/* Remove duplicate padding to fix squished layout */
-.glass-dashboard {
-    padding: 0 !important; 
-    padding-bottom: 40px !important; /* Just enough extra for the nav bar over the 80px from wrapper */
-}
-
-/* Fix scrolling jank */
-.glass-dashboard {
-    height: auto !important;
-    min-height: 100%;
+    /* Bottom nav - always fixed at bottom */
+    .bottom-nav-bar {
+        position: fixed !important;
+        bottom: 0 !important;
+        left: 0 !important;
+        width: 100% !important;
+        z-index: 1000 !important;
+    }
 }
