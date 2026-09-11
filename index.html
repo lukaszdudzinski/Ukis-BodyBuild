@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="description" content="Aplikacja dla dzików, by uki. Dźwigaj i rośnij!">
     <meta name="theme-color" content="#FF9800" />
-    <meta name="app-version" content="v2026.9.11.05">
+    <meta name="app-version" content="v2026.9.11.06">
     <title>Uki's BodyBuild</title>
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="styles/glassmorphism.css">
@@ -435,7 +435,7 @@
                     </div>
 
                     <!-- Daily Goal Card -->
-                    <div style="background: #111118; border: 1px solid rgba(255,152,0,0.5); border-radius: 20px; padding: 25px; margin-bottom: 20px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.5);">
+                    <div style="background: #1C1C1E; border: 1px solid #333; border-radius: 20px; padding: 25px; margin-bottom: 20px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.5);">
                         <h3 style="color: #FFF; font-size: 18px; margin: 0 0 20px 0; font-weight: 600;">Twój cel: 2000 kcal</h3>
                         
                         <!-- Circular Progress Placeholder -->
@@ -463,7 +463,7 @@
                     </div>
 
                     <!-- AI Input Card -->
-                    <div style="background: #111118; border: 1px solid rgba(255,152,0,0.5); border-radius: 20px; padding: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.5);">
+                    <div style="background: #1C1C1E; border: 1px solid #333; border-radius: 20px; padding: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); margin-bottom: 20px;">
                         <h3 style="color: #FFF; font-size: 16px; margin: 0 0 15px 0; font-weight: 600; text-align: center;">Co dzisiaj jadłeś?</h3>
                         
                         <div style="display: flex; gap: 10px; margin-bottom: 15px;">
@@ -479,6 +479,109 @@
                             <span style="font-size: 20px;">🤖</span> Zapytaj AI Edwarda o kaloryczność
                         </button>
                     </div>
+                    
+                    <!-- Injected by Subagent UI Designer -->
+<div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background-color: #111118; padding: 20px; box-sizing: border-box; min-height: 100vh;">
+  
+  <!-- Top Button: Oblicz zapotrzebowanie kaloryczne -->
+  <button style="width: 100%; background-color: #FF9800; border: none; border-radius: 12px; padding: 16px; color: #FFFFFF; font-size: 16px; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 32px; cursor: pointer; -webkit-tap-highlight-color: transparent;">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <circle cx="12" cy="12" r="3"></circle>
+      <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+    </svg>
+    Oblicz zapotrzebowanie kaloryczne
+  </button>
+
+  <!-- Section: Dzisiejsze posiłki -->
+  <h2 style="font-size: 18px; font-weight: 700; color: #FFFFFF; margin: 0 0 16px 0; letter-spacing: 0.5px;">Dzisiejsze posiłki</h2>
+
+  <div style="display: flex; flex-direction: column; gap: 16px; margin-bottom: 32px;">
+    
+    <!-- Meal Card 1 -->
+    <div style="background-color: #1C1C1E; border: 1px solid #333333; border-radius: 16px; padding: 16px; box-sizing: border-box;">
+      <div style="display: flex; gap: 16px; margin-bottom: 16px;">
+        <!-- Thumbnail Placeholder -->
+        <div style="width: 64px; height: 64px; background-color: #2C2C2E; border-radius: 12px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; color: #636366;">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>
+        </div>
+        
+        <div style="flex-grow: 1; display: flex; justify-content: space-between; align-items: flex-start; gap: 12px;">
+          <h3 style="margin: 0; font-size: 16px; font-weight: 600; color: #FFFFFF; line-height: 1.3;">Pulpety drobiowe w sosie...</h3>
+          <span style="color: #FF9800; font-weight: 600; font-size: 16px; white-space: nowrap;">697 kcal</span>
+        </div>
+      </div>
+      
+      <!-- Action Buttons -->
+      <div style="display: flex; gap: 12px; margin-bottom: 16px;">
+        <button style="flex: 1; background-color: transparent; border: 1px solid #0A84FF; color: #0A84FF; border-radius: 10px; padding: 10px; font-size: 14px; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 6px; cursor: pointer; -webkit-tap-highlight-color: transparent;">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+          Klonuj
+        </button>
+        <button style="flex: 1; background-color: transparent; border: 1px solid #FF453A; color: #FF453A; border-radius: 10px; padding: 10px; font-size: 14px; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 6px; cursor: pointer; -webkit-tap-highlight-color: transparent;">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+          Usuń
+        </button>
+      </div>
+
+      <!-- Macros -->
+      <div style="display: flex; justify-content: space-between; border-top: 1px solid #333333; padding-top: 14px; font-size: 14px; font-weight: 600;">
+        <span style="color: #30D158;">B: 45g</span>
+        <span style="color: #0A84FF;">W: 68g</span>
+        <span style="color: #FF453A;">T: 30g</span>
+      </div>
+    </div>
+
+    <!-- Meal Card 2 -->
+    <div style="background-color: #1C1C1E; border: 1px solid #333333; border-radius: 16px; padding: 16px; box-sizing: border-box;">
+      <div style="display: flex; gap: 16px; margin-bottom: 16px;">
+        <!-- Thumbnail Placeholder -->
+        <div style="width: 64px; height: 64px; background-color: #2C2C2E; border-radius: 12px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; color: #636366;">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>
+        </div>
+        
+        <div style="flex-grow: 1; display: flex; justify-content: space-between; align-items: flex-start; gap: 12px;">
+          <h3 style="margin: 0; font-size: 16px; font-weight: 600; color: #FFFFFF; line-height: 1.3;">Naleśnik z indykiem...</h3>
+          <span style="color: #FF9800; font-weight: 600; font-size: 16px; white-space: nowrap;">520 kcal</span>
+        </div>
+      </div>
+      
+      <!-- Action Buttons -->
+      <div style="display: flex; gap: 12px; margin-bottom: 16px;">
+        <button style="flex: 1; background-color: transparent; border: 1px solid #0A84FF; color: #0A84FF; border-radius: 10px; padding: 10px; font-size: 14px; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 6px; cursor: pointer; -webkit-tap-highlight-color: transparent;">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+          Klonuj
+        </button>
+        <button style="flex: 1; background-color: transparent; border: 1px solid #FF453A; color: #FF453A; border-radius: 10px; padding: 10px; font-size: 14px; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 6px; cursor: pointer; -webkit-tap-highlight-color: transparent;">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+          Usuń
+        </button>
+      </div>
+
+      <!-- Macros -->
+      <div style="display: flex; justify-content: space-between; border-top: 1px solid #333333; padding-top: 14px; font-size: 14px; font-weight: 600;">
+        <span style="color: #30D158;">B: 40g</span>
+        <span style="color: #0A84FF;">W: 55g</span>
+        <span style="color: #FF453A;">T: 18g</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Section: Historia 30 dni -->
+  <h2 style="font-size: 18px; font-weight: 700; color: #FFFFFF; margin: 0 0 16px 0; letter-spacing: 0.5px;">Historia 30 dni</h2>
+  
+  <div style="background-color: #1C1C1E; border: 1px solid #333333; border-radius: 16px; padding: 20px 16px; height: 160px; display: flex; align-items: flex-end; justify-content: space-between; gap: 6px; box-sizing: border-box;">
+    <!-- Simple CSS Bar Chart Placeholder -->
+    <div style="flex: 1; background-color: #FF9800; border-radius: 6px 6px 0 0; height: 35%; opacity: 0.6;"></div>
+    <div style="flex: 1; background-color: #FF9800; border-radius: 6px 6px 0 0; height: 50%; opacity: 0.8;"></div>
+    <div style="flex: 1; background-color: #FF9800; border-radius: 6px 6px 0 0; height: 75%; opacity: 0.9;"></div>
+    <div style="flex: 1; background-color: #FF9800; border-radius: 6px 6px 0 0; height: 100%;"></div>
+    <div style="flex: 1; background-color: #FF9800; border-radius: 6px 6px 0 0; height: 45%; opacity: 0.7;"></div>
+    <div style="flex: 1; background-color: #FF9800; border-radius: 6px 6px 0 0; height: 85%; opacity: 0.9;"></div>
+    <div style="flex: 1; background-color: #FF9800; border-radius: 6px 6px 0 0; height: 60%; opacity: 0.8;"></div>
+  </div>
+
+</div>
+
                 </div>
 
                 <div id="diagnostics-dashboard" class="tab-content" style="display: none;">

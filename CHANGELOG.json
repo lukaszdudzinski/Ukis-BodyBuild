@@ -1,5 +1,12 @@
 [
   {
+    "version": "v2026.9.11.06",
+    "date": "2026-09-11",
+    "changes": [
+      "🎨 Sub-agent Design: Ujednolicono styl Diety (usunięto poświatę) i wdrożono sekcję 'Dzisiejsze posiłki' wg Koncepcji"
+    ]
+  },
+  {
     "version": "v2026.9.11.05",
     "date": "2026-09-11",
     "changes": [
