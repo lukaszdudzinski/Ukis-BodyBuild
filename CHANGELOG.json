@@ -1,5 +1,12 @@
 [
   {
+    "version": "v2026.9.11.01",
+    "date": "2026-09-11",
+    "changes": [
+      "💎 Native UI Redesign: Całkowicie nowy ekran treningu, nowy moduł diety i natywne ikony SVG w menu głównym."
+    ]
+  },
+  {
     "version": "v2026.9.10.04",
     "date": "2026-09-10",
     "changes": [
