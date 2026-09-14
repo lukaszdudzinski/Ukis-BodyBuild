@@ -372,7 +372,7 @@ export const SettingsUI = {
                 if (window.MediaManager) {
                     avatarUrl = await window.MediaManager.getMediaUrl(base64);
                 } else if (window.DatabaseManager) {
-                    avatarUrl = await window.DatabaseManager.getBase64Image(base64);
+                    avatarUrl = await window.MediaManager.getMediaUrl(base64);
                 }
             } catch (e) {
                 console.warn('Could not load avatar', e);

@@ -189,9 +189,8 @@ export const DatabaseManager = {
 
         await sendMessage('exec_multiple', { queries });
 
+        // NOTE: 'name' and 'type' are already in CREATE TABLE above — do NOT add them here again
         const migrations = [
-            `ALTER TABLE trainings ADD COLUMN name TEXT;`,
-            `ALTER TABLE trainings ADD COLUMN type TEXT;`,
             `ALTER TABLE trainings ADD COLUMN social_photos_json TEXT;`,
             `ALTER TABLE trainings ADD COLUMN smartwatch_json TEXT;`,
             `ALTER TABLE measurements ADD COLUMN height REAL;`,

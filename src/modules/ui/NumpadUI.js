@@ -139,8 +139,8 @@ export const NumpadUI = {
         NumpadUI.close();
         
         // Zapisz trening po zatwierdzeniu
-        if (window.TrainingUI && typeof window.TrainingUI.saveState === 'function') {
-            window.TrainingUI.saveState();
+        if (window.TrainingUI && typeof window.TrainingUI.saveDraft === 'function') {
+            window.TrainingUI.saveDraft();
         }
     }
 };

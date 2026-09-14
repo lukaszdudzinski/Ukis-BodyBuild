@@ -8,6 +8,7 @@ import { DietUI } from './modules/ui/DietUI.js';
 import { OnboardingUI } from './modules/ui/OnboardingUI.js';
 import { ChatUI } from './modules/ui/ChatUI.js';
 import { DatabaseManager } from './modules/db/DatabaseManager.js';
+import { MediaManager } from './modules/db/MediaManager.js';
 import { ChangelogUI } from './modules/ui/ChangelogUI.js';
 import { DiagnosticsUI } from './modules/ui/DiagnosticsUI.js';
 import { AchievementsSystem } from './modules/gamification/AchievementsSystem.js';
@@ -52,12 +53,12 @@ const initApp = () => {
     // Set dynamic avatar
     const base64Id = localStorage.getItem('uki-bodybuild-avatar') || localStorage.getItem('uki-avatar');
     if (base64Id) {
-        window.DatabaseManager.getBase64Image(base64Id).then(base64 => {
-            if (base64) {
+        MediaManager.getMediaUrl(base64Id).then(url => {
+            if (url) {
                 const img = document.getElementById('user-avatar-img');
-                if (img) img.src = base64;
+                if (img) img.src = url;
             }
-        });
+        }).catch(e => console.warn('Avatar err', e));
     }
     
     MeasurementsUI.init();

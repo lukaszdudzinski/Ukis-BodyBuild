@@ -159,6 +159,21 @@ export const TrainingUI = {
         document.body.insertAdjacentHTML('beforeend', html);
     },
 
+    
+    toggleExerciseType: (exId) => {
+        const ex = currentTraining.exercises.find(e => e.id === exId);
+        if (ex) {
+            if (ex.type === 'strength') ex.type = 'cardio';
+            else if (ex.type === 'cardio') ex.type = 'classes';
+            else ex.type = 'strength';
+            TrainingUI.renderCurrentExercises();
+            TrainingUI.saveTrainingState();
+        }
+    },
+    openExerciseSelector: (exId) => {
+        TrainingUI.openCatalogModal(exId);
+    },
+
     openCatalogModal: (exerciseId) => {
         const overlay = document.getElementById('catalog-modal-overlay');
         const content = document.getElementById('catalog-modal-content');
@@ -409,10 +424,10 @@ export const TrainingUI = {
         localStorage.setItem("uki_workout_schedules", JSON.stringify(schedules));
         TrainingUI.loadTemplatesDialog(); // Re-render modal to show updated colors
         
-        // Refresh calendar if its open
+        // Refresh calendar if its open (CalendarUI removed — use TrainingUI.renderCalendar)
         const calendarEl = document.getElementById("calendar-grid");
-        if (calendarEl && window.CalendarUI) {
-            window.CalendarUI.renderCalendar(window.CalendarUI.currentDate);
+        if (calendarEl) {
+            TrainingUI.renderCalendar();
         }
     },
 
@@ -1598,26 +1613,26 @@ export const TrainingUI = {
                         <input type="text" placeholder="Wpisz nazwę..." value="${ex.name}" onchange="window.TrainingUI.updateExerciseField('${ex.id}', 'name', this.value); window.TrainingUI.renderCurrentExercises();" style="width: 100%; background: transparent; border: none; color: #FFF; font-size: 26px; font-weight: 800; letter-spacing: -0.5px; outline: none; padding: 0; margin-bottom: 5px;">
                         <div style="color: #888; font-size: 14px; margin-bottom: 12px;">${setsCount} serie</div>
                         
-                        <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 15px;">
+                        <div style="display: flex; gap: 8px; margin-bottom: 15px; width: 100%;">
                             <!-- Katalog -->
-                            <button onclick="window.TrainingUI.openExerciseSelector('${ex.id}')" style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; color: #FFF; padding: 8px 12px; font-size: 13px; font-weight: 500; display: flex; align-items: center; gap: 6px; cursor: pointer;">
+                            <button onclick="window.TrainingUI.openExerciseSelector('${ex.id}')" style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; color: #FFF; padding: 8px 12px; font-size: 13px; font-weight: 500; display: flex; align-items: center; justify-content: center; flex: 1; gap: 6px; cursor: pointer;">
                                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20"/></svg>
                                 Katalog
                             </button>
                             
                             <!-- Typ treningu -->
-                            <button onclick="window.TrainingUI.toggleExerciseType('${ex.id}')" style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; color: #FFF; padding: 8px 12px; font-size: 13px; font-weight: 500; display: flex; align-items: center; gap: 6px; cursor: pointer;">
-                                ${ex.type === 'classes' ? '🧘‍♀️ Zajęcia' : (ex.type === 'cardio' ? '🏃‍♂️ Cardio' : '🏋️ Siłowy')}
+                            <button onclick="window.TrainingUI.toggleExerciseType('${ex.id}')" style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; color: #FFF; padding: 8px 12px; font-size: 13px; font-weight: 500; display: flex; align-items: center; justify-content: center; flex: 1; gap: 6px; cursor: pointer;">
+                                ${ex.type === 'classes' ? '🧘‍♀️ Zaj' : (ex.type === 'cardio' ? '🏃‍♂️ Card' : '🏋️ Sił')}
                             </button>
                             
                             <!-- Aparat -->
-                            <label style="cursor: pointer; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; color: #FFF; padding: 8px 12px; display: flex; align-items: center; justify-content: center;">
+                            <label style="cursor: pointer; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; color: #FFF; padding: 8px 12px; display: flex; align-items: center; justify-content: center; flex: 1;">
                                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3"/></svg>
                                 <input type="file" accept="image/*" style="display: none;" onchange="window.TrainingUI.handleTrainingPhoto(event)">
                             </label>
                             
                             <!-- Kosz -->
-                            <button onclick="window.TrainingUI.removeExercise('${ex.id}')" style="background: rgba(255,69,58,0.1); border: 1px solid rgba(255,69,58,0.3); border-radius: 8px; color: #FF453A; padding: 8px 12px; display: flex; align-items: center; justify-content: center; cursor: pointer;">
+                            <button onclick="window.TrainingUI.removeExercise('${ex.id}')" style="background: rgba(255,69,58,0.1); border: 1px solid rgba(255,69,58,0.3); border-radius: 8px; color: #FF453A; padding: 8px 12px; display: flex; align-items: center; justify-content: center; flex: 1; cursor: pointer;">
                                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/></svg>
                             </button>
                         </div>
@@ -2013,6 +2028,27 @@ export const TrainingUI = {
             document.getElementById('training-calendar-view').style.display = 'block';
             TrainingUI.loadHistoryAndCalendar();
         }
+    },
+
+    // Funkcja kompresji zdjęć — używana przez handleTrainingPhoto i SettingsUI (tapeta)
+    compressImage: (file, callback) => {
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onload = (event) => {
+            const img = new Image();
+            img.src = event.target.result;
+            img.onload = () => {
+                const canvas = document.createElement('canvas');
+                const MAX = 1200;
+                let w = img.width, h = img.height;
+                if (w > MAX) { h = Math.round(h * MAX / w); w = MAX; }
+                if (h > MAX) { w = Math.round(w * MAX / h); h = MAX; }
+                canvas.width = w; canvas.height = h;
+                canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+                callback(canvas.toDataURL('image/jpeg', 0.82));
+            };
+        };
+        reader.onerror = () => callback(null);
     }
 };
 

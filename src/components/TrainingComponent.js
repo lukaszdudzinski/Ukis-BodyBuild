@@ -108,8 +108,11 @@ export const TrainingComponent = {
                     </div>
                 </div>
 
+                <!-- Dodatkowy padding na dole, by nie przysłaniać ostatniego ćwiczenia -->
+                <div style="height: 120px;"></div>
+
                 <!-- UNIFIED BOTTOM SHEET -->
-                <div id="unified-bottom-sheet" style="position: fixed; bottom: 0; left: 0; right: 0; width: 100%; max-width: 800px; margin: 0 auto; z-index: 2000; background: #1C1C1E; border-top-left-radius: 24px; border-top-right-radius: 24px; box-shadow: 0 -10px 40px rgba(0,0,0,0.8); padding: 15px 20px calc(20px + env(safe-area-inset-bottom, 20px)) 20px; box-sizing: border-box; display: flex; flex-direction: column; gap: 15px; transition: transform 0.3s ease;">
+                <div id="unified-bottom-sheet" style="position: sticky; bottom: 0; left: 0; right: 0; width: 100%; max-width: 800px; margin: 0 auto; z-index: 2000; background: #1C1C1E; border-top-left-radius: 24px; border-top-right-radius: 24px; box-shadow: 0 -10px 40px rgba(0,0,0,0.8); padding: 15px 20px calc(20px + env(safe-area-inset-bottom, 20px)) 20px; box-sizing: border-box; display: flex; flex-direction: column; gap: 15px; transition: transform 0.3s ease;">
                     
                     <!-- Drag handle (Toggles list visibility) -->
                     <div style="padding: 10px 0; cursor: pointer; display: flex; justify-content: center;" onclick="const list = document.getElementById('bs-action-list'); list.style.display = list.style.display === 'none' ? 'flex' : 'none';">
@@ -141,9 +144,8 @@ export const TrainingComponent = {
                             <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M6 6h12v12H6z"/></svg> Zakończ Trening
                         </button>
                     </div>
+                    </div>
                 </div>
-                <!-- Dodatkowy padding na dole, by nie przysłaniać ostatniego ćwiczenia -->
-                <div style="height: 120px;"></div>
             </div>
         `;
     }

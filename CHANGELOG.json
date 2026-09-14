@@ -1,5 +1,29 @@
 [
   {
+    "version": "v2026.9.11.12",
+    "date": "2026-09-11",
+    "changes": [
+      "🐞 Hotfix Krytyczny: SQL DB + Numpad + CompressImage + CalendarUI\\n- Naprawiono krytyczny błąd SQL 'duplicate column name: name' który blokował inicjalizację bazy przy każdym uruchomieniu\\n- Naprawiono Numpad: saveState() → saveDraft() — dane z Numpada zapisują się poprawnie\\n- Dodano brakującą funkcję compressImage do TrainingUI — tapety i zdjęcia treningu działają\\n- Usunięto martwą referencję window.CalendarUI zastępując ją TrainingUI.renderCalendar()\\n- Ustandaryzowano window.DietUI = DietUI w pliku DietUI.js"
+    ]
+  },
+  {
+    "version": "v2026.9.11.11",
+    "date": "2026-09-11",
+    "changes": [
+      "🔥 Hotfix: Training UI & Diet Redesign\\n- Wyrównano i wyśrodkowano przyciski (Katalog, Typ, Aparat, Kosz)\\n- Podpięto Katalog pod odpowiednią metodę\\n- Naprawiono ucięty dolny pasek (Zakończ Trening / Pauza)\\n- Przeniesiono nowy design Diety z HTML bezpośrednio do silnika renderującego JS"
+    ]
+  },
+  {
+    "version": "v2026.9.11.10",
+    "date": "2026-09-11",
+    "changes": [
+      "🐞 Naprawiono krytyczny błąd w ładowaniu bazy (Avatar), który blokował inicjalizację kafelków",
+      "🛠️ Przywrócono pełną funkcjonalność ekranów: Trening, Historia, Pomiary, Analiza",
+      "📸 Naprawiono dodawanie i podgląd zdjęć posiłków w module Dieta",
+      "👑 Przeniesiono informacje o wersji / Trial dokładnie w pożądane miejsce (pod przycisk wsparcia)"
+    ]
+  },
+  {
     "version": "v2026.9.11.09",
     "date": "2026-09-11",
     "changes": [
