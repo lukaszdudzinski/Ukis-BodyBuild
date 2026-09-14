@@ -1,5 +1,12 @@
 [
   {
+    "version": "v2026.9.14.01",
+    "date": "2026-09-14",
+    "changes": [
+      "🐞 Hotfix: Auto-kopiowanie serii, Superseria UI, SW Registration\\n- Naprawiono błąd auto-kopiowania danych przy dodawaniu serii (kopiowanie tylko gdy zaznaczony checkbox)\\n- Superseria teraz wyraźnie widoczna — różowa ramka z podpisem 🔗\\n- Naprawiono rejestrację Service Workera (pwa-updater.js miał hardcoded starą wersję)"
+    ]
+  },
+  {
     "version": "v2026.9.11.12",
     "date": "2026-09-11",
     "changes": [

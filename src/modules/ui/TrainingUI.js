@@ -1412,9 +1412,6 @@ export const TrainingUI = {
         try {
             const exercise = TrainingUI.getExerciseById(exerciseId);
             if (!exercise) return;
-            
-            const weightInput = document.getElementById(`weight-${exerciseId}`);
-            const repsInput = document.getElementById(`reps-${exerciseId}`);
 
             const bodyweightKeywords = ['brzuch', 'brzus', 'podciąg', 'podciag', 'pompk', 'plank', 'deska', 'drąż', 'draz'];
             const isBodyweight = exercise.name && bodyweightKeywords.some(kw => exercise.name.toLowerCase().includes(kw));
@@ -1422,33 +1419,15 @@ export const TrainingUI = {
             let wVal = "0";
             let rVal = "0";
 
-            if (weightInput && repsInput) {
-                wVal = weightInput.value;
-                rVal = repsInput.value;
-
-                // Fallback do ostatniej serii jeśli pola są puste (szczególnie przydatne przy szablonach)
-                if ((!wVal || !rVal) && exercise.sets && exercise.sets.length > 0) {
-                    const lastSet = exercise.sets[exercise.sets.length - 1];
-                    if (!wVal && lastSet.weight !== undefined) wVal = lastSet.weight;
-                    if (!rVal && lastSet.reps !== undefined) rVal = lastSet.reps;
-                }
-
-                if (isBodyweight) {
-                    if (!rVal) { alert("Podaj ilość powtórzeń!"); return; }
-                    if (!wVal) wVal = "0";
-                } else {
-                    if (!wVal || !rVal) { alert("Podaj ciężar i ilość powtórzeń!"); return; }
-                }
-            } else {
-                // Experimental mode - sklonuj ostatnią serię
-                if (exercise.sets && exercise.sets.length > 0) {
-                    const lastSet = exercise.sets[exercise.sets.length - 1];
-                    wVal = lastSet.weight;
-                    rVal = lastSet.reps;
-                } else {
-                    wVal = "0";
-                    rVal = "10";
-                }
+            // Kopiuj ostatnią serię TYLKO jeśli autoCopy jest włączone
+            if (exercise.autoCopy && exercise.sets && exercise.sets.length > 0) {
+                const lastSet = exercise.sets[exercise.sets.length - 1];
+                wVal = String(lastSet.weight ?? "0");
+                rVal = String(lastSet.reps ?? "0");
+            } else if (!exercise.autoCopy) {
+                // Nowa seria zawsze zaczyna się pusta gdy autoCopy wyłączone
+                wVal = "";
+                rVal = "";
             }
 
             const newSet = {
@@ -1589,8 +1568,8 @@ export const TrainingUI = {
             const isMainForSuperset = nextEx && nextEx.type === 'superset';
 
             if (isMainForSuperset && ex.type !== 'superset') {
-                html += `<div style="margin-bottom: 20px; position: relative;">`;
-                html += `<div style="position: absolute; top: -10px; left: 0px; background: #E91E63; color: #FFF; padding: 2px 10px; font-size: 10px; font-weight: 800; border-radius: 10px; text-transform: uppercase; z-index: 10;">Superseria</div>`;
+                html += `<div style="margin-bottom: 20px; position: relative; border: 2px solid #E91E63; border-radius: 16px; padding: 30px 16px 16px 16px; background: rgba(233,30,99,0.05);">`;
+                html += `<div style="position: absolute; top: -12px; left: 16px; background: #E91E63; color: #FFF; padding: 3px 14px; font-size: 11px; font-weight: 800; border-radius: 20px; text-transform: uppercase; letter-spacing: 1px; z-index: 10;">🔗 Superseria</div>`;
                 inSupersetGroup = true;
             }
 

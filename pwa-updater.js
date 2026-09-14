@@ -108,7 +108,7 @@
                 let hadBadWorker = false;
                 for (let reg of registrations) {
                     const swUrl = reg.active?.scriptURL || reg.installing?.scriptURL || '';
-                    if (!swUrl.includes('sw.js?v=2026.8.27.02')) {
+                    if (!swUrl.includes('sw.js')) {
                         await reg.unregister();
                         hadBadWorker = true;
                     }
@@ -125,7 +125,7 @@
 
         _doRegister: () => {
             // Standard Registration
-            navigator.serviceWorker.register('sw.js?v=2026.8.27.02')
+            navigator.serviceWorker.register('sw.js')
                 .then(registration => {
                     console.log('PWA Service Worker Registered (Isolated Updater)');
 
