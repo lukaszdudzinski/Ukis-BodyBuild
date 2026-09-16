@@ -1,5 +1,12 @@
 [
   {
+    "version": "v2026.9.16.06",
+    "date": "2026-09-16",
+    "changes": [
+      "📐 Re-design modułu Pomiarów na Glassmorphism i SVG\\n- Wyrzucono przestarzałe emoji z ekranu Pomiary i z historii pomiarów\\n- Formularze i kafelki na liście otrzymały szklane półprzezroczyste ramki\\n- Pola input (waga, obwody) dostosowane stylistycznie do ciemnego tła z pomarańczowymi akcentami"
+    ]
+  },
+  {
     "version": "v2026.9.16.05",
     "date": "2026-09-16",
     "changes": [

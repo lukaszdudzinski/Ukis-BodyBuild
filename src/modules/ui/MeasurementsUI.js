@@ -96,7 +96,7 @@ export const MeasurementsUI = {
                 alert("Pomiary zaktualizowane pomyślnie!");
                 window.currentEditMeasurementId = null;
                 const submitBtn = e.target.querySelector('button[type="submit"]');
-                if(submitBtn) submitBtn.innerHTML = '💾 Zapisz Pomiary';
+                if(submitBtn) submitBtn.innerHTML = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg> Zapisz Pomiary';
             } else {
                 await DatabaseManager.addMeasurement(data);
                 alert("Pomiary zapisane pomyślnie!");
@@ -137,29 +137,36 @@ export const MeasurementsUI = {
             records.forEach(rec => {
                 const card = document.createElement('div');
                 card.className = "log-card";
-                card.style.cssText = "background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.1); padding: 15px; border-radius: 8px; margin-bottom: 15px;";
+                card.style.cssText = "background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 20px; padding: 20px; backdrop-filter: blur(10px); margin-bottom: 15px; box-sizing: border-box;";
                 card.innerHTML = `
-                    <div style="margin-bottom: 10px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 10px;">
-                        <div style="text-align: center; margin-bottom: 12px;">
-                            <strong style="color: var(--primary-color); font-size: 1.2em;">🗓 ${rec.date}</strong>
-                        </div>
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding-bottom: 15px; border-bottom: 1px solid rgba(255,255,255,0.05);">
+                        <strong style="color: #FF9800; font-size: 1.1em; display: flex; align-items: center; gap: 8px;">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                            ${rec.date}
+                        </strong>
                         <div style="display: flex; gap: 8px;">
-                            <button onclick="window.editMeasurement(${rec.id})" class="action-button" style="flex: 1; background: rgba(33, 150, 243, 0.1); border-color: #2196F3; color: #2196F3; font-size: 0.9em; padding: 8px;">✏️ Edytuj</button>
-                            <button onclick="window.cloneMeasurement(${rec.id})" class="action-button" style="flex: 1; background: rgba(76, 175, 80, 0.1); border-color: #4CAF50; color: #4CAF50; font-size: 0.9em; padding: 8px;">📋 Klonuj</button>
-                            <button onclick="window.deleteMeasurement(${rec.id})" class="action-button" style="flex: 1; background: rgba(244, 67, 54, 0.1); border-color: #F44336; color: #F44336; font-size: 0.9em; padding: 8px;">🗑 Usuń</button>
+                            <button onclick="window.editMeasurement(${rec.id})" style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: #fff; border-radius: 10px; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: background 0.2s;">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+                            </button>
+                            <button onclick="window.cloneMeasurement(${rec.id})" style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: #fff; border-radius: 10px; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: background 0.2s;">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                            </button>
+                            <button onclick="window.deleteMeasurement(${rec.id})" style="background: rgba(255,69,58,0.1); border: 1px solid rgba(255,69,58,0.3); color: #FF453A; border-radius: 10px; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: background 0.2s;">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+                            </button>
                         </div>
                     </div>
                     <div style="display: flex; gap: 15px;">
                         <div id="measure-photo-${rec.id}" style="width: 80px; height: 80px; display: none;"></div>
-                        <div style="flex-grow: 1; display: grid; grid-template-columns: 1fr 1fr; gap: 5px; font-size: 0.9em;">
-                            <div><strong>Waga:</strong> ${rec.weight} kg</div>
-                            ${rec.height ? `<div><strong>Wzrost:</strong> ${rec.height} cm</div>` : ''}
-                            ${rec.chest ? `<div><strong>Klatka:</strong> ${rec.chest} cm</div>` : ''}
-                            ${rec.waist ? `<div><strong>Talia:</strong> ${rec.waist} cm</div>` : ''}
-                            ${rec.hips ? `<div><strong>Biodra:</strong> ${rec.hips} cm</div>` : ''}
-                            ${rec.thigh ? `<div><strong>Udo:</strong> ${rec.thigh} cm</div>` : ''}
-                            ${rec.biceps ? `<div><strong>Biceps:</strong> ${rec.biceps} cm</div>` : ''}
-                            ${rec.neck ? `<div><strong>Szyja:</strong> ${rec.neck} cm</div>` : ''}
+                        <div style="flex-grow: 1; display: grid; grid-template-columns: 1fr 1fr; gap: 8px; font-size: 0.9em; color: #fff;">
+                            <div style="background: rgba(255,255,255,0.03); padding: 8px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.02);"><strong style="color: #8E8E93; font-size: 0.8em; text-transform: uppercase; display: block; margin-bottom: 2px;">Waga</strong> ${rec.weight} kg</div>
+                            ${rec.height ? `<div style="background: rgba(255,255,255,0.03); padding: 8px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.02);"><strong style="color: #8E8E93; font-size: 0.8em; text-transform: uppercase; display: block; margin-bottom: 2px;">Wzrost</strong> ${rec.height} cm</div>` : ''}
+                            ${rec.chest ? `<div style="background: rgba(255,255,255,0.03); padding: 8px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.02);"><strong style="color: #8E8E93; font-size: 0.8em; text-transform: uppercase; display: block; margin-bottom: 2px;">Klatka</strong> ${rec.chest} cm</div>` : ''}
+                            ${rec.waist ? `<div style="background: rgba(255,255,255,0.03); padding: 8px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.02);"><strong style="color: #8E8E93; font-size: 0.8em; text-transform: uppercase; display: block; margin-bottom: 2px;">Talia</strong> ${rec.waist} cm</div>` : ''}
+                            ${rec.hips ? `<div style="background: rgba(255,255,255,0.03); padding: 8px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.02);"><strong style="color: #8E8E93; font-size: 0.8em; text-transform: uppercase; display: block; margin-bottom: 2px;">Biodra</strong> ${rec.hips} cm</div>` : ''}
+                            ${rec.thigh ? `<div style="background: rgba(255,255,255,0.03); padding: 8px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.02);"><strong style="color: #8E8E93; font-size: 0.8em; text-transform: uppercase; display: block; margin-bottom: 2px;">Udo</strong> ${rec.thigh} cm</div>` : ''}
+                            ${rec.biceps ? `<div style="background: rgba(255,255,255,0.03); padding: 8px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.02);"><strong style="color: #8E8E93; font-size: 0.8em; text-transform: uppercase; display: block; margin-bottom: 2px;">Biceps</strong> ${rec.biceps} cm</div>` : ''}
+                            ${rec.neck ? `<div style="background: rgba(255,255,255,0.03); padding: 8px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.02);"><strong style="color: #8E8E93; font-size: 0.8em; text-transform: uppercase; display: block; margin-bottom: 2px;">Szyja</strong> ${rec.neck} cm</div>` : ''}
                         </div>
                     </div>
                 `;
@@ -205,12 +212,12 @@ window.populateMeasurementForm = async (id, isEdit) => {
         window.currentEditMeasurementId = id;
         document.getElementById('measureDate').value = rec.date;
         const submitBtn = document.querySelector('#measurementsForm button[type="submit"]');
-        if (submitBtn) submitBtn.innerHTML = '💾 Zaktualizuj Pomiary';
+        if (submitBtn) submitBtn.innerHTML = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg> Aktualizuj';
     } else {
         window.currentEditMeasurementId = null;
         document.getElementById('measureDate').value = new Date().toISOString().split('T')[0];
         const submitBtn = document.querySelector('#measurementsForm button[type="submit"]');
-        if (submitBtn) submitBtn.innerHTML = '💾 Zapisz Pomiary';
+        if (submitBtn) submitBtn.innerHTML = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg> Zapisz Pomiary';
     }
 
     if (rec.weight) document.getElementById('measureWeight').value = rec.weight;
