@@ -21,55 +21,55 @@ export const DietUI = {
 
     renderUI: (container) => {
         container.innerHTML = `
-            <div class="view-header">
-                <h2>Dieta i Kalorie</h2>
-                <p style="color: #b0b0b0;" id="diet-date-display">Dzisiaj</p>
+            <div class="view-header" style="padding: 10px 15px; margin-bottom: 10px;">
+                <h2 style="margin: 0; font-size: 1.8em; font-weight: 700; color: #fff;">Dieta i Kalorie</h2>
+                <p style="margin: 5px 0 0 0; color: #8E8E93; font-size: 0.9em;" id="diet-date-display">Dzisiaj</p>
             </div>
 
             <!-- TDEE & Progress Rings -->
-            <div class="diet-summary-card" style="background: rgba(0,0,0,0.4); border-radius: 12px; padding: 20px; border: 1px solid #FF9800; margin-bottom: 20px; text-align: center;">
-                <h3 style="margin-top: 0; color: #FF9800; font-size: 1.1em;">Twój cel: <span id="diet-tdee-display">---</span> kcal</h3>
-                <div style="position: relative; width: 150px; height: 150px; margin: 20px auto;">
+            <div class="diet-summary-card" style="margin: 0 15px 20px 15px; background: rgba(255,255,255,0.05); border-radius: 24px; padding: 25px 20px; border: 1px solid rgba(255,255,255,0.1); backdrop-filter: blur(10px); text-align: center;">
+                <h3 style="margin: 0 0 20px 0; color: #FF9800; font-size: 0.95em; font-weight: 600; text-transform: uppercase; letter-spacing: 1px;">Twój cel: <span id="diet-tdee-display">---</span> kcal</h3>
+                <div style="position: relative; width: 160px; height: 160px; margin: 0 auto 25px auto;">
                     <!-- SVG Circle Progress -->
-                    <svg width="150" height="150" viewBox="0 0 150 150">
-                        <circle cx="75" cy="75" r="65" fill="none" stroke="#333" stroke-width="12" />
-                        <circle id="diet-kcal-ring" cx="75" cy="75" r="65" fill="none" stroke="#FF9800" stroke-width="12" stroke-dasharray="408.4" stroke-dashoffset="408.4" stroke-linecap="round" style="transition: stroke-dashoffset 1s ease-out; transform: rotate(-90deg); transform-origin: 50% 50%;" />
+                    <svg width="160" height="160" viewBox="0 0 160 160">
+                        <circle cx="80" cy="80" r="70" fill="none" stroke="rgba(255,255,255,0.05)" stroke-width="12" />
+                        <circle id="diet-kcal-ring" cx="80" cy="80" r="70" fill="none" stroke="#FF9800" stroke-width="12" stroke-dasharray="439.8" stroke-dashoffset="439.8" stroke-linecap="round" style="transition: stroke-dashoffset 1s ease-out; transform: rotate(-90deg); transform-origin: 50% 50%;" />
                     </svg>
-                    <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px;">
-                        <div style="font-size: 0.8em; color: #aaa; text-transform: uppercase; font-weight: bold;">Zjedzono</div>
-                        <div id="diet-kcal-consumed" style="font-size: 2.2em; font-weight: bold; color: #fff; line-height: 1;">0</div>
-                        <div style="font-size: 0.9em; color: #aaa; font-weight: bold;">kcal</div>
+                    <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px;">
+                        <div style="font-size: 0.75em; color: #8E8E93; text-transform: uppercase; font-weight: 600; letter-spacing: 0.5px;">Zjedzono</div>
+                        <div id="diet-kcal-consumed" style="font-size: 2.2em; font-weight: 800; color: #fff; line-height: 1; letter-spacing: -1px;">0</div>
+                        <div style="font-size: 0.85em; color: #8E8E93; font-weight: 500;">kcal</div>
                     </div>
                 </div>
                 
                 <!-- Makro -->
-                <div style="display: flex; justify-content: space-around; margin-top: 20px; border-top: 1px solid #333; padding-top: 15px;">
-                    <div style="text-align: center;">
-                        <div style="color: #4CAF50; font-size: 1.3em; font-weight: bold;" id="diet-protein-display">0g</div>
-                        <div style="font-size: 0.9em; color: #ccc; margin-top: 3px;">Białko</div>
+                <div style="display: flex; justify-content: space-between; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 20px; gap: 10px;">
+                    <div style="flex: 1; background: rgba(255,255,255,0.03); border-radius: 12px; padding: 10px; border: 1px solid rgba(255,255,255,0.05);">
+                        <div style="color: #fff; font-size: 1.1em; font-weight: 700;" id="diet-protein-display">0g</div>
+                        <div style="font-size: 0.75em; color: #8E8E93; margin-top: 4px; text-transform: uppercase; letter-spacing: 0.5px;">Białko</div>
                     </div>
-                    <div style="text-align: center;">
-                        <div style="color: #2196F3; font-size: 1.3em; font-weight: bold;" id="diet-carbs-display">0g</div>
-                        <div style="font-size: 0.9em; color: #ccc; margin-top: 3px;">Węgle</div>
+                    <div style="flex: 1; background: rgba(255,255,255,0.03); border-radius: 12px; padding: 10px; border: 1px solid rgba(255,255,255,0.05);">
+                        <div style="color: #fff; font-size: 1.1em; font-weight: 700;" id="diet-carbs-display">0g</div>
+                        <div style="font-size: 0.75em; color: #8E8E93; margin-top: 4px; text-transform: uppercase; letter-spacing: 0.5px;">Węgle</div>
                     </div>
-                    <div style="text-align: center;">
-                        <div style="color: #E91E63; font-size: 1.3em; font-weight: bold;" id="diet-fat-display">0g</div>
-                        <div style="font-size: 0.9em; color: #ccc; margin-top: 3px;">Tłuszcze</div>
+                    <div style="flex: 1; background: rgba(255,255,255,0.03); border-radius: 12px; padding: 10px; border: 1px solid rgba(255,255,255,0.05);">
+                        <div style="color: #fff; font-size: 1.1em; font-weight: 700;" id="diet-fat-display">0g</div>
+                        <div style="font-size: 0.75em; color: #8E8E93; margin-top: 4px; text-transform: uppercase; letter-spacing: 0.5px;">Tłuszcze</div>
                     </div>
                 </div>
             </div>
 
             <!-- Kamera / Skaner / Tekst zintegrowane w 1 element -->
-            <div style="margin-bottom: 30px; padding: 0 15px;">
-                <div style="background: rgba(255,255,255,0.05); padding: 15px; border-radius: 12px; border: 1px solid #FF9800; text-align: center;">
-                    <label style="color: #ccc; font-size: 0.9em; display: block; margin-bottom: 10px; font-weight: bold;">Co dzisiaj jadłeś?</label>
+            <div style="margin-bottom: 25px; padding: 0 15px;">
+                <div style="background: rgba(255,255,255,0.05); padding: 20px; border-radius: 24px; border: 1px solid rgba(255,255,255,0.1); backdrop-filter: blur(10px);">
+                    <label style="color: #fff; font-size: 0.95em; display: block; margin-bottom: 15px; font-weight: 600;">Dodaj posiłek</label>
                     
-                    <div style="display: flex; gap: 10px; margin-bottom: 15px; align-items: stretch;">
-                        <textarea id="diet-context-input" placeholder="Napisz lub podyktuj... (np. Jajecznica z 3 jaj)" style="flex: 1; padding: 12px; border-radius: 8px; border: 1px solid #555; background: #1a1a1a; color: #fff; font-size: 1em; resize: none; box-sizing: border-box; min-height: 80px;" rows="3"></textarea>
+                    <div style="display: flex; gap: 12px; margin-bottom: 15px; align-items: stretch;">
+                        <textarea id="diet-context-input" placeholder="Napisz lub podyktuj..." style="flex: 1; padding: 15px; border-radius: 16px; border: 1px solid rgba(255,255,255,0.1); background: rgba(0,0,0,0.2); color: #fff; font-size: 0.95em; resize: none; box-sizing: border-box; min-height: 80px; font-family: inherit;" rows="3"></textarea>
                         
-                        <label id="diet-attach-btn" style="cursor: pointer; color: #FF9800; background: rgba(255,152,0,0.12); border: 1px solid #FF9800; border-radius: 8px; padding: 10px 12px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; box-shadow: 0 2px 8px rgba(0,0,0,0.4); transition: transform 0.2s; min-width: 72px; flex-shrink: 0;">
-                            <span style="font-size: 1.8em; line-height: 1;">📸</span>
-                            <span style="font-size: 0.6em; font-weight: bold; color: #FF9800; text-transform: uppercase; letter-spacing: 0.5px; white-space: nowrap;">Dodaj zdjęcie</span>
+                        <label id="diet-attach-btn" style="cursor: pointer; color: #FF9800; background: rgba(255,152,0,0.1); border: 1px solid rgba(255,152,0,0.3); border-radius: 16px; padding: 10px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; transition: all 0.2s; min-width: 72px; flex-shrink: 0;">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3"/></svg>
+                            <span style="font-size: 0.65em; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; white-space: nowrap;">Zdjęcie</span>
                             <input type="file" id="diet-camera-input" accept="image/*" multiple style="display: none;">
                         </label>
                     </div>
@@ -78,68 +78,77 @@ export const DietUI = {
                         <!-- JS generated miniatures -->
                     </div>
 
-                    <button id="diet-analyze-btn" class="action-button pulse" style="width: 100%; background: linear-gradient(135deg, #FF9800, #F44336); border: none; padding: 15px; border-radius: 25px; font-size: 1.05em; font-weight: bold; cursor: pointer; color: #fff; box-shadow: 0 4px 15px rgba(255, 152, 0, 0.4);">
-                        🤖 Zapytaj AI Edwarda o kaloryczność
+                    <button id="diet-analyze-btn" class="action-button pulse" style="display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; background: #FF9800; border: none; padding: 15px; border-radius: 16px; font-size: 1em; font-weight: 600; cursor: pointer; color: #111118; transition: opacity 0.2s;">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/></svg>
+                        Analizuj z AI
                     </button>
 
-                    <div id="diet-loading" style="display: none; margin-top: 15px; color: #FF9800; font-weight: bold;">
-                        <span class="spinner" style="display: inline-block; width: 20px; height: 20px; border: 3px solid rgba(255,152,0,0.3); border-radius: 50%; border-top-color: #FF9800; animation: spin 1s ease-in-out infinite; vertical-align: middle; margin-right: 8px;"></span>
+                    <div id="diet-loading" style="display: none; margin-top: 15px; color: #FF9800; font-weight: 500; font-size: 0.9em; text-align: center;">
+                        <span class="spinner" style="display: inline-block; width: 16px; height: 16px; border: 2px solid rgba(255,152,0,0.3); border-radius: 50%; border-top-color: #FF9800; animation: spin 1s ease-in-out infinite; vertical-align: middle; margin-right: 8px;"></span>
                         <span id="diet-loading-text">Edward analizuje...</span>
                     </div>
                 </div>
             </div>
 
             <!-- Przycisk konfiguracji TDEE -->
-            <div style="text-align: center; margin-bottom: 20px;">
-                <button id="diet-config-btn" style="background: linear-gradient(135deg, #FF9800, #F57C00); border: none; color: #fff; padding: 12px 20px; border-radius: 25px; font-size: 1.05em; font-weight: bold; cursor: pointer; width: 100%; max-width: 400px; display: block; margin: 0 auto; box-shadow: 0 4px 15px rgba(255, 152, 0, 0.4);">
-                    ⚙️ Oblicz zapotrzebowanie kaloryczne
+            <div style="padding: 0 15px; margin-bottom: 30px;">
+                <button id="diet-config-btn" style="display: flex; align-items: center; justify-content: center; gap: 8px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); backdrop-filter: blur(10px); color: #fff; padding: 15px; border-radius: 16px; font-size: 0.95em; font-weight: 500; cursor: pointer; width: 100%; transition: background 0.2s;">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1Z"/></svg>
+                    Ustawienia zapotrzebowania
                 </button>
             </div>
 
             <!-- Dzisiejsze posiłki -->
-            <h3 style="margin-bottom: 15px;">Dzisiejsze posiłki</h3>
-            <div id="diet-logs-list">
-                <!-- Tu wpada lista posiłków -->
+            <div style="padding: 0 15px;">
+                <h3 style="margin: 0 0 15px 0; font-size: 1.1em; font-weight: 600; color: #fff;">Dzisiejsze posiłki</h3>
+                <div id="diet-logs-list" style="display: flex; flex-direction: column; gap: 15px;">
+                    <!-- Tu wpada lista posiłków -->
+                </div>
             </div>
 
             <!-- Wykres i Historia -->
-            <h3 style="margin-top: 30px; margin-bottom: 15px;">📊 Historia 30 dni</h3>
-            <div id="diet-history-chart" style="display: flex; align-items: flex-end; gap: 4px; overflow-x: auto; padding-bottom: 10px; height: 160px; border-bottom: 1px solid #444; margin-bottom: 20px; box-sizing: border-box;">
-                <!-- JS wyrenderuje slupki -->
+            <div style="padding: 0 15px; margin-top: 35px; margin-bottom: 20px;">
+                <h3 style="margin: 0 0 15px 0; font-size: 1.1em; font-weight: 600; color: #fff; display: flex; align-items: center; gap: 8px;">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#FF9800" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M18 17V9"/><path d="M13 17V5"/><path d="M8 17v-3"/></svg>
+                    Historia 30 dni
+                </h3>
+                <div id="diet-history-chart" style="display: flex; align-items: flex-end; gap: 6px; overflow-x: auto; padding-bottom: 15px; height: 160px; border-bottom: 1px solid rgba(255,255,255,0.05); box-sizing: border-box; scrollbar-width: none;">
+                    <!-- JS wyrenderuje slupki -->
+                </div>
             </div>
 
             <!-- Modal konfiguracji TDEE -->
-            <div id="diet-tdee-modal" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.8); z-index: 1000; justify-content: center; align-items: center; padding: 20px;">
-                <div style="background: #1e1e1e; padding: 25px; border-radius: 12px; max-width: 400px; width: 100%; position: relative; border: 1px solid #333;">
-                    <button id="diet-tdee-close" style="position: absolute; top: 15px; right: 15px; background: none; border: none; color: #fff; font-size: 1.5em; cursor: pointer;">×</button>
-                    <h3 style="margin-top: 0; color: #FF9800; margin-bottom: 20px;">Twój cel kaloryczny</h3>
+            <div id="diet-tdee-modal" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(17,17,24,0.8); backdrop-filter: blur(5px); z-index: 1000; justify-content: center; align-items: center; padding: 20px;">
+                <div style="background: rgba(255,255,255,0.08); backdrop-filter: blur(20px); padding: 30px 25px; border-radius: 24px; max-width: 400px; width: 100%; position: relative; border: 1px solid rgba(255,255,255,0.1); box-shadow: 0 20px 40px rgba(0,0,0,0.5);">
+                    <button id="diet-tdee-close" style="position: absolute; top: 20px; right: 20px; background: none; border: none; color: #8E8E93; font-size: 1.5em; cursor: pointer; transition: color 0.2s;">×</button>
+                    <h3 style="margin: 0 0 25px 0; color: #fff; font-size: 1.2em; font-weight: 600;">Cel kaloryczny</h3>
                     
-                    <div style="margin-bottom: 15px;">
-                        <label style="display: block; margin-bottom: 5px; color: #aaa; font-size: 0.9em;">Aktywność i Treningi (w tygodniu)</label>
-                        <select id="diet-tdee-activity" class="input-field" style="width: 100%; padding: 10px; background: #222; border: 1px solid #444; color: #fff; border-radius: 5px; font-size: 1.2em; font-weight: bold;">
-                            <option value="1.2">Brak aktywności (Praca siedząca)</option>
+                    <div style="margin-bottom: 20px;">
+                        <label style="display: block; margin-bottom: 8px; color: #8E8E93; font-size: 0.85em; font-weight: 500;">Aktywność i Treningi</label>
+                        <select id="diet-tdee-activity" class="input-field" style="width: 100%; padding: 12px 15px; background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.1); color: #fff; border-radius: 12px; font-size: 1em; outline: none; appearance: none;">
+                            <option value="1.2">Praca siedząca (Brak treningów)</option>
                             <option value="1.375">Niska (1-2 treningi)</option>
                             <option value="1.55" selected>Umiarkowana (3-4 treningi)</option>
                             <option value="1.725">Wysoka (5-6 treningów)</option>
-                            <option value="1.9">Bardzo wysoka (Fizyczna praca + treningi)</option>
+                            <option value="1.9">Bardzo wysoka (Praca fiz. + treningi)</option>
                         </select>
                     </div>
 
-                    <div style="margin-bottom: 20px;">
-                        <label style="display: block; margin-bottom: 5px; color: #aaa; font-size: 0.9em;">Obecny cel</label>
-                        <select id="diet-tdee-goal" class="input-field" style="width: 100%; padding: 10px; background: #222; border: 1px solid #444; color: #fff; border-radius: 5px; font-size: 1.2em; font-weight: bold;">
+                    <div style="margin-bottom: 25px;">
+                        <label style="display: block; margin-bottom: 8px; color: #8E8E93; font-size: 0.85em; font-weight: 500;">Obecny cel</label>
+                        <select id="diet-tdee-goal" class="input-field" style="width: 100%; padding: 12px 15px; background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.1); color: #fff; border-radius: 12px; font-size: 1em; outline: none; appearance: none;">
                             <option value="cut">Redukcja (-500 kcal)</option>
                             <option value="maintenance" selected>Utrzymanie wagi</option>
                             <option value="bulk">Budowa masy (+300 kcal)</option>
                         </select>
                     </div>
 
-                    <p style="font-size: 0.85em; color: #888; margin-bottom: 20px; line-height: 1.4;">
-                        Kalkulator pobierze Twoją ostatnią wagę z modułu "Pomiary Ciała" i na jej podstawie wyliczy propozycję kalorii (wzór Mifflin-St Jeor).
+                    <p style="font-size: 0.8em; color: #8E8E93; margin-bottom: 25px; line-height: 1.5;">
+                        Zapotrzebowanie wyliczane jest ze wzoru Mifflin-St Jeor na podstawie Twojej najnowszej wagi w sekcji Pomiary.
                     </p>
 
-                    <button id="diet-tdee-save" style="width: 100%; background: #FF9800; color: #000; border: none; padding: 12px; border-radius: 5px; font-weight: bold; cursor: pointer;">
-                        Przelicz i Zapisz
+                    <button id="diet-tdee-save" style="width: 100%; background: #FF9800; color: #111118; border: none; padding: 15px; border-radius: 12px; font-weight: 600; font-size: 1em; cursor: pointer; transition: opacity 0.2s;">
+                        Zapisz ustawienia
                     </button>
                 </div>
             </div>
@@ -251,35 +260,44 @@ export const DietUI = {
                     item.className = 'diet-log-item';
                     item.style.cssText = 'margin-bottom: 16px; display: block;';
                     item.innerHTML = `
-                        <div style="background-color: #1C1C1E; border: 1px solid #333333; border-radius: 16px; padding: 16px; box-sizing: border-box;">
-                          <div style="display: flex; gap: 16px; margin-bottom: 16px;">
+                        <div style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 20px; padding: 20px; backdrop-filter: blur(10px); box-sizing: border-box;">
+                          <div style="display: flex; gap: 16px; margin-bottom: 20px;">
                             ${log.thumbnail ? 
-                                '<img id="diet-list-thumb-' + log.id + '" style="width: 64px; height: 64px; object-fit: cover; border-radius: 12px; flex-shrink: 0;">' 
-                                : '<div style="width: 64px; height: 64px; background-color: #2C2C2E; border-radius: 12px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 32px;">🥞</div>'
+                                '<img id="diet-list-thumb-' + log.id + '" style="width: 60px; height: 60px; object-fit: cover; border-radius: 14px; flex-shrink: 0; box-shadow: 0 4px 10px rgba(0,0,0,0.3);">' 
+                                : '<div style="width: 60px; height: 60px; background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.05); border-radius: 14px; flex-shrink: 0; display: flex; align-items: center; justify-content: center;"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#666" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2Z"/><path d="M12 12a4 4 0 1 0 4-4A4 4 0 0 0 12 12Z"/></svg></div>'
                             }
                             <div style="flex-grow: 1; display: flex; justify-content: space-between; align-items: flex-start; gap: 12px;">
-                              <h3 style="margin: 0; font-size: 16px; font-weight: 600; color: #FFFFFF; line-height: 1.3;">${log.food_name}</h3>
-                              <span style="color: #FF9800; font-weight: 600; font-size: 16px; white-space: nowrap;">${log.calories} kcal</span>
+                              <h3 style="margin: 0; font-size: 1.05em; font-weight: 600; color: #fff; line-height: 1.4;">${log.food_name}</h3>
+                              <span style="color: #FF9800; font-weight: 700; font-size: 1em; white-space: nowrap;">${log.calories} kcal</span>
                             </div>
                           </div>
                           
+                          <!-- Macros -->
+                          <div style="display: flex; gap: 8px; margin-bottom: 20px;">
+                            <div style="flex: 1; background: rgba(255,255,255,0.03); border-radius: 10px; padding: 8px; text-align: center; border: 1px solid rgba(255,255,255,0.02);">
+                                <div style="color: #fff; font-weight: 600; font-size: 0.9em;">${log.protein}g</div>
+                                <div style="color: #8E8E93; font-size: 0.65em; text-transform: uppercase; margin-top: 2px;">Białko</div>
+                            </div>
+                            <div style="flex: 1; background: rgba(255,255,255,0.03); border-radius: 10px; padding: 8px; text-align: center; border: 1px solid rgba(255,255,255,0.02);">
+                                <div style="color: #fff; font-weight: 600; font-size: 0.9em;">${log.carbs}g</div>
+                                <div style="color: #8E8E93; font-size: 0.65em; text-transform: uppercase; margin-top: 2px;">Węgle</div>
+                            </div>
+                            <div style="flex: 1; background: rgba(255,255,255,0.03); border-radius: 10px; padding: 8px; text-align: center; border: 1px solid rgba(255,255,255,0.02);">
+                                <div style="color: #fff; font-weight: 600; font-size: 0.9em;">${log.fat}g</div>
+                                <div style="color: #8E8E93; font-size: 0.65em; text-transform: uppercase; margin-top: 2px;">Tłuszcz</div>
+                            </div>
+                          </div>
+
                           <!-- Action Buttons -->
-                          <div style="display: flex; gap: 12px; margin-bottom: 16px;">
-                            <button class="clone-diet-btn" data-log='${JSON.stringify(log).replace(/'/g, "&apos;")}' style="flex: 1; background-color: transparent; border: 1px solid #0A84FF; color: #0A84FF; border-radius: 10px; padding: 10px; font-size: 14px; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 6px; cursor: pointer; -webkit-tap-highlight-color: transparent;">
+                          <div style="display: flex; gap: 10px;">
+                            <button class="clone-diet-btn" data-log='${JSON.stringify(log).replace(/'/g, "&apos;")}' style="flex: 1; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: #fff; border-radius: 12px; padding: 12px; font-size: 0.85em; font-weight: 500; display: flex; align-items: center; justify-content: center; gap: 8px; cursor: pointer; transition: background 0.2s;">
                               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
                               Klonuj
                             </button>
-                            <button class="delete-diet-btn" data-id="${log.id}" style="flex: 1; background-color: transparent; border: 1px solid #FF453A; color: #FF453A; border-radius: 10px; padding: 10px; font-size: 14px; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 6px; cursor: pointer; -webkit-tap-highlight-color: transparent;">
-                              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                            <button class="delete-diet-btn" data-id="${log.id}" style="flex: 1; background: rgba(255,69,58,0.1); border: 1px solid rgba(255,69,58,0.3); color: #FF453A; border-radius: 12px; padding: 12px; font-size: 0.85em; font-weight: 500; display: flex; align-items: center; justify-content: center; gap: 8px; cursor: pointer; transition: background 0.2s;">
+                              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/></svg>
                               Usuń
                             </button>
-                          </div>
-
-                          <!-- Macros -->
-                          <div style="display: flex; justify-content: space-between; border-top: 1px solid #333333; padding-top: 14px; font-size: 14px; font-weight: 600;">
-                            <span style="color: #30D158;">B: ${log.protein}g</span>
-                            <span style="color: #0A84FF;">W: ${log.carbs}g</span>
-                            <span style="color: #FF453A;">T: ${log.fat}g</span>
                           </div>
                         </div>
                     `;

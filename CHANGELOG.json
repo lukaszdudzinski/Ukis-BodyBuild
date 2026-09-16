@@ -1,5 +1,12 @@
 [
   {
+    "version": "v2026.9.16.05",
+    "date": "2026-09-16",
+    "changes": [
+      "💎 Re-design modułu Diety na Glassmorphism i SVG\\n- Usunięto wszystkie emoji z Diety\\n- Przebudowano kafelki posiłków na blur i półprzezroczystość\\n- Makroskładniki (B, W, T) mają teraz swoje zgrabne mini-kafelki\\n- Wyrównano design Diety z estetyką nowego modułu Treningowego"
+    ]
+  },
+  {
     "version": "v2026.9.16.04",
     "date": "2026-09-16",
     "changes": [
