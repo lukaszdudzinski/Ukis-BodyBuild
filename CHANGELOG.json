@@ -1,5 +1,12 @@
 [
   {
+    "version": "v2026.9.16.01",
+    "date": "2026-09-16",
+    "changes": [
+      "🐞 Hotfix Krytyczny: Przywrócono migrację kolumny 'type' w bazie danych\\n- Naprawiono błąd 'table trainings has no column named type' przy przywracaniu kopii zapasowej\\n- Poprzednia sesja błędnie usunęła migrację ALTER TABLE — istniejące bazy użytkowników straciły kolumnę type\\n- Migracje są bezpieczne: try/catch ignoruje błąd gdy kolumna już istnieje w nowych bazach"
+    ]
+  },
+  {
     "version": "v2026.9.14.01",
     "date": "2026-09-14",
     "changes": [
