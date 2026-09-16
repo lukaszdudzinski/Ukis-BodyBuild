@@ -33,31 +33,34 @@ export const PremiumUI = {
         if (existing) existing.remove();
 
         const html = `
-            <div id="premium-paywall-modal" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 100000; display: flex; justify-content: center; align-items: center; padding: 20px; box-sizing: border-box; backdrop-filter: blur(4px);">
-                <div style="background: #1e1e1e; border: 1px solid #00BFFF; border-radius: 16px; width: 100%; max-width: 420px; text-align: center; overflow: hidden; display: flex; flex-direction: column; box-shadow: 0 10px 40px rgba(0,191,255,0.2);">
+            <div id="premium-paywall-modal" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(17,17,24,0.85); backdrop-filter: blur(8px); z-index: 100000; display: flex; justify-content: center; align-items: center; padding: 20px; box-sizing: border-box; opacity: 0; transition: opacity 0.3s; animation: fadeIn 0.3s forwards;">
+                <div style="background: rgba(255,255,255,0.05); border: 1px solid rgba(0, 191, 255, 0.3); border-radius: 24px; width: 100%; max-width: 420px; text-align: center; overflow: hidden; display: flex; flex-direction: column; box-shadow: 0 20px 40px rgba(0,0,0,0.5);">
                     
-                    <div style="background: linear-gradient(135deg, rgba(0,191,255,0.2) 0%, rgba(30,30,30,1) 100%); padding: 30px 20px 20px; position: relative;">
-                        <button onclick="document.getElementById('premium-paywall-modal').remove()" style="position: absolute; top: 10px; right: 15px; background: transparent; border: none; color: #aaa; font-size: 2em; cursor: pointer;">&times;</button>
-                        <div style="font-size: 3em; margin-bottom: 10px;">☕🤖</div>
-                        <h3 style="color: #00BFFF; margin: 0 0 10px 0; font-size: 1.4em; text-transform: uppercase; letter-spacing: 1px;">Czas na kawę!</h3>
-                        <p style="color: #ccc; font-size: 0.95em; line-height: 1.5; margin: 0;">Twój 7-dniowy okres próbny na funkcje AI dobiegł końca.</p>
+                    <div style="background: linear-gradient(135deg, rgba(0,191,255,0.1) 0%, rgba(17,17,24,0) 100%); padding: 40px 20px 20px; position: relative; border-bottom: 1px solid rgba(255,255,255,0.05);">
+                        <button onclick="document.getElementById('premium-paywall-modal').remove()" style="position: absolute; top: 20px; right: 20px; background: rgba(255,255,255,0.1); border: none; color: #fff; width: 32px; height: 32px; border-radius: 16px; font-size: 1.2em; display: flex; align-items: center; justify-content: center; cursor: pointer;">&times;</button>
+                        <div style="display: flex; justify-content: center; margin-bottom: 20px; color: #00BFFF;">
+                            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M17 8h1a4 4 0 1 1 0 8h-1"/><path d="M3 8h14v9a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4Z"/><line x1="6" y1="2" x2="6" y2="4"/><line x1="10" y1="2" x2="10" y2="4"/><line x1="14" y1="2" x2="14" y2="4"/></svg>
+                        </div>
+                        <h3 style="color: #00BFFF; margin: 0 0 12px 0; font-size: 1.5em; font-weight: 700;">Czas na wsparcie</h3>
+                        <p style="color: #8E8E93; font-size: 0.95em; line-height: 1.5; margin: 0;">Twój 7-dniowy okres próbny na funkcje AI dobiegł końca.</p>
                     </div>
 
-                    <div style="padding: 20px;">
-                        <p style="color: #fff; font-size: 0.95em; line-height: 1.5; text-align: left; margin-bottom: 20px;">
-                            Jeśli chcesz korzystać z narzędzi AI w aplikacji i rejestrować kaloryczność posiłków ze zdjęć oraz analizować dane z trenerem Edwardem, możesz to robić wspierając projekt.<br><br>
-                            <b style="color: #FF9800;">Dziękujemy za każde wsparcie!</b>
+                    <div style="padding: 25px 20px;">
+                        <p style="color: #fff; font-size: 0.95em; line-height: 1.5; text-align: left; margin-bottom: 25px;">
+                            Jeśli chcesz korzystać z narzędzi AI w aplikacji i rejestrować kaloryczność posiłków ze zdjęć oraz analizować dane z Trenerem Edwardem, możesz to robić wspierając projekt.<br><br>
+                            <b style="color: #FF9800; font-weight: 600;">Dziękujemy za każde wsparcie!</b>
                         </p>
                         
-                        <a href="https://suppi.pl/ukidives" target="_blank" class="action-button pulse" style="display: block; width: 100%; background: #FF9800; border: none; color: #000; padding: 14px; font-weight: bold; font-size: 1.1em; border-radius: 8px; text-decoration: none; margin-bottom: 20px; box-sizing: border-box;">
-                            ☕ Postaw Kawę
+                        <a href="https://suppi.pl/ukidives" target="_blank" style="display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; background: rgba(255, 152, 0, 0.15); border: 1px solid rgba(255, 152, 0, 0.3); color: #FF9800; padding: 14px; font-weight: 600; font-size: 1.05em; border-radius: 12px; text-decoration: none; margin-bottom: 25px; box-sizing: border-box;">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 8h1a4 4 0 1 1 0 8h-1"/><path d="M3 8h14v9a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4Z"/><line x1="6" y1="2" x2="6" y2="4"/><line x1="10" y1="2" x2="10" y2="4"/><line x1="14" y1="2" x2="14" y2="4"/></svg>
+                            Wesprzyj Projekt
                         </a>
 
-                        <div style="border-top: 1px solid #333; padding-top: 20px;">
-                            <label style="display: block; color: #888; font-size: 0.85em; margin-bottom: 8px; text-align: left;">Masz już hasło ze wsparcia?</label>
+                        <div style="border-top: 1px solid rgba(255,255,255,0.05); padding-top: 25px;">
+                            <label style="display: block; color: #8E8E93; font-size: 0.85em; margin-bottom: 10px; text-align: left;">Masz już hasło ze wsparcia?</label>
                             <div style="display: flex; gap: 8px;">
-                                <input type="text" id="premium-token-input" placeholder="Wpisz hasło..." style="flex: 1; padding: 12px; background: #222; border: 1px solid #444; border-radius: 8px; color: #fff; outline: none;">
-                                <button onclick="window.PremiumUI.verifyToken()" class="action-button" style="background: #2ECC71; border: none; color: #fff; padding: 0 15px; font-weight: bold; border-radius: 8px; cursor: pointer;">Odblokuj</button>
+                                <input type="text" id="premium-token-input" placeholder="Wpisz hasło..." style="flex: 1; padding: 12px; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; color: #fff; outline: none;">
+                                <button onclick="window.PremiumUI.verifyToken()" style="background: rgba(46, 204, 113, 0.15); border: 1px solid rgba(46, 204, 113, 0.3); color: #2ECC71; padding: 0 18px; font-weight: 600; border-radius: 12px; cursor: pointer;">Odblokuj</button>
                             </div>
                         </div>
                     </div>
@@ -90,34 +93,40 @@ export const PremiumUI = {
         
         if (status.isProToken) {
             banner.innerHTML = `
-                <div style="background: linear-gradient(135deg, rgba(255, 215, 0, 0.1) 0%, rgba(255, 215, 0, 0.05) 100%); border: 1px solid rgba(255, 215, 0, 0.5); padding: 10px 15px; border-radius: 12px; display: inline-flex; align-items: center; gap: 10px; box-shadow: 0 0 15px rgba(255, 215, 0, 0.1);">
-                    <span style="font-size: 1.5em; text-shadow: 0 0 10px rgba(255, 215, 0, 0.8);">👑</span>
+                <div style="background: rgba(255, 215, 0, 0.05); border: 1px solid rgba(255, 215, 0, 0.3); padding: 12px 16px; border-radius: 16px; display: inline-flex; align-items: center; gap: 12px; backdrop-filter: blur(10px);">
+                    <div style="color: #FFD700; display: flex; align-items: center; justify-content: center;">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 4h20"/><path d="m2 8 3-4"/><path d="m22 8-3-4"/><path d="m2 20 3-12h14l3 12Z"/><path d="M12 16v-4"/><path d="m8 16 4-4"/><path d="m16 16-4-4"/></svg>
+                    </div>
                     <div style="text-align: left;">
-                        <div style="color: #FFD700; font-weight: bold; font-size: 1.05em;">Wersja PRO Aktywna</div>
-                        <div style="color: #aaa; font-size: 0.85em;">Wszystkie funkcje AI odblokowane. Dziękujemy!</div>
+                        <div style="color: #FFD700; font-weight: 600; font-size: 1.05em;">Wersja PRO Aktywna</div>
+                        <div style="color: #8E8E93; font-size: 0.85em;">Wszystkie funkcje AI odblokowane. Dziękujemy!</div>
                     </div>
                 </div>
             `;
         } else if (status.hasAccess) {
             banner.innerHTML = `
-                <div style="background: linear-gradient(135deg, rgba(0, 191, 255, 0.1) 0%, rgba(0, 191, 255, 0.05) 100%); border: 1px dashed rgba(0, 191, 255, 0.5); padding: 10px 15px; border-radius: 12px; display: inline-flex; align-items: center; gap: 10px;">
-                    <span style="font-size: 1.5em;">⏳</span>
-                    <div style="text-align: left;">
-                        <div style="color: #00BFFF; font-weight: bold; font-size: 1.05em;">Okres Próbny AI</div>
-                        <div style="color: #ccc; font-size: 0.85em;">Pozostało dni: <strong style="color: #fff;">${status.daysLeft}</strong></div>
+                <div style="background: rgba(0, 191, 255, 0.05); border: 1px solid rgba(0, 191, 255, 0.3); padding: 12px 16px; border-radius: 16px; display: inline-flex; align-items: center; gap: 12px; backdrop-filter: blur(10px);">
+                    <div style="color: #00BFFF; display: flex; align-items: center; justify-content: center;">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
                     </div>
-                    <button onclick="window.PremiumUI.showPremiumPaywall()" style="background: rgba(255, 152, 0, 0.2); border: 1px solid #FF9800; color: #FF9800; border-radius: 6px; padding: 6px 12px; margin-left: 10px; cursor: pointer; font-size: 0.85em; font-weight: bold;">Odblokuj PRO</button>
+                    <div style="text-align: left;">
+                        <div style="color: #00BFFF; font-weight: 600; font-size: 1.05em;">Okres Próbny AI</div>
+                        <div style="color: #8E8E93; font-size: 0.85em;">Pozostało dni: <strong style="color: #fff;">${status.daysLeft}</strong></div>
+                    </div>
+                    <button onclick="window.PremiumUI.showPremiumPaywall()" style="background: rgba(255, 152, 0, 0.15); border: 1px solid rgba(255, 152, 0, 0.3); color: #FF9800; border-radius: 8px; padding: 6px 14px; margin-left: 12px; cursor: pointer; font-size: 0.85em; font-weight: 600;">Odblokuj PRO</button>
                 </div>
             `;
         } else {
             banner.innerHTML = `
-                <div style="background: rgba(231, 76, 60, 0.1); border: 1px dashed rgba(231, 76, 60, 0.5); padding: 10px 15px; border-radius: 12px; display: inline-flex; align-items: center; gap: 10px;">
-                    <span style="font-size: 1.5em; filter: grayscale(1);">🔒</span>
-                    <div style="text-align: left;">
-                        <div style="color: #E74C3C; font-weight: bold; font-size: 1.05em;">Aplikacja Light</div>
-                        <div style="color: #aaa; font-size: 0.85em;">Funkcje inteligentne AI są zablokowane.</div>
+                <div style="background: rgba(255, 69, 58, 0.05); border: 1px solid rgba(255, 69, 58, 0.3); padding: 12px 16px; border-radius: 16px; display: inline-flex; align-items: center; gap: 12px; backdrop-filter: blur(10px);">
+                    <div style="color: #FF453A; display: flex; align-items: center; justify-content: center;">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
                     </div>
-                    <button onclick="window.PremiumUI.showPremiumPaywall()" style="background: #FF9800; border: none; color: #000; border-radius: 6px; padding: 6px 12px; margin-left: 10px; cursor: pointer; font-size: 0.85em; font-weight: bold;">Kup dostęp</button>
+                    <div style="text-align: left;">
+                        <div style="color: #FF453A; font-weight: 600; font-size: 1.05em;">Aplikacja Light</div>
+                        <div style="color: #8E8E93; font-size: 0.85em;">Funkcje inteligentne AI są zablokowane.</div>
+                    </div>
+                    <button onclick="window.PremiumUI.showPremiumPaywall()" style="background: rgba(255, 152, 0, 0.15); border: 1px solid rgba(255, 152, 0, 0.3); color: #FF9800; border-radius: 8px; padding: 6px 14px; margin-left: 12px; cursor: pointer; font-size: 0.85em; font-weight: 600;">Odblokuj PRO</button>
                 </div>
             `;
         }

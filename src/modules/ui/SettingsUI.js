@@ -14,7 +14,10 @@ export const SettingsUI = {
             dataSection.innerHTML = `
                 <h4 style="margin-top: 20px;">Pomoc i Samouczek</h4>
                 <div class="form-full-width" style="margin-bottom: 20px;">
-                    <button id="reset-tutorial-btn" class="action-button" style="width: 100%; margin-bottom: 10px; background-color: #FF9800; border-color: #FF9800; color: #fff;">🔄 Zobacz ponownie powitanie (Reset)</button>
+                    <button id="reset-tutorial-btn" style="width: 100%; margin-bottom: 10px; background: rgba(255, 152, 0, 0.15); border: 1px solid rgba(255, 152, 0, 0.3); color: #FF9800; padding: 12px; border-radius: 12px; font-weight: 600; font-size: 0.95em; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px;">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
+                        Zobacz ponownie powitanie (Reset)
+                    </button>
                 </div>
             `;
             const pwaGuide = document.getElementById('settings-pwa-guide');
@@ -104,7 +107,7 @@ export const SettingsUI = {
             return def ? `${def.icon} ${def.title}` : '';
         }).filter(b => b).join(', ');
 
-        const textToShare = `Zdobyłem ${earnedCount} odznak w Uki's BodyBuild! 🏆 Moja kolekcja: ${badgesText}. 💪 Dołącz i bij rekordy: https://lukaszdudzinski.github.io/Ukis-BodyBuild/`;
+        const textToShare = `Zdobyłem ${earnedCount} odznak w Uki's BodyBuild! Moja kolekcja: ${badgesText}. Dołącz i bij rekordy: https://lukaszdudzinski.github.io/Ukis-BodyBuild/`;
 
         const statsList = [
             { label: 'Zdobyte odznaki', value: String(earnedCount), color: '#FFD700' },

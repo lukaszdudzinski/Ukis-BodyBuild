@@ -9,63 +9,75 @@ export const TemplateBuilderUI = {
         if (!container) return;
 
         container.innerHTML = `
-            <div class="view-header" style="position: sticky; top: 0; z-index: 100; background: #121212; padding-bottom: 10px; border-bottom: 1px solid #333;">
-                <div style="display: flex; justify-content: space-between; align-items: center;">
-                    <h2 style="margin: 0; color: #00BFFF;">Kreator Planu (Koszyk)</h2>
-                    <button onclick="TemplateBuilderUI.cart = []; TemplateBuilderUI.currentEditId = null; window.switchTab('training-dashboard')" class="icon-btn" style="color: #ff4444; font-size: 1.5em; border: none; background: none; padding: 0;">&times;</button>
+            <div class="view-header" style="position: sticky; top: 0; z-index: 100; background: rgba(17,17,24,0.85); backdrop-filter: blur(10px); padding-bottom: 15px; border-bottom: 1px solid rgba(255,255,255,0.05);">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                    <h2 style="margin: 0; color: #00BFFF; font-weight: 700; font-size: 1.3em;">Kreator Planu (Koszyk)</h2>
+                    <button onclick="TemplateBuilderUI.cart = []; TemplateBuilderUI.currentEditId = null; window.switchTab('training-dashboard')" style="color: #FF453A; font-size: 1.5em; border: none; background: rgba(255,69,58,0.1); width: 32px; height: 32px; border-radius: 16px; display: flex; align-items: center; justify-content: center; cursor: pointer; line-height: 1;">&times;</button>
                 </div>
-                <div style="margin-top: 10px; display: flex; gap: 10px;">
-                    <input type="text" id="builder-template-name" placeholder="Nazwa Planu (np. Push Dół)" style="flex: 1; padding: 10px; border-radius: 8px; border: 1px solid #444; background: #222; color: #fff;">
-                    <button onclick="TemplateBuilderUI.saveTemplate()" class="action-button" style="background: #2ECC71; color: #000; border: none; font-weight: bold; border-radius: 8px; padding: 0 15px;">Zapisz</button>
+                <div style="display: flex; gap: 10px;">
+                    <input type="text" id="builder-template-name" placeholder="Nazwa Planu (np. Push Dół)" style="flex: 1; padding: 12px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1); background: rgba(0,0,0,0.3); color: #fff; font-size: 0.95em; outline: none;">
+                    <button onclick="TemplateBuilderUI.saveTemplate()" style="background: rgba(46, 204, 113, 0.15); color: #2ECC71; border: 1px solid rgba(46, 204, 113, 0.3); font-weight: 600; border-radius: 12px; padding: 0 16px; cursor: pointer; display: flex; align-items: center; gap: 6px;">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+                        Zapisz
+                    </button>
                 </div>
             </div>
 
             <!-- KOSZYK GŁÓWNY WIDOK -->
             <div id="builder-cart-area" style="padding: 15px 0;">
-                <div style="margin-bottom: 15px; display: flex; gap: 8px; align-items: center; background: rgba(255, 152, 0, 0.1); padding: 10px; border-radius: 8px; border: 1px solid rgba(255,152,0,0.3); flex-wrap: wrap;">
-                    <span style="color: #FF9800; font-size: 0.95em; width: 100%; font-weight: bold;">Zastosuj do zaznaczonych (Możesz używać przecinków dla piramid!)</span>
-                    <span style="color: #bbb; font-size: 0.8em; width: 100%; margin-bottom: 5px;">💡 Przykład: wpisz <b style="color:#fff;">3</b> serie, Powt: <b style="color:#fff;">12,10,8</b>, Kg: <b style="color:#fff;">100,110,120</b></span>
-                    <input type="number" id="builder-mass-sets" placeholder="Serie" style="width: 55px; padding: 8px; background: #222; border: 1px solid #555; color: #fff; border-radius: 6px; text-align: center;">
-                    <span style="color: #888;">x</span>
-                    <input type="text" id="builder-mass-reps" placeholder="Powt." style="width: 70px; padding: 8px; background: #222; border: 1px solid #555; color: #fff; border-radius: 6px; text-align: center;">
-                    <span style="color: #888;">@</span>
-                    <input type="text" id="builder-mass-weight" placeholder="Kg" style="width: 85px; padding: 8px; background: #222; border: 1px solid #555; color: #fff; border-radius: 6px; text-align: center;">
-                    <button onclick="TemplateBuilderUI.applyMassEdit()" style="background: #FF9800; color: #000; border: none; font-weight: bold; padding: 8px 12px; border-radius: 6px; cursor: pointer; flex-grow: 1;">Ustaw</button>
+                <div style="margin-bottom: 20px; display: flex; gap: 8px; align-items: center; background: rgba(255, 152, 0, 0.05); padding: 16px; border-radius: 16px; border: 1px solid rgba(255,152,0,0.2); flex-wrap: wrap; backdrop-filter: blur(10px);">
+                    <span style="color: #FF9800; font-size: 0.95em; width: 100%; font-weight: 600; display: flex; align-items: center; gap: 6px;">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+                        Zastosuj do zaznaczonych (Możesz używać przecinków dla piramid!)
+                    </span>
+                    <span style="color: #8E8E93; font-size: 0.85em; width: 100%; margin-bottom: 8px;">Przykład: wpisz <b style="color:#fff;">3</b> serie, Powt: <b style="color:#fff;">12,10,8</b>, Kg: <b style="color:#fff;">100,110,120</b></span>
+                    <input type="number" id="builder-mass-sets" placeholder="Serie" style="width: 55px; padding: 10px; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); color: #fff; border-radius: 8px; text-align: center; outline: none;">
+                    <span style="color: #8E8E93; font-weight: bold;">x</span>
+                    <input type="text" id="builder-mass-reps" placeholder="Powt." style="width: 70px; padding: 10px; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); color: #fff; border-radius: 8px; text-align: center; outline: none;">
+                    <span style="color: #8E8E93; font-weight: bold;">@</span>
+                    <input type="text" id="builder-mass-weight" placeholder="Kg" style="width: 85px; padding: 10px; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); color: #fff; border-radius: 8px; text-align: center; outline: none;">
+                    <button onclick="TemplateBuilderUI.applyMassEdit()" style="background: rgba(255, 152, 0, 0.15); color: #FF9800; border: 1px solid rgba(255,152,0,0.3); font-weight: 600; padding: 10px 14px; border-radius: 8px; cursor: pointer; flex-grow: 1;">Ustaw</button>
                 </div>
 
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-                    <h4 style="margin: 0; color: #aaa;">Twoje ćwiczenia (Koszyk)</h4>
-                    <button onclick="TemplateBuilderUI.openCatalogModal()" style="background: #00BFFF; color: #000; border: none; padding: 8px 15px; border-radius: 20px; font-weight: bold; font-size: 0.9em; cursor: pointer;">+ Dodaj ćwiczenie</button>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                    <h4 style="margin: 0; color: #8E8E93; font-weight: 600;">Twoje ćwiczenia</h4>
+                    <button onclick="TemplateBuilderUI.openCatalogModal()" style="background: rgba(0, 191, 255, 0.15); color: #00BFFF; border: 1px solid rgba(0,191,255,0.3); padding: 8px 16px; border-radius: 20px; font-weight: 600; font-size: 0.9em; cursor: pointer; display: flex; align-items: center; gap: 6px;">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                        Dodaj ćwiczenie
+                    </button>
                 </div>
 
-                <div id="builder-cart-list" style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 30px;">
+                <div id="builder-cart-list" style="display: flex; flex-direction: column; gap: 12px; margin-bottom: 35px;">
                     <!-- Pojawią się tu wybrane ćwiczenia -->
                 </div>
             </div>
 
             <!-- MODAL BAZY ĆWICZEŃ -->
-            <div id="builder-catalog-modal" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.85); z-index: 10000; justify-content: center; align-items: center; padding: 15px;">
-                <div style="background: #1e1e1e; width: 100%; max-width: 500px; border-radius: 12px; border: 1px solid #00BFFF; display: flex; flex-direction: column; max-height: 90vh;">
-                    <div style="padding: 15px 20px; border-bottom: 1px solid rgba(255, 255, 255, 0.1); display: flex; justify-content: space-between; align-items: center;">
-                        <h3 style="margin: 0; color: #00BFFF; font-size: 1.3em;">Baza Ćwiczeń</h3>
-                        <button onclick="document.getElementById('builder-catalog-modal').style.display='none'" style="background: none; border: none; color: #aaa; font-size: 1.8rem; cursor: pointer; padding: 0; line-height: 1;">&times;</button>
+            <div id="builder-catalog-modal" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(17,17,24,0.85); backdrop-filter: blur(8px); z-index: 10000; justify-content: center; align-items: center; padding: 15px;">
+                <div style="background: rgba(255,255,255,0.05); width: 100%; max-width: 500px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.1); display: flex; flex-direction: column; max-height: 90vh; box-shadow: 0 20px 40px rgba(0,0,0,0.5);">
+                    <div style="padding: 20px; border-bottom: 1px solid rgba(255, 255, 255, 0.05); display: flex; justify-content: space-between; align-items: center;">
+                        <h3 style="margin: 0; color: #00BFFF; font-size: 1.3em; font-weight: 600;">Baza Ćwiczeń</h3>
+                        <button onclick="document.getElementById('builder-catalog-modal').style.display='none'" style="background: rgba(255,255,255,0.1); border: none; color: #fff; width: 32px; height: 32px; border-radius: 16px; font-size: 1.2em; display: flex; align-items: center; justify-content: center; cursor: pointer;">&times;</button>
                     </div>
                     
-                    <div style="padding: 15px; border-bottom: 1px solid #333;">
-                        <label style="color: #aaa; font-size: 0.85em; display: block; margin-bottom: 5px;">Wyszukaj z bazy:</label>
-                        <input type="text" id="builder-search" placeholder="Szukaj ćwiczenia..." style="width: 100%; box-sizing: border-box; padding: 10px; border-radius: 8px; border: 1px solid #444; background: #222; color: #fff;" onkeyup="TemplateBuilderUI.filterCatalog()">
+                    <div style="padding: 20px; border-bottom: 1px solid rgba(255,255,255,0.05);">
+                        <label style="color: #8E8E93; font-size: 0.85em; display: block; margin-bottom: 8px;">Wyszukaj z bazy:</label>
+                        <input type="text" id="builder-search" placeholder="Szukaj ćwiczenia..." style="width: 100%; box-sizing: border-box; padding: 12px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1); background: rgba(0,0,0,0.3); color: #fff; outline: none;" onkeyup="TemplateBuilderUI.filterCatalog()">
                         
-                        <div style="margin-top: 15px;">
-                            <label style="color: #aaa; font-size: 0.85em; display: block; margin-bottom: 5px;">Lub dodaj własne ćwiczenie:</label>
-                            <div style="display: flex; gap: 5px;">
-                                <input type="text" id="builder-custom-name" placeholder="Własna nazwa..." style="flex: 1; padding: 10px; border-radius: 8px; border: 1px solid #444; background: #222; color: #fff;">
-                                <button onclick="TemplateBuilderUI.toggleCustomType()" id="builder-custom-type-btn" data-type="strength" style="background: #222; border: 1px solid #444; color: #fff; padding: 0 10px; border-radius: 8px; font-size: 1.0em; cursor: pointer; min-width: 90px; text-align: center;" title="Zmień na Cardio">🏋️ Siłowe</button>
-                                <button onclick="TemplateBuilderUI.addCustomToCart()" style="background: #2ECC71; color: #000; border: none; font-weight: bold; padding: 0 15px; border-radius: 8px; cursor: pointer;">Dodaj</button>
+                        <div style="margin-top: 20px;">
+                            <label style="color: #8E8E93; font-size: 0.85em; display: block; margin-bottom: 8px;">Lub dodaj własne ćwiczenie:</label>
+                            <div style="display: flex; gap: 8px;">
+                                <input type="text" id="builder-custom-name" placeholder="Własna nazwa..." style="flex: 1; padding: 12px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1); background: rgba(0,0,0,0.3); color: #fff; outline: none;">
+                                <button onclick="TemplateBuilderUI.toggleCustomType()" id="builder-custom-type-btn" data-type="strength" style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: #fff; padding: 0 12px; border-radius: 12px; font-size: 0.9em; cursor: pointer; min-width: 90px; text-align: center; display: flex; align-items: center; justify-content: center; gap: 4px;" title="Zmień typ">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6.5 6.5 11 11"/><path d="m21 21-1-1"/><path d="m3 3 1 1"/><path d="m18 22 4-4"/><path d="m2 6 4-4"/><path d="m3 10 7-7"/><path d="m14 21 7-7"/></svg>
+                                    Siłowe
+                                </button>
+                                <button onclick="TemplateBuilderUI.addCustomToCart()" style="background: rgba(46, 204, 113, 0.15); color: #2ECC71; border: 1px solid rgba(46,204,113,0.3); font-weight: 600; padding: 0 16px; border-radius: 12px; cursor: pointer;">Dodaj</button>
                             </div>
                         </div>
                     </div>
 
-                    <div id="builder-catalog-list" style="padding: 15px; overflow-y: auto; flex: 1; display: flex; flex-direction: column; gap: 8px;">
+                    <div id="builder-catalog-list" style="padding: 20px; overflow-y: auto; flex: 1; display: flex; flex-direction: column; gap: 10px;">
                         <!-- Lista katalogu -->
                     </div>
                 </div>
@@ -88,13 +100,13 @@ export const TemplateBuilderUI = {
         const currentType = btn.getAttribute('data-type');
         if (currentType === 'strength') {
             btn.setAttribute('data-type', 'cardio');
-            btn.innerText = '🏃 Cardio';
+            btn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 14c-2.3 0-3-1.6-3-3s.7-3 3-3"/><path d="M9 14c-2.3 0-3-1.6-3-3s.7-3 3-3"/><path d="M12 20v-4"/></svg> Cardio';
         } else if (currentType === 'cardio') {
             btn.setAttribute('data-type', 'classes');
-            btn.innerText = '🚴 Zajęcia';
+            btn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg> Zajęcia';
         } else {
             btn.setAttribute('data-type', 'strength');
-            btn.innerText = '🏋️ Siłowe';
+            btn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6.5 6.5 11 11"/><path d="m21 21-1-1"/><path d="m3 3 1 1"/><path d="m18 22 4-4"/><path d="m2 6 4-4"/><path d="m3 10 7-7"/><path d="m14 21 7-7"/></svg> Siłowe';
         }
     },
 
@@ -136,9 +148,9 @@ export const TemplateBuilderUI = {
         fullCatalog.forEach(exName => {
             const escapedNameForData = exName.replace(/"/g, '&quot;');
             const escapedNameForJS = exName.replace(/'/g, "\\'").replace(/"/g, '&quot;');
-            html += `<div class="builder-catalog-item" data-name="${escapedNameForData}" onclick="TemplateBuilderUI.addToCart('${escapedNameForJS}')" style="background: #222; padding: 12px 15px; border-radius: 8px; border: 1px solid #333; cursor: pointer; display: flex; justify-content: space-between; align-items: center;">
-                <span style="color: #ccc; font-size: 0.95em;">${exName}</span>
-                <span style="color: #00BFFF; font-weight: bold; font-size: 1.2em;">+</span>
+            html += `<div class="builder-catalog-item" data-name="${escapedNameForData}" onclick="TemplateBuilderUI.addToCart('${escapedNameForJS}')" style="background: rgba(255,255,255,0.03); padding: 14px 16px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05); cursor: pointer; display: flex; justify-content: space-between; align-items: center; transition: 0.2s;">
+                <span style="color: #fff; font-size: 0.95em; font-weight: 500;">${exName}</span>
+                <span style="color: #00BFFF; display: flex; align-items: center; justify-content: center; background: rgba(0, 191, 255, 0.1); width: 28px; height: 28px; border-radius: 14px;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></span>
             </div>`;
         });
         list.innerHTML = html;
@@ -268,23 +280,27 @@ export const TemplateBuilderUI = {
                 setsDesc = `<span style="color: #ff4444; font-size: 0.85em; margin-top: 5px; display: block;">Brak ustawionych serii</span>`;
             }
             
-            const icon = ex.type === 'classes' ? '🚴' : (ex.type === 'cardio' ? '🏃' : '🏋️');
+            const iconSvg = ex.type === 'classes' 
+                ? '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>'
+                : (ex.type === 'cardio' ? '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 14c-2.3 0-3-1.6-3-3s.7-3 3-3"/><path d="M9 14c-2.3 0-3-1.6-3-3s.7-3 3-3"/><path d="M12 20v-4"/></svg>' : '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6.5 6.5 11 11"/><path d="m21 21-1-1"/><path d="m3 3 1 1"/><path d="m18 22 4-4"/><path d="m2 6 4-4"/><path d="m3 10 7-7"/><path d="m14 21 7-7"/></svg>');
 
             html += `
-                <div style="background: rgba(0, 191, 255, 0.05); border: 1px solid #00BFFF; padding: 12px; border-radius: 8px; display: flex; align-items: center; justify-content: space-between;">
-                    <div style="display: flex; align-items: center; margin-right: 10px;">
-                        <input type="checkbox" id="builder-select-${index}" ${ex.sets.length === 0 ? 'checked' : ''} style="width: 20px; height: 20px; accent-color: #00BFFF; cursor: pointer;">
+                <div style="background: rgba(0, 191, 255, 0.05); border: 1px solid rgba(0, 191, 255, 0.2); padding: 16px; border-radius: 12px; display: flex; align-items: center; justify-content: space-between; backdrop-filter: blur(10px);">
+                    <div style="display: flex; align-items: center; margin-right: 12px;">
+                        <input type="checkbox" id="builder-select-${index}" ${ex.sets.length === 0 ? 'checked' : ''} style="width: 22px; height: 22px; accent-color: #00BFFF; cursor: pointer;">
                     </div>
                     <div style="flex: 1;">
-                        <div style="color: #fff; font-weight: bold; font-size: 1.0em;">${index + 1}. ${icon} ${ex.name}</div>
+                        <div style="color: #fff; font-weight: 600; font-size: 1.0em; display: flex; align-items: center; gap: 8px;">
+                            ${index + 1}. <span style="color: #00BFFF; display: flex; align-items: center;">${iconSvg}</span> ${ex.name}
+                        </div>
                         ${setsDesc}
                     </div>
                     <div style="display: flex; gap: 8px; align-items: center;">
-                        <div style="display: flex; flex-direction: column; gap: 4px;">
-                            <button onclick="TemplateBuilderUI.moveUp(${index})" style="background: #333; border: none; color: #fff; padding: 4px 8px; border-radius: 4px; font-size: 0.8em;">▲</button>
-                            <button onclick="TemplateBuilderUI.moveDown(${index})" style="background: #333; border: none; color: #fff; padding: 4px 8px; border-radius: 4px; font-size: 0.8em;">▼</button>
+                        <div style="display: flex; flex-direction: column; gap: 6px;">
+                            <button onclick="TemplateBuilderUI.moveUp(${index})" style="background: rgba(255,255,255,0.1); border: none; color: #fff; padding: 6px; border-radius: 6px; display: flex; align-items: center; justify-content: center; cursor: pointer;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"/></svg></button>
+                            <button onclick="TemplateBuilderUI.moveDown(${index})" style="background: rgba(255,255,255,0.1); border: none; color: #fff; padding: 6px; border-radius: 6px; display: flex; align-items: center; justify-content: center; cursor: pointer;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></button>
                         </div>
-                        <button onclick="TemplateBuilderUI.removeFromCart(${index})" style="background: rgba(255, 0, 0, 0.2); border: 1px solid #ff4444; color: #ff4444; padding: 8px 12px; border-radius: 6px; font-weight: bold;">X</button>
+                        <button onclick="TemplateBuilderUI.removeFromCart(${index})" style="background: rgba(255, 69, 58, 0.15); border: 1px solid rgba(255, 69, 58, 0.3); color: #FF453A; width: 36px; height: 36px; border-radius: 8px; display: flex; align-items: center; justify-content: center; cursor: pointer;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
                     </div>
                 </div>
             `;

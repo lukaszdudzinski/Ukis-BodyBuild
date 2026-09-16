@@ -14,18 +14,27 @@ export const DiagnosticsUI = {
         if (!wrapper) return;
 
         wrapper.innerHTML = `
-            <div style="background: rgba(0,0,0,0.3); padding: 15px; border-radius: 8px; border: 1px solid rgba(255,152,0,0.3); margin-bottom: 20px;">
-                <h3 style="color: #FF9800; margin-top: 0;">📦 Pełne Archiwum Bazy Danych</h3>
-                <p style="font-size: 0.9em; color: #ccc;">Utwórz kompletną kopię bezpieczeństwa (pomiary, treningi, szablony, dieta, raporty AI, awatar i ustawienia) lub przywróć całą aplikację z pliku archiwum JSON. <br><span id="db-size-display" style="color: #00BFFF; font-weight: bold;">Szacowanie rozmiaru bazy...</span></p>
-                <div style="display: flex; gap: 10px; margin-top: 15px;">
-                    <button id="db-export-btn" style="flex: 1; padding: 13px 10px; background: #222; border: 1px solid #00BFFF; color: #00BFFF; border-radius: 5px; cursor: pointer; font-size: 1em; font-weight: bold; text-align: center;">📦 Utwórz Archiwum</button>
-                    <button id="db-import-btn" style="flex: 1; padding: 13px 10px; background: #222; border: 1px solid #FF9800; color: #FF9800; border-radius: 5px; cursor: pointer; font-size: 1em; font-weight: bold; text-align: center;">📥 Przywróć z Pliku</button>
+            <div style="background: rgba(255, 152, 0, 0.05); padding: 20px; border-radius: 16px; border: 1px solid rgba(255,152,0,0.3); margin-bottom: 25px; backdrop-filter: blur(10px);">
+                <h3 style="color: #FF9800; margin-top: 0; display: flex; align-items: center; gap: 8px; font-weight: 600;">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
+                    Pełne Archiwum Bazy Danych
+                </h3>
+                <p style="font-size: 0.9em; color: #8E8E93; line-height: 1.5;">Utwórz kompletną kopię bezpieczeństwa (pomiary, treningi, szablony, dieta, raporty AI, awatar i ustawienia) lub przywróć całą aplikację z pliku archiwum JSON. <br><span id="db-size-display" style="color: #00BFFF; font-weight: 600;">Szacowanie rozmiaru bazy...</span></p>
+                <div style="display: flex; gap: 12px; margin-top: 20px;">
+                    <button id="db-export-btn" style="flex: 1; padding: 14px 10px; background: rgba(0, 191, 255, 0.15); border: 1px solid rgba(0, 191, 255, 0.3); color: #00BFFF; border-radius: 12px; cursor: pointer; font-size: 0.95em; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 6px;">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                        Utwórz Archiwum
+                    </button>
+                    <button id="db-import-btn" style="flex: 1; padding: 14px 10px; background: rgba(255, 152, 0, 0.15); border: 1px solid rgba(255, 152, 0, 0.3); color: #FF9800; border-radius: 12px; cursor: pointer; font-size: 0.95em; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 6px;">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                        Przywróć z Pliku
+                    </button>
                     <input type="file" id="db-import-file" accept=".json" style="display: none;">
                 </div>
                 
-                <div style="margin-top: 15px;">
-                    <label style="display: block; color: #ccc; font-size: 0.9em; margin-bottom: 5px;">Częstotliwość propozycji archiwizacji:</label>
-                    <select id="backup-frequency-select" style="width: 100%; padding: 10px; background: #222; border: 1px solid #444; border-radius: 5px; color: #fff; font-size: 1em; cursor: pointer;">
+                <div style="margin-top: 20px;">
+                    <label style="display: block; color: #8E8E93; font-size: 0.9em; margin-bottom: 8px;">Częstotliwość propozycji archiwizacji:</label>
+                    <select id="backup-frequency-select" style="width: 100%; padding: 12px; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; color: #fff; font-size: 0.95em; cursor: pointer; outline: none;">
                         <option value="activity">Po aktywności (jeśli był wczoraj trening)</option>
                         <option value="daily">Codziennie</option>
                         <option value="weekly">Co tydzień</option>
@@ -35,45 +44,55 @@ export const DiagnosticsUI = {
                     </select>
                 </div>
 
-                <details style="margin-top: 15px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 10px;">
-                    <summary style="color: #666; font-size: 0.8em; cursor: pointer; user-select: none;">Narzędzia eksperymentalne (Dla deweloperów)</summary>
-                    <div style="display: flex; gap: 10px; margin-top: 15px;">
-                        <button id="db-export-raw-btn" style="flex: 1; padding: 13px 10px; background: #222; border: 1px dashed #E74C3C; color: #E74C3C; border-radius: 5px; cursor: pointer; font-size: 0.9em; font-weight: bold; text-align: center;">🆘 Pobierz fizyczny plik bazy (Tryb Awaryjny RAW)</button>
-                        <button id="db-import-raw-btn" style="flex: 1; padding: 13px 10px; background: #222; border: 1px dashed #2ECC71; color: #2ECC71; border-radius: 5px; cursor: pointer; font-size: 0.9em; font-weight: bold; text-align: center;">📥 Przywróć plik RAW (.sqlite3)</button>
+                <details style="margin-top: 20px; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 15px;">
+                    <summary style="color: #8E8E93; font-size: 0.85em; cursor: pointer; user-select: none;">Narzędzia eksperymentalne (Dla deweloperów)</summary>
+                    <div style="display: flex; gap: 12px; margin-top: 15px;">
+                        <button id="db-export-raw-btn" style="flex: 1; padding: 12px 10px; background: rgba(231, 76, 60, 0.1); border: 1px solid rgba(231, 76, 60, 0.3); color: #E74C3C; border-radius: 12px; cursor: pointer; font-size: 0.85em; font-weight: 600; text-align: center; display: flex; align-items: center; justify-content: center; gap: 6px;">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                            Pobierz RAW
+                        </button>
+                        <button id="db-import-raw-btn" style="flex: 1; padding: 12px 10px; background: rgba(46, 204, 113, 0.1); border: 1px solid rgba(46, 204, 113, 0.3); color: #2ECC71; border-radius: 12px; cursor: pointer; font-size: 0.85em; font-weight: 600; text-align: center; display: flex; align-items: center; justify-content: center; gap: 6px;">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                            Przywróć RAW
+                        </button>
                         <input type="file" id="db-import-raw-file" accept=".sqlite3" style="display: none;">
                     </div>
                 </details>
             </div>
 
-            <div style="background: rgba(231,76,60,0.1); padding: 15px; border-radius: 8px; border: 1px solid #E74C3C; margin-bottom: 20px;">
-                <h3 style="color: #E74C3C; margin-top: 0;">Przycisk Paniki (Twardy Reset PWA)</h3>
-                <p style="font-size: 0.9em; color: #ccc;">Użyj tylko wtedy, gdy aplikacja przestała się aktualizować lub "utknęła" na starej wersji. <b>Konta i statystyki są bezpieczne</b> (baza SQLite nie jest usuwana).</p>
-                <button id="pwa-hard-reset-btn" style="width: 100%; padding: 13px; font-weight: bold; font-size: 1em; background: #E74C3C; color: white; border: none; border-radius: 8px; cursor: pointer; margin-top: 15px; text-align: center;">
-                    ⚠️ WYKONAJ TWARDY RESET APLIKACJI
+            <div style="background: rgba(231, 76, 60, 0.05); padding: 20px; border-radius: 16px; border: 1px solid rgba(231, 76, 60, 0.3); margin-bottom: 25px; backdrop-filter: blur(10px);">
+                <h3 style="color: #E74C3C; margin-top: 0; font-weight: 600;">Przycisk Paniki (Twardy Reset)</h3>
+                <p style="font-size: 0.9em; color: #8E8E93; line-height: 1.5;">Użyj tylko wtedy, gdy aplikacja przestała się aktualizować lub "utknęła" na starej wersji. <b style="color: #fff;">Konta i statystyki są bezpieczne</b> (baza SQLite nie jest usuwana).</p>
+                <button id="pwa-hard-reset-btn" style="width: 100%; padding: 14px; font-weight: 600; font-size: 1em; background: rgba(231, 76, 60, 0.15); color: #E74C3C; border: 1px solid rgba(231, 76, 60, 0.4); border-radius: 12px; cursor: pointer; margin-top: 15px; display: flex; align-items: center; justify-content: center; gap: 8px;">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                    Wykonaj Twardy Reset Aplikacji
                 </button>
             </div>
 
             
-            <div style="background: rgba(33, 150, 243, 0.1); padding: 15px; border-radius: 8px; border: 1px solid #2196F3; margin-bottom: 20px;">
-                <h3 style="color: #2196F3; margin-top: 0;">🗑 Storage Manager (Zarządzanie Pamięcią)</h3>
-                <p style="font-size: 0.9em; color: #ccc;">Wybierz, z jakich modułów chcesz usunąć stare zdjęcia, aby zwolnić miejsce. Usunięte zostaną <b>tylko pliki graficzne</b>, Twoje dane (obwody, historia treningów, makro) pozostaną nienaruszone!</p>
-                <div style="margin-top: 15px; display: flex; flex-direction: column; gap: 10px;">
+            <div style="background: rgba(33, 150, 243, 0.05); padding: 20px; border-radius: 16px; border: 1px solid rgba(33, 150, 243, 0.3); margin-bottom: 25px; backdrop-filter: blur(10px);">
+                <h3 style="color: #2196F3; margin-top: 0; display: flex; align-items: center; gap: 8px; font-weight: 600;">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>
+                    Zarządzanie Pamięcią (Storage)
+                </h3>
+                <p style="font-size: 0.9em; color: #8E8E93; line-height: 1.5;">Wybierz, z jakich modułów chcesz usunąć stare zdjęcia, aby zwolnić miejsce. Usunięte zostaną <b style="color: #fff;">tylko pliki graficzne</b>, Twoje dane pozostaną nienaruszone!</p>
+                <div style="margin-top: 20px; display: flex; flex-direction: column; gap: 12px; color: #fff;">
                     <label style="display: flex; align-items: center; gap: 10px; cursor: pointer;">
-                        <input type="checkbox" id="sm-diet" checked style="width: 20px; height: 20px;">
+                        <input type="checkbox" id="sm-diet" checked style="width: 20px; height: 20px; accent-color: #2196F3;">
                         <span>Dieta (Zdjęcia posiłków)</span>
                     </label>
                     <label style="display: flex; align-items: center; gap: 10px; cursor: pointer;">
-                        <input type="checkbox" id="sm-training" checked style="width: 20px; height: 20px;">
+                        <input type="checkbox" id="sm-training" checked style="width: 20px; height: 20px; accent-color: #2196F3;">
                         <span>Treningi (Zdjęcia z siłowni)</span>
                     </label>
                     <label style="display: flex; align-items: center; gap: 10px; cursor: pointer;">
-                        <input type="checkbox" id="sm-measurements" checked style="width: 20px; height: 20px;">
+                        <input type="checkbox" id="sm-measurements" checked style="width: 20px; height: 20px; accent-color: #2196F3;">
                         <span>Pomiary (Zdjęcia sylwetki)</span>
                     </label>
                 </div>
-                <div style="margin-top: 15px;">
-                    <label style="font-size: 0.9em; color: #aaa;">Okres do wyczyszczenia (starsze niż):</label>
-                    <select id="sm-time-select" style="width: 100%; padding: 10px; border-radius: 5px; background: #222; color: #fff; border: 1px solid #444; margin-top: 5px;">
+                <div style="margin-top: 20px;">
+                    <label style="font-size: 0.9em; color: #8E8E93; margin-bottom: 8px; display: block;">Okres do wyczyszczenia (starsze niż):</label>
+                    <select id="sm-time-select" style="width: 100%; padding: 12px; border-radius: 12px; background: rgba(0,0,0,0.3); color: #fff; border: 1px solid rgba(255,255,255,0.1); outline: none;">
                         <option value="1">1 dzień</option>
                         <option value="7">1 tydzień</option>
                         <option value="30">1 miesiąc</option>
@@ -82,52 +101,59 @@ export const DiagnosticsUI = {
                         <option value="9999">Wszystkie</option>
                     </select>
                 </div>
-                <button id="db-clear-media-btn" style="width: 100%; padding: 13px; background: #2196F3; color: white; border: none; border-radius: 8px; cursor: pointer; margin-top: 15px; font-weight: bold; font-size: 1em; text-align: center;">
+                <button id="db-clear-media-btn" style="width: 100%; padding: 14px; background: rgba(33, 150, 243, 0.15); color: #2196F3; border: 1px solid rgba(33, 150, 243, 0.3); border-radius: 12px; cursor: pointer; margin-top: 20px; font-weight: 600; font-size: 0.95em; display: flex; align-items: center; justify-content: center; gap: 8px;">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
                     Rozpocznij zwalnianie miejsca
                 </button>
             </div>
 
-            <div style="background: rgba(155, 89, 182, 0.1); padding: 15px; border-radius: 8px; border: 1px solid #9B59B6; margin-bottom: 20px;">
-                <h3 style="color: #9B59B6; margin-top: 0;">🔧 Naprawa i Mapowanie Danych</h3>
-                <p style="font-size: 0.9em; color: #ccc;">Narzędzie do automatycznej naprawy starych nazw ćwiczeń na nowe, zunifikowane nazwy z Katalogu (np. zamienia "wyciskanie płaska" na "Klatka - Wyciskanie sztangi - Ławka płaska"). <b>WAŻNE: Przed użyciem utwórz Archiwum na samej górze!</b></p>
-                <button id="db-migrate-names-btn" style="width: 100%; padding: 13px; font-weight: bold; font-size: 1em; background: #9B59B6; color: white; border: none; border-radius: 8px; cursor: pointer; margin-top: 15px; text-align: center;">
-                    🔄 Wykonaj Mapowanie Ćwiczeń
+            <div style="background: rgba(155, 89, 182, 0.05); padding: 20px; border-radius: 16px; border: 1px solid rgba(155, 89, 182, 0.3); margin-bottom: 25px; backdrop-filter: blur(10px);">
+                <h3 style="color: #9B59B6; margin-top: 0; display: flex; align-items: center; gap: 8px; font-weight: 600;">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
+                    Naprawa i Mapowanie Danych
+                </h3>
+                <p style="font-size: 0.9em; color: #8E8E93; line-height: 1.5;">Narzędzie do automatycznej naprawy starych nazw ćwiczeń na nowe, zunifikowane nazwy z Katalogu. <b style="color: #fff;">WAŻNE: Przed użyciem utwórz Archiwum na samej górze!</b></p>
+                <button id="db-migrate-names-btn" style="width: 100%; padding: 14px; font-weight: 600; font-size: 0.95em; background: rgba(155, 89, 182, 0.15); color: #9B59B6; border: 1px solid rgba(155, 89, 182, 0.3); border-radius: 12px; cursor: pointer; margin-top: 20px; display: flex; align-items: center; justify-content: center; gap: 8px;">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.5 2v6h-6M2.13 15.57a9 9 0 1 0 3.84-10.58l-5.49 5.49"/></svg>
+                    Wykonaj Mapowanie Ćwiczeń
                 </button>
             </div>
             
-            
-            <div style="background: rgba(255, 0, 0, 0.15); padding: 15px; border-radius: 8px; border: 1px solid #FF0000; margin-bottom: 20px;">
-                <h3 style="color: #FF0000; margin-top: 0;">⚠️ Formatowanie Bazy (Usuwa Błędy I/O)</h3>
-                <p style="font-size: 0.9em; color: #ccc;">Rozwiązuje ostatecznie problem "disk I/O error" w Safari. <br><b>KROK 1:</b> Utwórz Archiwum wyżej i pobierz plik JSON.<br><b>KROK 2:</b> Kliknij ten czerwony przycisk.<br><b>KROK 3:</b> Po restarcie zaimportuj pobrany plik JSON w panelu wyżej.</p>
-                <button id="db-factory-reset-btn" style="width: 100%; padding: 13px; font-weight: bold; font-size: 1em; background: #FF0000; color: white; border: none; border-radius: 8px; cursor: pointer; margin-top: 15px; text-align: center;">
-                    🧨 FORMATUJ BAZĘ DANYCH
+            <div style="background: rgba(255, 69, 58, 0.05); padding: 20px; border-radius: 16px; border: 1px solid rgba(255, 69, 58, 0.3); margin-bottom: 25px; backdrop-filter: blur(10px);">
+                <h3 style="color: #FF453A; margin-top: 0; display: flex; align-items: center; gap: 8px; font-weight: 600;">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                    Formatowanie Bazy (Usuwa Błędy I/O)
+                </h3>
+                <p style="font-size: 0.9em; color: #8E8E93; line-height: 1.5;">Rozwiązuje ostatecznie problem "disk I/O error" w Safari. <br><b style="color: #fff;">KROK 1:</b> Utwórz Archiwum wyżej i pobierz plik JSON.<br><b style="color: #fff;">KROK 2:</b> Kliknij ten przycisk.<br><b style="color: #fff;">KROK 3:</b> Po restarcie zaimportuj pobrany plik JSON.</p>
+                <button id="db-factory-reset-btn" style="width: 100%; padding: 14px; font-weight: 600; font-size: 0.95em; background: rgba(255, 69, 58, 0.15); color: #FF453A; border: 1px solid rgba(255, 69, 58, 0.3); border-radius: 12px; cursor: pointer; margin-top: 20px; display: flex; align-items: center; justify-content: center; gap: 8px;">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><path d="M13 2v7h7"/><path d="M12 18v-6"/><path d="M9 15l3 3 3-3"/></svg>
+                    FORMATUJ BAZĘ DANYCH
                 </button>
             </div>
 
-
-            <div style="background: rgba(0,0,0,0.3); padding: 15px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.2); margin-bottom: 20px;">
-                <h3 style="color: #eee; margin-top: 0;">Pamięć Podręczna</h3>
-                <p style="font-size: 0.9em; color: #ccc;">Użyj tej opcji <b>tylko wtedy, gdy zaciął się interfejs</b> (np. nie ładuje się awatar, źle działa motyw lub zablokował się samouczek). Zresetuje ona wyłącznie podręczne ustawienia wyglądu. <b>Twoja historia treningów i atlas ćwiczeń są w pełni bezpieczne!</b></p>
-                <button id="db-clear-local-btn" style="width: 100%; padding: 13px; background: #444; color: #eee; border: 1px solid #666; border-radius: 5px; cursor: pointer; margin-top: 10px; font-size: 1em; font-weight: bold; text-align: center;">
+            <div style="background: rgba(255,255,255,0.05); padding: 20px; border-radius: 16px; border: 1px solid rgba(255,255,255,0.1); margin-bottom: 25px; backdrop-filter: blur(10px);">
+                <h3 style="color: #fff; margin-top: 0; font-weight: 600;">Pamięć Podręczna</h3>
+                <p style="font-size: 0.9em; color: #8E8E93; line-height: 1.5;">Użyj tej opcji <b style="color: #fff;">tylko wtedy, gdy zaciął się interfejs</b> (np. nie ładuje się awatar, źle działa motyw lub zablokował się samouczek). Zresetuje ona wyłącznie podręczne ustawienia wyglądu. <b style="color: #00BFFF;">Twoja historia treningów i atlas ćwiczeń są w pełni bezpieczne!</b></p>
+                <button id="db-clear-local-btn" style="width: 100%; padding: 14px; background: rgba(255,255,255,0.1); color: #fff; border: 1px solid rgba(255,255,255,0.2); border-radius: 12px; cursor: pointer; margin-top: 15px; font-size: 0.95em; font-weight: 600;">
                     Wyczyść tylko LocalStorage
                 </button>
             </div>
             
-            <div style="background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); padding: 15px; border-radius: 8px; margin-bottom: 20px;">
-                <h3 style="margin-top: 0; color: #fff;">Logi Błędów Aplikacji dla Pomocy Technicznej</h3>
-                <div id="diagnostics-logs-container" style="background: #111; color: #00BFFF; font-family: monospace; font-size: 0.9em; padding: 12px; border-radius: 6px; min-height: 150px; max-height: 300px; overflow-y: auto; margin: 12px 0; word-break: break-all; white-space: pre-wrap; box-sizing: border-box; width: 100%;">
+            <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.05); padding: 20px; border-radius: 16px; margin-bottom: 25px;">
+                <h3 style="margin-top: 0; color: #fff; font-weight: 600;">Logi Błędów Aplikacji</h3>
+                <div id="diagnostics-logs-container" style="background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.05); color: #00BFFF; font-family: monospace; font-size: 0.85em; padding: 15px; border-radius: 12px; min-height: 150px; max-height: 300px; overflow-y: auto; margin: 15px 0; word-break: break-all; white-space: pre-wrap; box-sizing: border-box; width: 100%;">
                     Ładowanie logów...
                 </div>
                 
-                <div style="display: flex; gap: 10px; margin-bottom: 10px;">
-                    <button id="copy-errors-btn" style="flex: 1; padding: 13px 10px; background: rgba(255,255,255,0.1); color: #fff; border: 1px solid rgba(255,255,255,0.2); border-radius: 4px; font-weight: bold; cursor: pointer; font-size: 1em; text-align: center;">
+                <div style="display: flex; gap: 12px; margin-bottom: 12px;">
+                    <button id="copy-errors-btn" style="flex: 1; padding: 12px 10px; background: rgba(255,255,255,0.1); color: #fff; border: 1px solid rgba(255,255,255,0.2); border-radius: 10px; font-weight: 600; cursor: pointer; font-size: 0.9em;">
                         Kopiuj Logi
                     </button>
-                    <button id="share-errors-btn" style="flex: 1; padding: 13px 10px; background: #00BFFF; color: #000; border: none; border-radius: 4px; font-weight: bold; cursor: pointer; font-size: 1em; text-align: center;">
+                    <button id="share-errors-btn" style="flex: 1; padding: 12px 10px; background: rgba(0, 191, 255, 0.15); color: #00BFFF; border: 1px solid rgba(0,191,255,0.3); border-radius: 10px; font-weight: 600; cursor: pointer; font-size: 0.9em;">
                         Udostępnij Logi
                     </button>
                 </div>
-                <button id="clear-errors-btn" style="width: 100%; padding: 13px; background: rgba(255,255,255,0.05); color: #aaa; border: 1px solid rgba(255,255,255,0.1); border-radius: 4px; cursor: pointer; font-size: 1em; font-weight: bold; text-align: center;">
+                <button id="clear-errors-btn" style="width: 100%; padding: 12px; background: transparent; color: #8E8E93; border: 1px dashed rgba(255,255,255,0.2); border-radius: 10px; cursor: pointer; font-size: 0.9em; font-weight: 600;">
                     Wyczyść Logi
                 </button>
             </div>

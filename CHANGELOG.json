@@ -1,5 +1,12 @@
 [
   {
+    "version": "v2026.9.16.10",
+    "date": "2026-09-16",
+    "changes": [
+      "✨ Finalny Szlif Glassmorphism: Kalendarz, Szablony, Profil i Serwis\\n- Przebudowano modal Kalendarza na mrożone szkło\\n- Zaktualizowano Kreator Szablonów zastępując emoji nowymi ikonami SVG\\n- Panele Profilu i Serwisu działają teraz w oparciu o czysty Dark Mode z akcentami z zachowaniem spójności wizualnej całej aplikacji\\n- Pełna stabilność: Wszystkie pliki zostały rygorystycznie zbadane pod kątem błędów uruchomieniowych"
+    ]
+  },
+  {
     "version": "v2026.9.16.09",
     "date": "2026-09-16",
     "changes": [

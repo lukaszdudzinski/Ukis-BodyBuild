@@ -37,10 +37,16 @@ export const CalendarUI = {
         const monthNames = ["Styczeń", "Luty", "Marzec", "Kwiecień", "Maj", "Czerwiec", "Lipiec", "Sierpień", "Wrzesień", "Październik", "Listopad", "Grudzień"];
         
         let html = `
-            <div class="calendar-header">
-                <button class="calendar-nav-btn" id="cal-prev-btn">&laquo; Poprzedni</button>
-                <h3 style="margin: 0; color: #fff;">${monthNames[month]} ${year}</h3>
-                <button class="calendar-nav-btn" id="cal-next-btn">Następny &raquo;</button>
+            <div class="calendar-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding: 15px; background: rgba(255,255,255,0.05); border-radius: 16px; border: 1px solid rgba(255,255,255,0.1); backdrop-filter: blur(10px);">
+                <button class="calendar-nav-btn" id="cal-prev-btn" style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: #fff; padding: 8px 12px; border-radius: 10px; cursor: pointer; display: flex; align-items: center; gap: 6px; font-weight: 600;">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+                    Poprzedni
+                </button>
+                <h3 style="margin: 0; color: #fff; font-size: 1.2em; font-weight: 700;">${monthNames[month]} ${year}</h3>
+                <button class="calendar-nav-btn" id="cal-next-btn" style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: #fff; padding: 8px 12px; border-radius: 10px; cursor: pointer; display: flex; align-items: center; gap: 6px; font-weight: 600;">
+                    Następny
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+                </button>
             </div>
             <div class="calendar-grid">
                 <div class="calendar-day-header">Pn</div>
@@ -137,42 +143,43 @@ export const CalendarUI = {
             const mapLink = event.location ? `https://maps.google.com/?q=${encodeURIComponent(event.location)}` : '#';
             const eventId = `event-${index}`;
 
-            const btnStyle = "flex:1; text-decoration: none; text-align: center; background: rgba(255,255,255,0.1); color: #fff; padding: 10px 2px; border-radius: 6px; font-size: 0.75em; transition: 0.2s; border: none; cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center;";
+            const btnStyle = "flex:1; text-decoration: none; text-align: center; background: rgba(255,255,255,0.05); color: #fff; padding: 12px 4px; border-radius: 12px; font-size: 0.75em; transition: 0.2s; border: 1px solid rgba(255,255,255,0.1); cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px;";
 
             eventsHtml += `
-                <div class="dashboard-card" style="text-align: left; position: relative; padding: 20px; margin-bottom: 15px; border: 1px solid rgba(255,255,255,0.1);">
+                <div class="dashboard-card" style="text-align: left; position: relative; padding: 20px; margin-bottom: 20px; border: 1px solid rgba(255,255,255,0.1); border-radius: 16px; background: rgba(255,255,255,0.03); backdrop-filter: blur(10px);">
                     
-                    <div style="text-align: center; margin-bottom: 10px;">
-                        <span style="font-size: 0.8em; padding: 4px 8px; border-radius: 4px; background: ${badgeColor}; color: #111; font-weight: bold; text-transform: uppercase;">
+                    <div style="text-align: center; margin-bottom: 15px;">
+                        <span style="font-size: 0.8em; padding: 4px 10px; border-radius: 8px; background: ${badgeColor}20; color: ${badgeColor}; border: 1px solid ${badgeColor}40; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">
                             ${event.category}
                         </span>
                     </div>
 
-                    <h3 style="margin-top: 0; margin-bottom: 5px; color: #fff; text-align: center;">${event.title}</h3>
+                    <h3 style="margin-top: 0; margin-bottom: 10px; color: #fff; text-align: center; font-size: 1.25em;">${event.title}</h3>
                     
-                    <p style="color: #D81B60; font-size: 0.95em; margin-bottom: 15px; text-align: center;">
-                        📍 ${event.location ? `<a href="${mapLink}" target="_blank" style="color: #D81B60; text-decoration: underline;">${event.location}</a>` : 'Brak lokalizacji'}
-                    </p>
+                    <div style="display: flex; align-items: center; justify-content: center; gap: 6px; color: #FF9800; font-size: 0.9em; margin-bottom: 15px;">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                        ${event.location ? `<a href="${mapLink}" target="_blank" style="color: #FF9800; text-decoration: underline;">${event.location}</a>` : 'Brak lokalizacji'}
+                    </div>
                     
-                    <div style="font-size: 0.9em; color: #ccc; margin-bottom: 20px; text-align: center;">
+                    <div style="font-size: 0.95em; color: #8E8E93; margin-bottom: 25px; text-align: center; line-height: 1.5;">
                         ${event.description || ''}
                     </div>
                     
-                    <div style="display: flex; gap: 5px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 15px; justify-content: space-between;">
+                    <div style="display: flex; gap: 8px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 20px; justify-content: space-between;">
                         <a href="tel:+48${phone}" class="modal-action-btn" style="${btnStyle}">
-                            <div style="font-size: 1.4em; margin-bottom: 4px;">📞</div>
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
                             Zadzwoń
                         </a>
                         <a href="sms:+48${phone}?body=${smsBody}" class="modal-action-btn" style="${btnStyle}">
-                            <div style="font-size: 1.4em; margin-bottom: 4px;">💬</div>
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
                             SMS
                         </a>
                         <a href="mailto:${email}?subject=${subject}&body=${emailBody}" class="modal-action-btn" style="${btnStyle}">
-                            <div style="font-size: 1.4em; margin-bottom: 4px;">✉️</div>
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
                             Email
                         </a>
                         <button class="modal-action-btn toggle-payment-btn" data-target="payment-${eventId}" style="${btnStyle}">
-                            <div style="font-size: 1.4em; margin-bottom: 4px;">💳</div>
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
                             Zaliczka
                         </button>
                     </div>
@@ -205,14 +212,15 @@ export const CalendarUI = {
 
         const overlay = document.createElement('div');
         overlay.className = 'calendar-modal-overlay';
+        overlay.style.cssText = 'position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(17,17,24,0.85); backdrop-filter: blur(8px); display: flex; align-items: center; justify-content: center; z-index: 9999; opacity: 0; transition: opacity 0.3s;';
         overlay.innerHTML = `
-            <div class="calendar-modal">
-                <button class="calendar-modal-close">&times;</button>
-                <h2 style="margin-top: 0; color: #D81B60; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 10px; margin-bottom: 15px; text-align: center;">
+            <div class="calendar-modal" style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 24px; width: 90%; max-width: 400px; padding: 25px; max-height: 90vh; overflow-y: auto; position: relative; box-shadow: 0 20px 40px rgba(0,0,0,0.5); backdrop-filter: blur(20px);">
+                <button class="calendar-modal-close" style="position: absolute; right: 20px; top: 20px; background: rgba(255,255,255,0.1); border: none; color: #fff; width: 32px; height: 32px; border-radius: 16px; font-size: 1.2em; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: 0.2s;">&times;</button>
+                <h2 style="margin-top: 0; color: #FF9800; border-bottom: 1px solid rgba(255,152,0,0.3); padding-bottom: 15px; margin-bottom: 20px; text-align: center; font-size: 1.3em; font-weight: 600;">
                     Wydarzenia z dnia:<br>
-                    <small style="color: #fff;">${dateStr}</small>
+                    <small style="color: #fff; font-size: 0.8em; font-weight: normal;">${dateStr}</small>
                 </h2>
-                <div class="calendar-modal-content">
+                <div class="calendar-modal-content" style="display: flex; flex-direction: column; gap: 15px;">
                     ${eventsHtml}
                 </div>
             </div>
