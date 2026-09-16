@@ -1,5 +1,12 @@
 [
   {
+    "version": "v2026.9.16.08",
+    "date": "2026-09-16",
+    "changes": [
+      "🔥 Krytyczny Hotfix: Naprawiono brak możliwości uruchomienia aplikacji (biały ekran)\\n- Usunięto błąd składniowy (SyntaxError) w module AnalyticsUI wprowadzony podczas podmiany ikon na SVG"
+    ]
+  },
+  {
     "version": "v2026.9.16.07",
     "date": "2026-09-16",
     "changes": [

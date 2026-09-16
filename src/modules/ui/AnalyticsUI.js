@@ -269,6 +269,8 @@ export const AnalyticsUI = {
             });
         });
 
+        if (Object.keys(exerciseMaxMap).length > 0) {
+            html += `
                 <div style="margin-top: 30px; margin-bottom: 25px;">
                     <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,215,0,0.3); padding-bottom: 8px; margin-bottom: 15px;">
                         <h4 style="color: #FFD700; margin: 0; display: flex; align-items: center; gap: 8px; font-size: 1.1em; font-weight: 600;">
