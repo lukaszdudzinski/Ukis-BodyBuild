@@ -1,5 +1,12 @@
 [
   {
+    "version": "v2026.9.16.02",
+    "date": "2026-09-16",
+    "changes": [
+      "🔗 Fix: Superseria działa poprawnie — ćwiczenie drugie pojawia się pod głównym\\n- Przepisano renderowanie listy ćwiczeń: obsługa zagnieżdżonej struktury superset\\n- Superseria otacza oba ćwiczenia różową ramką z separatorem\\n- Usunięto błędny komunikat 'SUPERSERIA (BŁĄD)'"
+    ]
+  },
+  {
     "version": "v2026.9.16.01",
     "date": "2026-09-16",
     "changes": [

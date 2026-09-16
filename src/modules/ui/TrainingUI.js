@@ -1561,29 +1561,9 @@ export const TrainingUI = {
         }
 
         let html = '';
-        let inSupersetGroup = false;
 
-        currentTraining.exercises.forEach((ex, index) => {
-            const nextEx = currentTraining.exercises[index + 1];
-            const isMainForSuperset = nextEx && nextEx.type === 'superset';
-
-            if (isMainForSuperset && ex.type !== 'superset') {
-                html += `<div style="margin-bottom: 20px; position: relative; border: 2px solid #E91E63; border-radius: 16px; padding: 30px 16px 16px 16px; background: rgba(233,30,99,0.05);">`;
-                html += `<div style="position: absolute; top: -12px; left: 16px; background: #E91E63; color: #FFF; padding: 3px 14px; font-size: 11px; font-weight: 800; border-radius: 20px; text-transform: uppercase; letter-spacing: 1px; z-index: 10;">🔗 Superseria</div>`;
-                inSupersetGroup = true;
-            }
-
-            if (ex.type === 'superset') {
-                if (inSupersetGroup) {
-                    html += `<div style="height: 1px; background: rgba(255,255,255,0.1); margin: 15px 0;"></div>`;
-                } else {
-                    html += `<div style="margin-bottom: 20px; position: relative;">`;
-                    html += `<div style="position: absolute; top: -10px; left: 0px; background: #E91E63; color: #FFF; padding: 2px 10px; font-size: 10px; font-weight: 800; border-radius: 10px; text-transform: uppercase; z-index: 10;">Superseria (Błąd)</div>`;
-                }
-            }
-
-            // Exercise Header (Wpisz nazwę + Camera)
-            // The user wants it to look like the design EXACTLY.
+        // Helper to render a single flat exercise block
+        const renderExBlock = (ex, isInsideSuperset = false) => {
             const setsCount = (ex.sets || []).filter(s => s.type !== 'dropset').length;
             
             html += `
@@ -1688,11 +1668,27 @@ export const TrainingUI = {
                     </div>`;
             }
 
-            html += `</div>`; // End exercise container
+            html += `</div>`; // End exercise block
+        }; // end renderExBlock
 
-            if (ex.type === 'superset' && (!nextEx || nextEx.type !== 'superset')) {
-                html += `</div>`; // End superset group
-                inSupersetGroup = false;
+        // MAIN LOOP — handles flat exercises AND nested superset objects
+        currentTraining.exercises.forEach((ex) => {
+            if (ex.type === 'superset' && Array.isArray(ex.exercises)) {
+                // Superset group: render a pink bordered card wrapping all exercises inside
+                html += `
+                    <div style="margin-bottom: 24px; position: relative; border: 2px solid #E91E63; border-radius: 16px; padding: 36px 16px 16px 16px; background: rgba(233,30,99,0.05);">
+                        <div style="position: absolute; top: -13px; left: 16px; background: #E91E63; color: #FFF; padding: 4px 14px; font-size: 11px; font-weight: 800; border-radius: 20px; text-transform: uppercase; letter-spacing: 1px; z-index: 10;">🔗 Superseria</div>
+                        <button onclick="window.TrainingUI.removeExercise('${ex.id}')" style="position: absolute; top: 10px; right: 14px; background: transparent; border: none; color: #555; font-size: 18px; cursor: pointer;">🗑</button>`;
+                ex.exercises.forEach((subEx, subIdx) => {
+                    if (subIdx > 0) {
+                        html += `<div style="height: 2px; background: rgba(233,30,99,0.3); margin: 16px 0; border-radius: 2px;"></div>`;
+                    }
+                    renderExBlock(subEx, true);
+                });
+                html += `</div>`; // end superset pink card
+            } else {
+                // Normal flat exercise
+                renderExBlock(ex, false);
             }
         });
 
