@@ -1,5 +1,12 @@
 [
   {
+    "version": "v2026.9.16.03",
+    "date": "2026-09-16",
+    "changes": [
+      "🔥 Krytyczny Hotfix: Naprawiono błąd braku ładowania ćwiczeń\\n- Usunięto błąd ReferenceError, który blokował dodawanie nowych ćwiczeń i wczytywanie szablonów po zmianach w kodzie superserii\\n- Kod renderowania ćwiczeń jest teraz w pełni niezależny i odporny na błędy"
+    ]
+  },
+  {
     "version": "v2026.9.16.02",
     "date": "2026-09-16",
     "changes": [

@@ -1567,7 +1567,7 @@ export const TrainingUI = {
             const setsCount = (ex.sets || []).filter(s => s.type !== 'dropset').length;
             
             html += `
-                <div style="margin-bottom: ${inSupersetGroup && ex.type !== 'superset' ? '0' : '30px'};">
+                <div style="margin-bottom: ${isInsideSuperset ? '0' : '30px'};">
                     <div style="margin-bottom: 10px;">
                         <input type="text" placeholder="Wpisz nazwę..." value="${ex.name}" onchange="window.TrainingUI.updateExerciseField('${ex.id}', 'name', this.value); window.TrainingUI.renderCurrentExercises();" style="width: 100%; background: transparent; border: none; color: #FFF; font-size: 26px; font-weight: 800; letter-spacing: -0.5px; outline: none; padding: 0; margin-bottom: 5px;">
                         <div style="color: #888; font-size: 14px; margin-bottom: 12px;">${setsCount} serie</div>
@@ -1655,7 +1655,7 @@ export const TrainingUI = {
                     <div style="display: flex; gap: 6px; flex-wrap: nowrap; overflow-x: auto; padding-bottom: 5px;">
                         <button onclick="window.TrainingUI.addSet('${ex.id}', false)" style="background: #FFF; color: #000; border: none; border-radius: 8px; padding: 8px 12px; font-size: 13px; white-space: nowrap; flex: 1; justify-content: center; font-weight: 700; cursor: pointer;">[ + Seria ]</button>
                         <button onclick="window.TrainingUI.addSet('${ex.id}', true)" style="background: #1C1C1E; color: #FFF; border: none; border-radius: 8px; padding: 8px 12px; font-size: 13px; white-space: nowrap; flex: 1; justify-content: center; font-weight: 500; cursor: pointer; display: flex; align-items: center; gap: 6px;">🔥 Dropset</button>
-                        ${!isMainForSuperset && ex.type !== 'superset' ? `
+                        ${!isInsideSuperset ? `
                             <button onclick="window.TrainingUI.addSuperset('${ex.id}')" style="background: #1C1C1E; color: #FFF; border: none; border-radius: 8px; padding: 8px 12px; font-size: 13px; white-space: nowrap; flex: 1; justify-content: center; font-weight: 500; cursor: pointer; display: flex; align-items: center; gap: 6px;">🔗 Superseria</button>
                         ` : ''}
                     </div>`;
