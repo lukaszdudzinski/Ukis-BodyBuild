@@ -1,5 +1,12 @@
 [
   {
+    "version": "v2026.9.16.04",
+    "date": "2026-09-16",
+    "changes": [
+      "🎨 Wymiana emoji na ikony SVG w panelu Treningu\\n- Wymieniono ikonę Smartwatcha w dolnym panelu na dedykowane SVG\\n- Poprawiono przycisk 'Zakończ Trening' (ikona teraz biała i wyraźna)\\n- Zamieniono emoji Kosza nad Superserią na spójną z resztą ikonę SVG\\n- Zamieniono emoji w Dropsetach, Superseriach i Typie Ćwiczenia na wektorowe SVG"
+    ]
+  },
+  {
     "version": "v2026.9.16.03",
     "date": "2026-09-16",
     "changes": [

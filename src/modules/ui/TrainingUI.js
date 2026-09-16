@@ -1581,7 +1581,7 @@ export const TrainingUI = {
                             
                             <!-- Typ treningu -->
                             <button onclick="window.TrainingUI.toggleExerciseType('${ex.id}')" style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; color: #FFF; padding: 8px 12px; font-size: 13px; font-weight: 500; display: flex; align-items: center; justify-content: center; flex: 1; gap: 6px; cursor: pointer;">
-                                ${ex.type === 'classes' ? '🧘‍♀️ Zaj' : (ex.type === 'cardio' ? '🏃‍♂️ Card' : '🏋️ Sił')}
+                                ${ex.type === 'classes' ? '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5a2 2 0 1 0 0-4 2 2 0 0 0 0 4z"/><path d="M5 19l4-6V8l-4 3"/><path d="M19 19l-4-6V8l4 3"/><path d="M15 22H9"/></svg> Zajęcia' : (ex.type === 'cardio' ? '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5a2 2 0 1 0 0-4 2 2 0 0 0 0 4z"/><path d="M16 11l-3 4-2-2-4 5"/><path d="M4 17l3-4"/></svg> Cardio' : '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 5v14"/><path d="M18 5v14"/><path d="M2 12h20"/><path d="M4 8h16"/><path d="M4 16h16"/></svg> Siłowy')}
                             </button>
                             
                             <!-- Aparat -->
@@ -1654,9 +1654,13 @@ export const TrainingUI = {
                 html += `
                     <div style="display: flex; gap: 6px; flex-wrap: nowrap; overflow-x: auto; padding-bottom: 5px;">
                         <button onclick="window.TrainingUI.addSet('${ex.id}', false)" style="background: #FFF; color: #000; border: none; border-radius: 8px; padding: 8px 12px; font-size: 13px; white-space: nowrap; flex: 1; justify-content: center; font-weight: 700; cursor: pointer;">[ + Seria ]</button>
-                        <button onclick="window.TrainingUI.addSet('${ex.id}', true)" style="background: #1C1C1E; color: #FFF; border: none; border-radius: 8px; padding: 8px 12px; font-size: 13px; white-space: nowrap; flex: 1; justify-content: center; font-weight: 500; cursor: pointer; display: flex; align-items: center; gap: 6px;">🔥 Dropset</button>
+                        <button onclick="window.TrainingUI.addSet('${ex.id}', true)" style="background: #1C1C1E; color: #FFF; border: none; border-radius: 8px; padding: 8px 12px; font-size: 13px; white-space: nowrap; flex: 1; justify-content: center; font-weight: 500; cursor: pointer; display: flex; align-items: center; gap: 6px;">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/></svg> Dropset
+                        </button>
                         ${!isInsideSuperset ? `
-                            <button onclick="window.TrainingUI.addSuperset('${ex.id}')" style="background: #1C1C1E; color: #FFF; border: none; border-radius: 8px; padding: 8px 12px; font-size: 13px; white-space: nowrap; flex: 1; justify-content: center; font-weight: 500; cursor: pointer; display: flex; align-items: center; gap: 6px;">🔗 Superseria</button>
+                            <button onclick="window.TrainingUI.addSuperset('${ex.id}')" style="background: #1C1C1E; color: #FFF; border: none; border-radius: 8px; padding: 8px 12px; font-size: 13px; white-space: nowrap; flex: 1; justify-content: center; font-weight: 500; cursor: pointer; display: flex; align-items: center; gap: 6px;">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg> Superseria
+                            </button>
                         ` : ''}
                     </div>`;
                 
@@ -1677,8 +1681,12 @@ export const TrainingUI = {
                 // Superset group: render a pink bordered card wrapping all exercises inside
                 html += `
                     <div style="margin-bottom: 24px; position: relative; border: 2px solid #E91E63; border-radius: 16px; padding: 36px 16px 16px 16px; background: rgba(233,30,99,0.05);">
-                        <div style="position: absolute; top: -13px; left: 16px; background: #E91E63; color: #FFF; padding: 4px 14px; font-size: 11px; font-weight: 800; border-radius: 20px; text-transform: uppercase; letter-spacing: 1px; z-index: 10;">🔗 Superseria</div>
-                        <button onclick="window.TrainingUI.removeExercise('${ex.id}')" style="position: absolute; top: 10px; right: 14px; background: transparent; border: none; color: #555; font-size: 18px; cursor: pointer;">🗑</button>`;
+                        <div style="position: absolute; top: -13px; left: 16px; background: #E91E63; color: #FFF; padding: 4px 14px; font-size: 11px; font-weight: 800; border-radius: 20px; text-transform: uppercase; letter-spacing: 1px; z-index: 10; display: flex; align-items: center; gap: 4px;">
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg> Superseria
+                        </div>
+                        <button onclick="window.TrainingUI.removeExercise('${ex.id}')" style="position: absolute; top: 10px; right: 14px; background: transparent; border: none; color: #666; cursor: pointer;">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/></svg>
+                        </button>`;
                 ex.exercises.forEach((subEx, subIdx) => {
                     if (subIdx > 0) {
                         html += `<div style="height: 2px; background: rgba(233,30,99,0.3); margin: 16px 0; border-radius: 2px;"></div>`;

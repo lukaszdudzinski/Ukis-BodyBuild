@@ -126,7 +126,7 @@ export const TrainingComponent = {
                             <span style="color: #FFF; font-size: 16px; font-weight: 400; flex: 1;">Załącz zdjęcia z treningu</span>
                         </div>
                         <div style="display: flex; align-items: center; gap: 15px; cursor: pointer;">
-                            <span style="color: #888;"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="2" width="14" height="20" rx="4"/><path d="M12 14h.01"/><path d="M12 10h.01"/></svg></span>
+                            <span style="color: #888;"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="3" width="12" height="18" rx="3"/><path d="M6 7h12"/><path d="M6 17h12"/></svg></span>
                             <span style="color: #FFF; font-size: 16px; font-weight: 400; flex: 1;">Dodaj dane ze Smartwatcha</span>
                         </div>
                         <div style="display: flex; align-items: center; gap: 15px; cursor: pointer;">
@@ -135,13 +135,13 @@ export const TrainingComponent = {
                         </div>
                     </div>
 
-                    <!-- Buttons (Always visible) -->
-                    <div style="display: flex; gap: 10px;">
-                        <button type="button" id="pause-training-btn" style="flex: 1; padding: 16px; background: rgba(255,193,7,0.15); border: 1px solid #FFC107; color: #FFC107; border-radius: 12px; font-weight: 600; font-size: 16px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px;">
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M6 4h4v16H6zM14 4h4v16h-4z"/></svg> Pauza
+                    <!-- Action Buttons -->
+                    <div style="display: flex; gap: 12px;">
+                        <button type="button" id="pause-training-btn" style="flex: 1; padding: 16px 10px; background: transparent; border: 1px solid #f39c12; color: #f39c12; border-radius: 12px; font-weight: 600; font-size: 15px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px;">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg> Pauza
                         </button>
-                        <button type="button" id="finish-training-btn" style="flex: 1; padding: 16px; background: #E74C3C; border: none; color: #FFF; border-radius: 12px; font-weight: 600; font-size: 16px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px;">
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M6 6h12v12H6z"/></svg> Zakończ Trening
+                        <button type="button" id="finish-training-btn" style="flex: 1; padding: 16px 10px; background: #E74C3C; border: none; color: #FFF; border-radius: 12px; font-weight: 600; font-size: 15px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px;">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/></svg> Zakończ
                         </button>
                     </div>
                     </div>
