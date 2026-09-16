@@ -4,31 +4,38 @@ import { AiAnalyticsEngine } from '../ai/AiAnalyticsEngine.js';
 export const AiAnalyticsUI = {
     render: async (container) => {
         container.innerHTML = `
-            <div style="background: linear-gradient(135deg, rgba(255,152,0,0.12) 0%, rgba(0,0,0,0.5) 100%); border: 1px solid rgba(255,152,0,0.4); border-radius: 12px; padding: 20px; margin-bottom: 25px;">
-                <div style="display: flex; align-items: flex-start; gap: 12px; margin-bottom: 14px;">
-                    <span style="font-size: 2.2em; line-height:1;">🤖</span>
+            <div style="background: rgba(255,152,0,0.05); border: 1px solid rgba(255,152,0,0.2); border-radius: 20px; padding: 25px 20px; margin-bottom: 30px; backdrop-filter: blur(10px);">
+                <div style="display: flex; align-items: flex-start; gap: 16px; margin-bottom: 20px;">
+                    <div style="background: rgba(255,152,0,0.1); padding: 12px; border-radius: 16px; border: 1px solid rgba(255,152,0,0.2); display: flex; align-items: center; justify-content: center;">
+                        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#FF9800" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="10" rx="2"/><circle cx="12" cy="5" r="2"/><path d="M12 7v4"/><line x1="8" y1="16" x2="8" y2="16"/><line x1="16" y1="16" x2="16" y2="16"/></svg>
+                    </div>
                     <div>
-                        <h3 style="margin: 0 0 6px 0; color: #FF9800;">Trener Edward analizuje Twoje dane</h3>
-                        <p style="margin: 0; font-size: 0.85em; color: #aaa; line-height:1.5;">Pelna analiza treningow, diety i regeneracji z rekomendacjami AI. Edward bierze pod uwage historie treningow, partie miesniowe, obciazenie, posilki i sen.</p>
+                        <h3 style="margin: 0 0 6px 0; color: #fff; font-size: 1.2em; font-weight: 600;">Trener Edward</h3>
+                        <p style="margin: 0; font-size: 0.85em; color: #8E8E93; line-height: 1.5;">Analiza treningów, diety i regeneracji. Oparta na AI historia treningów i parametry sylwetki.</p>
                     </div>
                 </div>
-                <div style="display: flex; gap: 12px; margin-top: 16px;">
-                    <button id="ai-gen-weekly-btn" style="flex: 1; padding: 14px 8px; background: linear-gradient(135deg, #00BFFF, #005f99); color: #fff; border: none; border-radius: 10px; font-weight: bold; font-size: 0.95em; cursor: pointer; box-shadow: 0 4px 15px rgba(0,191,255,0.35); line-height: 1.3; text-align: center;">
-                        Analiza<br>Tygodniowa<br><span style="font-size:0.8em; font-weight:normal; opacity:0.85;">ostatnie 7 dni</span>
+                <div style="display: flex; gap: 12px;">
+                    <button id="ai-gen-weekly-btn" style="flex: 1; padding: 14px 10px; background: rgba(0, 191, 255, 0.1); border: 1px solid rgba(0, 191, 255, 0.3); color: #00BFFF; border-radius: 12px; font-weight: 600; font-size: 0.9em; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 4px; transition: background 0.2s;">
+                        Analiza Tygodniowa
+                        <span style="font-size: 0.75em; font-weight: normal; opacity: 0.7;">Ostatnie 7 dni</span>
                     </button>
-                    <button id="ai-gen-monthly-btn" style="flex: 1; padding: 14px 8px; background: linear-gradient(135deg, #FFD700, #b29600); color: #000; border: none; border-radius: 10px; font-weight: bold; font-size: 0.95em; cursor: pointer; box-shadow: 0 4px 15px rgba(255,215,0,0.35); line-height: 1.3; text-align: center;">
-                        Analiza<br>Miesięczna<br><span style="font-size:0.8em; font-weight:normal; opacity:0.7;">ostatnie 30 dni</span>
+                    <button id="ai-gen-monthly-btn" style="flex: 1; padding: 14px 10px; background: rgba(255, 215, 0, 0.1); border: 1px solid rgba(255, 215, 0, 0.3); color: #FFD700; border-radius: 12px; font-weight: 600; font-size: 0.9em; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 4px; transition: background 0.2s;">
+                        Analiza Miesięczna
+                        <span style="font-size: 0.75em; font-weight: normal; opacity: 0.7;">Ostatnie 30 dni</span>
                     </button>
                 </div>
-                <div id="ai-status-bar" style="display:none; margin-top:16px; padding:14px; background:rgba(0,0,0,0.5); border-radius:8px; text-align:center; color:#00BFFF; font-size:0.9em; border:1px solid rgba(0,191,255,0.2);">
-                    Trener Edward mysli... To moze potrwac kilkanascie sekund.
+                <div id="ai-status-bar" style="display:none; margin-top: 15px; padding: 12px; background: rgba(255,255,255,0.05); border-radius: 12px; text-align: center; color: #00BFFF; font-size: 0.9em; border: 1px solid rgba(255,255,255,0.1);">
+                    Trener Edward analizuje... To może potrwać kilkanaście sekund.
                 </div>
             </div>
 
-            <div>
-                <h4 style="color: #FF9800; border-bottom: 1px solid rgba(255,152,0,0.25); padding-bottom: 8px; margin-bottom: 16px; display:flex; align-items:center; gap:8px; margin-top:0;">
-                    Historia Analiz
-                    <span style="font-size:0.75em; color:#888; font-weight:normal;">(kliknij rok/miesiac by rozwinac)</span>
+            <div style="padding: 0 5px;">
+                <h4 style="color: #FF9800; border-bottom: 1px solid rgba(255,152,0,0.2); padding-bottom: 12px; margin-bottom: 20px; display: flex; align-items: center; justify-content: space-between; font-weight: 600; font-size: 1.1em;">
+                    <span style="display: flex; align-items: center; gap: 8px;">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                        Historia Analiz
+                    </span>
+                    <span style="font-size: 0.75em; color: #8E8E93; font-weight: normal;">Archiwum postępów</span>
                 </h4>
                 <div id="ai-history-list">
                     <p style="color:#888; text-align:center; padding:20px;">Ladowanie historii...</p>
@@ -67,7 +74,7 @@ export const AiAnalyticsUI = {
         }
 
         if (!analyses || analyses.length === 0) {
-            listContainer.innerHTML = '<div style="text-align:center; padding:30px 20px; background:rgba(255,255,255,0.03); border-radius:10px; border:1px dashed rgba(255,152,0,0.2);"><div style="font-size:2.5em; margin-bottom:10px;">🏋️</div><p style="color:#888; margin:0; font-size:0.9em;">Brak historii analiz.<br>Wygeneruj pierwszą — Edward czeka!</p></div>';
+            listContainer.innerHTML = '<div style="text-align:center; padding:40px 20px; background:rgba(255,255,255,0.02); border-radius:20px; border:1px dashed rgba(255,255,255,0.1);"><div style="display:inline-flex; align-items:center; justify-content:center; width:60px; height:60px; border-radius:50%; background:rgba(255,152,0,0.1); margin-bottom:15px;"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#FF9800" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="10" rx="2"/><circle cx="12" cy="5" r="2"/><path d="M12 7v4"/><line x1="8" y1="16" x2="8" y2="16"/><line x1="16" y1="16" x2="16" y2="16"/></svg></div><p style="color:#8E8E93; margin:0; font-size:0.95em; line-height: 1.5;">Brak historii analiz.<br>Wygeneruj pierwszą — Edward czeka!</p></div>';
             return;
         }
 
@@ -142,32 +149,40 @@ export const AiAnalyticsUI = {
         const savedGoal = localStorage.getItem('dietGoal') || 'bulk';
 
         modal.innerHTML = `
-            <div style="background:linear-gradient(135deg,#1e1e1e,#111); padding:24px 20px; border-radius:14px; border:1px solid #FF9800; width:100%; max-width:420px; max-height:90vh; overflow-y:auto; box-shadow:0 15px 50px rgba(255,152,0,0.25); text-align:left; box-sizing:border-box;">
-                <div style="text-align:center; margin-bottom:15px;">
-                    <div style="font-size:2.4em; margin-bottom:6px;">🤖</div>
-                    <h3 style="color:#FF9800; margin:0 0 6px 0; font-size:1.2em;">Wywiad Trenera Edwarda</h3>
-                    <p style="color:#aaa; font-size:0.82em; margin:0; line-height:1.4;">
+            <div style="background:rgba(17,17,24,0.95); padding:30px 20px; border-radius:24px; border:1px solid rgba(255,152,0,0.4); width:100%; max-width:420px; max-height:90vh; overflow-y:auto; box-shadow:0 20px 50px rgba(0,0,0,0.5); text-align:left; box-sizing:border-box; backdrop-filter:blur(20px);">
+                <div style="text-align:center; margin-bottom:25px;">
+                    <div style="display:inline-flex; align-items:center; justify-content:center; width:64px; height:64px; border-radius:50%; background:rgba(255,152,0,0.1); margin-bottom:15px; border:1px solid rgba(255,152,0,0.2);">
+                        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#FF9800" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="10" rx="2"/><circle cx="12" cy="5" r="2"/><path d="M12 7v4"/><line x1="8" y1="16" x2="8" y2="16"/><line x1="16" y1="16" x2="16" y2="16"/></svg>
+                    </div>
+                    <h3 style="color:#FF9800; margin:0 0 8px 0; font-size:1.3em; font-weight:600;">Wywiad Trenera Edwarda</h3>
+                    <p style="color:#8E8E93; font-size:0.9em; margin:0; line-height:1.5;">
                         Analiza dla okresu: <strong style="color:#fff;">ostatnie ${days} dni</strong>.<br>Uzupełnij parametry, aby Edward przygotował maksymalnie precyzyjne zalecenia!
                     </p>
                 </div>
 
                 <!-- 1. Sen -->
-                <div style="background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08); border-radius:10px; padding:12px 16px; margin-bottom:14px;">
-                    <label style="display:block; color:#00BFFF; font-weight:bold; font-size:0.88em; margin-bottom:8px;">😴 Średni sen na dobę:</label>
+                <div style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.05); border-radius:16px; padding:16px; margin-bottom:16px;">
+                    <label style="display:flex; align-items:center; gap:8px; color:#00BFFF; font-weight:600; font-size:0.9em; margin-bottom:12px;">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+                        Średni sen na dobę:
+                    </label>
                     <div style="display:flex; align-items:center; justify-content:space-between; gap:12px;">
-                        <button id="ai-sleep-minus" type="button" style="width:40px; height:40px; border-radius:50%; background:rgba(255,255,255,0.1); color:#fff; border:1px solid rgba(255,255,255,0.2); font-size:1.3em; cursor:pointer;">-</button>
+                        <button id="ai-sleep-minus" type="button" style="width:44px; height:44px; border-radius:12px; background:rgba(255,255,255,0.05); color:#fff; border:1px solid rgba(255,255,255,0.1); font-size:1.4em; cursor:pointer; display:flex; align-items:center; justify-content:center;">-</button>
                         <div style="text-align:center;">
-                            <span id="ai-sleep-val" style="font-size:2.2em; color:#fff; font-weight:bold; line-height:1;">7</span>
-                            <span style="font-size:0.8em; color:#888; margin-left:4px;">godzin</span>
+                            <span id="ai-sleep-val" style="font-size:2.4em; color:#fff; font-weight:bold; line-height:1;">7</span>
+                            <span style="font-size:0.85em; color:#8E8E93; margin-left:4px;">h</span>
                         </div>
-                        <button id="ai-sleep-plus" type="button" style="width:40px; height:40px; border-radius:50%; background:#00BFFF; color:#000; border:none; font-size:1.3em; cursor:pointer; font-weight:bold;">+</button>
+                        <button id="ai-sleep-plus" type="button" style="width:44px; height:44px; border-radius:12px; background:rgba(0,191,255,0.15); color:#00BFFF; border:1px solid rgba(0,191,255,0.3); font-size:1.4em; cursor:pointer; font-weight:bold; display:flex; align-items:center; justify-content:center;">+</button>
                     </div>
                 </div>
 
                 <!-- 2. Staż treningowy -->
-                <div style="background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08); border-radius:10px; padding:12px 16px; margin-bottom:14px;">
-                    <label for="ai-interview-exp" style="display:block; color:#FFD700; font-weight:bold; font-size:0.88em; margin-bottom:6px;">🏆 Twój staż treningowy:</label>
-                    <select id="ai-interview-exp" style="width:100%; padding:10px; background:#222; border:1px solid #555; color:#fff; border-radius:6px; font-size:0.92em; font-weight:bold;">
+                <div style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.05); border-radius:16px; padding:16px; margin-bottom:16px;">
+                    <label for="ai-interview-exp" style="display:flex; align-items:center; gap:8px; color:#FFD700; font-weight:600; font-size:0.9em; margin-bottom:10px;">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="7"/><polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"/></svg>
+                        Twój staż treningowy:
+                    </label>
+                    <select id="ai-interview-exp" style="width:100%; padding:14px; background:rgba(0,0,0,0.2); border:1px solid rgba(255,255,255,0.1); color:#fff; border-radius:12px; font-size:0.95em; font-weight:500; appearance:none; outline:none;">
                         <option value="Początkujący (< 1 rok)" ${savedExp.includes('Początkujący') ? 'selected' : ''}>Początkujący (< 1 rok)</option>
                         <option value="1-3 lata (Średniozaawansowany)" ${savedExp.includes('1-3 lata') ? 'selected' : ''}>1-3 lata (Średniozaawansowany)</option>
                         <option value="3-5 lat (Zaawansowany)" ${savedExp.includes('3-5 lat') ? 'selected' : ''}>3-5 lat (Zaawansowany)</option>
@@ -176,9 +191,12 @@ export const AiAnalyticsUI = {
                 </div>
 
                 <!-- 3. Cel sylwetkowy -->
-                <div style="background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08); border-radius:10px; padding:12px 16px; margin-bottom:18px;">
-                    <label for="ai-interview-goal" style="display:block; color:#2ECC71; font-weight:bold; font-size:0.88em; margin-bottom:6px;">🎯 Główny cel sylwetkowy:</label>
-                    <select id="ai-interview-goal" style="width:100%; padding:10px; background:#222; border:1px solid #555; color:#fff; border-radius:6px; font-size:0.92em; font-weight:bold;">
+                <div style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.05); border-radius:16px; padding:16px; margin-bottom:24px;">
+                    <label for="ai-interview-goal" style="display:flex; align-items:center; gap:8px; color:#2ECC71; font-weight:600; font-size:0.9em; margin-bottom:10px;">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>
+                        Główny cel sylwetkowy:
+                    </label>
+                    <select id="ai-interview-goal" style="width:100%; padding:14px; background:rgba(0,0,0,0.2); border:1px solid rgba(255,255,255,0.1); color:#fff; border-radius:12px; font-size:0.95em; font-weight:500; appearance:none; outline:none;">
                         <option value="Budowa masy mięśniowej (Hipertrofia)" ${savedGoal === 'bulk' || savedGoal.includes('mas') ? 'selected' : ''}>Budowa masy mięśniowej (Hipertrofia)</option>
                         <option value="Redukcja tkanki tłuszczowej (Spalanie tłuszczu)" ${savedGoal === 'cut' || savedGoal.includes('reduk') ? 'selected' : ''}>Redukcja tkanki tłuszczowej (Rzeźba)</option>
                         <option value="Rekompozycja i utrzymanie formy" ${savedGoal === 'maintenance' || savedGoal.includes('utrzy') ? 'selected' : ''}>Rekompozycja / Utrzymanie formy</option>
@@ -186,11 +204,12 @@ export const AiAnalyticsUI = {
                     </select>
                 </div>
 
-                <div style="display:flex; flex-direction:column; gap:10px;">
-                    <button id="ai-interview-submit" style="width:100%; padding:14px; background:linear-gradient(135deg,#FF9800,#e65100); color:#fff; font-weight:bold; border:none; border-radius:8px; cursor:pointer; font-size:1em; box-shadow:0 4px 15px rgba(255,152,0,0.35);">
-                        🚀 Generuj Kompleksową Analizę
+                <div style="display:flex; flex-direction:column; gap:12px;">
+                    <button id="ai-interview-submit" style="width:100%; padding:16px; background:#FF9800; color:#111118; font-weight:bold; border:none; border-radius:12px; cursor:pointer; font-size:1.05em; display:flex; align-items:center; justify-content:center; gap:8px;">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+                        Generuj Analizę
                     </button>
-                    <button id="ai-interview-cancel" style="width:100%; padding:11px; background:transparent; border:1px solid #444; color:#888; border-radius:8px; cursor:pointer; font-size:0.88em;">
+                    <button id="ai-interview-cancel" style="width:100%; padding:14px; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); color:#8E8E93; border-radius:12px; cursor:pointer; font-size:0.95em; font-weight:600;">
                         Anuluj
                     </button>
                 </div>
@@ -277,11 +296,11 @@ export const AiAnalyticsUI = {
         modal = document.createElement('div');
         modal.id = 'ai-nodata-modal';
         modal.style.cssText = 'position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.88); z-index:9999; display:flex; justify-content:center; align-items:center; padding:20px; box-sizing:border-box;';
-        modal.innerHTML = '<div style="background:linear-gradient(135deg,#1a1a1a,#111); padding:28px 24px; border-radius:14px; border:1px solid #FF9800; width:100%; max-width:360px; text-align:center; box-shadow:0 15px 50px rgba(255,152,0,0.15);">'
-            + '<div style="font-size:3em; margin-bottom:12px;">🏋️</div>'
-            + '<h3 style="color:#FF9800; margin:0 0 12px 0; font-size:1.1em;">Brak danych do analizy</h3>'
-            + '<p style="color:#ccc; font-size:0.88em; line-height:1.6; margin:0 0 20px 0;">Edward nie ma czego analizować — w ciągu ostatnich <strong style="color:#fff;">' + days + ' dni</strong> nie zostały zapisane żadne treningi.<br><br>Zaloguj co najmniej jeden trening, a Edward chętnie oceni Twoje postępy! 💪</p>'
-            + '<button id="ai-nodata-close" style="width:100%; padding:13px; background:linear-gradient(135deg,#FF9800,#b26000); color:#fff; font-weight:bold; border:none; border-radius:8px; cursor:pointer; font-size:0.95em;">Rozumiem, zaraz trenuję!</button>'
+        modal.innerHTML = '<div style="background:rgba(255,255,255,0.05); padding:30px 25px; border-radius:24px; border:1px solid rgba(255,152,0,0.3); width:100%; max-width:360px; text-align:center; box-shadow:0 20px 40px rgba(0,0,0,0.4); backdrop-filter:blur(20px);">'
+            + '<div style="display:inline-flex; align-items:center; justify-content:center; width:64px; height:64px; border-radius:50%; background:rgba(255,152,0,0.1); margin-bottom:20px;"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#FF9800" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg></div>'
+            + '<h3 style="color:#FF9800; margin:0 0 12px 0; font-size:1.2em; font-weight:600;">Brak danych do analizy</h3>'
+            + '<p style="color:#8E8E93; font-size:0.9em; line-height:1.6; margin:0 0 24px 0;">Edward nie ma czego analizować — w ciągu ostatnich <strong style="color:#fff;">' + days + ' dni</strong> nie zostały zapisane żadne treningi.<br><br>Zaloguj co najmniej jeden trening, a Edward chętnie oceni Twoje postępy!</p>'
+            + '<button id="ai-nodata-close" style="width:100%; padding:14px; background:#FF9800; color:#111118; font-weight:bold; border:none; border-radius:12px; cursor:pointer; font-size:1em;">Rozumiem, zaraz trenuję!</button>'
             + '</div>';
         document.body.appendChild(modal);
         document.getElementById('ai-nodata-close').onclick = () => modal.remove();
@@ -306,25 +325,25 @@ export const AiAnalyticsUI = {
         try { parsedContent = marked.parse(analysis.content); } catch(e) {}
 
         modal.innerHTML = `
-            <!-- Top Sticky Navigation Bar -->
-            <div style="background:#111; border-bottom:1px solid rgba(255,152,0,0.3); padding:max(16px, env(safe-area-inset-top, 16px)) 16px 14px 16px; display:flex; justify-content:space-between; align-items:center; flex-shrink:0; gap:8px;">
-                <button id="ai-report-back-top" style="background:rgba(255,255,255,0.1); border:1px solid rgba(255,255,255,0.2); color:#fff; border-radius:8px; font-size:0.88em; font-weight:bold; cursor:pointer; padding:8px 12px; display:flex; align-items:center; gap:5px; flex-shrink:0;">
-                    🔙 Powrót
+            <div style="background:rgba(17,17,24,0.85); backdrop-filter: blur(20px); border-bottom:1px solid rgba(255,255,255,0.1); padding:max(16px, env(safe-area-inset-top, 16px)) 16px 14px 16px; display:flex; justify-content:space-between; align-items:center; flex-shrink:0; gap:8px;">
+                <button id="ai-report-back-top" style="background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); color:#fff; border-radius:12px; font-size:0.88em; font-weight:600; cursor:pointer; padding:8px 12px; display:flex; align-items:center; gap:5px; flex-shrink:0;">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+                    Powrót
                 </button>
 
                 <div style="text-align:center; flex:1; overflow:hidden;">
-                    <div style="color:#FF9800; font-weight:bold; font-size:0.95em; white-space:nowrap; text-overflow:ellipsis; overflow:hidden;">${typeLabel}</div>
-                    <div style="color:#888; font-size:0.75em;">${dateStr}</div>
+                    <div style="color:#FF9800; font-weight:600; font-size:0.95em; white-space:nowrap; text-overflow:ellipsis; overflow:hidden;">${typeLabel}</div>
+                    <div style="color:#8E8E93; font-size:0.75em;">${dateStr}</div>
                 </div>
 
-                <div style="display:flex; gap:6px; flex-shrink:0;">
-                    <button onclick="window.AiAnalyticsUI.importPlanToTemplates(${analysis.id})" title="Zapisz proponowany plan do Szablonów" style="background:#00BFFF; border:none; color:#000; border-radius:6px; font-size:0.8em; font-weight:bold; cursor:pointer; padding:8px 10px;">
-                        📋 Plan
+                <div style="display:flex; gap:8px; flex-shrink:0;">
+                    <button onclick="window.AiAnalyticsUI.importPlanToTemplates(${analysis.id})" title="Zapisz proponowany plan do Szablonów" style="background:rgba(0,191,255,0.15); border:1px solid rgba(0,191,255,0.3); color:#00BFFF; border-radius:12px; font-size:0.8em; font-weight:600; cursor:pointer; padding:8px 10px; display:flex; align-items:center; justify-content:center;">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
                     </button>
-                    <button onclick="window.AiAnalyticsUI.exportTxt(${analysis.id})" title="Pobierz plik tekstowy" style="background:#2ECC71; border:none; color:#fff; border-radius:6px; font-size:0.8em; font-weight:bold; cursor:pointer; padding:8px 10px;">
-                        💾 TXT
+                    <button onclick="window.AiAnalyticsUI.exportTxt(${analysis.id})" title="Pobierz plik tekstowy" style="background:rgba(46,204,113,0.15); border:1px solid rgba(46,204,113,0.3); color:#2ECC71; border-radius:12px; font-size:0.8em; font-weight:600; cursor:pointer; padding:8px 10px; display:flex; align-items:center; justify-content:center;">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
                     </button>
-                    <button id="ai-report-close-top" style="background:rgba(255,68,68,0.2); border:1px solid rgba(255,68,68,0.3); color:#ff6666; width:34px; height:34px; border-radius:50%; font-size:1.3em; cursor:pointer; display:flex; align-items:center; justify-content:center;">&times;</button>
+                    <button id="ai-report-close-top" style="background:rgba(255,69,58,0.15); border:1px solid rgba(255,69,58,0.3); color:#FF453A; width:34px; height:34px; border-radius:12px; font-size:1.3em; cursor:pointer; display:flex; align-items:center; justify-content:center;">&times;</button>
                 </div>
             </div>
 
@@ -335,16 +354,19 @@ export const AiAnalyticsUI = {
 
                     <!-- Action Box at bottom of report -->
                     <div style="margin-top:35px; padding-top:20px; border-top:1px solid rgba(255,152,0,0.3); display:flex; flex-direction:column; gap:12px;">
-                        <button onclick="window.AiAnalyticsUI.importPlanToTemplates(${analysis.id})" style="width:100%; padding:14px; background:linear-gradient(135deg, #00BFFF, #005f99); color:#fff; font-weight:bold; font-size:0.95em; border:none; border-radius:10px; cursor:pointer; box-shadow:0 4px 15px rgba(0,191,255,0.3); display:flex; align-items:center; justify-content:center; gap:8px;">
-                            📋 Zapisz Proponowany Trening jako Szablon Planu
+                        <button onclick="window.AiAnalyticsUI.importPlanToTemplates(${analysis.id})" style="width:100%; padding:14px; background:rgba(0,191,255,0.1); border:1px solid rgba(0,191,255,0.3); color:#00BFFF; font-weight:600; font-size:0.95em; border-radius:12px; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:8px;">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                            Zapisz Proponowany Trening jako Szablon
                         </button>
                         
                         <div style="display:flex; gap:10px;">
-                            <button onclick="window.AiAnalyticsUI.exportTxt(${analysis.id})" style="flex:1; padding:12px; background:rgba(46,204,113,0.15); border:1px solid #2ECC71; color:#2ECC71; font-weight:bold; font-size:0.88em; border-radius:8px; cursor:pointer;">
-                                💾 Pobierz raport TXT
+                            <button onclick="window.AiAnalyticsUI.exportTxt(${analysis.id})" style="flex:1; padding:14px; background:rgba(46,204,113,0.1); border:1px solid rgba(46,204,113,0.3); color:#2ECC71; font-weight:600; font-size:0.9em; border-radius:12px; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:8px;">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                                Raport TXT
                             </button>
-                            <button id="ai-report-back-bottom" style="flex:1; padding:12px; background:#333; border:1px solid #555; color:#fff; font-weight:bold; font-size:0.88em; border-radius:8px; cursor:pointer;">
-                                🔙 Wróć do Aplikacji
+                            <button id="ai-report-back-bottom" style="flex:1; padding:14px; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); color:#fff; font-weight:600; font-size:0.9em; border-radius:12px; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:8px;">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+                                Wróć do Aplikacji
                             </button>
                         </div>
                     </div>

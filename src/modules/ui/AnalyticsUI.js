@@ -42,17 +42,17 @@ export const AnalyticsUI = {
     renderNewAnalytics: (container, trainings, measurements) => {
         container.innerHTML = `
             <!-- TABS / PILLS NAVIGATION -->
-            <div style="padding: 10px; background: #181818; display: flex; gap: 6px; border-bottom: 1px solid #333; position: sticky; top: 0; z-index: 10;">
-                <button id="btn-tab-1" class="analytics-tab-btn active" onclick="window.AnalyticsUI.switchTab(1)" style="flex: 1; background: rgba(0, 191, 255, 0.15); border: 1px solid #00BFFF; color: #00BFFF; font-weight: bold; padding: 10px 2px; border-radius: 12px; font-size: 0.75em; cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; box-sizing: border-box;">
-                    <span style="font-size: 1.6em;">🏋️</span>
-                    <span style="white-space: nowrap;">Trening & Siła</span>
+            <div style="padding: 15px; background: rgba(17,17,24,0.85); backdrop-filter: blur(10px); display: flex; gap: 8px; border-bottom: 1px solid rgba(255,255,255,0.05); position: sticky; top: 0; z-index: 10;">
+                <button id="btn-tab-1" class="analytics-tab-btn active" onclick="window.AnalyticsUI.switchTab(1)" style="flex: 1; background: rgba(0, 191, 255, 0.15); border: 1px solid rgba(0, 191, 255, 0.3); color: #00BFFF; font-weight: 600; padding: 12px 4px; border-radius: 14px; font-size: 0.8em; cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; box-sizing: border-box;">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6.5 6.5 11 11"/><path d="m21 21-1-1"/><path d="m3 3 1 1"/><path d="m18 22 4-4"/><path d="m2 6 4-4"/><path d="m3 10 7-7"/><path d="m14 21 7-7"/></svg>
+                    <span style="white-space: nowrap;">Siła</span>
                 </button>
-                <button id="btn-tab-2" class="analytics-tab-btn" onclick="window.AnalyticsUI.switchTab(2)" style="flex: 1; background: #222; border: 1px solid #444; color: #aaa; padding: 10px 2px; border-radius: 12px; font-size: 0.75em; cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; box-sizing: border-box; transition: all 0.2s;">
-                    <span style="font-size: 1.6em;">📏</span>
+                <button id="btn-tab-2" class="analytics-tab-btn" onclick="window.AnalyticsUI.switchTab(2)" style="flex: 1; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: #8E8E93; padding: 12px 4px; border-radius: 14px; font-size: 0.8em; cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; box-sizing: border-box; transition: all 0.2s;">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
                     <span style="white-space: nowrap;">Sylwetka</span>
                 </button>
-                <button id="btn-tab-3" class="analytics-tab-btn" onclick="window.AnalyticsUI.switchTab(3)" style="flex: 1; background: #222; border: 1px solid #444; color: #aaa; padding: 10px 2px; border-radius: 12px; font-size: 0.75em; cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; box-sizing: border-box; transition: all 0.2s;">
-                    <span style="font-size: 1.6em;">🔋</span>
+                <button id="btn-tab-3" class="analytics-tab-btn" onclick="window.AnalyticsUI.switchTab(3)" style="flex: 1; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: #8E8E93; padding: 12px 4px; border-radius: 14px; font-size: 0.8em; cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; box-sizing: border-box; transition: all 0.2s;">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 18H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h3.19M15 6h2a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2h-3.19"/><line x1="23" y1="13" x2="23" y2="11"/><polyline points="11 6 7 12 13 12 9 18"/></svg>
                     <span style="white-space: nowrap;">Regeneracja</span>
                 </button>
             </div>
@@ -165,39 +165,44 @@ export const AnalyticsUI = {
         const maxCardioCalories = Math.max(...workoutsWithVolume.filter(w => w.type === "cardio" || w.type === "classes" || w.volume === 0).map(wo => wo.calories), 1);
 
         html += `
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 25px;">
-                <div style="background: rgba(0,0,0,0.5); border: 1px solid #00BFFF; padding: 12px; border-radius: 8px; text-align: center;">
-                    <div style="font-size: 1.8em; color: #00BFFF; font-weight: bold; margin-bottom: 3px;">${totalWorkouts}</div>
-                    <div style="font-size: 0.75em; color: #aaa; text-transform: uppercase;">Wszystkich Treningów</div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 25px;">
+                <div style="background: rgba(255,255,255,0.05); border: 1px solid rgba(0, 191, 255, 0.3); padding: 15px; border-radius: 16px; text-align: center; backdrop-filter: blur(10px);">
+                    <div style="font-size: 2em; color: #00BFFF; font-weight: 700; margin-bottom: 4px; line-height: 1;">${totalWorkouts}</div>
+                    <div style="font-size: 0.8em; color: #8E8E93; text-transform: uppercase; font-weight: 600;">Treningów</div>
                 </div>
-                <div style="background: rgba(0,0,0,0.5); border: 1px solid #FF9800; padding: 12px; border-radius: 8px; text-align: center;">
-                    <div style="font-size: 1.8em; color: #FF9800; font-weight: bold; margin-bottom: 3px;">${totalCalories > 0 ? totalCalories.toLocaleString("pl-PL") : "0"} <span style="font-size: 0.6em;">kcal</span></div>
-                    <div style="font-size: 0.75em; color: #aaa; text-transform: uppercase;">Spalone (Smartwatch)</div>
+                <div style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255, 152, 0, 0.3); padding: 15px; border-radius: 16px; text-align: center; backdrop-filter: blur(10px);">
+                    <div style="font-size: 1.8em; color: #FF9800; font-weight: 700; margin-bottom: 4px; line-height: 1;">${totalCalories > 0 ? totalCalories.toLocaleString("pl-PL") : "0"} <span style="font-size: 0.55em;">kcal</span></div>
+                    <div style="font-size: 0.8em; color: #8E8E93; text-transform: uppercase; font-weight: 600;">Spalone</div>
                 </div>
-                <div style="background: rgba(0,0,0,0.5); border: 1px solid #E91E63; padding: 12px; border-radius: 8px; text-align: center;">
-                    <div style="font-size: 1.4em; color: #E91E63; font-weight: bold; margin-bottom: 3px;">${Math.round(totalVolMachine)} kg</div>
-                    <div style="font-size: 0.7em; color: #aaa; text-transform: uppercase;">Tonaż Żelastwa</div>
+                <div style="background: rgba(255,255,255,0.05); border: 1px solid rgba(233, 30, 99, 0.3); padding: 15px; border-radius: 16px; text-align: center; backdrop-filter: blur(10px);">
+                    <div style="font-size: 1.4em; color: #E91E63; font-weight: 700; margin-bottom: 4px; line-height: 1.2;">${Math.round(totalVolMachine)} <span style="font-size: 0.6em;">kg</span></div>
+                    <div style="font-size: 0.75em; color: #8E8E93; text-transform: uppercase; font-weight: 600;">Tonaż Żelastwa</div>
                 </div>
-                <div style="background: rgba(0,0,0,0.5); border: 1px solid #2ECC71; padding: 12px; border-radius: 8px; text-align: center;">
-                    <div style="font-size: 1.4em; color: #2ECC71; font-weight: bold; margin-bottom: 3px;">${Math.round(totalVolBody)} kg</div>
-                    <div style="font-size: 0.7em; color: #aaa; text-transform: uppercase; display: flex; align-items: center; justify-content: center; gap: 4px;">
-                    <span>Tonaż Ciała</span>
-                    <button type="button" onclick="window.AnalyticsUI.showBodyweightInfoModal()" style="background: none; border: none; padding: 0; font-size: 1.1em; cursor: pointer; line-height: 1;" title="Informacja o tonażu ciała">ℹ️</button>
-                </div>
+                <div style="background: rgba(255,255,255,0.05); border: 1px solid rgba(46, 204, 113, 0.3); padding: 15px; border-radius: 16px; text-align: center; backdrop-filter: blur(10px);">
+                    <div style="font-size: 1.4em; color: #2ECC71; font-weight: 700; margin-bottom: 4px; line-height: 1.2;">${Math.round(totalVolBody)} <span style="font-size: 0.6em;">kg</span></div>
+                    <div style="font-size: 0.75em; color: #8E8E93; text-transform: uppercase; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 6px;">
+                        Tonaż Ciała
+                        <button type="button" onclick="window.AnalyticsUI.showBodyweightInfoModal()" style="background: rgba(255,255,255,0.1); border: none; border-radius: 50%; width: 18px; height: 18px; display: flex; align-items: center; justify-content: center; cursor: pointer;" title="Informacja o tonażu ciała">
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+                        </button>
+                    </div>
                 </div>
             </div>
             
-            <h4 style="color: #00BFFF; border-bottom: 1px solid rgba(0,191,255,0.2); padding-bottom: 5px; margin-bottom: 15px;">Zaawansowana Analityka (PRO)</h4>
+            <h4 style="color: #00BFFF; border-bottom: 1px solid rgba(0,191,255,0.2); padding-bottom: 8px; margin-bottom: 20px; font-weight: 600;">Zaawansowana Analityka (PRO)</h4>
             
-            <div style="background: rgba(255,255,255,0.05); padding: 15px; border-radius: 8px; margin-bottom: 20px;">
-                <p style="margin: 0 0 10px 0; font-size: 1.05em; color: #fff;">W tym miesiącu: <strong>${thisMonthWorkouts.length}</strong> aktywności, w tym <strong>${thisMonthVolume > 0 ? (thisMonthVolume >= 1000 ? (thisMonthVolume/1000).toFixed(1) + " t" : thisMonthVolume + " kg") : "0 kg"}</strong> tonażu siłowego!</p>
+            <div style="background: rgba(0, 191, 255, 0.05); border: 1px solid rgba(0, 191, 255, 0.2); padding: 20px; border-radius: 20px; margin-bottom: 25px;">
+                <p style="margin: 0 0 12px 0; font-size: 1.05em; color: #fff; line-height: 1.5;">W tym miesiącu: <strong style="color: #00BFFF;">${thisMonthWorkouts.length}</strong> aktywności, w tym <strong style="color: #00BFFF;">${thisMonthVolume > 0 ? (thisMonthVolume >= 1000 ? (thisMonthVolume/1000).toFixed(1) + " t" : thisMonthVolume + " kg") : "0 kg"}</strong> tonażu siłowego!</p>
                 ${thisMonthWorkouts.length >= 8 
-                    ? '<p style="color: #2ECC71; margin: 0; font-weight: bold;">🔥 Konsekwencja mistrza! Świetna robota!</p>' 
-                    : '<p style="color: #00BFFF; margin: 0;">💪 Każda sesja przybliża Cię do życiowej formy. Nie przestawaj!</p>'}
+                    ? '<p style="color: #2ECC71; margin: 0; font-weight: 600; display: flex; align-items: center; gap: 8px;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg> Konsekwencja mistrza! Świetna robota!</p>' 
+                    : '<p style="color: #00BFFF; margin: 0; display: flex; align-items: center; gap: 8px;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 16 16 12 12 8"/><line x1="8" y1="12" x2="16" y2="12"/></svg> Każda sesja przybliża Cię do życiowej formy. Nie przestawaj!</p>'}
             </div>
             
-            <h5 style="color: #FFD700; margin-top: 15px; margin-bottom: 5px;">📈 Ostatnie 10 sesji treningowych</h5>
-            <div style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 25px;">
+            <h5 style="color: #FFD700; margin-top: 20px; margin-bottom: 12px; font-weight: 600; display: flex; align-items: center; gap: 8px;">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+                Ostatnie 10 sesji treningowych
+            </h5>
+            <div style="display: flex; flex-direction: column; gap: 12px; margin-bottom: 30px;">
                 ${workoutsWithVolume.slice(0,10).reverse().map(w => {
                     const dateStr = new Date(w.date).toLocaleDateString('pl-PL', {weekday:'short', day:'numeric', month:'short'});
                     const isCardioOrClasses = (w.type === "cardio" || w.type === "classes") || (w.volume === 0 && (w.calories > 0 || w.duration_seconds > 0));
@@ -205,40 +210,39 @@ export const AnalyticsUI = {
                     let barColor = "#FF9800";
                     let displayVal = "";
                     let typeBadge = "";
-                    let typeIcon = "🏋️";
+                    let typeIcon = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6.5 6.5 11 11"/><path d="m21 21-1-1"/><path d="m3 3 1 1"/><path d="m18 22 4-4"/><path d="m2 6 4-4"/><path d="m3 10 7-7"/><path d="m14 21 7-7"/></svg>';
 
                     if (isCardioOrClasses) {
                         const isClasses = w.type === "classes" || (!w.type && w.volume === 0);
                         typeBadge = isClasses ? "Zajęcia" : "Cardio";
-                        typeIcon = isClasses ? "🔥" : "🏃";
+                        typeIcon = isClasses ? '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>' : '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 14c-2.3 0-3-1.6-3-3s.7-3 3-3"/><path d="M9 14c-2.3 0-3-1.6-3-3s.7-3 3-3"/><path d="M12 20v-4"/></svg>';
                         barColor = isClasses ? "#FF5722" : "#00BFFF";
                         
-                        displayVal = w.calories > 0 ? `${w.calories} kcal` : (w.durationMinutes ? `⏱️ ${w.durationMinutes} min` : `Aktywność`);
-                        if (w.hr) displayVal += ` <span style="font-size: 0.85em; opacity: 0.85;">(💓${w.hr})</span>`;
+                        displayVal = w.calories > 0 ? `${w.calories} kcal` : (w.durationMinutes ? `${w.durationMinutes} min` : `Aktywność`);
+                        if (w.hr) displayVal += ` <span style="font-size: 0.85em; opacity: 0.85;">(HR: ${w.hr})</span>`;
                     } else {
                         typeBadge = "Siłowe";
-                        typeIcon = "🏋️";
                         const barPct = Math.min(100, Math.max(8, Math.round((w.volume / maxStrengthVol) * 100)));
                         barColor = barPct >= 80 ? "#2ECC71" : (barPct >= 50 ? "#FFD700" : "#FF9800");
                         displayVal = w.volume >= 1000 ? (w.volume/1000).toFixed(1) + " t" : Math.round(w.volume) + " kg";
-                        if (w.calories > 0) displayVal += ` <span style="font-size: 0.8em; opacity: 0.85;">(🔥${w.calories})</span>`;
+                        if (w.calories > 0) displayVal += ` <span style="font-size: 0.8em; opacity: 0.85;">(${w.calories} kcal)</span>`;
                     }
 
                     const workoutNameDisplay = w.name ? w.name : typeBadge;
 
                     return `
-                    <div style="display: flex; align-items: center; background: #1a1a1a; border-radius: 12px; padding: 12px; border: 1px solid rgba(255,255,255,0.05); box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
-                        <div style="width: 44px; height: 44px; border-radius: 50%; background: ${barColor}15; border: 1px solid ${barColor}40; display: flex; align-items: center; justify-content: center; font-size: 1.3em; flex-shrink: 0;">
+                    <div style="display: flex; align-items: center; background: rgba(255,255,255,0.03); border-radius: 16px; padding: 14px; border: 1px solid rgba(255,255,255,0.05); box-shadow: 0 4px 10px rgba(0,0,0,0.1);">
+                        <div style="width: 48px; height: 48px; border-radius: 14px; background: ${barColor}15; border: 1px solid ${barColor}40; display: flex; align-items: center; justify-content: center; color: ${barColor}; flex-shrink: 0;">
                             ${typeIcon}
                         </div>
-                        <div style="flex: 1; margin-left: 12px; overflow: hidden;">
-                            <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 4px;">
-                                <span style="font-weight: bold; font-size: 0.95em; color: #eee; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 65%;">${workoutNameDisplay}</span>
-                                <span style="font-size: 0.75em; color: #888;">${dateStr}</span>
+                        <div style="flex: 1; margin-left: 14px; overflow: hidden;">
+                            <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 6px;">
+                                <span style="font-weight: 600; font-size: 0.95em; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 65%;">${workoutNameDisplay}</span>
+                                <span style="font-size: 0.75em; color: #8E8E93;">${dateStr}</span>
                             </div>
                             <div style="display: flex; justify-content: space-between; align-items: center;">
-                                <span style="font-size: 0.8em; color: #aaa;">${typeBadge}</span>
-                                <span style="font-weight: bold; font-size: 1em; color: ${barColor};">${displayVal}</span>
+                                <span style="font-size: 0.8em; color: #8E8E93; text-transform: uppercase;">${typeBadge}</span>
+                                <span style="font-weight: 700; font-size: 1.05em; color: ${barColor};">${displayVal}</span>
                             </div>
                         </div>
                     </div>`;
@@ -265,30 +269,38 @@ export const AnalyticsUI = {
             });
         });
 
-        const recordsList = Object.values(exerciseMaxMap).sort((a, b) => b.actualWeight - a.actualWeight);
-        if (recordsList.length > 0) {
-            html += `
-                <div style="margin-top: 25px; margin-bottom: 25px;">
-                    <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,215,0,0.3); padding-bottom: 5px; margin-bottom: 8px;">
-                        <h4 style="color: #FFD700; margin: 0; display: flex; align-items: center; gap: 6px; font-size: 1.1em;">🏆 Twoje Rekordy Siłowe</h4>
-                        <button type="button" onclick="window.AnalyticsUI.show1RmInfoModal()" style="background: rgba(255,215,0,0.15); border: 1px solid #FFD700; color: #FFD700; border-radius: 50%; width: 26px; height: 26px; font-size: 0.9em; cursor: pointer; display: flex; align-items: center; justify-content: center; font-weight: bold; line-height: 1;" title="Czym jest 1RM?">ℹ️</button>
+                <div style="margin-top: 30px; margin-bottom: 25px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,215,0,0.3); padding-bottom: 8px; margin-bottom: 15px;">
+                        <h4 style="color: #FFD700; margin: 0; display: flex; align-items: center; gap: 8px; font-size: 1.1em; font-weight: 600;">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/></svg>
+                            Twoje Rekordy Siłowe
+                        </h4>
+                        <button type="button" onclick="window.AnalyticsUI.show1RmInfoModal()" style="background: rgba(255,215,0,0.15); border: 1px solid rgba(255,215,0,0.3); color: #FFD700; border-radius: 50%; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; cursor: pointer;" title="Czym jest 1RM?">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+                        </button>
                     </div>
-                    <div style="display: flex; flex-wrap: wrap; gap: 10px;">
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
                         ${recordsList.slice(0, 4).map(r => `
-                            <div style="flex: 1 1 calc(50% - 10px); min-width: 140px; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,215,0,0.2); border-radius: 8px; padding: 10px; display: flex; flex-direction: column; justify-content: space-between;">
-                                <div style="font-size: 0.85em; color: #eee; font-weight: bold; margin-bottom: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${r.name}">${r.name}</div>
+                            <div style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,215,0,0.2); border-radius: 12px; padding: 14px; display: flex; flex-direction: column; justify-content: space-between; backdrop-filter: blur(10px);">
+                                <div style="font-size: 0.85em; color: #fff; font-weight: 600; margin-bottom: 8px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${r.name}">${r.name}</div>
                                 <div>
-                                    <div style="font-size: 1.25em; color: #FFD700; font-weight: 800; line-height: 1.1; margin-bottom: 4px;">${r.actualWeight} <span style="font-size: 0.65em; color: #fff; font-weight: normal;">kg</span> <span style="font-size: 0.8em; color: #aaa; font-weight: normal;">x ${r.reps}</span></div>
-                                    <div style="font-size: 0.72em; color: #bbb;">${new Date(r.date).toLocaleDateString("pl-PL", {day:"numeric", month:"short"})}</div>
-                                    <div style="font-size: 0.7em; color: #00BFFF; margin-top: 6px; display: flex; align-items: center; gap: 4px;">
-                                        <span style="background: rgba(0, 191, 255, 0.15); padding: 2px 6px; border-radius: 4px; border: 1px solid rgba(0, 191, 255, 0.3);">ℹ️ Szac. 1RM: ~${r.max1Rm.toFixed(1)} kg</span>
+                                    <div style="font-size: 1.4em; color: #FFD700; font-weight: 700; line-height: 1.1; margin-bottom: 6px;">${r.actualWeight} <span style="font-size: 0.65em; color: #8E8E93; font-weight: normal;">kg</span> <span style="font-size: 0.7em; color: #8E8E93; font-weight: normal;">x ${r.reps}</span></div>
+                                    <div style="font-size: 0.75em; color: #8E8E93; margin-bottom: 8px;">${new Date(r.date).toLocaleDateString("pl-PL", {day:"numeric", month:"short"})}</div>
+                                    <div style="font-size: 0.75em; color: #00BFFF; display: flex; align-items: center; gap: 4px;">
+                                        <span style="background: rgba(0, 191, 255, 0.1); padding: 4px 8px; border-radius: 6px; border: 1px solid rgba(0, 191, 255, 0.2); display: flex; align-items: center; gap: 4px;">
+                                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+                                            1RM: ~${r.max1Rm.toFixed(1)} kg
+                                        </span>
                                     </div>
                                 </div>
                             </div>
                         `).join("")}
                     </div>
-                    <div style="text-align: center; margin-top: 12px;">
-                        <button type="button" onclick="window.AnalyticsUI.shareRecords()" class="action-button" style="background: linear-gradient(135deg, #FFD700, #FF9800); color: #000; font-weight: bold; border: none; padding: 10px 18px; border-radius: 6px; font-size: 0.9em; cursor: pointer; width: 100%; box-shadow: 0 4px 12px rgba(255,215,0,0.25);">📤 Udostępnij swoje rekordy</button>
+                    <div style="text-align: center; margin-top: 15px;">
+                        <button type="button" onclick="window.AnalyticsUI.shareRecords()" style="background: rgba(255,215,0,0.15); color: #FFD700; border: 1px solid rgba(255,215,0,0.3); padding: 12px 18px; border-radius: 12px; font-size: 0.9em; font-weight: 600; cursor: pointer; width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px;">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+                            Udostępnij swoje rekordy
+                        </button>
                     </div>
                 </div>
             `;
@@ -301,14 +313,17 @@ export const AnalyticsUI = {
         
         if (exListOptions.length > 0) {
             html += `
-                <div style="margin-top: 30px; margin-bottom: 25px;">
-                    <h4 style="color: #2ECC71; border-bottom: 1px solid rgba(46,204,113,0.2); padding-bottom: 5px; margin-bottom: 15px;">📈 Śledzenie Progresu (Wykres Max Ciężaru)</h4>
-                    <div style="background: rgba(255,255,255,0.05); padding: 15px; border-radius: 8px;">
-                        <select id="analytics-exercise-select" onchange="window.AnalyticsUI.renderExerciseChart(this.value)" style="width: 100%; padding: 10px; border-radius: 6px; background: #222; border: 1px solid #2ECC71; color: #fff; font-size: 1em; margin-bottom: 15px;">
+                <div style="margin-top: 35px; margin-bottom: 25px;">
+                    <h4 style="color: #2ECC71; border-bottom: 1px solid rgba(46,204,113,0.3); padding-bottom: 8px; margin-bottom: 15px; display: flex; align-items: center; gap: 8px; font-size: 1.1em; font-weight: 600;">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+                        Śledzenie Progresu (Wykres 1RM)
+                    </h4>
+                    <div style="background: rgba(255,255,255,0.03); padding: 20px; border-radius: 16px; border: 1px solid rgba(255,255,255,0.05); backdrop-filter: blur(10px);">
+                        <select id="analytics-exercise-select" onchange="window.AnalyticsUI.renderExerciseChart(this.value)" style="width: 100%; padding: 14px; border-radius: 12px; background: rgba(0,0,0,0.3); border: 1px solid rgba(46,204,113,0.3); color: #fff; font-size: 0.95em; margin-bottom: 15px; outline: none;">
                             <option value="">-- Wybierz ćwiczenie --</option>
                             ${exListOptions.map(name => `<option value="${name}">${name}</option>`).join('')}
                         </select>
-                        <div id="analytics-exercise-chart-container" style="min-height: 160px; display: flex; align-items: center; justify-content: center; color: #888; font-size: 0.9em;">Wybierz ćwiczenie z listy.</div>
+                        <div id="analytics-exercise-chart-container" style="min-height: 180px; display: flex; align-items: center; justify-content: center; color: #8E8E93; font-size: 0.9em; border-radius: 12px; background: rgba(0,0,0,0.1);">Wybierz ćwiczenie z listy.</div>
                     </div>
                 </div>
             `;
@@ -384,20 +399,24 @@ export const AnalyticsUI = {
 
             if (athleticCorrectionApplied) {
                 athleticCorrectionHtml = `
-                    <div style="background: rgba(233, 30, 99, 0.1); border: 1px solid rgba(233, 30, 99, 0.5); border-radius: 8px; padding: 12px; margin-bottom: 15px; text-align: center;">
-                        <div style="font-size: 1.5em; margin-bottom: 4px;">👩‍🎤</div>
-                        <div style="color: #E91E63; font-weight: bold; font-size: 0.85em; text-transform: uppercase;">Korekta Atletyczna Aktywna</div>
-                        <div style="font-size: 0.75em; color: #aaa; margin-top: 4px;">Wykryto niski wskaźnik WHR (<0.75). Wzór US Navy został zoptymalizowany (redukcja obwodu bioder), by prawidłowo odzwierciedlić hipertrofię.</div>
+                    <div style="background: rgba(233, 30, 99, 0.05); border: 1px solid rgba(233, 30, 99, 0.3); border-radius: 12px; padding: 14px; margin-bottom: 20px; text-align: center; backdrop-filter: blur(10px);">
+                        <div style="display: flex; justify-content: center; margin-bottom: 6px;">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#E91E63" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a5 5 0 0 1 5 5v2a5 5 0 0 1-5 5h0a5 5 0 0 1-5-5V7a5 5 0 0 1 5-5Z"/><path d="M19 22v-2a5 5 0 0 0-5-5h-4a5 5 0 0 0-5 5v2"/><path d="M12 14v4"/></svg>
+                        </div>
+                        <div style="color: #E91E63; font-weight: 600; font-size: 0.85em; text-transform: uppercase;">Korekta Atletyczna Aktywna</div>
+                        <div style="font-size: 0.75em; color: #8E8E93; margin-top: 6px; line-height: 1.4;">Wykryto niski wskaźnik WHR (<0.75). Wzór US Navy został zoptymalizowany, by odzwierciedlić hipertrofię mięśni.</div>
                     </div>
                 `;
             }
 
             bfHtml = `
-                <div style="background: rgba(0,0,0,0.5); border: 1px solid #00BFFF; padding: 15px; border-radius: 8px; margin-bottom: 15px; position: relative;">
-                    <strong style="color: #00BFFF; font-size: 1.2em;">Szacunkowy BF%</strong>
-                    <button onclick="window.AnalyticsUI.showInfoModal('bf', ${bf})" style="position: absolute; right: 15px; top: 15px; background: none; border: none; color: #00BFFF; font-size: 1.2em; cursor: pointer;">ℹ️</button>
-                    <div style="font-size: 2em; font-weight: bold; margin: 10px 0;">${bf.toFixed(1)} <span style="font-size: 0.5em; font-weight: normal;">%</span></div>
-                    <p style="margin: 0; font-size: 0.9em; font-weight: bold; color: #fff;">${bfText}</p>
+                <div style="background: rgba(255,255,255,0.05); border: 1px solid rgba(0, 191, 255, 0.3); padding: 20px; border-radius: 16px; margin-bottom: 16px; position: relative; backdrop-filter: blur(10px);">
+                    <strong style="color: #00BFFF; font-size: 1.1em; font-weight: 600;">Szacunkowy BF%</strong>
+                    <button onclick="window.AnalyticsUI.showInfoModal('bf', ${bf})" style="position: absolute; right: 20px; top: 20px; background: rgba(0, 191, 255, 0.1); border: none; color: #00BFFF; border-radius: 50%; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; cursor: pointer;">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+                    </button>
+                    <div style="font-size: 2.2em; font-weight: 700; margin: 12px 0; color: #fff;">${bf.toFixed(1)} <span style="font-size: 0.5em; font-weight: normal; color: #8E8E93;">%</span></div>
+                    <p style="margin: 0; font-size: 0.9em; font-weight: 500; color: #00BFFF;">${bfText}</p>
                 </div>
             `;
 
@@ -423,16 +442,18 @@ export const AnalyticsUI = {
                 }
 
                 ffmiHtml = `
-                    <div style="background: rgba(0,0,0,0.5); border: 1px solid #2ECC71; padding: 15px; border-radius: 8px; margin-bottom: 15px; position: relative;">
-                        <strong style="color: #2ECC71; font-size: 1.2em;">FFMI (Index Beztłuszczowy)</strong>
-                        <button onclick="window.AnalyticsUI.showInfoModal('ffmi', ${normalizedFfmi})" style="position: absolute; right: 15px; top: 15px; background: none; border: none; color: #2ECC71; font-size: 1.2em; cursor: pointer;">ℹ️</button>
-                        <div style="font-size: 2em; font-weight: bold; margin: 10px 0;">${normalizedFfmi.toFixed(1)}</div>
-                        <p style="margin: 0; font-size: 0.9em; font-weight: bold; color: #fff;">${ffmiText}</p>
+                    <div style="background: rgba(255,255,255,0.05); border: 1px solid rgba(46, 204, 113, 0.3); padding: 20px; border-radius: 16px; margin-bottom: 16px; position: relative; backdrop-filter: blur(10px);">
+                        <strong style="color: #2ECC71; font-size: 1.1em; font-weight: 600;">FFMI (Index Beztłuszczowy)</strong>
+                        <button onclick="window.AnalyticsUI.showInfoModal('ffmi', ${normalizedFfmi})" style="position: absolute; right: 20px; top: 20px; background: rgba(46, 204, 113, 0.1); border: none; color: #2ECC71; border-radius: 50%; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; cursor: pointer;">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+                        </button>
+                        <div style="font-size: 2.2em; font-weight: 700; margin: 12px 0; color: #fff;">${normalizedFfmi.toFixed(1)}</div>
+                        <p style="margin: 0; font-size: 0.9em; font-weight: 500; color: #2ECC71;">${ffmiText}</p>
                     </div>
                 `;
             }
         } else {
-            bfHtml = `<div style="background: rgba(255, 68, 68, 0.1); border-left: 4px solid #ff4444; padding: 15px; margin-bottom: 15px; border-radius: 4px;"><strong style="color: #ff4444;">Brak danych BF%</strong><p style="margin: 5px 0 0 0; font-size: 0.9em; color: #ddd;">Uzupełnij: ${missingForBF.join(", ")}.</p></div>`;
+            bfHtml = `<div style="background: rgba(255, 68, 68, 0.05); border: 1px solid rgba(255, 68, 68, 0.3); border-radius: 12px; padding: 15px; margin-bottom: 20px; text-align: center;"><strong style="color: #ff4444; font-size: 1.1em;">Brak danych BF%</strong><p style="margin: 8px 0 0 0; font-size: 0.9em; color: #8E8E93;">Uzupełnij: ${missingForBF.join(", ")}.</p></div>`;
         }
 
         if (waist && hips) {
@@ -449,18 +470,20 @@ export const AnalyticsUI = {
             }
 
             whrHtml = `
-                <div style="background: rgba(0,0,0,0.5); border: 1px solid #9B59B6; padding: 15px; border-radius: 8px; margin-bottom: 15px; position: relative;">
-                    <strong style="color: #9B59B6; font-size: 1.2em;">WHR (Talia-Biodra)</strong>
-                    <button onclick="window.AnalyticsUI.showInfoModal('whr', ${whr})" style="position: absolute; right: 15px; top: 15px; background: none; border: none; color: #9B59B6; font-size: 1.2em; cursor: pointer;">ℹ️</button>
-                    <div style="font-size: 2em; font-weight: bold; margin: 10px 0;">${whr.toFixed(2)}</div>
-                    <p style="margin: 0; font-size: 0.9em; font-weight: bold; color: #fff;">${whrText}</p>
+                <div style="background: rgba(255,255,255,0.05); border: 1px solid rgba(155, 89, 182, 0.3); padding: 20px; border-radius: 16px; margin-bottom: 25px; position: relative; backdrop-filter: blur(10px);">
+                    <strong style="color: #9B59B6; font-size: 1.1em; font-weight: 600;">WHR (Talia-Biodra)</strong>
+                    <button onclick="window.AnalyticsUI.showInfoModal('whr', ${whr})" style="position: absolute; right: 20px; top: 20px; background: rgba(155, 89, 182, 0.1); border: none; color: #9B59B6; border-radius: 50%; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; cursor: pointer;">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+                    </button>
+                    <div style="font-size: 2.2em; font-weight: 700; margin: 12px 0; color: #fff;">${whr.toFixed(2)}</div>
+                    <p style="margin: 0; font-size: 0.9em; font-weight: 500; color: #9B59B6;">${whrText}</p>
                 </div>
             `;
         }
 
         let trendsHtml = '';
         if (sortedMeasurements.length > 1) {
-            trendsHtml += '<h5 style="color: #00BFFF; margin-top: 15px; margin-bottom: 10px;">Zmiany (od pierwszego wpisu)</h5>';
+            trendsHtml += '<h5 style="color: #FF9800; margin-top: 25px; margin-bottom: 15px; font-weight: 600; font-size: 1.1em;">Zmiany (od pierwszego wpisu)</h5>';
             const dict = { weight: 'Waga', chest: 'Klatka', waist: 'Talia', hips: 'Biodra', thigh: 'Udo', biceps: 'Biceps', neck: 'Szyja' };
             let diffs = '';
             for (const [key, label] of Object.entries(dict)) {
@@ -468,19 +491,22 @@ export const AnalyticsUI = {
                     const v = last[key] - first[key];
                     if (v !== 0) {
                         const sign = v > 0 ? '+' : '';
-                        const color = v > 0 ? (key==='waist' ? '#ff4444' : '#2ECC71') : (key==='waist' ? '#2ECC71' : '#ff4444');
-                        diffs += `<div style="display: flex; justify-content: space-between; margin-bottom: 5px; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 5px;"><span>${label}</span><strong style="color: ${color};">${v > 0 ? '↗️' : '↘️'} ${sign}${v.toFixed(1)} ${key==='weight'?'kg':'cm'}</strong></div>`;
+                        const color = v > 0 ? (key==='waist' ? '#FF453A' : '#2ECC71') : (key==='waist' ? '#2ECC71' : '#FF453A');
+                        const iconSvg = v > 0 
+                            ? `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/></svg>`
+                            : `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="7" y1="7" x2="17" y2="17"/><polyline points="17 7 17 17 7 17"/></svg>`;
+                        diffs += `<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 8px; font-size: 0.95em;"><span style="color: #8E8E93;">${label}</span><strong style="color: ${color}; display: flex; align-items: center; gap: 4px;">${iconSvg} ${sign}${v.toFixed(1)} ${key==='weight'?'kg':'cm'}</strong></div>`;
                     }
                 }
             }
-            if(diffs) trendsHtml += `<div style="background: rgba(255,255,255,0.05); padding: 15px; border-radius: 8px;">${diffs}</div>`;
+            if(diffs) trendsHtml += `<div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.05); padding: 16px; border-radius: 16px; backdrop-filter: blur(10px);">${diffs}</div>`;
         }
         
         return athleticCorrectionHtml + bfHtml + ffmiHtml + whrHtml + trendsHtml;
     },
 
     buildRecoveryTab: (trainings) => {
-        if (trainings.length === 0) return '<p style="color: #888;">Brak danych treningowych do analizy regeneracji.</p>';
+        if (trainings.length === 0) return '<p style="color: #8E8E93; text-align: center;">Brak danych treningowych do analizy regeneracji.</p>';
         const now = Date.now();
         const last48h = now - (48 * 60 * 60 * 1000);
         const recentTrainings = trainings.filter(t => (t.startTime || new Date(t.date).getTime()) > last48h);
@@ -502,22 +528,28 @@ export const AnalyticsUI = {
         let atlasCards = '';
         Object.keys(muscles).forEach(key => {
             const m = muscles[key];
-            const bg = m.status === 'red' ? 'rgba(231, 76, 60, 0.1)' : 'rgba(46, 204, 113, 0.1)';
-            const border = m.status === 'red' ? '#E74C3C' : '#2ECC71';
-            const icon = m.status === 'red' ? '🔴 Zmęczone' : '🟢 Gotowe';
-            const shadow = m.status === 'red' ? 'box-shadow: 0 0 10px rgba(231,76,60,0.2);' : '';
+            const bg = m.status === 'red' ? 'rgba(255, 69, 58, 0.1)' : 'rgba(46, 204, 113, 0.1)';
+            const border = m.status === 'red' ? 'rgba(255, 69, 58, 0.3)' : 'rgba(46, 204, 113, 0.3)';
+            const color = m.status === 'red' ? '#FF453A' : '#2ECC71';
+            const iconSvg = m.status === 'red' 
+                ? '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>' 
+                : '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>';
+            const label = m.status === 'red' ? 'Zmęczone' : 'Gotowe';
+
             atlasCards += `
-                <div style="background: ${bg}; border: 1px solid ${border}; padding: 12px; border-radius: 8px; text-align: center; display: flex; flex-direction: column; justify-content: center; ${shadow}">
-                    <strong style="color: #fff; font-size: 0.9em; margin-bottom: 5px;">${m.name}</strong>
-                    <span style="font-size: 0.8em; color: ${border}; font-weight: bold;">${icon}</span>
+                <div style="background: ${bg}; border: 1px solid ${border}; padding: 16px 12px; border-radius: 16px; text-align: center; display: flex; flex-direction: column; justify-content: center; backdrop-filter: blur(10px);">
+                    <strong style="color: #fff; font-size: 0.9em; margin-bottom: 8px;">${m.name}</strong>
+                    <span style="font-size: 0.8em; color: ${color}; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 6px;">
+                        ${iconSvg} ${label}
+                    </span>
                 </div>
             `;
         });
 
         return `
-            <div style="background: rgba(0,0,0,0.3); padding: 15px; border-radius: 8px; border: 1px solid #00BFFF; margin-bottom: 20px;">
-                <p style="margin: 0 0 15px 0; font-size: 0.9em; color: #ccc;">Analiza na podstawie treningów z ostatnich 48 godzin. Partie oznaczone na czerwono (🔴) zaangażowano niedawno i potrzebują czasu na regenerację. Unikaj obciążania ich dzisiaj!</p>
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+            <div style="background: rgba(255,255,255,0.03); padding: 20px; border-radius: 16px; border: 1px solid rgba(255,255,255,0.05); margin-bottom: 25px; backdrop-filter: blur(10px);">
+                <p style="margin: 0 0 20px 0; font-size: 0.9em; color: #8E8E93; line-height: 1.5;">Analiza na podstawie treningów z ostatnich 48 godzin. Partie oznaczone na czerwono zaangażowano niedawno i potrzebują czasu na regenerację. Unikaj obciążania ich dzisiaj!</p>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
                     ${atlasCards}
                 </div>
             </div>

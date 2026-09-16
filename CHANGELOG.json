@@ -1,5 +1,12 @@
 [
   {
+    "version": "v2026.9.16.07",
+    "date": "2026-09-16",
+    "changes": [
+      "🚀 Kompletny re-design aplikacji: Historia i Analizy\\n- Wyrzucono ostatnie emoji z aplikacji (zmieniono na ikony wektorowe)\\n- Wprowadzono Glassmorphism i wygładzone tła do Historii treningów\\n- Analizy (Siła, Sylwetka, Regeneracja) oraz Analizy AI (Trener Edward) posiadają teraz czysty, minimalistyczny układ zgodny z całą aplikacją\\n- Ujednolicona kolorystyka we wszystkich modułach (Dark + Orange)"
+    ]
+  },
+  {
     "version": "v2026.9.16.06",
     "date": "2026-09-16",
     "changes": [
