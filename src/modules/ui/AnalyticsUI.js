@@ -269,7 +269,9 @@ export const AnalyticsUI = {
             });
         });
 
-        if (Object.keys(exerciseMaxMap).length > 0) {
+        const recordsList = Object.values(exerciseMaxMap).sort((a,b) => b.max1Rm - a.max1Rm); // Sort by 1RM instead of just weight for better PR display
+
+        if (recordsList.length > 0) {
             html += `
                 <div style="margin-top: 30px; margin-bottom: 25px;">
                     <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,215,0,0.3); padding-bottom: 8px; margin-bottom: 15px;">
