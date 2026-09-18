@@ -813,7 +813,7 @@ export const TrainingUI = {
                     
                     if (plannedPreview) {
                         plannedPreview.innerHTML = `
-                            <div style="background-color: #222; border: 1px solid #FF9800; border-radius: 8px; padding: 15px;">
+                            <div style="background: rgba(255, 152, 0, 0.1); border: 1px solid rgba(255, 152, 0, 0.3); backdrop-filter: blur(10px); border-radius: 12px; padding: 15px; box-shadow: 0 4px 6px rgba(0,0,0,0.3);">
                                 <strong style="color: #FF9800; font-size: 1.1em;">${tName}</strong><br>
                                 <span style="font-size: 0.9em; color: #aaa;">${typeLabel} ${template && template.exercises ? `| Ćwiczeń: ${template.exercises.length}` : ""}</span>
                                 <div style="margin-top: 10px;">
@@ -842,7 +842,7 @@ export const TrainingUI = {
                     plannedState.style.display = 'block';
                     if (plannedPreview) {
                         plannedPreview.innerHTML = `
-                            <div style="background-color: rgba(231, 76, 60, 0.1); border: 1px dashed #E74C3C; border-radius: 8px; padding: 15px;">
+                            <div style="background: rgba(231, 76, 60, 0.05); border: 1px dashed rgba(231, 76, 60, 0.4); backdrop-filter: blur(10px); border-radius: 12px; padding: 15px; box-shadow: 0 4px 6px rgba(0,0,0,0.3);">
                                 <strong style="color: #E74C3C; font-size: 1.1em;">Trening odwołany</strong><br>
                                 <span style="font-size: 0.9em; color: #aaa;">Ten dzień został celowo pominięty z harmonogramu.</span>
                                 <div style="margin-top: 10px;">
@@ -866,14 +866,14 @@ export const TrainingUI = {
                 existingTrainingsOnDay.forEach(existingTraining => {
                     const nameDisplay = existingTraining.name ? `<strong style="color: #00BFFF; font-size: 1.1em;">${existingTraining.name}</strong><br>` : '';
                     html += `
-                        <div style="background-color: #222; border: 1px solid #444; margin-bottom: 15px; border-radius: 8px; padding: 15px; text-align: left;">
+                        <div style="background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); backdrop-filter: blur(10px); margin-bottom: 15px; border-radius: 12px; padding: 15px; text-align: left; box-shadow: 0 4px 6px rgba(0,0,0,0.3);">
                             ${nameDisplay}
                             <span style="font-size: 0.9em;">Czas treningu: ${TrainingUI.formatTime(existingTraining.duration_seconds)}</span><br>
                             <span style="font-size: 0.8em; color: #888;">Liczba ćwiczeń: ${existingTraining.exercises.length}</span>
                             <div style="margin-top: 10px; display: flex; gap: 8px;">
-                                <button onclick="window.TrainingUI.viewTraining(${existingTraining.id})" class="action-button" style="flex: 1; background-color: #3498db; border-color: #3498db; color: #fff; font-size: 0.9em; padding: 8px;">🔍 Podgląd</button>
-                                <button onclick="window.TrainingUI.continueTraining(${existingTraining.id})" class="action-button pulse" style="flex: 1; background-color: #2ECC71; border-color: #2ECC71; color: #fff; font-size: 0.9em; padding: 8px;">▶ Kontynuuj</button>
-                                <button onclick="window.TrainingUI.deleteTraining(${existingTraining.id})" class="action-button" style="flex: 1; background-color: rgba(231, 76, 60, 0.1); border-color: rgba(231, 76, 60, 0.3); color: #E74C3C; font-size: 0.9em; padding: 8px;">🗑 Usuń</button>
+                                <button onclick="window.TrainingUI.viewTraining(${existingTraining.id})" class="action-button" style="flex: 1; background: rgba(52, 152, 219, 0.15); border: 1px solid rgba(52, 152, 219, 0.4); color: #3498db; border-radius: 8px; font-size: 0.9em; padding: 8px; backdrop-filter: blur(5px);"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:4px; vertical-align:middle;"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>Podgląd</button>
+                                <button onclick="window.TrainingUI.continueTraining(${existingTraining.id})" class="action-button pulse" style="flex: 1; background: rgba(46, 204, 113, 0.15); border: 1px solid rgba(46, 204, 113, 0.4); color: #2ecc71; border-radius: 8px; font-size: 0.9em; padding: 8px; backdrop-filter: blur(5px);"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:4px; vertical-align:middle;"><polygon points="5 3 19 12 5 21 5 3"/></svg>Kontynuuj</button>
+                                <button onclick="window.TrainingUI.deleteTraining(${existingTraining.id})" class="action-button" style="flex: 1; background: rgba(231, 76, 60, 0.15); border: 1px solid rgba(231, 76, 60, 0.4); color: #e74c3c; border-radius: 8px; font-size: 0.9em; padding: 8px; backdrop-filter: blur(5px);"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:4px; vertical-align:middle;"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/></svg>Usuń</button>
                             </div>
                         </div>
                     `;
@@ -949,7 +949,7 @@ export const TrainingUI = {
                                         ${exercisesPreview}
                                     </div>
                                     <button onclick="window.TrainingUI.startTraining(${idx})" class="action-button" style="width: 100%; background-color: #2ECC71; border-color: #2ECC71; color: #fff; font-weight: bold;">
-                                        📋 Skopiuj do tego dnia
+                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 4px; vertical-align: middle;"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1" ry="1"/></svg>Skopiuj do tego dnia
                                     </button>
                                 </div>
                             </div>
