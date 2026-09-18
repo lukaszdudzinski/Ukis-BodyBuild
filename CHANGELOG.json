@@ -1,5 +1,12 @@
 [
   {
+    "version": "v2026.9.18.02",
+    "date": "2026-09-18",
+    "changes": [
+      "✨ Poprawki UX: modal szablonów glassmorphism, poprawny SVG hantla, owijanie nazw ćwiczeń, widoczność przycisku Pauza"
+    ]
+  },
+  {
     "version": "v2026.9.18.01",
     "date": "2026-09-18",
     "changes": [

@@ -317,14 +317,14 @@ export const TrainingUI = {
 
         let html = `
             <div id="templates-modal-overlay" onclick="if(event.target.id === 'templates-modal-overlay') { this.remove(); window.TrainingUI.renderCalendar(); }" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 10000; display: flex; justify-content: center; align-items: center; padding: 16px; box-sizing: border-box;">
-                <div style="background: #1e1e1e; border: 1px solid #FF9800; border-radius: 14px; width: 100%; max-width: 480px; max-height: 85vh; display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 15px 50px rgba(0,0,0,0.7); box-sizing: border-box;">
+                <div style="background: rgba(30, 30, 30, 0.6); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border: 1px solid rgba(255, 152, 0, 0.4); border-radius: 20px; width: 100%; max-width: 480px; max-height: 85vh; display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 15px 50px rgba(0,0,0,0.7); box-sizing: border-box;">
                     
                     <!-- Fixed Header with Title and Close X -->
-                    <div style="padding: 16px 20px; border-bottom: 1px solid rgba(255,152,0,0.3); display: flex; justify-content: space-between; align-items: center; background: #181818; flex-shrink: 0;">
+                    <div style="padding: 16px 20px; border-bottom: 1px solid rgba(255,152,0,0.3); display: flex; justify-content: space-between; align-items: center; background: rgba(0, 0, 0, 0.3); flex-shrink: 0;">
                         <div>
                             <h3 style="color: #FF9800; margin: 0; font-size: 1.15em;">Szablony Planów Treningowych</h3>
                             <p style="color: #888; font-size: 0.8em; margin: 3px 0 0 0;">Wybierz zapisany plan by rozpocząć sesję:</p>
-<button onclick="window.TrainingUI.importTemplate()" style="margin-top: 8px; background: #4CAF50; color: #fff; border: none; padding: 5px 10px; border-radius: 5px; font-size: 0.85em; font-weight: bold; cursor: pointer;">📥 Importuj z JSON</button>
+<button onclick="window.TrainingUI.importTemplate()" style="margin-top: 8px; background: rgba(76, 175, 80, 0.2); border: 1px solid rgba(76, 175, 80, 0.4); color: #81c784; padding: 6px 12px; border-radius: 8px; font-size: 0.85em; font-weight: bold; cursor: pointer;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 4px; vertical-align: middle;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></svg>Importuj z JSON</button>
                         </div>
                         <button onclick="document.getElementById('templates-modal-overlay').remove(); window.TrainingUI.renderCalendar();" style="background: rgba(255,255,255,0.1); border: none; color: #fff; width: 34px; height: 34px; border-radius: 50%; font-size: 1.4em; cursor: pointer; display: flex; align-items: center; justify-content: center; line-height: 1;">&times;</button>
                     </div>
@@ -352,7 +352,7 @@ export const TrainingUI = {
             ];
 
             let daysHtml = `<div style="display: flex; gap: 4px; justify-content: center; flex-wrap: wrap; margin-top: 5px; padding-top: 10px; border-top: 1px dashed #444;">
-                <div style="width: 100%; text-align: center; font-size: 0.85em; color: #888; margin-bottom: 4px;">📅 Automatyczny Harmonogram w Kalendarzu:</div>`;
+                <div style="width: 100%; text-align: center; font-size: 0.85em; color: #888; margin-bottom: 4px;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 4px; vertical-align: middle;"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" x2="16" y1="2" y2="6"/><line x1="8" x2="8" y1="2" y2="6"/><line x1="3" x2="21" y1="10" y2="10"/></svg>Automatyczny Harmonogram w Kalendarzu:</div>`;
             days.forEach(d => {
                 const isSelected = mySchedule.daysOfWeek.includes(d.num);
                 const bg = isSelected ? '#FF9800' : 'rgba(255,255,255,0.05)';
@@ -363,10 +363,10 @@ export const TrainingUI = {
             daysHtml += `</div>`;
 
             html += `
-                <div style="background: #2a2a2a; padding: 15px; border-radius: 10px; border: 1px solid #444; display: flex; flex-direction: column; gap: 10px;">
+                <div style="background: rgba(255, 255, 255, 0.05); padding: 16px; border-radius: 16px; border: 1px solid rgba(255, 255, 255, 0.1); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); display: flex; flex-direction: column; gap: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.3);">
                     <div style="text-align: center; border-bottom: 1px solid #444; padding-bottom: 8px;">
                         <strong style="color: #00BFFF; font-size: 1.1em;">${t.name}</strong>
-<button onclick="window.TrainingUI.exportTemplate('${t.id}')" style="background: rgba(0, 191, 255, 0.1); border: 1px solid #00BFFF; color: #00BFFF; border-radius: 6px; padding: 3px 8px; font-size: 0.8em; margin-left: 10px; cursor: pointer;">📤 Eksport</button>
+<button onclick="window.TrainingUI.exportTemplate('${t.id}')" style="background: rgba(0, 191, 255, 0.1); border: 1px solid #00BFFF; color: #00BFFF; border-radius: 6px; padding: 3px 8px; font-size: 0.8em; margin-left: 10px; cursor: pointer;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 4px; vertical-align: middle;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" x2="12" y1="3" y2="15"/></svg>Eksport</button>
                     </div>
                     <div style="font-size: 0.9em; color: #bbb; text-align: center; line-height: 1.5;">
                         Typ: ${typeLabel}<br>
@@ -374,10 +374,10 @@ export const TrainingUI = {
                         ${durationInfo}
                     </div>
                     <div style="display: flex; flex-direction: column; gap: 8px; width: 100%; margin-top: 8px; box-sizing: border-box;">
-                        <button onclick="window.TrainingUI.startFromTemplate('${t.id}')" class="action-button" style="width: 100%; background: #2ECC71; border: 1px solid #2ECC71; color: #fff; padding: 12px 10px; font-weight: bold; border-radius: 8px; font-size: 0.95em; cursor: pointer;">▶ Wybierz</button>
+                        <button onclick="window.TrainingUI.startFromTemplate('${t.id}')" class="action-button" style="width: 100%; background: rgba(46, 204, 113, 0.2); border: 1px solid rgba(46, 204, 113, 0.5); color: #2ECC71; padding: 12px 10px; font-weight: bold; border-radius: 12px; font-size: 0.95em; cursor: pointer; backdrop-filter: blur(5px);"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 6px; vertical-align: middle;"><polygon points="5 3 19 12 5 21 5 3"/></svg>Wybierz</button>
                         <div style="display: flex; gap: 8px; width: 100%;">
-                            <button onclick="window.TemplateBuilderUI.editTemplate('${t.id}'); document.getElementById('templates-modal-overlay').remove();" class="action-button" style="flex: 1; background: rgba(0, 191, 255, 0.15); border: 1px solid rgba(0, 191, 255, 0.4); color: #00BFFF; padding: 10px; font-weight: bold; border-radius: 8px; font-size: 0.9em; cursor: pointer;">✏️ Edytuj</button>
-                            <button onclick="window.TrainingUI.deleteTemplate('${t.id}')" class="action-button" style="flex: 1; background: rgba(231, 76, 60, 0.15); border: 1px solid rgba(231, 76, 60, 0.4); color: #E74C3C; padding: 10px; font-weight: bold; border-radius: 8px; font-size: 0.9em; cursor: pointer;">🗑️ Usuń</button>
+                            <button onclick="window.TemplateBuilderUI.editTemplate('${t.id}'); document.getElementById('templates-modal-overlay').remove();" class="action-button" style="flex: 1; background: rgba(0, 191, 255, 0.15); border: 1px solid rgba(0, 191, 255, 0.4); color: #00BFFF; padding: 10px; font-weight: bold; border-radius: 8px; font-size: 0.9em; cursor: pointer;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 4px; vertical-align: middle;"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>Edytuj</button>
+                            <button onclick="window.TrainingUI.deleteTemplate('${t.id}')" class="action-button" style="flex: 1; background: rgba(231, 76, 60, 0.15); border: 1px solid rgba(231, 76, 60, 0.4); color: #E74C3C; padding: 10px; font-weight: bold; border-radius: 8px; font-size: 0.9em; cursor: pointer;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 4px; vertical-align: middle;"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/></svg>Usuń</button>
                         </div>
                     </div>
                     ${daysHtml}
@@ -389,8 +389,8 @@ export const TrainingUI = {
                     </div>
 
                     <!-- Fixed Footer with Close Button -->
-                    <div style="padding: 12px 16px; border-top: 1px solid #333; background: #181818; flex-shrink: 0;">
-                        <button onclick="document.getElementById('templates-modal-overlay').remove(); window.TrainingUI.renderCalendar();" class="action-button" style="width: 100%; background: #444; border: 1px solid #555; color: #eee; padding: 11px; border-radius: 8px; font-weight: bold; font-size: 0.95em; cursor: pointer;">Zamknij</button>
+                    <div style="padding: 12px 16px; border-top: 1px solid #333; background: rgba(0, 0, 0, 0.3); flex-shrink: 0;">
+                        <button onclick="document.getElementById('templates-modal-overlay').remove(); window.TrainingUI.renderCalendar();" class="action-button" style="width: 100%; background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.2); color: #fff; padding: 12px; border-radius: 12px; font-weight: bold; font-size: 0.95em; cursor: pointer; backdrop-filter: blur(5px);">Zamknij</button>
                     </div>
                 </div>
             </div>
@@ -527,8 +527,9 @@ export const TrainingUI = {
 
         const pauseBtn = document.getElementById('pause-training-btn');
         if(pauseBtn) {
-            pauseBtn.innerHTML = '⏸ Pauza';
-            pauseBtn.style.backgroundColor = '#f39c12';
+            pauseBtn.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 4px;"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg> Pauza';
+            pauseBtn.style.color = '#f39c12';
+            pauseBtn.style.backgroundColor = 'transparent';
             pauseBtn.style.borderColor = '#f39c12';
         }
 
@@ -649,7 +650,7 @@ export const TrainingUI = {
             currentTraining.pauseStartTime = Date.now();
             const pauseBtn = document.getElementById('pause-training-btn');
             if(pauseBtn) {
-                pauseBtn.innerHTML = '▶ Wznów';
+                pauseBtn.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" style="vertical-align: middle; margin-right: 4px;"><polygon points="5 3 19 12 5 21 5 3"/></svg> Wznów'; pauseBtn.style.color = '#fff'; pauseBtn.style.backgroundColor = '#2ECC71'; pauseBtn.style.borderColor = '#2ECC71';
                 pauseBtn.style.backgroundColor = '#2ECC71';
                 pauseBtn.style.borderColor = '#2ECC71';
             }
@@ -1041,14 +1042,16 @@ export const TrainingUI = {
             currentTraining.isPaused = false;
             currentTraining.totalPausedTime += (Date.now() - currentTraining.pauseStartTime);
             currentTraining.pauseStartTime = null;
-            pauseBtn.innerHTML = '⏸ Pauza';
-            pauseBtn.style.backgroundColor = '#f39c12';
+            pauseBtn.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 4px;"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg> Pauza';
+            pauseBtn.style.color = '#f39c12';
+            pauseBtn.style.backgroundColor = 'transparent';
             pauseBtn.style.borderColor = '#f39c12';
         } else {
             // Zapauzuj
             currentTraining.isPaused = true;
             currentTraining.pauseStartTime = Date.now();
-            pauseBtn.innerHTML = '▶ Wznów';
+            pauseBtn.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 4px;"><polygon points="5 3 19 12 5 21 5 3"/></svg> Wznów';
+            pauseBtn.style.color = '#fff';
             pauseBtn.style.backgroundColor = '#2ECC71';
             pauseBtn.style.borderColor = '#2ECC71';
         }
@@ -1569,7 +1572,7 @@ export const TrainingUI = {
             html += `
                 <div style="margin-bottom: ${isInsideSuperset ? '0' : '30px'};">
                     <div style="margin-bottom: 10px;">
-                        <input type="text" class="exercise-name-input" placeholder="Wpisz nazwę..." value="${ex.name}" onchange="window.TrainingUI.updateExerciseField('${ex.id}', 'name', this.value); window.TrainingUI.renderCurrentExercises();" style="width: 100%; background: transparent; border: none; color: #FFF; font-size: 26px; font-weight: 800; letter-spacing: -0.5px; outline: none; padding: 0; margin-bottom: 5px;">
+                        <textarea class="exercise-name-input" placeholder="Wpisz nazwę..." onchange="window.TrainingUI.updateExerciseField('${ex.id}', 'name', this.value); window.TrainingUI.renderCurrentExercises();" style="width: 100%; background: transparent; border: none; color: #FFF; font-size: 26px; font-weight: 800; letter-spacing: -0.5px; outline: none; padding: 0; margin-bottom: 5px; resize: none; text-align: center; overflow: hidden; line-height: 1.2;" rows="2">${ex.name}</textarea>
                         <div style="color: #888; font-size: 14px; margin-bottom: 12px;">${setsCount} serie</div>
                         
                         <div style="display: flex; gap: 8px; margin-bottom: 15px; width: 100%;">
@@ -1581,7 +1584,7 @@ export const TrainingUI = {
                             
                             <!-- Typ treningu -->
                             <button onclick="window.TrainingUI.toggleExerciseType('${ex.id}')" style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; color: #FFF; padding: 8px 12px; font-size: 13px; font-weight: 500; display: flex; align-items: center; justify-content: center; flex: 1; gap: 6px; cursor: pointer;">
-                                ${ex.type === 'classes' ? '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5a2 2 0 1 0 0-4 2 2 0 0 0 0 4z"/><path d="M5 19l4-6V8l-4 3"/><path d="M19 19l-4-6V8l4 3"/><path d="M15 22H9"/></svg> Zajęcia' : (ex.type === 'cardio' ? '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5a2 2 0 1 0 0-4 2 2 0 0 0 0 4z"/><path d="M16 11l-3 4-2-2-4 5"/><path d="M4 17l3-4"/></svg> Cardio' : '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 5v14"/><path d="M18 5v14"/><path d="M2 12h20"/><path d="M4 8h16"/><path d="M4 16h16"/></svg> Siłowy')}
+                                ${ex.type === 'classes' ? '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5a2 2 0 1 0 0-4 2 2 0 0 0 0 4z"/><path d="M5 19l4-6V8l-4 3"/><path d="M19 19l-4-6V8l4 3"/><path d="M15 22H9"/></svg> Zajęcia' : (ex.type === 'cardio' ? '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5a2 2 0 1 0 0-4 2 2 0 0 0 0 4z"/><path d="M16 11l-3 4-2-2-4 5"/><path d="M4 17l3-4"/></svg> Cardio' : '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 9v6"/><path d="M9 7v10"/><path d="M15 7v10"/><path d="M19 9v6"/><path d="M9 12h6"/></svg> Siłowy')}
                             </button>
                             
                             <!-- Aparat -->
