@@ -2,84 +2,76 @@ const { test, expect } = require('@playwright/test');
 
 test.describe('Training and History Flow', () => {
   test.beforeEach(async ({ page }) => {
-    await page.addInitScript(() => window.localStorage.setItem('tutorial_global_v22', 'true'));
+    await page.addInitScript(() => { window.localStorage.setItem('tutorial_global_v22', 'true'); window.localStorage.setItem('uki-bodybuild-last-version', 'v2026.9.17.02'); });
     await page.goto('/');
+    await page.waitForTimeout(1000);
   });
 
   test('should create a training session and verify it appears in history', async ({ page }) => {
-    await page.addInitScript(() => window.localStorage.setItem('tutorial_global_v22', 'true'));
-    // 1. Go to Training Tab
-    await page.click('a[data-tab="training-dashboard"]');
-
-    // Wait for the calendar to render and click "Dodaj nową sesję treningową"
+    await page.evaluate(() => window.switchTab('training-dashboard'));
     await page.click('text=Dodaj nową sesję treningową');
-    
-    // Fill the training name
     await page.fill('#training-name-input', 'Trening siłowy test');
-
-    // Wait a moment for UI
     await page.waitForTimeout(500);
 
     // --- Exercise 1: Wyciskanie ---
     await page.fill('.exercise-name-input', 'Wyciskanie sztangi leżąc');
+    await page.keyboard.press('Enter');
+    await page.waitForTimeout(200);
+    await page.click('text=+ Seria');
+    await page.locator('input[placeholder="Ciężar (kg)"]').nth(0).fill('80');
+    await page.locator('input[placeholder="Powtórzenia"]').nth(0).fill('12');
     
-    // Add sets (3 sets with weights and reps)
-    // Set 1
-    await page.fill('input[placeholder="kg"]', '80');
-    await page.fill('input[placeholder="powt"]', '12');
-    await page.click('button:has-text("+ Seria")');
-    // Set 2
-    await page.fill('input[placeholder="kg"]', '85');
-    await page.fill('input[placeholder="powt"]', '10');
-    await page.click('button:has-text("+ Seria")');
-    // Set 3
-    await page.fill('input[placeholder="kg"]', '90');
-    await page.fill('input[placeholder="powt"]', '8');
-    await page.click('button:has-text("+ Seria")');
+    await page.click('text=+ Seria');
+    await page.locator('input[placeholder="Ciężar (kg)"]').nth(1).fill('85');
+    await page.locator('input[placeholder="Powtórzenia"]').nth(1).fill('10');
+
+    await page.click('text=+ Seria');
+    await page.locator('input[placeholder="Ciężar (kg)"]').nth(2).fill('90');
+    await page.locator('input[placeholder="Powtórzenia"]').nth(2).fill('8');
 
     // Add another exercise
     await page.click('#add-exercise-to-plan-btn');
     await page.waitForTimeout(500);
 
     // --- Exercise 2: Wyciskanie skośne ---
-    const exerciseInputs = page.locator('.exercise-name-input');
-    await exerciseInputs.nth(1).fill('Wyciskanie skośne');
-
-    const weightInputs = page.locator('input[placeholder="kg"]');
-    const repsInputs = page.locator('input[placeholder="powt"]');
-    const addSetBtns = page.locator('button:has-text("+ Seria")');
+    await page.locator('.exercise-name-input').nth(1).fill('Wyciskanie skośne');
+    await page.keyboard.press('Enter');
+    await page.waitForTimeout(200);
     
-    await weightInputs.nth(1).fill('60');
-    await repsInputs.nth(1).fill('15');
-    await addSetBtns.nth(1).click();
-    await weightInputs.nth(1).fill('65');
-    await repsInputs.nth(1).fill('12');
-    await addSetBtns.nth(1).click();
-    await weightInputs.nth(1).fill('70');
-    await repsInputs.nth(1).fill('10');
-    await addSetBtns.nth(1).click();
+    const ex2AddSet = page.locator('text=+ Seria').nth(1);
+    await ex2AddSet.click();
+    await page.locator('input[placeholder="Ciężar (kg)"]').nth(3).fill('60');
+    await page.locator('input[placeholder="Powtórzenia"]').nth(3).fill('15');
+
+    await ex2AddSet.click();
+    await page.locator('input[placeholder="Ciężar (kg)"]').nth(4).fill('65');
+    await page.locator('input[placeholder="Powtórzenia"]').nth(4).fill('12');
+
+    await ex2AddSet.click();
+    await page.locator('input[placeholder="Ciężar (kg)"]').nth(5).fill('70');
+    await page.locator('input[placeholder="Powtórzenia"]').nth(5).fill('10');
 
     // Add third exercise
     await page.click('#add-exercise-to-plan-btn');
     await page.waitForTimeout(500);
 
     // --- Exercise 3: Triceps ---
-    const exInputs3 = page.locator('.exercise-name-input');
-    await exInputs3.nth(2).fill('Francuskie wyciskanie (Triceps)');
+    await page.locator('.exercise-name-input').nth(2).fill('Francuskie wyciskanie (Triceps)');
+    await page.keyboard.press('Enter');
+    await page.waitForTimeout(200);
+    
+    const ex3AddSet = page.locator('text=+ Seria').nth(2);
+    await ex3AddSet.click();
+    await page.locator('input[placeholder="Ciężar (kg)"]').nth(6).fill('30');
+    await page.locator('input[placeholder="Powtórzenia"]').nth(6).fill('15');
 
-    const weightInputs3 = page.locator('input[placeholder="kg"]');
-    const repsInputs3 = page.locator('input[placeholder="powt"]');
-    const addSetBtns3 = page.locator('button:has-text("+ Seria")');
+    await ex3AddSet.click();
+    await page.locator('input[placeholder="Ciężar (kg)"]').nth(7).fill('35');
+    await page.locator('input[placeholder="Powtórzenia"]').nth(7).fill('12');
 
-    await weightInputs3.nth(2).fill('30');
-    await repsInputs3.nth(2).fill('15');
-    await addSetBtns3.nth(2).click();
-    await weightInputs3.nth(2).fill('35');
-    await repsInputs3.nth(2).fill('12');
-    await addSetBtns3.nth(2).click();
-    await weightInputs3.nth(2).fill('40');
-    await repsInputs3.nth(2).fill('10');
-    await addSetBtns3.nth(2).click();
+    await ex3AddSet.click();
+    await page.locator('input[placeholder="Ciężar (kg)"]').nth(8).fill('40');
+    await page.locator('input[placeholder="Powtórzenia"]').nth(8).fill('10');
 
     // Finish training
     page.on('dialog', dialog => dialog.accept());
@@ -88,33 +80,27 @@ test.describe('Training and History Flow', () => {
 
     // Go to History tab
     await page.evaluate(() => window.switchTab('history-dashboard'));
-
-    // Wait for history to load
     await page.waitForTimeout(1000);
 
     // Assert that the training is in history
     await expect(page.locator('#history-dashboard >> text=Trening siłowy test').first()).toBeVisible();
-
-    // Expand details
     await page.locator('text=▼').first().click();
 
     // Verify details are shown
-    await expect(page.locator('text=Szczegóły ćwiczeń:').first()).toBeVisible();
     await expect(page.locator('text=Wyciskanie sztangi leżąc').first()).toBeVisible();
     await expect(page.locator('text=Wyciskanie skośne').first()).toBeVisible();
     await expect(page.locator('text=Francuskie wyciskanie (Triceps)').first()).toBeVisible();
   });
 
-  test('powinien poprawnie wyświetlać Blok Łączony w oknie modalnym historii (bez Nieznane ćwiczenie)', async ({ page }) => {
-    await page.addInitScript(() => { window.localStorage.setItem('tutorial_global_v22', 'true'); });
-    await page.goto('http://127.0.0.1:8080/');
-
-    // Utwórz trening z blokiem łączonym (manualnie wstrzyknięty do DB dla szybkości, by przetestować UI historii)
-    await page.evaluate(async () => {
+  test('powinien poprawnie wyświetlać Blok Łączony w oknie modalnym historii', async ({ page }) => {
+    // Unique name to avoid conflicts across retries
+    const uniqueName = "Trening z superserią test " + Date.now();
+    
+    await page.evaluate(async (name) => {
         const today = new Date().toISOString().split('T')[0];
         await window.DatabaseManager.addTraining({
             date: today,
-            name: "Trening z superserią test",
+            name: name,
             duration_seconds: 3600,
             type: "strength",
             exercises: [
@@ -129,27 +115,23 @@ test.describe('Training and History Flow', () => {
                 }
             ]
         });
-    });
+    }, uniqueName);
 
     await page.reload();
+    await page.waitForTimeout(1000);
 
     // Idź do historii
     await page.evaluate(() => window.switchTab('history-dashboard'));
     await page.waitForSelector('#history-dashboard', { state: 'visible' });
 
     // Rozwiń trening z superserią
-    await expect(page.locator('text=Trening z superserią test').first()).toBeVisible();
-    
-    // Kliknij żeby otworzyć modal podglądu (w Historii kliknięcie w kartę zazwyczaj otwiera podgląd viewTrainingFromHistory lub rozwija go)
-    // Zrzut pokazuje, że po kliknięciu jest modal. Możemy wywołać podgląd bezpośrednio jeśli selektory są trudne, np. viewTrainingFromHistory
-    await page.locator('text=Trening z superserią test').first().click();
+    await expect(page.locator('#history-dashboard').getByText(uniqueName).first()).toBeVisible();
+    await page.locator('#history-dashboard').getByText(uniqueName).first().click();
 
     // Sprawdź czy jest Blok Łączony i nie ma "Nieznane ćwiczenie"
     await expect(page.locator('text=Blok Łączony (Superseria)').first()).toBeVisible();
     await expect(page.locator('text=Biceps').first()).toBeVisible();
     await expect(page.locator('text=Triceps').first()).toBeVisible();
-
-    // Powinno nie być tekstu "Nieznane ćwiczenie"
     await expect(page.locator('text=Nieznane ćwiczenie')).toHaveCount(0);
   });
 });

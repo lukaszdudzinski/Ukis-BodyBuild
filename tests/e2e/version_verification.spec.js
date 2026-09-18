@@ -26,7 +26,7 @@ const setupPWA = async (page) => {
       return origMatchMedia ? origMatchMedia.call(window, query) : { matches: false, media: query };
     };
     window.localStorage.setItem('tutorial_global_v21', 'true');
-    window.localStorage.setItem('tutorial_global_v22', 'true');
+    window.localStorage.setItem('tutorial_global_v22', 'true'); window.localStorage.setItem('uki-bodybuild-last-version', 'v2026.9.17.02');
     window.localStorage.setItem('uki-bodybuild-last-version', ver);
   }, currentVersion);
 };
@@ -74,10 +74,11 @@ test.describe(`Weryfikacja wersji (${currentVersion}) i mechanizmu PWA Updater`,
 
     await setupPWA(page);
     await page.goto('/');
+    await page.waitForTimeout(1000);
 
     // Czekamy na załadowanie głównego interfejsu
-    await expect(page.locator('.home-header h2')).toBeVisible();
-    await expect(page.locator('#welcome-screen')).toBeVisible();
+    await expect(page.locator('.cta-title').first()).toBeVisible();
+    await expect(page.locator('#welcome-screen')).toBeVisible({ timeout: 15000 });
 
     // Sprawdzamy czy window.APP_VERSION jest zdefiniowane i równe najnowszej wersji
     const runtimeVersion = await page.evaluate(() => window.APP_VERSION);
@@ -103,6 +104,7 @@ test.describe(`Weryfikacja wersji (${currentVersion}) i mechanizmu PWA Updater`,
   test('3. Prawidłowe wyświetlenie nowej wersji na ekranie', async ({ page }) => {
     await setupPWA(page);
     await page.goto('/');
+    await page.waitForTimeout(1000);
 
     // Weryfikacja na pulpicie głównym (#dashboard-version)
     const dashboardVersionElem = page.locator('#dashboard-version');
@@ -126,6 +128,7 @@ test.describe(`Weryfikacja wersji (${currentVersion}) i mechanizmu PWA Updater`,
   test('4. Changelog modal poprawnie zawiera wpisy dla najnowszej wersji oraz wersji v2026.8.22.02', async ({ page }) => {
     await setupPWA(page);
     await page.goto('/');
+    await page.waitForTimeout(1000);
 
     // Wywołaj modal changeloga
     await page.evaluate(() => {

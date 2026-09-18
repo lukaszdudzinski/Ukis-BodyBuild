@@ -20,7 +20,7 @@ const setupPWA = async (page) => {
       return origMatchMedia ? origMatchMedia.call(window, query) : { matches: false, media: query };
     };
     window.localStorage.setItem('tutorial_global_v21', 'true');
-    window.localStorage.setItem('tutorial_global_v22', 'true');
+    window.localStorage.setItem('tutorial_global_v22', 'true'); window.localStorage.setItem('uki-bodybuild-last-version', 'v2026.9.17.02');
     window.localStorage.setItem('uki-bodybuild-last-version', 'v2026.8.22.02');
   });
 };
@@ -41,9 +41,10 @@ test.describe('Uki BodyBuild App - PWA and UI', () => {
 
     await setupPWA(page);
     await page.goto('/');
+    await page.waitForTimeout(1000);
     
     // Sprawdzamy, czy główny nagłówek z nazwą powitalną jest widoczny
-    await expect(page.locator('.home-header h2')).toBeVisible();
+    await expect(page.locator('.cta-title')).toBeVisible();
     
     // Sprawdzamy czy APP_VERSION jest zainicjalizowana z AppUI i ma poprawną wartość
     const appVersion = await page.evaluate(() => window.APP_VERSION);
@@ -64,20 +65,21 @@ test.describe('Uki BodyBuild App - PWA and UI', () => {
   test('Nawigacja pomiędzy zakładkami działa', async ({ page }) => {
     await setupPWA(page);
     await page.goto('/');
+    await page.waitForTimeout(1000);
     
     // Zakładka główna powinna być widoczna domyślnie
     await expect(page.locator('#welcome-screen')).toHaveClass(/active-tab/);
     
     // Klikamy w boczny panel -> Trening
-    await page.click('.sidebar-nav a[data-tab="training-dashboard"]');
+    await page.evaluate(() => window.switchTab('training-dashboard'));
     
     // Sprawdzamy czy przełączyło na panel treningu
     await expect(page.locator('#training-dashboard')).toHaveClass(/active-tab/);
     await expect(page.locator('#training-dashboard')).toBeVisible();
 
     // Klikamy -> Pomiary Ciała
-    await page.click('#home-link-header');
-    await page.click('.sidebar-nav a[data-tab="measurements-dashboard"]');
+    await page.evaluate(() => window.switchTab('welcome-screen'));
+    await page.evaluate(() => window.switchTab('measurements-dashboard'));
     await expect(page.locator('#measurements-dashboard')).toHaveClass(/active-tab/);
     await expect(page.locator('#measurements-dashboard')).toBeVisible();
   });

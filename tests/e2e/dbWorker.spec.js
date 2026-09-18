@@ -12,9 +12,10 @@ test.describe('DatabaseManager & dbWorker (OPFS/Memory fallback)', () => {
                 }
                 return { matches: false, media: query, onchange: null, addListener: () => {}, removeListener: () => {} };
             };
-            window.localStorage.setItem('tutorial_global_v22', 'true');
+            window.localStorage.setItem('tutorial_global_v22', 'true'); window.localStorage.setItem('uki-bodybuild-last-version', 'v2026.9.17.02');
         });
         await page.goto('/');
+    await page.waitForTimeout(1000);
         await page.waitForLoadState('networkidle');
     });
 

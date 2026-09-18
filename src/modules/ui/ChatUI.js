@@ -232,14 +232,17 @@ export const ChatUI = {
             return;
         }
 
+        const currentBottom = parseInt(window.getComputedStyle(toggleBtn).bottom, 10) || 90;
+        const currentRight = parseInt(window.getComputedStyle(toggleBtn).right, 10) || 20;
+
         bubble = document.createElement('div');
         bubble.id = 'edward-contextual-bubble';
         
-        // Responsywne style
+        // Responsywne style - Dymek jak w komiksie (nad przyciskiem)
         bubble.style.cssText = `
             position: fixed;
-            bottom: 90px;
-            right: 20px;
+            bottom: ${currentBottom + 75}px;
+            right: ${currentRight}px;
             background: rgba(40, 40, 40, 0.95);
             backdrop-filter: blur(10px);
             -webkit-backdrop-filter: blur(10px);
@@ -259,7 +262,25 @@ export const ChatUI = {
             cursor: ${clickable ? 'pointer' : 'default'};
         `;
         
-        bubble.innerHTML = message;
+        // Ogon dymka
+        const tail = document.createElement('div');
+        tail.style.cssText = `
+            position: absolute;
+            bottom: -10px;
+            right: 15px;
+            width: 0;
+            height: 0;
+            border-left: 10px solid transparent;
+            border-right: 10px solid transparent;
+            border-top: 10px solid rgba(40, 40, 40, 0.95);
+            filter: drop-shadow(0 2px 1px rgba(0, 191, 255, 0.5));
+        `;
+        
+        const contentDiv = document.createElement('div');
+        contentDiv.innerHTML = message;
+        
+        bubble.appendChild(contentDiv);
+        bubble.appendChild(tail);
         document.body.appendChild(bubble);
 
         // Animacja wejścia

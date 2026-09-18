@@ -40,9 +40,18 @@ export const TrainingComponent = {
                     </div>
 
                     <div id="day-action-empty-state">
-                        <button id="start-new-session-btn" class="action-button pulse" style="width: 100%; margin-bottom: 10px; background-color: rgba(0, 191, 255, 0.2); border-color: #00BFFF; color: #00BFFF;">➕ Dodaj nową sesję treningową</button>
-                        <button id="load-template-session-btn" class="action-button" style="width: 100%; margin-bottom: 10px; background-color: rgba(255, 152, 0, 0.2); border-color: #FF9800; color: #FF9800;">📄 Wybierz Szablon Treningowy</button>
-                        <button onclick="window.TemplateBuilderUI && window.TemplateBuilderUI.openBuilder()" class="action-button" style="width: 100%; margin-bottom: 10px; background-color: rgba(46, 204, 113, 0.2); border-color: #2ECC71; color: #2ECC71;">✨ Kreator Szablonów (Koszyk)</button>
+                        <button id="start-new-session-btn" class="action-button pulse" style="width: 100%; margin-bottom: 10px; background-color: rgba(0, 191, 255, 0.2); border-color: #00BFFF; color: #00BFFF; display: flex; justify-content: center; align-items: center; gap: 8px;">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                            Dodaj nową sesję treningową
+                        </button>
+                        <button id="load-template-session-btn" class="action-button" style="width: 100%; margin-bottom: 10px; background-color: rgba(255, 152, 0, 0.2); border-color: #FF9800; color: #FF9800; display: flex; justify-content: center; align-items: center; gap: 8px;">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+                            Wybierz Szablon Treningowy
+                        </button>
+                        <button onclick="window.TemplateBuilderUI && window.TemplateBuilderUI.openBuilder()" class="action-button" style="width: 100%; margin-bottom: 10px; background-color: rgba(46, 204, 113, 0.2); border-color: #2ECC71; color: #2ECC71; display: flex; justify-content: center; align-items: center; gap: 8px;">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                            Kreator Szablonów (Koszyk)
+                        </button>
                         <div id="history-sessions-list" style="margin-top: 15px;">
                             <h5 style="color: #ccc; margin-bottom: 10px;">📋 Skopiuj sesję treningową:</h5>
                             <!-- Populated with recent sessions -->

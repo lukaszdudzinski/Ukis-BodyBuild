@@ -4,22 +4,27 @@
 Oto pełny kontekst naszego ekosystemu, abyś mógł płynnie przejąć pałeczkę. W tym projekcie pracuje z nami cały zespół niezależnych sub-agentów!
 
 ## 🔗 Powiązania i Metadane
-- **Poprzednia konwersacja (ID):** d3030ffc-5f91-4303-827d-4f47985dfccf
+- **Poprzednia konwersacja (ID):** 31bc2561-f886-4432-acae-bffe0758854c
 - **Obecny branch:** `feature/glassmorphism-redesign` (testowany na dedykowanym środowisku Vercel)
-- **Ostatnia Wersja na Produkcji (Vercel Test):** v2026.9.11.10
+- **Ostatnia Wersja na Produkcji (Vercel Test):** v2026.9.18.01
 
 ## 🏗️ Architektura CI/CD (BARDZO WAŻNE!)
 Pamiętaj o podziale środowisk. Jesteśmy w trakcie intensywnych zmian na gałęzi `feature/glassmorphism-redesign`. W PWA zaktualizowaliśmy plik `sw.js` dopisując `self.skipWaiting()`, więc zmiany aktualizują się natychmiastowo na telefonie użytkownika po odświeżeniu. Przy każdej wysyłce kodu wywołuj `node scripts/version.mjs "opis"`.
 
 ## ✅ Co Zostało Zrobione (Stan Obecny)
-- **Rozwiązano "Ślepe Linki" i Puste Ekrany (Trening, Historia, Pomiary, Analiza)**: Aplikacja "wysypywała" się w kluczowym punkcie inicjalizacji (`main.js` -> `AppUI.init()`) z powodu metody `window.DatabaseManager.getBase64Image()`, która nie istniała i przerywała wątek ładowania pozostałych klas. Poprawiono to na `MediaManager.getMediaUrl()`. Wszystkie moduły znów inicjują się bezbłędnie.
-- **Wgrywanie Awatara i Zdjęć w Diecie**: Ten sam błąd psuł przypinanie zdarzeń do przycisku dodawania zdjęć w Diecie oraz uniemożliwiał poprawne wgranie Awatara w profilu. Kod odpowiedzialny za to został przepisany na poprawną komunikację z `MediaManager`.
-- **Wyrównanie Informacji o Wersji**: Brakujące informacje o wersji (`Trial 7 dni | Wersja Light`) usunięto z bezwzględnego dołu ekranu i umieszczono zgrabnie *bezpośrednio* pod przyciskiem "Postaw Kawę", by zachować oryginalny, spójny design ekranu Welcome Screen.
+1. **Analiza Długu Technologicznego:** Wygenerowano raport o długu w `tech_debt_report.md` (skupiono się na pliku `TrainingUI.js`, który ma ponad 2000 linijek i powinien zostać rozbity na mniejsze pliki/WebComponents).
+2. **Rozwiązanie błędów Playwright E2E:**
+   - Rozwiązano problem 21 wiszących/zepsutych testów E2E, spowodowanych migracją na Glassmorphism oraz PWA.
+   - Zamieniono lokalizatory w `tests/e2e/*.spec.js` (użycie `.glass-card` zamiast `.nav-btn a`, podmiana emojis na tekst lub selektory klasowe: "Dodaj" -> `svg`, "Superseria" -> "Blok Łączony").
+   - Rozwiązano usterki w testach integracji bazy poprzez użycie `window.DatabaseManager.sendMessage('exec', ...)` w środowisku OPFS worker zamiast odwołań bezpośrednio do `db`.
+   - Zabezpieczono środowisko testowe przed wyskakiwaniem "Changeloga" przez hardcodowanie odpowiednich wersji.
 
-## 🗺 Najbliższy Cel / Twoje Zadanie
-Wszystkie poważne regresje po wielkim refactorze "Glassmorphism" powinny być teraz usunięte. Jeśli użytkownik zgłosi kolejne awarie — kontynuuj debugowanie (sprawdzając w pierwszej kolejności błędy składni i zepsute odwołania klas/id na ekranach).
-Jeżeli wszystko działa:
-1. Skonsultuj z użytkownikiem finalne poprawki estetyczne nowego interfejsu (lub użyj agenta `ui_designer`).
-2. Przygotuj plan scalenia brancha `feature/glassmorphism-redesign` do gałęzi `master`.
+## 🎯 Plan na Twoją (Kolejną) Sesję
+1. Wykonać podsumowanie dla użytkownika - co robisz i dlaczego (na podstawie tego prompta).
+2. Potwierdzić u użytkownika czy jesteśmy gotowi na zrobienie merge do `master` (skoro E2E przeszły).
+3. Ewentualne poprawki drobnych niedoróbek graficznych, o których wspomniał użytkownik na samym początku, bądź rozbicie `TrainingUI.js` z pomocą agenta Architekta.
 
-Zaczynamy! Użytkownik czeka na twoje instrukcje.
+## ⚠️ Najważniejsze Haki i Rozwiązania Problemów (Dla Ciebie)
+- Baza SQLite to OPFS Worker (`dbWorker.js`).
+- Testy `playwright` na GitHub Actions odpalaj za pomocą `CI=1 npx playwright test` (nie używaj `--ui`). Lokalny port 8080 często zostaje zajęty przez stare instancje po nieudanym teście (wykorzystuj `lsof -i :8080` by go ubić).
+- Uważaj na `display: none` w `#training-dashboard` i `#history-dashboard` - Playwright łapie ukryte podglądy jeśli użyjesz generycznych `text=`. Zawsze zawężaj wyszukiwanie np. `page.locator('#history-dashboard').getByText(...)`.

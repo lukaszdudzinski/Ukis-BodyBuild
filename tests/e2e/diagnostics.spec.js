@@ -23,10 +23,11 @@ test.describe('Diagnostics Panel - Asystent Mapowania (#db-migrate-names-btn)', 
       };
       window.localStorage.setItem('tutorial_global_v21', 'true');
       window.localStorage.setItem('tutorial_global_v22', 'true');
-      window.localStorage.setItem('uki-bodybuild-last-version', 'v2026.8.20.03');
+      window.localStorage.setItem('uki-bodybuild-last-version', 'v2026.9.17.02');
     });
 
     await page.goto('/');
+    await page.waitForTimeout(1000);
     // Czekamy na załadowanie modułów aplikacji
     await page.waitForFunction(() => typeof window.switchTab === 'function' && typeof window.DatabaseManager !== 'undefined');
   });
@@ -109,7 +110,7 @@ test.describe('Diagnostics Panel - Asystent Mapowania (#db-migrate-names-btn)', 
     // Sprzątanie po teście
     await page.evaluate(async () => {
       if (window.DatabaseManager && window.DatabaseManager.db) {
-        window.DatabaseManager.db.exec("DELETE FROM trainings WHERE name = 'Stary Trening E2E'");
+        await window.DatabaseManager.sendMessage('exec', { sql: "DELETE FROM trainings WHERE name = 'Stary Trening E2E'" });
       }
     });
   });

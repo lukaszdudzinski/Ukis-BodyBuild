@@ -20,9 +20,20 @@ import { BackupUI } from './modules/ui/BackupUI.js';
 window.ukiLogError = (msg, stack) => {
     let logs = [];
     try { logs = JSON.parse(localStorage.getItem('uki_error_logs') || '[]'); } catch(e) {}
-    logs.unshift({ time: new Date().toISOString(), msg, stack, version: window.APP_VERSION || 'Nieznana' });
+    const errorData = { time: new Date().toISOString(), msg, stack, version: window.APP_VERSION || 'Nieznana' };
+    logs.unshift(errorData);
     if(logs.length > 50) logs.length = 50;
     localStorage.setItem('uki_error_logs', JSON.stringify(logs));
+
+    // Opcjonalna telemetria w tle ala K8s
+    const webhookUrl = localStorage.getItem('errorTelemetryUrl');
+    if (webhookUrl) {
+        fetch(webhookUrl, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ event: 'AppError', user: localStorage.getItem('userNick') || 'Anon', data: errorData })
+        }).catch(e => console.warn('Telemetry delivery failed', e));
+    }
 };
 
 window.onerror = function(message, source, lineno, colno, error) {

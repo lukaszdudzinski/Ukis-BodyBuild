@@ -1,0 +1,174 @@
+# Instructions
+
+- Following Playwright test failed.
+- Explain why, be concise, respect Playwright best practices.
+- Provide a snippet of code with the fix, if possible.
+
+# Test info
+
+- Name: e2e/trainingHistory.spec.js >> Training and History Flow >> powinien poprawnie wyświetlać Blok Łączony w oknie modalnym historii (bez Nieznane ćwiczenie)
+- Location: tests/e2e/trainingHistory.spec.js:110:3
+
+# Error details
+
+```
+Error: expect(locator).toBeVisible() failed
+
+Locator:  locator('text=Trening z superserią test').first()
+Expected: visible
+Received: hidden
+Timeout:  5000ms
+
+Call log:
+  - Expect "toBeVisible" with timeout 5000ms
+  - waiting for locator('text=Trening z superserią test').first()
+    14 × locator resolved to <strong>Trening z superserią test</strong>
+       - unexpected value "hidden"
+
+```
+
+```yaml
+- main:
+  - heading "Historia Treningów" [level=2]
+  - paragraph: Rozwiń, by zobaczyć szczegóły
+  - img
+  - text: Importuj trening
+  - heading "wrzesień 2026" [level=3]:
+    - img
+    - text: wrzesień 2026
+  - img
+  - strong: Trening z superserią test
+  - text: 1 ćwiczeń • 0 kg
+  - img
+- img
+- text: Menu
+- img
+- text: Trening
+- img
+- text: Profil
+- img
+- text: Serwis
+- button "🤖"
+```
+
+# Test source
+
+```ts
+  45  |     const exerciseInputs = page.locator('.exercise-name-input');
+  46  |     await exerciseInputs.nth(1).fill('Wyciskanie skośne');
+  47  | 
+  48  |     const weightInputs = page.locator('input[placeholder="kg"]');
+  49  |     const repsInputs = page.locator('input[placeholder="powt"]');
+  50  |     const addSetBtns = page.locator('button:has-text("+ Seria")');
+  51  |     
+  52  |     await weightInputs.nth(1).fill('60');
+  53  |     await repsInputs.nth(1).fill('15');
+  54  |     await addSetBtns.nth(1).click();
+  55  |     await weightInputs.nth(1).fill('65');
+  56  |     await repsInputs.nth(1).fill('12');
+  57  |     await addSetBtns.nth(1).click();
+  58  |     await weightInputs.nth(1).fill('70');
+  59  |     await repsInputs.nth(1).fill('10');
+  60  |     await addSetBtns.nth(1).click();
+  61  | 
+  62  |     // Add third exercise
+  63  |     await page.click('#add-exercise-to-plan-btn');
+  64  |     await page.waitForTimeout(500);
+  65  | 
+  66  |     // --- Exercise 3: Triceps ---
+  67  |     const exInputs3 = page.locator('.exercise-name-input');
+  68  |     await exInputs3.nth(2).fill('Francuskie wyciskanie (Triceps)');
+  69  | 
+  70  |     const weightInputs3 = page.locator('input[placeholder="kg"]');
+  71  |     const repsInputs3 = page.locator('input[placeholder="powt"]');
+  72  |     const addSetBtns3 = page.locator('button:has-text("+ Seria")');
+  73  | 
+  74  |     await weightInputs3.nth(2).fill('30');
+  75  |     await repsInputs3.nth(2).fill('15');
+  76  |     await addSetBtns3.nth(2).click();
+  77  |     await weightInputs3.nth(2).fill('35');
+  78  |     await repsInputs3.nth(2).fill('12');
+  79  |     await addSetBtns3.nth(2).click();
+  80  |     await weightInputs3.nth(2).fill('40');
+  81  |     await repsInputs3.nth(2).fill('10');
+  82  |     await addSetBtns3.nth(2).click();
+  83  | 
+  84  |     // Finish training
+  85  |     page.on('dialog', dialog => dialog.accept());
+  86  |     await page.click('#finish-training-btn');
+  87  |     await expect(page.locator('#training-calendar-view')).toBeVisible({ timeout: 5000 });
+  88  | 
+  89  |     // Go to History tab
+  90  |     await page.evaluate(() => window.switchTab('welcome-screen'));
+  91  |     await page.waitForSelector('h3:has-text("Historia")', { state: 'visible' });
+  92  |     await page.click('h3:has-text("Historia")');
+  93  | 
+  94  |     // Wait for history to load
+  95  |     await page.waitForTimeout(1000);
+  96  | 
+  97  |     // Assert that the training is in history
+  98  |     await expect(page.locator('#history-dashboard >> text=Trening siłowy test').first()).toBeVisible();
+  99  | 
+  100 |     // Expand details
+  101 |     await page.locator('text=▼').first().click();
+  102 | 
+  103 |     // Verify details are shown
+  104 |     await expect(page.locator('text=Szczegóły ćwiczeń:').first()).toBeVisible();
+  105 |     await expect(page.locator('text=Wyciskanie sztangi leżąc').first()).toBeVisible();
+  106 |     await expect(page.locator('text=Wyciskanie skośne').first()).toBeVisible();
+  107 |     await expect(page.locator('text=Francuskie wyciskanie (Triceps)').first()).toBeVisible();
+  108 |   });
+  109 | 
+  110 |   test('powinien poprawnie wyświetlać Blok Łączony w oknie modalnym historii (bez Nieznane ćwiczenie)', async ({ page }) => {
+  111 |     await page.addInitScript(() => { window.localStorage.setItem('tutorial_global_v22', 'true'); window.localStorage.setItem('uki-bodybuild-last-version', 'v2026.9.17.01'); });
+  112 |     await page.goto('http://127.0.0.1:8080/');
+  113 | 
+  114 |     // Utwórz trening z blokiem łączonym (manualnie wstrzyknięty do DB dla szybkości, by przetestować UI historii)
+  115 |     await page.evaluate(async () => {
+  116 |         const today = new Date().toISOString().split('T')[0];
+  117 |         await window.DatabaseManager.addTraining({
+  118 |             date: today,
+  119 |             name: "Trening z superserią test",
+  120 |             duration_seconds: 3600,
+  121 |             type: "strength",
+  122 |             exercises: [
+  123 |                 {
+  124 |                     id: "sup1",
+  125 |                     type: "superset",
+  126 |                     name: "",
+  127 |                     exercises: [
+  128 |                         { id: "s1", type: "strength", name: "Biceps", sets: [{weight: 10, reps: 10}] },
+  129 |                         { id: "s2", type: "strength", name: "Triceps", sets: [{weight: 15, reps: 10}] }
+  130 |                     ]
+  131 |                 }
+  132 |             ]
+  133 |         });
+  134 |     });
+  135 | 
+  136 |     await page.reload();
+  137 | 
+  138 |     // Idź do historii
+  139 |     await page.evaluate(() => window.switchTab('welcome-screen'));
+  140 |     await page.waitForSelector('h3:has-text("Historia")', { state: 'visible' });
+  141 |     await page.click('h3:has-text("Historia")');
+  142 |     await page.waitForSelector('#history-dashboard', { state: 'visible' });
+  143 | 
+  144 |     // Rozwiń trening z superserią
+> 145 |     await expect(page.locator('text=Trening z superserią test').first()).toBeVisible();
+      |                                                                          ^ Error: expect(locator).toBeVisible() failed
+  146 |     
+  147 |     // Kliknij żeby otworzyć modal podglądu (w Historii kliknięcie w kartę zazwyczaj otwiera podgląd viewTrainingFromHistory lub rozwija go)
+  148 |     // Zrzut pokazuje, że po kliknięciu jest modal. Możemy wywołać podgląd bezpośrednio jeśli selektory są trudne, np. viewTrainingFromHistory
+  149 |     await page.locator('text=Trening z superserią test').first().click();
+  150 | 
+  151 |     // Sprawdź czy jest Blok Łączony i nie ma "Nieznane ćwiczenie"
+  152 |     await expect(page.locator('text=Blok Łączony (Superseria)').first()).toBeVisible();
+  153 |     await expect(page.locator('text=Biceps').first()).toBeVisible();
+  154 |     await expect(page.locator('text=Triceps').first()).toBeVisible();
+  155 | 
+  156 |     // Powinno nie być tekstu "Nieznane ćwiczenie"
+  157 |     await expect(page.locator('text=Nieznane ćwiczenie')).toHaveCount(0);
+  158 |   });
+  159 | });
+  160 | 
+```

@@ -5,25 +5,25 @@ export const AchievementsSystem = {
             id: 'first_100',
             title: 'Klub 100',
             description: 'Wycisnąłeś 100kg w dowolnym ćwiczeniu.',
-            icon: '🔥'
+            icon: '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/></svg>'
         },
         'iron_will': {
             id: 'iron_will',
             title: 'Żelazna Wola',
             description: 'Ukończono 5 treningów w ciągu jednego tygodnia.',
-            icon: '🛡️'
+            icon: '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>'
         },
         'volume_king': {
             id: 'volume_king',
             title: 'Król Objętości',
             description: 'Przerzucono >10,000 kg na jednym treningu.',
-            icon: '👑'
+            icon: '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m2 4 3 12h14l3-12-6 7-4-7-4 7-6-7zm3 16h14"/></svg>'
         },
         'streak_3': {
             id: 'streak_3',
             title: 'Dyscyplina',
             description: '3 dni treningowe pod rząd.',
-            icon: '⚡'
+            icon: '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>'
         }
     },
 

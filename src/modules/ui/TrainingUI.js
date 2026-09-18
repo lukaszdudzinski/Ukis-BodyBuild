@@ -167,7 +167,7 @@ export const TrainingUI = {
             else if (ex.type === 'cardio') ex.type = 'classes';
             else ex.type = 'strength';
             TrainingUI.renderCurrentExercises();
-            TrainingUI.saveTrainingState();
+            TrainingUI.saveDraft();
         }
     },
     openExerciseSelector: (exId) => {
@@ -885,7 +885,7 @@ export const TrainingUI = {
 
             if (historyList) {
                 // Build recent history for copying
-                let historyHtml = '<h5 style="color: #ccc; margin-bottom: 10px;">📋 Ostatnie treningi (wybierz, aby skopiować na dziś):</h5>';
+                let historyHtml = '<h5 style="color: #ccc; margin-bottom: 10px; display: flex; align-items: center; gap: 8px;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1" ry="1"/></svg> Ostatnie treningi (wybierz, aby skopiować na dziś):</h5>';
                 const recentTrainings = allTrainingsCache.slice(0, 5); // Take last 5
                 
                 if (recentTrainings.length === 0) {
@@ -932,7 +932,7 @@ export const TrainingUI = {
                         }
 
                         historyHtml += `
-                            <div class="history-item-container" style="background-color: #222; border: 1px solid #444; margin-bottom: 10px; border-radius: 8px; padding: 12px; text-align: left;">
+                            <div class="history-item-container glass-card" style="background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); margin-bottom: 10px; border-radius: 16px; padding: 15px; text-align: left; box-shadow: 0 4px 6px rgba(0,0,0,0.3);">
                                 <div style="display: flex; justify-content: space-between; align-items: center; cursor: pointer;" onclick="window.TrainingUI.toggleHistoryPreview(${idx})">
                                     <div style="flex: 1;">
                                         ${nameDisplay}<br>
@@ -1569,7 +1569,7 @@ export const TrainingUI = {
             html += `
                 <div style="margin-bottom: ${isInsideSuperset ? '0' : '30px'};">
                     <div style="margin-bottom: 10px;">
-                        <input type="text" placeholder="Wpisz nazwę..." value="${ex.name}" onchange="window.TrainingUI.updateExerciseField('${ex.id}', 'name', this.value); window.TrainingUI.renderCurrentExercises();" style="width: 100%; background: transparent; border: none; color: #FFF; font-size: 26px; font-weight: 800; letter-spacing: -0.5px; outline: none; padding: 0; margin-bottom: 5px;">
+                        <input type="text" class="exercise-name-input" placeholder="Wpisz nazwę..." value="${ex.name}" onchange="window.TrainingUI.updateExerciseField('${ex.id}', 'name', this.value); window.TrainingUI.renderCurrentExercises();" style="width: 100%; background: transparent; border: none; color: #FFF; font-size: 26px; font-weight: 800; letter-spacing: -0.5px; outline: none; padding: 0; margin-bottom: 5px;">
                         <div style="color: #888; font-size: 14px; margin-bottom: 12px;">${setsCount} serie</div>
                         
                         <div style="display: flex; gap: 8px; margin-bottom: 15px; width: 100%;">

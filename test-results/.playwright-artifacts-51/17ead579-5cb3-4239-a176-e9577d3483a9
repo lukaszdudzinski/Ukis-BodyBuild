@@ -1,0 +1,47 @@
+{
+  "app": "Uki's BodyBuild",
+  "exportDate": "2026-09-18T09:14:00.768Z",
+  "measurements": [],
+  "trainings": [
+    {
+      "id": 1,
+      "date": "2026-08-20",
+      "duration_seconds": 3600,
+      "exercises_json": "[{\"name\":\"stare wyciskanie płaska\",\"sets\":[{\"weight\":80,\"reps\":10}]}]",
+      "name": "Stary Trening E2E",
+      "created_at": "2026-09-18 09:13:56",
+      "type": "strength",
+      "social_photos_json": null,
+      "smartwatch_json": null,
+      "exercises": [
+        {
+          "name": "stare wyciskanie płaska",
+          "sets": [
+            {
+              "weight": 80,
+              "reps": 10
+            }
+          ]
+        }
+      ],
+      "socialPhotos": [],
+      "smartwatch": {
+        "calories": null,
+        "hr": null
+      }
+    }
+  ],
+  "dietLogs": [],
+  "aiAnalyses": [],
+  "settings": {
+    "nickname": "",
+    "avatar": "",
+    "templates": "[]",
+    "trainingExperience": "",
+    "dietGoal": "",
+    "dietWorkerUrl": "",
+    "schedules": "[]",
+    "customWallpaper": ""
+  },
+  "version": "2.0"
+}

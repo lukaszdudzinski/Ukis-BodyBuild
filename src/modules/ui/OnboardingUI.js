@@ -7,7 +7,8 @@ export const OnboardingUI = {
     },
 
     showGlobalWelcome: () => {
-        let existing = document.getElementById('onboarding-modal');
+        setTimeout(() => {
+            let existing = document.getElementById('onboarding-modal');
         if (existing) existing.remove();
 
         const savedNick = localStorage.getItem('userNick') || '';
@@ -51,6 +52,7 @@ export const OnboardingUI = {
         };
 
         document.getElementById('onboarding-save-btn').addEventListener('click', closeModal);
+        }, 600);
     },
 
     checkContextualTutorial: (tabId) => {

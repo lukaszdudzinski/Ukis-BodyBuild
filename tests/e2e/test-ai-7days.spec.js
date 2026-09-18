@@ -3,6 +3,7 @@ const { test, expect } = require('@playwright/test');
 test('Test 7 days AI analysis', async ({ page }) => {
     page.on('console', msg => console.log('PAGE LOG:', msg.text()));
     page.on('pageerror', err => console.log('PAGE ERROR:', err.message));
+    await page.addInitScript(() => { window.localStorage.setItem('tutorial_global_v22', 'true'); window.localStorage.setItem('uki_premium_access', 'true'); window.localStorage.setItem('uki-bodybuild-last-version', 'v2026.9.17.02'); });
     await page.goto('/');
     await page.waitForTimeout(1000);
     
@@ -19,7 +20,7 @@ test('Test 7 days AI analysis', async ({ page }) => {
     if (html.length > 0) {
         await page.click('#ai-gen-weekly-btn');
         await page.waitForTimeout(500);
-        await page.click('#sleep-confirm');
+        await page.click('#ai-interview-submit');
         await expect(page.locator('#ai-status-bar')).toBeHidden({ timeout: 15000 });
         
         // Let's see what happens after generate

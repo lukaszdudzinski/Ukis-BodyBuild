@@ -2,8 +2,8 @@ const { test, expect } = require('@playwright/test');
 
 test.describe('Diet AI Result Confirmation Modal', () => {
   test('powinien pokazać modal z przyciskami +/- i zapisać posiłek z miniaturą', async ({ page }) => {
-    await page.addInitScript(() => { window.localStorage.setItem('tutorial_global_v22', 'true'); });
-    await page.goto('http://127.0.0.1:8080/');
+    await page.addInitScript(() => { window.localStorage.setItem('tutorial_global_v22', 'true'); window.localStorage.setItem('uki-bodybuild-last-version', 'v2026.9.17.02'); });
+    await page.goto('/'); await page.waitForTimeout(1000);
 
     // Czekamy dłuższą chwilę na pełen start aplikacji
     await page.waitForTimeout(2000);
@@ -56,7 +56,7 @@ test.describe('Diet AI Result Confirmation Modal', () => {
     await modal.waitFor({ state: 'hidden' });
 
     // Sprawdzamy czy posiłek pojawił się na liście
-    const todayList = page.locator('#diet-today-list');
+    const todayList = page.locator('#diet-logs-list');
     await expect(todayList.locator('text=Sałatka z kurczakiem').first()).toBeAttached();
     
     // Sprawdzamy, czy kalorie to 400 (po modyfikacji)

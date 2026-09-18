@@ -5,7 +5,9 @@ test.describe('Test na danych z produkcji', () => {
     test.setTimeout(120000); // Wydłużony czas na wgranie dużej bazy
 
     // 1. Wejdź na stronę
+    await page.addInitScript(() => { window.localStorage.setItem('tutorial_global_v22', 'true'); window.localStorage.setItem('uki-bodybuild-last-version', 'v2026.9.17.02'); });
     await page.goto('/');
+    await page.waitForTimeout(1000);
 
     // 2. Jeśli jest okno rejestracji - przeklikaj
     const nameInput = page.locator('#nickname-input');
@@ -15,7 +17,7 @@ test.describe('Test na danych z produkcji', () => {
     }
 
     // 3. Wejdź w Diagnostykę
-    await page.click('a[data-tab="diagnostics-dashboard"]');
+    await page.evaluate(() => window.switchTab('diagnostics-dashboard'));
 
     // 4. Załaduj plik
     const [fileChooser] = await Promise.all([
@@ -33,6 +35,7 @@ test.describe('Test na danych z produkcji', () => {
     await page.waitForLoadState('networkidle');
 
     // Sprawdźmy czy jesteśmy zalogowani i czy baza się załadowała
+    await page.evaluate(() => window.switchTab('training-dashboard'));
     const calendarView = page.locator('#training-calendar-view');
     await expect(calendarView).toBeVisible({ timeout: 15000 });
 
