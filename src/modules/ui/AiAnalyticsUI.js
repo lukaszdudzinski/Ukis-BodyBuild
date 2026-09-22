@@ -161,7 +161,7 @@ export const AiAnalyticsUI = {
                 </div>
 
                 <!-- 1. Sen -->
-                <div style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.05); border-radius:16px; padding:16px; margin-bottom:16px;">
+                <div style="border:1px solid rgba(255,255,255,0.05); border-radius:16px; padding:16px; margin-bottom:16px;">
                     <label style="display:flex; align-items:center; gap:8px; color:#00BFFF; font-weight:600; font-size:0.9em; margin-bottom:12px;">
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
                         Średni sen na dobę:
@@ -177,7 +177,7 @@ export const AiAnalyticsUI = {
                 </div>
 
                 <!-- 2. Staż treningowy -->
-                <div style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.05); border-radius:16px; padding:16px; margin-bottom:16px;">
+                <div style="border:1px solid rgba(255,255,255,0.05); border-radius:16px; padding:16px; margin-bottom:16px;">
                     <label for="ai-interview-exp" style="display:flex; align-items:center; gap:8px; color:#FFD700; font-weight:600; font-size:0.9em; margin-bottom:10px;">
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="7"/><polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"/></svg>
                         Twój staż treningowy:
@@ -191,7 +191,7 @@ export const AiAnalyticsUI = {
                 </div>
 
                 <!-- 3. Cel sylwetkowy -->
-                <div style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.05); border-radius:16px; padding:16px; margin-bottom:24px;">
+                <div style="border:1px solid rgba(255,255,255,0.05); border-radius:16px; padding:16px; margin-bottom:24px;">
                     <label for="ai-interview-goal" style="display:flex; align-items:center; gap:8px; color:#2ECC71; font-weight:600; font-size:0.9em; margin-bottom:10px;">
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>
                         Główny cel sylwetkowy:
@@ -349,7 +349,7 @@ export const AiAnalyticsUI = {
 
             <!-- Scrollable Analysis Content -->
             <div style="flex:1; overflow-y:auto; padding:20px 14px 40px 14px; -webkit-overflow-scrolling:touch;">
-                <div style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08); border-radius:12px; padding:20px 16px; color:#eee; line-height:1.75; font-size:0.95em; max-width:700px; margin:0 auto;">
+                <div style="border:1px solid rgba(255,255,255,0.08); border-radius:12px; padding:20px 16px; color:#eee; line-height:1.75; font-size:0.95em; max-width:700px; margin:0 auto;">
                     ${parsedContent}
 
                     <!-- Action Box at bottom of report -->

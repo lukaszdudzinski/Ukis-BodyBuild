@@ -44,15 +44,15 @@ export const DietUI = {
                 
                 <!-- Makro -->
                 <div style="display: flex; justify-content: space-between; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 20px; gap: 10px;">
-                    <div style="flex: 1; background: rgba(255,255,255,0.03); border-radius: 12px; padding: 10px; border: 1px solid rgba(255,255,255,0.05);">
+                    <div style="flex: 1; border-radius: 12px; padding: 10px; border: 1px solid rgba(255,255,255,0.05);">
                         <div style="color: #fff; font-size: 1.1em; font-weight: 700;" id="diet-protein-display">0g</div>
                         <div style="font-size: 0.75em; color: #8E8E93; margin-top: 4px; text-transform: uppercase; letter-spacing: 0.5px;">Białko</div>
                     </div>
-                    <div style="flex: 1; background: rgba(255,255,255,0.03); border-radius: 12px; padding: 10px; border: 1px solid rgba(255,255,255,0.05);">
+                    <div style="flex: 1; border-radius: 12px; padding: 10px; border: 1px solid rgba(255,255,255,0.05);">
                         <div style="color: #fff; font-size: 1.1em; font-weight: 700;" id="diet-carbs-display">0g</div>
                         <div style="font-size: 0.75em; color: #8E8E93; margin-top: 4px; text-transform: uppercase; letter-spacing: 0.5px;">Węgle</div>
                     </div>
-                    <div style="flex: 1; background: rgba(255,255,255,0.03); border-radius: 12px; padding: 10px; border: 1px solid rgba(255,255,255,0.05);">
+                    <div style="flex: 1; border-radius: 12px; padding: 10px; border: 1px solid rgba(255,255,255,0.05);">
                         <div style="color: #fff; font-size: 1.1em; font-weight: 700;" id="diet-fat-display">0g</div>
                         <div style="font-size: 0.75em; color: #8E8E93; margin-top: 4px; text-transform: uppercase; letter-spacing: 0.5px;">Tłuszcze</div>
                     </div>
@@ -274,15 +274,15 @@ export const DietUI = {
                           
                           <!-- Macros -->
                           <div style="display: flex; gap: 8px; margin-bottom: 20px;">
-                            <div style="flex: 1; background: rgba(255,255,255,0.03); border-radius: 10px; padding: 8px; text-align: center; border: 1px solid rgba(255,255,255,0.02);">
+                            <div style="flex: 1; border-radius: 10px; padding: 8px; text-align: center; border: 1px solid rgba(255,255,255,0.02);">
                                 <div style="color: #fff; font-weight: 600; font-size: 0.9em;">${log.protein}g</div>
                                 <div style="color: #8E8E93; font-size: 0.65em; text-transform: uppercase; margin-top: 2px;">Białko</div>
                             </div>
-                            <div style="flex: 1; background: rgba(255,255,255,0.03); border-radius: 10px; padding: 8px; text-align: center; border: 1px solid rgba(255,255,255,0.02);">
+                            <div style="flex: 1; border-radius: 10px; padding: 8px; text-align: center; border: 1px solid rgba(255,255,255,0.02);">
                                 <div style="color: #fff; font-weight: 600; font-size: 0.9em;">${log.carbs}g</div>
                                 <div style="color: #8E8E93; font-size: 0.65em; text-transform: uppercase; margin-top: 2px;">Węgle</div>
                             </div>
-                            <div style="flex: 1; background: rgba(255,255,255,0.03); border-radius: 10px; padding: 8px; text-align: center; border: 1px solid rgba(255,255,255,0.02);">
+                            <div style="flex: 1; border-radius: 10px; padding: 8px; text-align: center; border: 1px solid rgba(255,255,255,0.02);">
                                 <div style="color: #fff; font-weight: 600; font-size: 0.9em;">${log.fat}g</div>
                                 <div style="color: #8E8E93; font-size: 0.65em; text-transform: uppercase; margin-top: 2px;">Tłuszcz</div>
                             </div>

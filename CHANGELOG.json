@@ -1,5 +1,12 @@
 [
   {
+    "version": "v2026.9.22.02",
+    "date": "2026-09-22",
+    "changes": [
+      "🛠️ Glassmorphism update: przywrócenie stylu pełnej transparentności (usunięcie blur, tło rgba 0,0,0,0.4 wzorem starego liquid glass)"
+    ]
+  },
+  {
     "version": "v2026.9.22.01",
     "date": "2026-09-22",
     "changes": [
