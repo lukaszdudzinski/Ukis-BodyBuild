@@ -25,14 +25,14 @@ Call log:
       - element is visible, enabled and stable
       - scrolling into view if needed
       - done scrolling
-      - <div>…</div> from <div id="changelog-modal-overlay">…</div> subtree intercepts pointer events
+      - <li>✨ Poprawki UX: Usunięcie emotikon z opcji kalenda…</li> from <div id="changelog-modal-overlay">…</div> subtree intercepts pointer events
     - retrying click action
     - waiting 20ms
     - waiting for element to be visible, enabled and stable
     - element is visible, enabled and stable
     - scrolling into view if needed
     - done scrolling
-    - <div>…</div> from <div id="changelog-modal-overlay">…</div> subtree intercepts pointer events
+    - <li>✨ Poprawki UX: Usunięcie emotikon z opcji kalenda…</li> from <div id="changelog-modal-overlay">…</div> subtree intercepts pointer events
   2 × retrying click action
       - waiting 100ms
       - waiting for element to be visible, enabled and stable
@@ -46,21 +46,14 @@ Call log:
        - element is visible, enabled and stable
        - scrolling into view if needed
        - done scrolling
-       - <div>…</div> from <div id="changelog-modal-overlay">…</div> subtree intercepts pointer events
+       - <li>✨ Poprawki UX: Usunięcie emotikon z opcji kalenda…</li> from <div id="changelog-modal-overlay">…</div> subtree intercepts pointer events
      - retrying click action
        - waiting 500ms
        - waiting for element to be visible, enabled and stable
        - element is visible, enabled and stable
        - scrolling into view if needed
        - done scrolling
-       - <div>…</div> from <div id="changelog-modal-overlay">…</div> subtree intercepts pointer events
-     - retrying click action
-       - waiting 500ms
-       - waiting for element to be visible, enabled and stable
-       - element is visible, enabled and stable
-       - scrolling into view if needed
-       - done scrolling
-       - <div id="changelog-modal-overlay">…</div> intercepts pointer events
+       - <li>✨ Poprawki UX: Usunięcie emotikon z opcji kalenda…</li> from <div id="changelog-modal-overlay">…</div> subtree intercepts pointer events
      - retrying click action
        - waiting 500ms
        - waiting for element to be visible, enabled and stable
@@ -68,16 +61,22 @@ Call log:
        - scrolling into view if needed
        - done scrolling
        - <div id="changelog-modal-overlay">…</div> intercepts pointer events
+     - retrying click action
+       - waiting 500ms
+       - waiting for element to be visible, enabled and stable
+       - element is visible, enabled and stable
+       - scrolling into view if needed
+       - done scrolling
+       - <div id="changelog-modal-overlay">…</div> intercepts pointer events
+  2 × retrying click action
+      - waiting 500ms
+      - waiting for element to be visible, enabled and stable
+      - element is visible, enabled and stable
+      - scrolling into view if needed
+      - done scrolling
+      - <li>✨ Poprawki UX: Usunięcie emotikon z opcji kalenda…</li> from <div id="changelog-modal-overlay">…</div> subtree intercepts pointer events
   - retrying click action
     - waiting 500ms
-    - waiting for element to be visible, enabled and stable
-    - element is visible, enabled and stable
-    - scrolling into view if needed
-    - done scrolling
-    - <div>…</div> from <div id="changelog-modal-overlay">…</div> subtree intercepts pointer events
-  - retrying click action
-    - waiting 500ms
-    - waiting for element to be visible, enabled and stable
 
 ```
 
@@ -104,7 +103,7 @@ Call log:
             - text: Analizy AI
             - generic [ref=e48]: PRO
           - heading "Postaw Kawę" [level=3] [ref=e55] [cursor=pointer]
-        - generic [ref=e56]: Trial (7 dni) v2026.9.18.01 | Wersja Light Powered by Antigravity AI
+        - generic [ref=e56]: Trial (7 dni) v2026.9.18.03 | Wersja Light Powered by Antigravity AI
     - generic [ref=e57]:
       - generic [ref=e58] [cursor=pointer]: Menu
       - generic [ref=e64] [cursor=pointer]: Trening
@@ -114,11 +113,20 @@ Call log:
     - generic [ref=e88]:
       - heading "Co nowego? 🚀" [level=3] [ref=e89]
       - button "×" [ref=e90] [cursor=pointer]
-    - generic [ref=e93]:
-      - heading "Wersja v2026.9.18.01 (2026-09-18)" [level=4] [ref=e94]
-      - list [ref=e95]:
-        - listitem [ref=e96]: "🐞 HOTFIX: Naprawiono wszystkie testy Playwright E2E. Aktualizacja selektorów (Glassmorphism), likwidacja race conditions (Changelog i PWA) oraz fix czyszczenia bazy OPFS w trybie WebWorker."
-  - button "🤖" [ref=e98] [cursor=pointer]
+    - generic [ref=e92]:
+      - generic [ref=e93]:
+        - heading "Wersja v2026.9.18.03 (2026-09-18)" [level=4] [ref=e94]
+        - list [ref=e95]:
+          - listitem [ref=e96]: "✨ Poprawki UX: Usunięcie emotikon z opcji kalendarza (Podgląd, Kontynuuj, Usuń), naprawa tapet w Ustawieniach na glassmorphism"
+      - generic [ref=e97]:
+        - heading "Wersja v2026.9.18.02 (2026-09-18)" [level=4] [ref=e98]
+        - list [ref=e99]:
+          - listitem [ref=e100]: "✨ Poprawki UX: modal szablonów glassmorphism, poprawny SVG hantla, owijanie nazw ćwiczeń, widoczność przycisku Pauza"
+      - generic [ref=e101]:
+        - heading "Wersja v2026.9.18.01 (2026-09-18)" [level=4] [ref=e102]
+        - list [ref=e103]:
+          - listitem [ref=e104]: "🐞 HOTFIX: Naprawiono wszystkie testy Playwright E2E. Aktualizacja selektorów (Glassmorphism), likwidacja race conditions (Changelog i PWA) oraz fix czyszczenia bazy OPFS w trybie WebWorker."
+  - button "🤖" [ref=e106] [cursor=pointer]
 ```
 
 # Test source

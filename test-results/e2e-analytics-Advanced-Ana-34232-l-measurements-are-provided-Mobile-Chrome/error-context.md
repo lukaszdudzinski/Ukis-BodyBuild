@@ -25,21 +25,21 @@ Call log:
       - element is visible, enabled and stable
       - scrolling into view if needed
       - done scrolling
-      - <div id="changelog-modal-overlay">…</div> intercepts pointer events
+      - <span>(2026-09-18)</span> from <div id="changelog-modal-overlay">…</div> subtree intercepts pointer events
     - retrying click action
     - waiting 20ms
     2 × waiting for element to be visible, enabled and stable
       - element is visible, enabled and stable
       - scrolling into view if needed
       - done scrolling
-      - <div id="changelog-modal-overlay">…</div> intercepts pointer events
+      - <span>(2026-09-18)</span> from <div id="changelog-modal-overlay">…</div> subtree intercepts pointer events
     - retrying click action
       - waiting 100ms
     55 × waiting for element to be visible, enabled and stable
        - element is visible, enabled and stable
        - scrolling into view if needed
        - done scrolling
-       - <div id="changelog-modal-overlay">…</div> intercepts pointer events
+       - <span>(2026-09-18)</span> from <div id="changelog-modal-overlay">…</div> subtree intercepts pointer events
      - retrying click action
        - waiting 500ms
 
@@ -70,11 +70,20 @@ Call log:
     - generic [ref=e62]:
       - heading "Co nowego? 🚀" [level=3] [ref=e63]
       - button "×" [ref=e64] [cursor=pointer]
-    - generic [ref=e67]:
-      - heading "Wersja v2026.9.18.01 (2026-09-18)" [level=4] [ref=e68]
-      - list [ref=e69]:
-        - listitem [ref=e70]: "🐞 HOTFIX: Naprawiono wszystkie testy Playwright E2E. Aktualizacja selektorów (Glassmorphism), likwidacja race conditions (Changelog i PWA) oraz fix czyszczenia bazy OPFS w trybie WebWorker."
-  - button "🤖" [ref=e72] [cursor=pointer]
+    - generic [ref=e66]:
+      - generic [ref=e67]:
+        - heading "Wersja v2026.9.18.03 (2026-09-18)" [level=4] [ref=e68]
+        - list [ref=e69]:
+          - listitem [ref=e70]: "✨ Poprawki UX: Usunięcie emotikon z opcji kalendarza (Podgląd, Kontynuuj, Usuń), naprawa tapet w Ustawieniach na glassmorphism"
+      - generic [ref=e71]:
+        - heading "Wersja v2026.9.18.02 (2026-09-18)" [level=4] [ref=e72]
+        - list [ref=e73]:
+          - listitem [ref=e74]: "✨ Poprawki UX: modal szablonów glassmorphism, poprawny SVG hantla, owijanie nazw ćwiczeń, widoczność przycisku Pauza"
+      - generic [ref=e75]:
+        - heading "Wersja v2026.9.18.01 (2026-09-18)" [level=4] [ref=e76]
+        - list [ref=e77]:
+          - listitem [ref=e78]: "🐞 HOTFIX: Naprawiono wszystkie testy Playwright E2E. Aktualizacja selektorów (Glassmorphism), likwidacja race conditions (Changelog i PWA) oraz fix czyszczenia bazy OPFS w trybie WebWorker."
+  - button "🤖" [ref=e80] [cursor=pointer]
 ```
 
 # Test source

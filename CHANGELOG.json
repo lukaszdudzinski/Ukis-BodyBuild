@@ -1,5 +1,19 @@
 [
   {
+    "version": "v2026.9.22.01",
+    "date": "2026-09-22",
+    "changes": [
+      "🛠️ Poprawa transparentności (Glassmorphism) - usunięto tło #111118 blokujące przezroczystość kafelków"
+    ]
+  },
+  {
+    "version": "v2026.9.18.03",
+    "date": "2026-09-18",
+    "changes": [
+      "✨ Poprawki UX: Usunięcie emotikon z opcji kalendarza (Podgląd, Kontynuuj, Usuń), naprawa tapet w Ustawieniach na glassmorphism"
+    ]
+  },
+  {
     "version": "v2026.9.18.02",
     "date": "2026-09-18",
     "changes": [

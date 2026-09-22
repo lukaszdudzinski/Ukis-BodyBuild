@@ -205,7 +205,7 @@ export const AiAnalyticsUI = {
                 </div>
 
                 <div style="display:flex; flex-direction:column; gap:12px;">
-                    <button id="ai-interview-submit" style="width:100%; padding:16px; background:#FF9800; color:#111118; font-weight:bold; border:none; border-radius:12px; cursor:pointer; font-size:1.05em; display:flex; align-items:center; justify-content:center; gap:8px;">
+                    <button id="ai-interview-submit" style="width:100%; padding:16px; background:#FF9800; color:rgba(255,255,255,0.03); font-weight:bold; border:none; border-radius:12px; cursor:pointer; font-size:1.05em; display:flex; align-items:center; justify-content:center; gap:8px;">
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
                         Generuj Analizę
                     </button>
@@ -300,7 +300,7 @@ export const AiAnalyticsUI = {
             + '<div style="display:inline-flex; align-items:center; justify-content:center; width:64px; height:64px; border-radius:50%; background:rgba(255,152,0,0.1); margin-bottom:20px;"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#FF9800" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg></div>'
             + '<h3 style="color:#FF9800; margin:0 0 12px 0; font-size:1.2em; font-weight:600;">Brak danych do analizy</h3>'
             + '<p style="color:#8E8E93; font-size:0.9em; line-height:1.6; margin:0 0 24px 0;">Edward nie ma czego analizować — w ciągu ostatnich <strong style="color:#fff;">' + days + ' dni</strong> nie zostały zapisane żadne treningi.<br><br>Zaloguj co najmniej jeden trening, a Edward chętnie oceni Twoje postępy!</p>'
-            + '<button id="ai-nodata-close" style="width:100%; padding:14px; background:#FF9800; color:#111118; font-weight:bold; border:none; border-radius:12px; cursor:pointer; font-size:1em;">Rozumiem, zaraz trenuję!</button>'
+            + '<button id="ai-nodata-close" style="width:100%; padding:14px; background:#FF9800; color:rgba(255,255,255,0.03); font-weight:bold; border:none; border-radius:12px; cursor:pointer; font-size:1em;">Rozumiem, zaraz trenuję!</button>'
             + '</div>';
         document.body.appendChild(modal);
         document.getElementById('ai-nodata-close').onclick = () => modal.remove();

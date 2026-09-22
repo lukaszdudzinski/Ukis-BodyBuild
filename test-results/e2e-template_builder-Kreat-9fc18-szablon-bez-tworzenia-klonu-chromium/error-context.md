@@ -16,86 +16,129 @@ Test timeout of 30000ms exceeded.
 ```
 
 ```
-Error: page.click: Test timeout of 30000ms exceeded.
+Error: page.waitForSelector: Test timeout of 30000ms exceeded.
 Call log:
-  - waiting for locator('#template-builder-dashboard button:has-text("Zapisz")')
-    - locator resolved to <button onclick="TemplateBuilderUI.saveTemplate()">…</button>
-  - attempting click action
-    2 × waiting for element to be visible, enabled and stable
-      - element is visible, enabled and stable
-      - scrolling into view if needed
-      - done scrolling
-      - <div id="changelog-modal-overlay">…</div> intercepts pointer events
-    - retrying click action
-    - waiting 20ms
-    2 × waiting for element to be visible, enabled and stable
-      - element is visible, enabled and stable
-      - scrolling into view if needed
-      - done scrolling
-      - <div id="changelog-modal-overlay">…</div> intercepts pointer events
-    - retrying click action
-      - waiting 100ms
-    33 × waiting for element to be visible, enabled and stable
-       - element is visible, enabled and stable
-       - scrolling into view if needed
-       - done scrolling
-       - <div id="changelog-modal-overlay">…</div> intercepts pointer events
-     - retrying click action
-       - waiting 500ms
+  - waiting for locator('#template-builder-dashboard') to be visible
+    61 × locator resolved to hidden <div class="tab-content" id="template-builder-dashboard">↵                </div>
 
 ```
 
 # Page snapshot
 
 ```yaml
-- generic [ref=e1]:
+- generic [active] [ref=e1]:
   - generic [ref=e2]:
     - main [ref=e3]:
       - generic [ref=e5]:
         - generic [ref=e6]:
-          - generic [ref=e7]:
-            - heading "Kreator Planu (Koszyk)" [level=2] [ref=e8]
-            - button "×" [ref=e9] [cursor=pointer]
+          - heading "Trening" [level=2] [ref=e7]
+          - paragraph [ref=e8]: Zaplanuj i wykonuj treningi
+        - generic [ref=e9]:
           - generic [ref=e10]:
-            - textbox "Nazwa Planu (np. Push Dół)" [active] [ref=e11]: Zaktualizowany Szablon
-            - button "Zapisz" [ref=e12] [cursor=pointer]
-        - generic [ref=e17]:
-          - generic [ref=e18]:
-            - generic [ref=e19]: Zastosuj do zaznaczonych (Możesz używać przecinków dla piramid!)
-            - generic [ref=e22]: "Przykład: wpisz 3 serie, Powt: 12,10,8, Kg: 100,110,120"
-            - spinbutton "Serie" [ref=e23]
-            - generic [ref=e24]: x
-            - textbox "Powt." [ref=e25]
-            - generic [ref=e26]: "@"
-            - textbox "Kg" [ref=e27]
-            - button "Ustaw" [ref=e28] [cursor=pointer]
-          - generic [ref=e29]:
-            - heading "Twoje ćwiczenia" [level=4] [ref=e30]
-            - button "Dodaj ćwiczenie" [ref=e31] [cursor=pointer]
-          - generic [ref=e34]:
-            - checkbox [ref=e36] [cursor=pointer]
-            - generic [ref=e37]:
-              - generic [ref=e38]: 1. Wyciskanie
-              - generic [ref=e48]: "✓ Ustawiono: 1 serii (10 powt.) @ 50kg"
-            - generic [ref=e49]:
-              - generic [ref=e50]:
-                - button [ref=e51] [cursor=pointer]
-                - button [ref=e54] [cursor=pointer]
-              - button [ref=e57] [cursor=pointer]
-    - generic [ref=e61]:
-      - generic [ref=e62] [cursor=pointer]: Menu
-      - generic [ref=e68] [cursor=pointer]: Trening
-      - generic [ref=e79] [cursor=pointer]: Profil
-      - generic [ref=e85] [cursor=pointer]: Serwis
-  - generic [ref=e91]:
-    - generic [ref=e92]:
-      - heading "Co nowego? 🚀" [level=3] [ref=e93]
-      - button "×" [ref=e94] [cursor=pointer]
-    - generic [ref=e97]:
-      - heading "Wersja v2026.9.18.01 (2026-09-18)" [level=4] [ref=e98]
-      - list [ref=e99]:
-        - listitem [ref=e100]: "🐞 HOTFIX: Naprawiono wszystkie testy Playwright E2E. Aktualizacja selektorów (Glassmorphism), likwidacja race conditions (Changelog i PWA) oraz fix czyszczenia bazy OPFS w trybie WebWorker."
-  - button "🤖" [ref=e102] [cursor=pointer]
+            - button "◀" [ref=e11] [cursor=pointer]
+            - heading "Wrzesień 2026" [level=3] [ref=e12]
+            - button "▶" [ref=e13] [cursor=pointer]
+          - generic [ref=e14]:
+            - generic [ref=e15]: Pn
+            - generic [ref=e16]: Wt
+            - generic [ref=e17]: Śr
+            - generic [ref=e18]: Cz
+            - generic [ref=e19]: Pt
+            - generic [ref=e20]: So
+            - generic [ref=e21]: Nd
+            - generic [ref=e22] [cursor=pointer]: "1"
+            - generic [ref=e23] [cursor=pointer]: "2"
+            - generic [ref=e24] [cursor=pointer]: "3"
+            - generic [ref=e25] [cursor=pointer]: "4"
+            - generic [ref=e26] [cursor=pointer]: "5"
+            - generic [ref=e27] [cursor=pointer]: "6"
+            - generic [ref=e28] [cursor=pointer]: "7"
+            - generic [ref=e29] [cursor=pointer]: "8"
+            - generic [ref=e30] [cursor=pointer]: "9"
+            - generic [ref=e31] [cursor=pointer]: "10"
+            - generic [ref=e32] [cursor=pointer]: "11"
+            - generic [ref=e33] [cursor=pointer]: "12"
+            - generic [ref=e34] [cursor=pointer]: "13"
+            - generic [ref=e35] [cursor=pointer]: "14"
+            - generic [ref=e36] [cursor=pointer]: "15"
+            - generic [ref=e37] [cursor=pointer]: "16"
+            - generic [ref=e38] [cursor=pointer]: "17"
+            - generic [ref=e39] [cursor=pointer]: "18"
+            - generic [ref=e40] [cursor=pointer]: "19"
+            - generic [ref=e41] [cursor=pointer]: "20"
+            - generic [ref=e42] [cursor=pointer]: "21"
+            - generic [ref=e43] [cursor=pointer]: "22"
+            - generic [ref=e44] [cursor=pointer]: "23"
+            - generic [ref=e45] [cursor=pointer]: "24"
+            - generic [ref=e46] [cursor=pointer]: "25"
+            - generic [ref=e47] [cursor=pointer]: "26"
+            - generic [ref=e48] [cursor=pointer]: "27"
+            - generic [ref=e49] [cursor=pointer]: "28"
+            - generic [ref=e50] [cursor=pointer]: "29"
+            - generic [ref=e51] [cursor=pointer]: "30"
+          - generic [ref=e52]:
+            - 'heading "Opcje dla: 2026-09-18" [level=4] [ref=e53]'
+            - generic [ref=e54]:
+              - button "Dodaj nową sesję treningową" [ref=e55] [cursor=pointer]
+              - button "Wybierz Szablon Treningowy" [ref=e57] [cursor=pointer]
+              - button "Kreator Szablonów (Koszyk)" [ref=e61] [cursor=pointer]
+              - generic [ref=e64]:
+                - heading "Ostatnie treningi (wybierz, aby skopiować na dziś):" [level=5] [ref=e65]
+                - paragraph [ref=e69]: Brak sesji w historii do skopiowania.
+          - generic [ref=e70]:
+            - generic [ref=e71]: Wykonany
+            - generic [ref=e73]: Zaplanowany
+            - generic [ref=e75]: Pominięty
+    - generic [ref=e77]:
+      - generic [ref=e78] [cursor=pointer]: Menu
+      - generic [ref=e84] [cursor=pointer]: Trening
+      - generic [ref=e95] [cursor=pointer]: Profil
+      - generic [ref=e101] [cursor=pointer]: Serwis
+  - generic [ref=e107]:
+    - generic [ref=e108]:
+      - heading "Co nowego? 🚀" [level=3] [ref=e109]
+      - button "×" [ref=e110] [cursor=pointer]
+    - generic [ref=e112]:
+      - generic [ref=e113]:
+        - heading "Wersja v2026.9.18.03 (2026-09-18)" [level=4] [ref=e114]
+        - list [ref=e115]:
+          - listitem [ref=e116]: "✨ Poprawki UX: Usunięcie emotikon z opcji kalendarza (Podgląd, Kontynuuj, Usuń), naprawa tapet w Ustawieniach na glassmorphism"
+      - generic [ref=e117]:
+        - heading "Wersja v2026.9.18.02 (2026-09-18)" [level=4] [ref=e118]
+        - list [ref=e119]:
+          - listitem [ref=e120]: "✨ Poprawki UX: modal szablonów glassmorphism, poprawny SVG hantla, owijanie nazw ćwiczeń, widoczność przycisku Pauza"
+      - generic [ref=e121]:
+        - heading "Wersja v2026.9.18.01 (2026-09-18)" [level=4] [ref=e122]
+        - list [ref=e123]:
+          - listitem [ref=e124]: "🐞 HOTFIX: Naprawiono wszystkie testy Playwright E2E. Aktualizacja selektorów (Glassmorphism), likwidacja race conditions (Changelog i PWA) oraz fix czyszczenia bazy OPFS w trybie WebWorker."
+  - button "🤖" [ref=e126] [cursor=pointer]
+  - generic [ref=e128]:
+    - generic [ref=e129]:
+      - generic [ref=e130]:
+        - heading "Szablony Planów Treningowych" [level=3] [ref=e131]
+        - paragraph [ref=e132]: "Wybierz zapisany plan by rozpocząć sesję:"
+        - button "Importuj z JSON" [ref=e133] [cursor=pointer]
+      - button "×" [ref=e137] [cursor=pointer]
+    - generic [ref=e139]:
+      - generic [ref=e140]:
+        - strong [ref=e141]: Stary Szablon do Edycji
+        - button "Eksport" [ref=e142] [cursor=pointer]
+      - generic [ref=e146]: "Typ: Trening Siłowy Ilość ćwiczeń w treningu: 1"
+      - generic [ref=e147]:
+        - button "Wybierz" [ref=e148] [cursor=pointer]
+        - generic [ref=e151]:
+          - button "Edytuj" [ref=e152] [cursor=pointer]
+          - button "Usuń" [ref=e156] [cursor=pointer]
+      - generic [ref=e160]:
+        - generic [ref=e161]: "Automatyczny Harmonogram w Kalendarzu:"
+        - button "Pn" [ref=e164] [cursor=pointer]
+        - button "Wt" [ref=e165] [cursor=pointer]
+        - button "Śr" [ref=e166] [cursor=pointer]
+        - button "Czw" [ref=e167] [cursor=pointer]
+        - button "Pt" [ref=e168] [cursor=pointer]
+        - button "Sb" [ref=e169] [cursor=pointer]
+        - button "Nd" [ref=e170] [cursor=pointer]
+    - button "Zamknij" [ref=e172] [cursor=pointer]
 ```
 
 # Test source
@@ -177,7 +220,8 @@ Call log:
   74 |             if(editBtn) editBtn.click();
   75 |         });
   76 | 
-  77 |         await page.waitForSelector('#template-builder-dashboard', { state: 'visible' });
+> 77 |         await page.waitForSelector('#template-builder-dashboard', { state: 'visible' });
+     |                    ^ Error: page.waitForSelector: Test timeout of 30000ms exceeded.
   78 | 
   79 |         const nameInput = page.locator('#builder-template-name');
   80 |         await expect(nameInput).toHaveValue('Stary Szablon do Edycji');
@@ -186,8 +230,7 @@ Call log:
   83 | 
   84 |         page.once('dialog', dialog => dialog.accept());
   85 |         
-> 86 |         await page.click('#template-builder-dashboard button:has-text("Zapisz")');
-     |                    ^ Error: page.click: Test timeout of 30000ms exceeded.
+  86 |         await page.click('#template-builder-dashboard button:has-text("Zapisz")');
   87 | 
   88 |         const templatesStr = await page.evaluate(() => window.localStorage.getItem('uki_workout_templates'));
   89 |         const templates = JSON.parse(templatesStr);

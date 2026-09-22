@@ -21,29 +21,17 @@ Call log:
   - waiting for locator('#start-new-session-btn')
     - locator resolved to <button id="start-new-session-btn" class="action-button pulse">…</button>
   - attempting click action
-    - waiting for element to be visible, enabled and stable
-    - element is visible, enabled and stable
-    - scrolling into view if needed
-    - done scrolling
-    - <li>🐞 HOTFIX: Naprawiono wszystkie testy Playwright E…</li> from <div id="changelog-modal-overlay">…</div> subtree intercepts pointer events
-  - retrying click action
-    - waiting for element to be visible, enabled and stable
-    - element is not stable
-  - retrying click action
+    2 × waiting for element to be visible, enabled and stable
+      - element is not stable
+    - retrying click action
     - waiting 20ms
     2 × waiting for element to be visible, enabled and stable
-      - element is visible, enabled and stable
-      - scrolling into view if needed
-      - done scrolling
-      - <li>🐞 HOTFIX: Naprawiono wszystkie testy Playwright E…</li> from <div id="changelog-modal-overlay">…</div> subtree intercepts pointer events
+      - element is not stable
     - retrying click action
       - waiting 100ms
-    13 × waiting for element to be visible, enabled and stable
-       - element is visible, enabled and stable
-       - scrolling into view if needed
-       - done scrolling
-       - <li>🐞 HOTFIX: Naprawiono wszystkie testy Playwright E…</li> from <div id="changelog-modal-overlay">…</div> subtree intercepts pointer events
-     - retrying click action
+    - waiting for element to be visible, enabled and stable
+    - element is not stable
+  13 × retrying click action
        - waiting 500ms
        - waiting for element to be visible, enabled and stable
        - element is visible, enabled and stable
@@ -56,21 +44,21 @@ Call log:
        - element is visible, enabled and stable
        - scrolling into view if needed
        - done scrolling
-       - <li>🐞 HOTFIX: Naprawiono wszystkie testy Playwright E…</li> from <div id="changelog-modal-overlay">…</div> subtree intercepts pointer events
+       - <li>✨ Poprawki UX: modal szablonów glassmorphism, pop…</li> from <div id="changelog-modal-overlay">…</div> subtree intercepts pointer events
      - retrying click action
        - waiting 500ms
        - waiting for element to be visible, enabled and stable
        - element is visible, enabled and stable
        - scrolling into view if needed
        - done scrolling
-       - <li>🐞 HOTFIX: Naprawiono wszystkie testy Playwright E…</li> from <div id="changelog-modal-overlay">…</div> subtree intercepts pointer events
+       - <li>✨ Poprawki UX: modal szablonów glassmorphism, pop…</li> from <div id="changelog-modal-overlay">…</div> subtree intercepts pointer events
      - retrying click action
        - waiting 500ms
-    - waiting for element to be visible, enabled and stable
-    - element is visible, enabled and stable
-    - scrolling into view if needed
-    - done scrolling
-    - <li>🐞 HOTFIX: Naprawiono wszystkie testy Playwright E…</li> from <div id="changelog-modal-overlay">…</div> subtree intercepts pointer events
+       - waiting for element to be visible, enabled and stable
+       - element is visible, enabled and stable
+       - scrolling into view if needed
+       - done scrolling
+       - <li>✨ Poprawki UX: modal szablonów glassmorphism, pop…</li> from <div id="changelog-modal-overlay">…</div> subtree intercepts pointer events
   - retrying click action
     - waiting 500ms
 
@@ -151,11 +139,20 @@ Call log:
     - generic [ref=e108]:
       - heading "Co nowego? 🚀" [level=3] [ref=e109]
       - button "×" [ref=e110] [cursor=pointer]
-    - generic [ref=e113]:
-      - heading "Wersja v2026.9.18.01 (2026-09-18)" [level=4] [ref=e114]
-      - list [ref=e115]:
-        - listitem [ref=e116]: "🐞 HOTFIX: Naprawiono wszystkie testy Playwright E2E. Aktualizacja selektorów (Glassmorphism), likwidacja race conditions (Changelog i PWA) oraz fix czyszczenia bazy OPFS w trybie WebWorker."
-  - button "🤖" [ref=e118] [cursor=pointer]
+    - generic [ref=e112]:
+      - generic [ref=e113]:
+        - heading "Wersja v2026.9.18.03 (2026-09-18)" [level=4] [ref=e114]
+        - list [ref=e115]:
+          - listitem [ref=e116]: "✨ Poprawki UX: Usunięcie emotikon z opcji kalendarza (Podgląd, Kontynuuj, Usuń), naprawa tapet w Ustawieniach na glassmorphism"
+      - generic [ref=e117]:
+        - heading "Wersja v2026.9.18.02 (2026-09-18)" [level=4] [ref=e118]
+        - list [ref=e119]:
+          - listitem [ref=e120]: "✨ Poprawki UX: modal szablonów glassmorphism, poprawny SVG hantla, owijanie nazw ćwiczeń, widoczność przycisku Pauza"
+      - generic [ref=e121]:
+        - heading "Wersja v2026.9.18.01 (2026-09-18)" [level=4] [ref=e122]
+        - list [ref=e123]:
+          - listitem [ref=e124]: "🐞 HOTFIX: Naprawiono wszystkie testy Playwright E2E. Aktualizacja selektorów (Glassmorphism), likwidacja race conditions (Changelog i PWA) oraz fix czyszczenia bazy OPFS w trybie WebWorker."
+  - button "🤖" [ref=e126] [cursor=pointer]
 ```
 
 # Test source

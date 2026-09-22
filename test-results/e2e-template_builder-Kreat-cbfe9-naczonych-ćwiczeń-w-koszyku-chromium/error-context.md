@@ -38,11 +38,20 @@ Call log:
     - generic [ref=e36]:
       - heading "Co nowego? 🚀" [level=3] [ref=e37]
       - button "×" [ref=e38] [cursor=pointer]
-    - generic [ref=e41]:
-      - heading "Wersja v2026.9.18.01 (2026-09-18)" [level=4] [ref=e42]
-      - list [ref=e43]:
-        - listitem [ref=e44]: "🐞 HOTFIX: Naprawiono wszystkie testy Playwright E2E. Aktualizacja selektorów (Glassmorphism), likwidacja race conditions (Changelog i PWA) oraz fix czyszczenia bazy OPFS w trybie WebWorker."
-  - button "🤖" [ref=e46] [cursor=pointer]
+    - generic [ref=e40]:
+      - generic [ref=e41]:
+        - heading "Wersja v2026.9.18.03 (2026-09-18)" [level=4] [ref=e42]
+        - list [ref=e43]:
+          - listitem [ref=e44]: "✨ Poprawki UX: Usunięcie emotikon z opcji kalendarza (Podgląd, Kontynuuj, Usuń), naprawa tapet w Ustawieniach na glassmorphism"
+      - generic [ref=e45]:
+        - heading "Wersja v2026.9.18.02 (2026-09-18)" [level=4] [ref=e46]
+        - list [ref=e47]:
+          - listitem [ref=e48]: "✨ Poprawki UX: modal szablonów glassmorphism, poprawny SVG hantla, owijanie nazw ćwiczeń, widoczność przycisku Pauza"
+      - generic [ref=e49]:
+        - heading "Wersja v2026.9.18.01 (2026-09-18)" [level=4] [ref=e50]
+        - list [ref=e51]:
+          - listitem [ref=e52]: "🐞 HOTFIX: Naprawiono wszystkie testy Playwright E2E. Aktualizacja selektorów (Glassmorphism), likwidacja race conditions (Changelog i PWA) oraz fix czyszczenia bazy OPFS w trybie WebWorker."
+  - button "🤖" [ref=e54] [cursor=pointer]
 ```
 
 # Test source

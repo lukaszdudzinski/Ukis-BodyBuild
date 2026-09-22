@@ -18,8 +18,8 @@ Test timeout of 30000ms exceeded.
 ```
 Error: locator.click: Test timeout of 30000ms exceeded.
 Call log:
-  - waiting for locator('#history-dashboard').getByText('Trening z superserią test 1789722335543').first()
-    - locator resolved to <strong>Trening z superserią test 1789722335543</strong>
+  - waiting for locator('#history-dashboard').getByText('Trening z superserią test 1789753073857').first()
+    - locator resolved to <strong>Trening z superserią test 1789753073857</strong>
   - attempting click action
     2 × waiting for element to be visible, enabled and stable
       - element is visible, enabled and stable
@@ -35,7 +35,7 @@ Call log:
       - <div id="changelog-modal-overlay">…</div> intercepts pointer events
     - retrying click action
       - waiting 100ms
-    52 × waiting for element to be visible, enabled and stable
+    53 × waiting for element to be visible, enabled and stable
        - element is visible, enabled and stable
        - scrolling into view if needed
        - done scrolling
@@ -60,7 +60,7 @@ Call log:
           - generic [ref=f1e15]:
             - heading "wrzesień 2026" [level=3] [ref=f1e16]
             - generic [ref=f1e31] [cursor=pointer]:
-              - strong [ref=f1e32]: Trening z superserią test 1789722335543
+              - strong [ref=f1e32]: Trening z superserią test 1789753073857
               - text: 1 ćwiczeń • 0 kg
     - generic [ref=f1e36]:
       - generic [ref=f1e37] [cursor=pointer]: Menu
@@ -71,11 +71,20 @@ Call log:
     - generic [ref=f1e67]:
       - heading "Co nowego? 🚀" [level=3] [ref=f1e68]
       - button "×" [ref=f1e69] [cursor=pointer]
-    - generic [ref=f1e72]:
-      - heading "Wersja v2026.9.18.01 (2026-09-18)" [level=4] [ref=f1e73]
-      - list [ref=f1e74]:
-        - listitem [ref=f1e75]: "🐞 HOTFIX: Naprawiono wszystkie testy Playwright E2E. Aktualizacja selektorów (Glassmorphism), likwidacja race conditions (Changelog i PWA) oraz fix czyszczenia bazy OPFS w trybie WebWorker."
-  - button "🤖" [ref=f1e77] [cursor=pointer]
+    - generic [ref=f1e71]:
+      - generic [ref=f1e72]:
+        - heading "Wersja v2026.9.18.03 (2026-09-18)" [level=4] [ref=f1e73]
+        - list [ref=f1e74]:
+          - listitem [ref=f1e75]: "✨ Poprawki UX: Usunięcie emotikon z opcji kalendarza (Podgląd, Kontynuuj, Usuń), naprawa tapet w Ustawieniach na glassmorphism"
+      - generic [ref=f1e76]:
+        - heading "Wersja v2026.9.18.02 (2026-09-18)" [level=4] [ref=f1e77]
+        - list [ref=f1e78]:
+          - listitem [ref=f1e79]: "✨ Poprawki UX: modal szablonów glassmorphism, poprawny SVG hantla, owijanie nazw ćwiczeń, widoczność przycisku Pauza"
+      - generic [ref=f1e80]:
+        - heading "Wersja v2026.9.18.01 (2026-09-18)" [level=4] [ref=f1e81]
+        - list [ref=f1e82]:
+          - listitem [ref=f1e83]: "🐞 HOTFIX: Naprawiono wszystkie testy Playwright E2E. Aktualizacja selektorów (Glassmorphism), likwidacja race conditions (Changelog i PWA) oraz fix czyszczenia bazy OPFS w trybie WebWorker."
+  - button "🤖" [ref=f1e85] [cursor=pointer]
 ```
 
 # Test source
