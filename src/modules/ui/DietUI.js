@@ -78,7 +78,7 @@ export const DietUI = {
                         <!-- JS generated miniatures -->
                     </div>
 
-                    <button id="diet-analyze-btn" class="action-button pulse" style="display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; background: #FF9800; border: none; padding: 15px; border-radius: 16px; font-size: 1em; font-weight: 600; cursor: pointer; color: rgba(255,255,255,0.03); transition: opacity 0.2s;">
+                    <button id="diet-analyze-btn" class="action-button pulse" style="display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; background: #FF9800; border: none; padding: 15px; border-radius: 16px; font-size: 1em; font-weight: 600; cursor: pointer; color: #FFF; transition: opacity 0.2s;">
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/></svg>
                         Analizuj z AI
                     </button>
@@ -147,7 +147,7 @@ export const DietUI = {
                         Zapotrzebowanie wyliczane jest ze wzoru Mifflin-St Jeor na podstawie Twojej najnowszej wagi w sekcji Pomiary.
                     </p>
 
-                    <button id="diet-tdee-save" style="width: 100%; background: #FF9800; color: rgba(255,255,255,0.03); border: none; padding: 15px; border-radius: 12px; font-weight: 600; font-size: 1em; cursor: pointer; transition: opacity 0.2s;">
+                    <button id="diet-tdee-save" style="width: 100%; background: #FF9800; color: #FFF; border: none; padding: 15px; border-radius: 12px; font-weight: 600; font-size: 1em; cursor: pointer; transition: opacity 0.2s;">
                         Zapisz ustawienia
                     </button>
                 </div>

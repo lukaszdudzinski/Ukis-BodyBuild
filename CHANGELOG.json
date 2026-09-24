@@ -1,5 +1,12 @@
 [
   {
+    "version": "v2026.9.24.01",
+    "date": "2026-09-24",
+    "changes": [
+      "🛠️ Poprawka: przywrócenie widoczności tekstu (kolor biały) na przyciskach akcji w Diecie i Pomiarach"
+    ]
+  },
+  {
     "version": "v2026.9.22.03",
     "date": "2026-09-22",
     "changes": [

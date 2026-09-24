@@ -78,7 +78,7 @@ export const MeasurementsComponent = {
                 </div>
 
                 <div style="display: flex; gap: 15px; margin-top: 20px;">
-                    <button type="submit" class="pulse" style="display: flex; align-items: center; justify-content: center; gap: 8px; flex: 2; background: #FF9800; border: none; padding: 18px; border-radius: 16px; font-size: 1.1em; font-weight: 700; cursor: pointer; color: rgba(255,255,255,0.03); transition: opacity 0.2s;">
+                    <button type="submit" class="pulse" style="display: flex; align-items: center; justify-content: center; gap: 8px; flex: 2; background: #FF9800; border: none; padding: 18px; border-radius: 16px; font-size: 1.1em; font-weight: 700; cursor: pointer; color: #FFF; transition: opacity 0.2s;">
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
                         Zapisz Pomiary
                     </button>
