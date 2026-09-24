@@ -19,8 +19,8 @@ export const TrainingComponent = {
                 </div>
 
                 <!-- Day Action Panel (hidden by default) -->
-                <div id="day-action-panel" style="display: none; margin-top: 20px; padding: 15px; background: rgba(0,0,0,0.4); border: 1px solid #00BFFF; border-radius: 8px;">
-                    <h4 id="selected-day-label" style="color: #00BFFF; margin-bottom: 15px; text-align: center;">Opcje dla dnia</h4>
+                <div id="day-action-panel" class="glass-card" style="display: none; margin-top: 20px; padding: 20px;">
+                    <h4 id="selected-day-label" style="color: #FFF; margin-bottom: 15px; text-align: center; font-weight: 700;">Opcje dla dnia</h4>
                     
                     <div id="day-action-existing-state" style="display: none; text-align: center; margin-bottom: 20px;">
                         <h5 style="color: #00BFFF; margin-bottom: 10px;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 4px; vertical-align: middle;"><path d="M5 9v6"/><path d="M9 7v10"/><path d="M15 7v10"/><path d="M19 9v6"/><path d="M9 12h6"/></svg> Treningi w tym dniu:</h5>
@@ -40,15 +40,15 @@ export const TrainingComponent = {
                     </div>
 
                     <div id="day-action-empty-state">
-                        <button id="start-new-session-btn" class="action-button pulse" style="width: 100%; margin-bottom: 10px; background: rgba(0, 191, 255, 0.15); border: 1px solid rgba(0, 191, 255, 0.4); border-radius: 12px; backdrop-filter: blur(5px); color: #00BFFF; display: flex; justify-content: center; align-items: center; gap: 8px;">
+                        <button id="start-new-session-btn" class="action-button pulse" style="width: 100%; margin-bottom: 10px; background: rgba(30, 30, 30, 0.4); border: 1px solid rgba(0, 191, 255, 0.4); border-radius: 16px; backdrop-filter: blur(10px); color: #00BFFF; display: flex; justify-content: center; align-items: center; gap: 8px;">
                             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
                             Dodaj nową sesję treningową
                         </button>
-                        <button id="load-template-session-btn" class="action-button" style="width: 100%; margin-bottom: 10px; background: rgba(255, 152, 0, 0.15); border: 1px solid rgba(255, 152, 0, 0.4); border-radius: 12px; backdrop-filter: blur(5px); color: #FF9800; display: flex; justify-content: center; align-items: center; gap: 8px;">
+                        <button id="load-template-session-btn" class="action-button" style="width: 100%; margin-bottom: 10px; background: rgba(30, 30, 30, 0.4); border: 1px solid rgba(255, 152, 0, 0.4); border-radius: 16px; backdrop-filter: blur(10px); color: #FF9800; display: flex; justify-content: center; align-items: center; gap: 8px;">
                             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
                             Wybierz Szablon Treningowy
                         </button>
-                        <button onclick="window.TemplateBuilderUI && window.TemplateBuilderUI.openBuilder()" class="action-button" style="width: 100%; margin-bottom: 10px; background: rgba(46, 204, 113, 0.15); border: 1px solid rgba(46, 204, 113, 0.4); border-radius: 12px; backdrop-filter: blur(5px); color: #2ECC71; display: flex; justify-content: center; align-items: center; gap: 8px;">
+                        <button onclick="window.TemplateBuilderUI && window.TemplateBuilderUI.openBuilder()" class="action-button" style="width: 100%; margin-bottom: 10px; background: rgba(30, 30, 30, 0.4); border: 1px solid rgba(46, 204, 113, 0.4); border-radius: 16px; backdrop-filter: blur(10px); color: #2ECC71; display: flex; justify-content: center; align-items: center; gap: 8px;">
                             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
                             Kreator Szablonów (Koszyk)
                         </button>

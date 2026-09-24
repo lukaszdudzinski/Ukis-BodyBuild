@@ -1,5 +1,12 @@
 [
   {
+    "version": "v2026.9.24.02",
+    "date": "2026-09-24",
+    "changes": [
+      "🛠️ Stylizacja: Przeniesienie iOS Glassmorphism (blur, kontrastowe ramki) na elementy Kalendarza i panel opcji"
+    ]
+  },
+  {
     "version": "v2026.9.24.01",
     "date": "2026-09-24",
     "changes": [
