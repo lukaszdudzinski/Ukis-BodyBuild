@@ -1,5 +1,12 @@
 [
   {
+    "version": "v2026.9.24.04",
+    "date": "2026-09-24",
+    "changes": [
+      "🛠️ UI: Wyrównano odstępy pionowe między kafelkami głównymi a narzędziami AI (usunięcie podwójnego marginesu)"
+    ]
+  },
+  {
     "version": "v2026.9.24.03",
     "date": "2026-09-24",
     "changes": [
