@@ -215,7 +215,7 @@ export const AnalyticsUI = {
                     if (isCardioOrClasses) {
                         const isClasses = w.type === "classes" || (!w.type && w.volume === 0);
                         typeBadge = isClasses ? "Zajęcia" : "Cardio";
-                        typeIcon = isClasses ? '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>' : '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 14c-2.3 0-3-1.6-3-3s.7-3 3-3"/><path d="M9 14c-2.3 0-3-1.6-3-3s.7-3 3-3"/><path d="M12 20v-4"/></svg>';
+                        typeIcon = isClasses ? '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>' : '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>';
                         barColor = isClasses ? "#FF5722" : "#00BFFF";
                         
                         displayVal = w.calories > 0 ? `${w.calories} kcal` : (w.durationMinutes ? `${w.durationMinutes} min` : `Aktywność`);
@@ -231,7 +231,7 @@ export const AnalyticsUI = {
                     const workoutNameDisplay = w.name ? w.name : typeBadge;
 
                     return `
-                    <div style="display: flex; align-items: center; background: rgba(255,255,255,0.03); border-radius: 16px; padding: 14px; border: 1px solid rgba(255,255,255,0.05); box-shadow: 0 4px 10px rgba(0,0,0,0.1);">
+                    <div class="glass-card" style="display: flex; align-items: center; padding: 14px;">
                         <div style="width: 48px; height: 48px; border-radius: 14px; background: ${barColor}15; border: 1px solid ${barColor}40; display: flex; align-items: center; justify-content: center; color: ${barColor}; flex-shrink: 0;">
                             ${typeIcon}
                         </div>
@@ -285,7 +285,7 @@ export const AnalyticsUI = {
                     </div>
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
                         ${recordsList.slice(0, 4).map(r => `
-                            <div style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,215,0,0.2); border-radius: 12px; padding: 14px; display: flex; flex-direction: column; justify-content: space-between; backdrop-filter: blur(10px);">
+                            <div class="glass-card" style="padding: 14px; display: flex; flex-direction: column; justify-content: space-between; border-color: rgba(255,215,0,0.4);">
                                 <div style="font-size: 0.85em; color: #fff; font-weight: 600; margin-bottom: 8px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${r.name}">${r.name}</div>
                                 <div>
                                     <div style="font-size: 1.4em; color: #FFD700; font-weight: 700; line-height: 1.1; margin-bottom: 6px;">${r.actualWeight} <span style="font-size: 0.65em; color: #8E8E93; font-weight: normal;">kg</span> <span style="font-size: 0.7em; color: #8E8E93; font-weight: normal;">x ${r.reps}</span></div>

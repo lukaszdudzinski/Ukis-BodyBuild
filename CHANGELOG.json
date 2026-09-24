@@ -1,5 +1,12 @@
 [
   {
+    "version": "v2026.9.24.03",
+    "date": "2026-09-24",
+    "changes": [
+      "🛠️ UI: Powiększono ikony głównego menu, zmieniono 'Analizy AI' i 'Postaw Kawę' w kafelki, ujednolicono styl listy rekordów, poprawiono ikonę Cardio"
+    ]
+  },
+  {
     "version": "v2026.9.24.02",
     "date": "2026-09-24",
     "changes": [
