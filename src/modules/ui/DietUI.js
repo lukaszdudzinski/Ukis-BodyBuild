@@ -475,8 +475,8 @@ export const DietUI = {
             const base64Images = await Promise.all(DietUI.attachedImages.map(id => MediaManager.getBase64(id)));
             const result = await DietAIEngine.analyzeImage(base64Images.filter(Boolean), contextText);
             
-            const thumbnail = DietUI.attachedImages.length > 0 ? DietUI.attachedImages[0] : null;
-            DietUI.showResultConfirmation(result, thumbnail, contextInput);
+            const thumbnails = DietUI.attachedImages.length > 0 ? DietUI.attachedImages.slice() : null;
+            DietUI.showResultConfirmation(result, thumbnails, contextInput);
 
         } catch (error) {
             if (window.ukiLogError) window.ukiLogError('DietAI Error', error.toString());
@@ -487,8 +487,10 @@ export const DietUI = {
         }
     },
 
-    showResultConfirmation: (result, thumbnail, contextInput) => {
+    showResultConfirmation: (result, thumbnails, contextInput) => {
         let currentKcal = parseInt(result.calories) || 0;
+        const thumbnailList = Array.isArray(thumbnails) ? thumbnails : (thumbnails ? [thumbnails] : []);
+        const primaryThumbnail = thumbnailList.length > 0 ? thumbnailList[0] : null;
         
         const modal = document.createElement('div');
         modal.id = 'diet-result-modal-overlay';
@@ -526,13 +528,24 @@ export const DietUI = {
         `;
         
         document.body.appendChild(modal);
-        if (thumbnail) {
+        if (thumbnailList.length > 0) {
             const container = document.getElementById('diet-result-thumbnail-container');
-            MediaManager.getMediaUrl(thumbnail).then(url => {
-                if(url && container) {
-                    container.innerHTML = `<img src="${url}" style="width: 100px; height: 100px; object-fit: cover; border-radius: 8px; border: 2px solid #FF9800;">`;
-                }
-            });
+            if (container) {
+                container.style.display = 'flex';
+                container.style.justifyContent = 'center';
+                container.style.gap = '8px';
+                container.style.flexWrap = 'wrap';
+                thumbnailList.forEach(thumb => {
+                    MediaManager.getMediaUrl(thumb).then(url => {
+                        if (url) {
+                            const img = document.createElement('img');
+                            img.src = url;
+                            img.style.cssText = 'width: 80px; height: 80px; object-fit: cover; border-radius: 8px; border: 2px solid #FF9800;';
+                            container.appendChild(img);
+                        }
+                    });
+                });
+            }
         }
 
         const inputKcal = document.getElementById('diet-result-kcal-display');
@@ -574,7 +587,7 @@ export const DietUI = {
                 protein: parseInt(result.protein) || 0,
                 carbs: parseInt(result.carbs) || 0,
                 fat: parseInt(result.fat) || 0,
-                thumbnail: thumbnail
+                thumbnail: primaryThumbnail
             });
 
             if (contextInput) contextInput.value = '';
