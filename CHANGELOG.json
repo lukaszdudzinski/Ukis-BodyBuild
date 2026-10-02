@@ -1,5 +1,12 @@
 [
   {
+    "version": "v2026.10.2.01",
+    "date": "2026-10-02",
+    "changes": [
+      "🛠️ Dieta AI: Naprawa analizy wielu zdjęć jednocześnie (sumowanie kalorii i makroskładników ze wszystkich dań/pudełek diety pudełkowej) oraz poprawa wyświetlania miniatur w podsumowaniu"
+    ]
+  },
+  {
     "version": "v2026.9.24.04",
     "date": "2026-09-24",
     "changes": [

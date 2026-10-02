@@ -24,14 +24,21 @@ export const DietAIEngine = {
         while (attempts < maxAttempts) {
             attempts++;
             try {
+                let imageList = [];
+                if (Array.isArray(imagesBase64)) {
+                    imageList = imagesBase64.filter(Boolean);
+                } else if (imagesBase64) {
+                    imageList = [imagesBase64];
+                }
+
                 const response = await fetch(cleanUrl, {
                     method: "POST",
                     headers: {
                         "Content-Type": "application/json"
                     },
                     body: JSON.stringify({ 
-                        images: imagesBase64, 
-                        imageBase64: imagesBase64 && imagesBase64.length > 0 ? imagesBase64[0] : null,
+                        images: imageList, 
+                        imageBase64: imageList.length > 0 ? imageList[0] : null,
                         contextText: contextText 
                     })
                 });

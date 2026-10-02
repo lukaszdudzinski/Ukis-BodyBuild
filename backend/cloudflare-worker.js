@@ -34,10 +34,19 @@ export default {
     }
 
     try {
-      // 2. Pobieramy zdjęcie wysłane z naszej aplikacji oraz opcjonalny kontekst
-      const { imageBase64, contextText, action } = await request.json();
+      // 2. Pobieramy zdjęcia wysłane z naszej aplikacji oraz opcjonalny kontekst
+      const body = await request.json();
+      const { imageBase64, images, contextText, action } = body;
 
-      if (!imageBase64 && (!contextText || contextText.trim().length === 0)) {
+      // Normalizujemy listę zdjęć (obsługujemy tablicę `images` lub pojedyncze `imageBase64`)
+      let imageList = [];
+      if (Array.isArray(images) && images.length > 0) {
+        imageList = images.filter(img => typeof img === 'string' && img.trim().length > 0);
+      } else if (imageBase64 && typeof imageBase64 === 'string' && imageBase64.trim().length > 0) {
+        imageList = [imageBase64];
+      }
+
+      if (imageList.length === 0 && (!contextText || contextText.trim().length === 0)) {
         return new Response(JSON.stringify({ error: "Brak zdjęcia lub tekstu" }), { status: 400, headers: corsHeaders });
       }
 
@@ -57,8 +66,19 @@ Twoim celem jest odpowiadać krótko, na temat, merytorycznie i zabawnie (dodaj�
 Zwróć TYLKO czystą treść odpowiedzi (tekst/markdown). Nie dodawaj żadnego JSONa.`;
       } else {
           // Domyślny tryb (analiza diety)
-          if (imageBase64) {
-              prompt += `Przeanalizuj to zdjęcie posiłku. `;
+          if (imageList.length > 1) {
+              prompt += `Otrzymujesz ${imageList.length} zdjęć posiłków lub etykiet diety pudełkowej / dań.
+TWOJE ZADANIE:
+1. Przeanalizuj DOKŁADNIE KAŻDE z ${imageList.length} załączonych zdjęć.
+2. Zidentyfikuj wszystkie posiłki oraz etykiety cateringowe z wartościami odżywczymi widoczne na KAŻDYM zdjęciu. Jeśli na zdjęciach są naklejki / etykiety z podanymi kaloriami i makroskładnikami (np. catering dietetyczny), bezwzględnie przepisz te wartości.
+3. ZSUMUJ kalorie (kcal) oraz makroskładniki (białko, węglowodany, tłuszcz) ZE WSZYSTKICH ZAŁĄCZONYCH ZDJĘĆ w jeden łączny wynik całkowity (łączna suma kalorii, białka, węglowodanów i tłuszczu).
+4. W polu "food_name" podaj zwięzłą listę wszystkich zidentyfikowanych dań/pudełek połączonych znakiem "+" (np. "Obiad: Łosoś z kaszą + Podwieczorek: Sernik fit").
+`;
+              if (contextText && contextText.trim().length > 0) {
+                  prompt += `\nUżytkownik dostarczył dodatkowy opis słowny: "${contextText}". Weź go pod uwagę.\n`;
+              }
+          } else if (imageList.length === 1) {
+              prompt += `Przeanalizuj to zdjęcie posiłku. Jeśli na zdjęciu widoczna jest etykieta z cateringu dietetycznego / wartościami odżywczymi, bezwzględnie przepisz z niej dokładne wartości kalorii i makroskładników. `;
               if (contextText && contextText.trim().length > 0) {
                   prompt += `\nUżytkownik dostarczył dodatkowy opis słowny posiłku: "${contextText}". Zignoruj zdjęcie jeśli jest niewyraźne lub nie przedstawia jedzenia, i oprzyj się w 100% na tym tekście.\n`;
               } else {
@@ -72,11 +92,11 @@ Zwróć TYLKO czystą treść odpowiedzi (tekst/markdown). Nie dodawaj żadnego 
 Zwróć TYLKO czysty obiekt JSON (bez znaczników markdown \`\`\`json). 
 Format:
 {
-  "food_name": "nazwa potrawy po polsku",
-  "calories": liczba kcal (całkowita),
-  "protein": liczba białka w gramach,
-  "carbs": liczba węglowodanów w gramach,
-  "fat": liczba tłuszczy w gramach
+  "food_name": "nazwa potrawy lub suma potraw po polsku",
+  "calories": liczba kcal (całkowita suma),
+  "protein": liczba białka w gramach (całkowita suma),
+  "carbs": liczba węglowodanów w gramach (całkowita suma),
+  "fat": liczba tłuszczy w gramach (całkowita suma)
 }`;
       }
 
@@ -85,11 +105,20 @@ Format:
       
       const parts = [ { text: prompt } ];
       
-      if (imageBase64) {
+      for (const img of imageList) {
+          let mimeType = "image/jpeg";
+          let base64Data = img;
+          if (img.startsWith("data:")) {
+              const mimeMatch = img.match(/^data:([^;]+);base64,/);
+              if (mimeMatch) mimeType = mimeMatch[1];
+              base64Data = img.split(',')[1];
+          } else if (img.includes(',')) {
+              base64Data = img.split(',')[1];
+          }
           parts.push({
               inline_data: {
-                  mime_type: "image/jpeg",
-                  data: imageBase64.split(',')[1] // Usuwamy "data:image/jpeg;base64," jeśli jest
+                  mime_type: mimeType,
+                  data: base64Data
               }
           });
       }
