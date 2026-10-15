@@ -68,6 +68,17 @@ appUiContent = appUiContent.replace(
 );
 fs.writeFileSync(appUiPath, appUiContent);
 
+// 1b. Update classic-app AppUI.js if exists (zapobieganie pętli PWA)
+const classicAppUiPath = path.join(rootDir, 'classic-app', 'src', 'modules', 'ui', 'AppUI.js');
+if (fs.existsSync(classicAppUiPath)) {
+    let classicAppUiContent = fs.readFileSync(classicAppUiPath, 'utf8');
+    classicAppUiContent = classicAppUiContent.replace(
+        /export const APP_VERSION = '(.*?)';/,
+        `export const APP_VERSION = '${newVersion}';`
+    );
+    fs.writeFileSync(classicAppUiPath, classicAppUiContent);
+}
+
 // 2. Update sw.js
 let swContent = fs.readFileSync(swPath, 'utf8');
 swContent = swContent.replace(
@@ -95,5 +106,16 @@ indexContent = indexContent.replace(
     `<meta name="app-version" content="${newVersion}">`
 );
 fs.writeFileSync(indexPath, indexContent);
+
+// 4b. Update classic.html if exists
+const classicHtmlPath = path.join(rootDir, 'classic.html');
+if (fs.existsSync(classicHtmlPath)) {
+    let classicHtmlContent = fs.readFileSync(classicHtmlPath, 'utf8');
+    classicHtmlContent = classicHtmlContent.replace(
+        /<meta name="app-version" content="(.*?)">/,
+        `<meta name="app-version" content="${newVersion}">`
+    );
+    fs.writeFileSync(classicHtmlPath, classicHtmlContent);
+}
 
 console.log(`Version bumped to ${newVersion}`);

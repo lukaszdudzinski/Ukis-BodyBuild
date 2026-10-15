@@ -1,5 +1,12 @@
 [
   {
+    "version": "v2026.10.15.01",
+    "date": "2026-10-15",
+    "changes": [
+      "👑 Release: Nowy wygląd Liquid Glass (iOS Glassmorphism) z 4-tygodniowym okresem przejściowym i możliwością powrotu do widoku klasycznego w Ustawieniach"
+    ]
+  },
+  {
     "version": "v2026.10.2.01",
     "date": "2026-10-02",
     "changes": [

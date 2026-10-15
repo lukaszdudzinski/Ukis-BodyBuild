@@ -3,10 +3,13 @@
 
 <head>
     <meta charset="UTF-8">
+    <!-- ui-version-guard: okres przejściowy nowego wyglądu (usuń po decyzji, patrz ui-switch.js) -->
+    <script id="ui-version-guard">try { if (localStorage.getItem('uki-ui-version') === 'classic') window.location.replace('classic.html'); } catch (e) {}</script>
+    <script src="ui-switch.js"></script>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="description" content="Aplikacja dla dzików, by uki. Dźwigaj i rośnij!">
     <meta name="theme-color" content="#FF9800" />
-    <meta name="app-version" content="v2026.10.2.01">
+    <meta name="app-version" content="v2026.10.15.01">
     <title>Uki's BodyBuild</title>
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="styles/glassmorphism.css">

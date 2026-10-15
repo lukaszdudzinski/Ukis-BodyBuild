@@ -26,6 +26,8 @@ export const SettingsUI = {
             } else {
                 settingsPanel.appendChild(dataSection);
             }
+            // Przełącznik wyglądu (okres przejściowy - patrz ui-switch.js)
+            if (window.UkiUiSwitch) window.UkiUiSwitch.mountSettingsCard(dataSection);
         }
 
         const resetTutorialBtn = document.getElementById('reset-tutorial-btn');
