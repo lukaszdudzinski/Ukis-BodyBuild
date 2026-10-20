@@ -23,10 +23,15 @@ const NEIGHBOR_KEYS = {
 // Klucz `uki_error_logs` sprawdzany przez „zawiera wpis `sasiad`”, bo aplikacja może dopisać własne błędy.
 const ERROR_LOG_SEED = '[{"msg":"sasiad"}]';
 
+// Aplikacja (PremiumUI) po przeładowaniu przy wygasłym okresie próbnym wpisuje dzisiejszą datę do
+// `uki_ai_paywall_last_shown`, więc zasiew używa dzisiejszej daty (UTC, jak w aplikacji). Inaczej
+// przeładowanie zmieniłoby ten klucz niezależnie od testowanego kodu.
+const TODAY = new Date().toISOString().split('T')[0];
+
 const ENTITLEMENT_KEYS = {
   uki_install_date: '2026-01-01T00:00:00.000Z',
   uki_ai_premium_token: 'test-token-invalid',
-  uki_ai_paywall_last_shown: '2026-10-01',
+  uki_ai_paywall_last_shown: TODAY,
   uki_kvvfs_migrated: 'true',
 };
 
