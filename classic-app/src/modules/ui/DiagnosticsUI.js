@@ -430,8 +430,9 @@ export const DiagnosticsUI = {
         const clearLocalBtn = document.getElementById('db-clear-local-btn');
         if (clearLocalBtn) {
             clearLocalBtn.addEventListener('click', () => {
-                if (confirm("Usunąć dane konfiguracyjne z LocalStorage? Twoje treningi w bazie nie zostaną ruszone, ale będziesz musiał podać Nick od nowa.")) {
-                    localStorage.clear();
+                if (confirm("Usunąć ustawienia BodyBuild zapisane w przeglądarce (wygląd, samouczki, preferencje)?\n\nTreningi, pomiary, dieta, szablony, plany, własne ćwiczenia, Twój nick, status PRO oraz dane innych aplikacji UKIS zostaną zachowane.")) {
+                    // Nie localStorage.clear(): domena jest wspólna dla aplikacji UKIS; uprawnienia, kvvfs i klucze współdzielone zostają (ukis-scope.js)
+                    window.UkiScope.clearOwnLocalStorage();
                     alert("Zrobione. Aplikacja się odświeży.");
                     window.location.reload();
                 }
