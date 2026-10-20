@@ -1,4 +1,5 @@
 const CACHE_NAME = 'ukis-bodybuild-v2026.10.15.01'; // deployed: 2026-08-27T00:01
+const OWN_CACHE_PREFIXES = ['ukis-bodybuild-', 'uki-bodybuild-']; // własne cache (także historyczne uki-bodybuild-v2026.8.x); cudze cache w domenie zostają
 // Core assets that MUST be cached immediately
 const CORE_ASSETS = [
     './',
@@ -58,7 +59,7 @@ self.addEventListener('activate', (e) => {
     e.waitUntil(
         caches.keys().then((keyList) => {
             return Promise.all(keyList.map((key) => {
-                if (key !== CACHE_NAME) {
+                if (key !== CACHE_NAME && OWN_CACHE_PREFIXES.some(p => key.startsWith(p))) {
                     return caches.delete(key);
                 }
             }));
