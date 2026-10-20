@@ -1,9 +1,9 @@
-const { test, expect } = require('@playwright/test');
+const { test, expect } = require('../fixtures');
 
 test.describe('Kreator Szablonów - Zastosuj do zaznaczonych', () => {
     test('Powinien zmieniać serie tylko dla zaznaczonych ćwiczeń w koszyku', async ({ page }) => {
         await page.addInitScript(() => { 
-            window.localStorage.setItem('tutorial_global_v22', 'true'); window.localStorage.setItem('uki-bodybuild-last-version', 'v2026.9.17.02'); 
+            window.localStorage.setItem('tutorial_global_v22', 'true');
         });
         await page.goto('/');
     await page.waitForTimeout(1000);
@@ -42,7 +42,7 @@ test.describe('Kreator Szablonów - Zastosuj do zaznaczonych', () => {
 
     test('Powinien edytować i nadpisywać istniejący szablon bez tworzenia klonu', async ({ page }) => {
         await page.addInitScript(() => {
-            window.localStorage.setItem('tutorial_global_v22', 'true'); window.localStorage.setItem('uki-bodybuild-last-version', 'v2026.9.17.02');
+            window.localStorage.setItem('tutorial_global_v22', 'true');
             window.localStorage.setItem('uki_workout_templates', JSON.stringify([{
                 id: 123456789,
                 name: "Stary Szablon do Edycji",

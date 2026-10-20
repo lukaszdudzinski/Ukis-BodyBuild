@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from '../fixtures.js';
 import { DashboardPage } from './pages/DashboardPage.js';
 import { TrainingPage } from './pages/TrainingPage.js';
 
@@ -8,7 +8,7 @@ test.describe('Training Workflow', () => {
         const trainingPage = new TrainingPage(page);
 
         // Given I am on the home page
-        await page.addInitScript(() => { window.localStorage.setItem('tutorial_global_v22', 'true'); window.localStorage.setItem('uki-bodybuild-last-version', 'v2026.9.17.02');  });
+        await page.addInitScript(() => { window.localStorage.setItem('tutorial_global_v22', 'true'); });
         await dashboard.navigate();
 
         // When I click on Training tile

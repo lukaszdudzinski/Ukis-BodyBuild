@@ -1,4 +1,4 @@
-const { test, expect } = require('@playwright/test');
+const { test, expect } = require('../fixtures');
 
 test.describe('Diagnostics Panel - Asystent Mapowania (#db-migrate-names-btn)', () => {
   test.beforeEach(async ({ page }) => {
@@ -23,7 +23,6 @@ test.describe('Diagnostics Panel - Asystent Mapowania (#db-migrate-names-btn)', 
       };
       window.localStorage.setItem('tutorial_global_v21', 'true');
       window.localStorage.setItem('tutorial_global_v22', 'true');
-      window.localStorage.setItem('uki-bodybuild-last-version', 'v2026.9.17.02');
     });
 
     await page.goto('/');

@@ -1,10 +1,10 @@
-const { test, expect } = require('@playwright/test');
+const { test, expect } = require('../fixtures');
 
 test.describe('Training Save Bug', () => {
   test('should save training with 4 dropsets and a superset', async ({ page }) => {
     // Zresetuj localStorage żeby pominąć onboarding jeśli jest
     await page.addInitScript(() => {
-      window.localStorage.setItem('tutorial_global_v22', 'true'); window.localStorage.setItem('uki-bodybuild-last-version', 'v2026.9.17.02');
+      window.localStorage.setItem('tutorial_global_v22', 'true');
       
       window.localStorage.setItem('userNick', 'Test');
     });

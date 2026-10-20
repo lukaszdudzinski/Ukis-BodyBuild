@@ -1,9 +1,9 @@
-const { test, expect } = require('@playwright/test');
+const { test, expect } = require('../fixtures');
 
 test('Test 7 days AI analysis', async ({ page }) => {
     page.on('console', msg => console.log('PAGE LOG:', msg.text()));
     page.on('pageerror', err => console.log('PAGE ERROR:', err.message));
-    await page.addInitScript(() => { window.localStorage.setItem('tutorial_global_v22', 'true'); window.localStorage.setItem('uki_premium_access', 'true'); window.localStorage.setItem('uki-bodybuild-last-version', 'v2026.9.17.02'); });
+    await page.addInitScript(() => { window.localStorage.setItem('tutorial_global_v22', 'true'); window.localStorage.setItem('uki_premium_access', 'true'); });
     await page.goto('/');
     await page.waitForTimeout(1000);
     

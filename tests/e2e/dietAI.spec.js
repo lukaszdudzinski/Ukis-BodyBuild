@@ -1,8 +1,8 @@
-const { test, expect } = require('@playwright/test');
+const { test, expect } = require('../fixtures');
 
 test.describe('Diet AI Result Confirmation Modal', () => {
   test('powinien pokazać modal z przyciskami +/- i zapisać posiłek z miniaturą', async ({ page }) => {
-    await page.addInitScript(() => { window.localStorage.setItem('tutorial_global_v22', 'true'); window.localStorage.setItem('uki-bodybuild-last-version', 'v2026.9.17.02'); });
+    await page.addInitScript(() => { window.localStorage.setItem('tutorial_global_v22', 'true'); });
     await page.goto('/'); await page.waitForTimeout(1000);
 
     // Czekamy dłuższą chwilę na pełen start aplikacji

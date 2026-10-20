@@ -1,11 +1,11 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from '../fixtures.js';
 
 test.describe('Test na danych z produkcji', () => {
   test('Przywrócenie bazy z pliku i sprawdzenie naprawy błędu szablonów', async ({ page }) => {
     test.setTimeout(120000); // Wydłużony czas na wgranie dużej bazy
 
     // 1. Wejdź na stronę
-    await page.addInitScript(() => { window.localStorage.setItem('tutorial_global_v22', 'true'); window.localStorage.setItem('uki-bodybuild-last-version', 'v2026.9.17.02'); });
+    await page.addInitScript(() => { window.localStorage.setItem('tutorial_global_v22', 'true'); });
     await page.goto('/');
     await page.waitForTimeout(1000);
 

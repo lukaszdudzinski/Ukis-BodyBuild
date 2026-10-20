@@ -1,4 +1,4 @@
-const { test, expect } = require('@playwright/test');
+const { test, expect } = require('../fixtures');
 
 test('Sprawdza, czy nawigacja i moduł diety ładują się bez błędów składniowych JS', async ({ page }) => {
   const errors = [];
@@ -8,7 +8,7 @@ test('Sprawdza, czy nawigacja i moduł diety ładują się bez błędów składn
 
   // Otwarcie strony PWA z serwera testowego lub pliku lokalnego
   // Playwright może testować plik lokalny dzięki file://
-  await page.addInitScript(() => { window.localStorage.setItem('tutorial_global_v22', 'true'); window.localStorage.setItem('uki-bodybuild-last-version', 'v2026.9.17.02');  });
+  await page.addInitScript(() => { window.localStorage.setItem('tutorial_global_v22', 'true'); });
     await page.goto('file://' + require('path').resolve(__dirname, '../../index.html'));
 
   // Sprawdzamy czy okno profilu lub napis Uki Bodybuild jest widoczny by potwierdzić że skrypt w ogóle ruszył

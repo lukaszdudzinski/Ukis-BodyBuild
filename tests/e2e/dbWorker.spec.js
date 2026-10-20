@@ -1,4 +1,4 @@
-const { test, expect } = require('@playwright/test');
+const { test, expect } = require('../fixtures');
 
 test.describe('DatabaseManager & dbWorker (OPFS/Memory fallback)', () => {
     
@@ -12,7 +12,7 @@ test.describe('DatabaseManager & dbWorker (OPFS/Memory fallback)', () => {
                 }
                 return { matches: false, media: query, onchange: null, addListener: () => {}, removeListener: () => {} };
             };
-            window.localStorage.setItem('tutorial_global_v22', 'true'); window.localStorage.setItem('uki-bodybuild-last-version', 'v2026.9.17.02');
+            window.localStorage.setItem('tutorial_global_v22', 'true');
         });
         await page.goto('/');
     await page.waitForTimeout(1000);
