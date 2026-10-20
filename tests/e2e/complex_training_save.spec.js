@@ -24,7 +24,8 @@ test.describe('Complex Training Save Flow', () => {
     // 1st Exercise: Klatka (Main)
     const exerciseInputs = page.locator('.exercise-name-input');
     await exerciseInputs.nth(0).fill('Wyciskanie klatki');
-    await page.keyboard.press('Enter');
+    // Nazwa ćwiczenia to <textarea>: zdarzenie change (zapis nazwy) odpala się dopiero na blur
+    await page.keyboard.press('Tab');
     await page.waitForTimeout(200);
     
     // Add 1 set
@@ -38,7 +39,7 @@ test.describe('Complex Training Save Flow', () => {
     await page.click('#add-exercise-to-plan-btn');
     await page.waitForTimeout(500);
     await exerciseInputs.nth(1).fill('Wzno Klatka');
-    await page.keyboard.press('Enter');
+    await page.keyboard.press('Tab');
     await page.waitForTimeout(200);
 
     await page.locator('text=+ Seria').nth(1).click();
