@@ -1,6 +1,11 @@
+import fs from 'fs';
 import { test, expect } from '../fixtures.js';
 
+const BACKUP_FILE = process.env.UKI_QA_BACKUP_FILE || '/Users/lukaszdudzinski/Downloads/bodybuild_backup_2026-09-02_10-48-01.json';
+
 test.describe('Test na danych z produkcji', () => {
+  test.skip(!fs.existsSync(BACKUP_FILE), 'Brak lokalnej kopii z produkcji — test tylko na maszynie właściciela');
+
   test('Przywrócenie bazy z pliku i sprawdzenie naprawy błędu szablonów', async ({ page }) => {
     test.setTimeout(120000); // Wydłużony czas na wgranie dużej bazy
 
@@ -26,7 +31,7 @@ test.describe('Test na danych z produkcji', () => {
     ]);
     
     // Wgrywamy Twój plik z danymi
-    await fileChooser.setFiles('/Users/lukaszdudzinski/Downloads/bodybuild_backup_2026-09-02_10-48-01.json');
+    await fileChooser.setFiles(BACKUP_FILE);
 
     // Akceptujemy okienko alert (baza przywrócona pomyslnie)
     page.on('dialog', dialog => dialog.accept());
