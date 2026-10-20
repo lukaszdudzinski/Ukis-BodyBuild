@@ -8,20 +8,20 @@ test.describe('Kreator Szablonów - Zastosuj do zaznaczonych', () => {
         await page.goto('/');
     await page.waitForTimeout(1000);
 
-        await page.evaluate(() => window.switchTab('template-builder-dashboard'));
+        await page.evaluate(() => window.TemplateBuilderUI.openBuilder());
         await page.waitForSelector('#template-builder-dashboard', { state: 'visible' });
 
         for(let i=1; i<=3; i++) {
             await page.evaluate(() => window.TemplateBuilderUI.openCatalogModal());
             await page.waitForTimeout(300);
             await page.fill('#builder-custom-name', `Cwiczenie Testowe ${i}`);
-            await page.click('button:has-text("Dodaj")');
+            await page.click('#builder-catalog-modal button:has-text("Dodaj")');
         }
 
-        const cartItems = page.locator('.cart-item');
+        const cartItems = page.locator('#builder-cart-list > div');
         await expect(cartItems).toHaveCount(3);
 
-        const checkboxes = page.locator('.mass-edit-checkbox');
+        const checkboxes = page.locator('#builder-cart-list input[type="checkbox"]');
         await checkboxes.nth(1).uncheck();
 
         await page.fill('#builder-mass-sets', '4');
@@ -68,11 +68,7 @@ test.describe('Kreator Szablonów - Zastosuj do zaznaczonych', () => {
         });
         await page.waitForSelector('#templates-modal-overlay', { state: 'visible' });
 
-        await page.evaluate(() => {
-            const buttons = Array.from(document.querySelectorAll('button'));
-            const editBtn = buttons.find(b => b.textContent.includes('✏️ Edytuj'));
-            if(editBtn) editBtn.click();
-        });
+        await page.locator('#templates-modal-overlay button', { hasText: 'Edytuj' }).first().click();
 
         await page.waitForSelector('#template-builder-dashboard', { state: 'visible' });
 
