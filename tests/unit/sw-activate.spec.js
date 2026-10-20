@@ -1,6 +1,8 @@
 const { test, expect } = require('@playwright/test');
 const fs = require('fs'); const path = require('path'); const vm = require('vm');
-const SW_SRC = fs.readFileSync(path.join(__dirname, '../../sw.js'), 'utf8');
+const ROOT = path.join(__dirname, '../..');
+const read = f => fs.readFileSync(path.join(ROOT, f), 'utf8');
+const SW_SRC = read('sw.js');
 const CACHE_NAME = SW_SRC.match(/const CACHE_NAME = '([^']+)';/)[1];
 function loadSw(names) {
   const store = new Set(names); const handlers = {};
@@ -20,5 +22,17 @@ test.describe('sw.js activate (D1)', () => {
     const prefixes = JSON.parse(SW_SRC.match(/const OWN_CACHE_PREFIXES = (\[[^\]]*\]);/)[1].replace(/'/g, '"'));
     expect(prefixes).toEqual(['ukis-bodybuild-', 'uki-bodybuild-']);
     expect(prefixes.some(p => CACHE_NAME.startsWith(p))).toBe(true);
+  });
+});
+test.describe('repozytorium i CI', () => {
+  test('npm test, fsevents opcjonalny, brak vercel.json, workflow blokuje publikację', async () => {
+    const pkg = JSON.parse(read('package.json')); const lock = JSON.parse(read('package-lock.json'));
+    expect(pkg.scripts.test).toBe('playwright test');
+    expect(pkg.dependencies.fsevents).toBeUndefined();
+    expect(lock.packages['node_modules/fsevents'].optional).toBe(true);
+    expect(fs.existsSync(path.join(ROOT, 'vercel.json'))).toBe(false);
+    const wf = read('.github/workflows/deploy.yml');
+    for (const s of ['needs: test', "github.ref == 'refs/heads/master'", 'actions/jekyll-build-pages@v1', 'npx playwright install --with-deps chromium', '--update-snapshots=missing']) expect(wf).toContain(s);
+    expect(wf).not.toMatch(/path:\s*['"]?\.['"]?\s*$/m);
   });
 });
