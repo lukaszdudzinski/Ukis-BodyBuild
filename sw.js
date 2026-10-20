@@ -5,6 +5,7 @@ const CORE_ASSETS = [
     './',
     './index.html',
     './ui-switch.js',
+    './ukis-scope.js',
     './style.css',
     './styles/glassmorphism.css',
     './classic.html',
