@@ -1,5 +1,14 @@
 [
   {
+    "version": "v2026.10.21.01",
+    "date": "2026-10-21",
+    "changes": [
+      "🔒 Serwis bezpieczny dla innych aplikacji UKIS: twardy reset, aktualizacja i czyszczenie pamięci podręcznej nie usuwają już ich danych ani pamięci offline",
+      "🛠️ Naprawiono zwalnianie miejsca na zdjęcia w Serwisie oraz zapisywanie edytowanych pomiarów",
+      "🎨 Pole nazwy treningu w nowym wyglądzie jest znów czytelne (ciemne tło zamiast białego)"
+    ]
+  },
+  {
     "version": "v2026.10.15.01",
     "date": "2026-10-15",
     "changes": [
