@@ -510,7 +510,8 @@ export const DietUI = {
             DietUI.showResultConfirmation(result, thumbnails, contextInput);
 
         } catch (error) {
-            if (window.ukiLogError) window.ukiLogError('DietAI Error', error.toString());
+            // error.diag (z DietAIEngine): kod HTTP, model, liczba prób, bezpieczny fragment odpowiedzi
+            if (window.ukiLogError) window.ukiLogError('DietAI Error', error.diag ? `${error.toString()} | ${error.diag}` : error.toString());
             alert(error.message);
         } finally {
             if (loading) loading.style.display = 'none';
