@@ -8,7 +8,12 @@ test.describe('Training Workflow', () => {
         const trainingPage = new TrainingPage(page);
 
         // Given I am on the home page
-        await page.addInitScript(() => { window.localStorage.setItem('tutorial_global_v22', 'true'); });
+        // Wyłącz też kontekstowy dymek przewodnika (pojawia się po 800 ms od wejścia w Trening
+        // i przy obciążeniu trafiał w zrzut raz tak, raz nie).
+        await page.addInitScript(() => {
+            window.localStorage.setItem('tutorial_global_v22', 'true');
+            window.localStorage.setItem('tutorial_context_training', 'true');
+        });
         await dashboard.navigate();
 
         // When I click on Training tile
@@ -29,7 +34,22 @@ test.describe('Training Workflow', () => {
         // Then I should see the active training view
         await expect(page.locator('#active-training-view')).toBeVisible();
         await expect(trainingPage.trainingNameInput).toBeVisible();
-        
+
+        // Po starcie sesji aplikacja dodaje pierwsze ćwiczenie i po 100 ms fokusuje jego pole oraz
+        // płynnie przewija je na środek (TrainingUI.addExercise, scrollIntoView smooth). Playwright nie
+        // wstrzymuje płynnego przewijania, więc przy obciążeniu zrzut łapał stronę w trakcie ruchu.
+        // Czekamy na fokus pola ćwiczenia i na to, aż przewinięcie przestanie się zmieniać.
+        await expect(page.locator('.exercise-name-input').last()).toBeFocused();
+        await page.locator('.tab-content-wrapper').evaluate((el) => new Promise((resolve) => {
+            let last = -1;
+            let since = performance.now();
+            const tick = () => {
+                if (el.scrollTop !== last) { last = el.scrollTop; since = performance.now(); }
+                if (performance.now() - since >= 300) resolve(); else requestAnimationFrame(tick);
+            };
+            tick();
+        }));
+
         // Take a snapshot to ensure the form looks correct (Visual Regression)
         await expect(page).toHaveScreenshot('active-training-form.png', { maxDiffPixels: 100, mask: [page.locator('#training-timer')] });
     });
