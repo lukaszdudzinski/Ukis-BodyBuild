@@ -35,19 +35,17 @@
         <p>Usuwam stare pliki aplikacji i wymuszam pobranie najnowszej wersji. Twoje dane treningowe i dieta są bezpieczne!</p>
         <div id="status">Wyrejestrowuję stary Service Worker...</div>
     </div>
+    <script src="ukis-scope.js"></script>
     <script>
     (async function() {
         const status = document.getElementById('status');
         const spinner = document.getElementById('spinner');
         try {
-            if ('serviceWorker' in navigator) {
-                const regs = await navigator.serviceWorker.getRegistrations();
-                status.textContent = 'Usuwam ' + regs.length + ' stare Service Worker(y)...';
-                for (let r of regs) { await r.unregister(); }
-            }
+            // Tylko własny zakres i cache BodyBuild (ukis-scope.js); sąsiednie aplikacje UKIS w tej samej domenie zostają nietknięte.
+            const removed = await window.UkiScope.unregisterOwn();
+            status.textContent = 'Usunięto ' + removed + ' stare Service Worker(y)...';
             status.textContent = 'Czyszczę pamięć podręczną...';
-            const keys = await caches.keys();
-            await Promise.all(keys.map(k => caches.delete(k)));
+            await window.UkiScope.deleteOwnCaches();
             spinner.style.display = 'none';
             status.className = 'success';
             status.innerHTML = '✅ Gotowe! Za 3 sekundy wrócisz do aplikacji z najnowszą wersją.';

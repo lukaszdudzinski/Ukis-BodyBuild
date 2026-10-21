@@ -1,10 +1,10 @@
-const { test, expect } = require('@playwright/test');
+const { test, expect } = require('../fixtures');
 
 test.describe('Training Save Bug', () => {
   test('should save training with 4 dropsets and a superset', async ({ page }) => {
     // Zresetuj localStorage żeby pominąć onboarding jeśli jest
     await page.addInitScript(() => {
-      window.localStorage.setItem('tutorial_global_v22', 'true'); window.localStorage.setItem('uki-bodybuild-last-version', 'v2026.9.17.02');
+      window.localStorage.setItem('tutorial_global_v22', 'true');
       
       window.localStorage.setItem('userNick', 'Test');
     });
@@ -22,27 +22,33 @@ test.describe('Training Save Bug', () => {
     // Rozpoczęcie nowego treningu
     await page.click('#start-new-session-btn');
     
-    // Dodanie nazwy ćwiczenia dla pierwszego
+    // Nazwa ćwiczenia to <textarea>: zapis nazwy (change) odpala się dopiero na blur,
+    // więc zatwierdzamy ją Tabem, zanim klikniemy cokolwiek innego.
     await page.fill('.exercise-name-input', 'Wyciskanie');
-    
-    // Wpisanie wagi i powt dla pierwszej serii (normalnej)
+    await page.keyboard.press('Tab');
+
+    // Nowe ćwiczenie ma 0 serii: wiersze z wagą/powtórzeniami powstają dopiero po [ + Seria ]
     const weightInputs = page.locator('input[placeholder="Ciężar (kg)"]');
     const repsInputs = page.locator('input[placeholder="Powtórzenia"]');
-    
+    await expect(weightInputs).toHaveCount(0);
+
+    // Pierwsza seria (normalna)
+    await page.getByRole('button', { name: '+ Seria' }).click();
+    await expect(weightInputs).toHaveCount(1);
     await weightInputs.nth(0).fill('100');
     await repsInputs.nth(0).fill('10');
-    await page.click('button:has-text("+ Seria")');
-    
-    // Dodanie 4 dropsetów
-    for(let i = 0; i < 4; i++) {
-      await weightInputs.nth(0).fill((90 - i*10).toString());
-      await repsInputs.nth(0).fill('8');
-      await page.click('button:has-text("+ Dropset")');
+
+    // Dodanie 4 dropsetów, każdy wypełniony własnym wierszem
+    for (let i = 0; i < 4; i++) {
+      await page.getByRole('button', { name: 'Dropset' }).click();
+      await expect(weightInputs).toHaveCount(i + 2);
+      await weightInputs.nth(i + 1).fill((90 - i * 10).toString());
+      await repsInputs.nth(i + 1).fill('8');
     }
-    
+
     // Dodanie superserii
-    await page.locator('button:has-text("Blok Łączony")').first().click();
-    
+    await page.getByRole('button', { name: 'Superseria' }).first().click();
+
     // Zakończenie i zapis
     // Akceptacja alertu (confirm) i ewentualnego alertu sukcesu
     page.on('dialog', async dialog => {

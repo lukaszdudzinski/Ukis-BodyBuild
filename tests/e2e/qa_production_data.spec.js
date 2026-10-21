@@ -1,11 +1,16 @@
-import { test, expect } from '@playwright/test';
+import fs from 'fs';
+import { test, expect } from '../fixtures.js';
+
+const BACKUP_FILE = process.env.UKI_QA_BACKUP_FILE || '/Users/lukaszdudzinski/Downloads/bodybuild_backup_2026-09-02_10-48-01.json';
 
 test.describe('Test na danych z produkcji', () => {
+  test.skip(!fs.existsSync(BACKUP_FILE), 'Brak lokalnej kopii z produkcji — test tylko na maszynie właściciela');
+
   test('Przywrócenie bazy z pliku i sprawdzenie naprawy błędu szablonów', async ({ page }) => {
     test.setTimeout(120000); // Wydłużony czas na wgranie dużej bazy
 
     // 1. Wejdź na stronę
-    await page.addInitScript(() => { window.localStorage.setItem('tutorial_global_v22', 'true'); window.localStorage.setItem('uki-bodybuild-last-version', 'v2026.9.17.02'); });
+    await page.addInitScript(() => { window.localStorage.setItem('tutorial_global_v22', 'true'); });
     await page.goto('/');
     await page.waitForTimeout(1000);
 
@@ -26,7 +31,7 @@ test.describe('Test na danych z produkcji', () => {
     ]);
     
     // Wgrywamy Twój plik z danymi
-    await fileChooser.setFiles('/Users/lukaszdudzinski/Downloads/bodybuild_backup_2026-09-02_10-48-01.json');
+    await fileChooser.setFiles(BACKUP_FILE);
 
     // Akceptujemy okienko alert (baza przywrócona pomyslnie)
     page.on('dialog', dialog => dialog.accept());

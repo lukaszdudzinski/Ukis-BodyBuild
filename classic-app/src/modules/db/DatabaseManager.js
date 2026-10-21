@@ -13,6 +13,7 @@ function sendMessage(action, payload = {}) {
 }
 
 export const DatabaseManager = {
+    sendMessage: async (action, payload = {}) => { await DatabaseManager.init(); return sendMessage(action, payload); },
     runMediaMigrationAndCleanup: async () => {
         try {
             const isMigrated = localStorage.getItem('uki-bodybuild-media-migrated-v2');

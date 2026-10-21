@@ -1,8 +1,8 @@
-const { test, expect } = require('@playwright/test');
+const { test, expect } = require('../fixtures');
 
 test.describe('Training and History Flow', () => {
   test.beforeEach(async ({ page }) => {
-    await page.addInitScript(() => { window.localStorage.setItem('tutorial_global_v22', 'true'); window.localStorage.setItem('uki-bodybuild-last-version', 'v2026.9.17.02'); });
+    await page.addInitScript(() => { window.localStorage.setItem('tutorial_global_v22', 'true'); });
     await page.goto('/');
     await page.waitForTimeout(1000);
   });
@@ -15,7 +15,8 @@ test.describe('Training and History Flow', () => {
 
     // --- Exercise 1: Wyciskanie ---
     await page.fill('.exercise-name-input', 'Wyciskanie sztangi leżąc');
-    await page.keyboard.press('Enter');
+    // Nazwa ćwiczenia to <textarea>: zdarzenie change (zapis nazwy) odpala się dopiero na blur
+    await page.keyboard.press('Tab');
     await page.waitForTimeout(200);
     await page.click('text=+ Seria');
     await page.locator('input[placeholder="Ciężar (kg)"]').nth(0).fill('80');
@@ -35,7 +36,7 @@ test.describe('Training and History Flow', () => {
 
     // --- Exercise 2: Wyciskanie skośne ---
     await page.locator('.exercise-name-input').nth(1).fill('Wyciskanie skośne');
-    await page.keyboard.press('Enter');
+    await page.keyboard.press('Tab');
     await page.waitForTimeout(200);
     
     const ex2AddSet = page.locator('text=+ Seria').nth(1);
@@ -57,7 +58,7 @@ test.describe('Training and History Flow', () => {
 
     // --- Exercise 3: Triceps ---
     await page.locator('.exercise-name-input').nth(2).fill('Francuskie wyciskanie (Triceps)');
-    await page.keyboard.press('Enter');
+    await page.keyboard.press('Tab');
     await page.waitForTimeout(200);
     
     const ex3AddSet = page.locator('text=+ Seria').nth(2);
@@ -84,12 +85,14 @@ test.describe('Training and History Flow', () => {
 
     // Assert that the training is in history
     await expect(page.locator('#history-dashboard >> text=Trening siłowy test').first()).toBeVisible();
-    await page.locator('text=▼').first().click();
+    // Karta historii nie ma już znaku ▼ (jedyny ▼ w DOM to ukryta ikona przewodnika #guide-toggle-icon);
+    // rozwija ją klik w nagłówek karty, jak w teście Blok Łączony poniżej (HistoryUI.js:100)
+    await page.locator('#history-dashboard').getByText('Trening siłowy test').first().click();
 
     // Verify details are shown
-    await expect(page.locator('text=Wyciskanie sztangi leżąc').first()).toBeVisible();
-    await expect(page.locator('text=Wyciskanie skośne').first()).toBeVisible();
-    await expect(page.locator('text=Francuskie wyciskanie (Triceps)').first()).toBeVisible();
+    await expect(page.locator('#history-dashboard').getByText('Wyciskanie sztangi leżąc').first()).toBeVisible();
+    await expect(page.locator('#history-dashboard').getByText('Wyciskanie skośne').first()).toBeVisible();
+    await expect(page.locator('#history-dashboard').getByText('Francuskie wyciskanie (Triceps)').first()).toBeVisible();
   });
 
   test('powinien poprawnie wyświetlać Blok Łączony w oknie modalnym historii', async ({ page }) => {
@@ -130,8 +133,8 @@ test.describe('Training and History Flow', () => {
 
     // Sprawdź czy jest Blok Łączony i nie ma "Nieznane ćwiczenie"
     await expect(page.locator('text=Blok Łączony (Superseria)').first()).toBeVisible();
-    await expect(page.locator('text=Biceps').first()).toBeVisible();
-    await expect(page.locator('text=Triceps').first()).toBeVisible();
+    await expect(page.locator('#history-dashboard').getByText('Biceps').first()).toBeVisible();
+    await expect(page.locator('#history-dashboard').getByText('Triceps').first()).toBeVisible();
     await expect(page.locator('text=Nieznane ćwiczenie')).toHaveCount(0);
   });
 });

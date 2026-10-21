@@ -12,26 +12,33 @@
             // Disable SW in Playwright E2E tests to prevent random reloads
             if (window.navigator.webdriver) return;
             
-            // CLEANUP: Usuń zepsute service workery z poprzednich błędnych rejestracji
-            navigator.serviceWorker.getRegistrations().then(registrations => {
-                let needsReload = false;
-                for (let reg of registrations) {
-                    if (reg.active && reg.active.scriptURL.includes('?update=')) {
-                        reg.unregister();
-                        needsReload = true;
-                    }
-                }
+            // CLEANUP: Usuń zepsute service workery BodyBuild z poprzednich błędnych rejestracji
+            window.PWAUpdateUI.cleanupBrokenWorkers().then(needsReload => {
                 if (needsReload) {
                     // Odczekaj chwilę i odśwież by system załadował czysty stan
                     setTimeout(() => window.location.reload(true), 500);
                 }
             }).catch(e => {
-                console.warn("getRegistrations failed (often due to testing in file://):", e);
+                console.warn("cleanupBrokenWorkers failed (often due to testing in file://):", e);
             });
 
             window.PWAUpdateUI.injectBannerHTML();
             window.PWAUpdateUI.bindEvents();
             window.PWAUpdateUI.registerAndMonitor();
+        },
+
+        // Wyrejestrowuje własne (w zakresie BodyBuild) workery z `?update=` w adresie skryptu.
+        // Zwraca true, gdy któryś wyrejestrowano. Nie dotyka rejestracji sąsiednich aplikacji UKIS.
+        cleanupBrokenWorkers: async () => {
+            const registrations = await window.UkiScope.getOwnRegistrations();
+            let removed = false;
+            for (const reg of registrations) {
+                if (reg.active && reg.active.scriptURL.includes('?update=')) {
+                    await reg.unregister();
+                    removed = true;
+                }
+            }
+            return removed;
         },
 
         injectBannerHTML: () => {
@@ -57,20 +64,13 @@
             if (window.PWAUpdateUI.pwaWorker) {
                 window.PWAUpdateUI.pwaWorker.postMessage('SKIP_WAITING');
                 setTimeout(async () => {
-                    const keys = await caches.keys();
-                    await Promise.all(keys.map(k => caches.delete(k)));
+                    await window.UkiScope.deleteOwnCaches();
                     window.location.reload(true);
                 }, 1000);
             } else {
-                // Twarde czyszczenie jeśli nie złapaliśmy nowego workera
-                if ('serviceWorker' in navigator) {
-                    const regs = await navigator.serviceWorker.getRegistrations();
-                    for (let reg of regs) {
-                        await reg.unregister();
-                    }
-                }
-                const keys = await caches.keys();
-                await Promise.all(keys.map(k => caches.delete(k)));
+                // Twarde czyszczenie jeśli nie złapaliśmy nowego workera (tylko własna rejestracja i cache BodyBuild)
+                await window.UkiScope.unregisterOwn();
+                await window.UkiScope.deleteOwnCaches();
                 window.location.reload(true);
             }
         },
@@ -104,7 +104,9 @@
         },
 
         registerAndMonitor: () => {
-            navigator.serviceWorker.getRegistrations().then(async registrations => {
+            // Mieszany stan cache (brak ukis-scope.js): rejestruj worker bez pętli czyszczącej i niczego nie kasuj.
+            if (!window.UkiScope) return window.PWAUpdateUI._doRegister();
+            window.UkiScope.getOwnRegistrations().then(async registrations => {
                 let hadBadWorker = false;
                 for (let reg of registrations) {
                     const swUrl = reg.active?.scriptURL || reg.installing?.scriptURL || '';
@@ -114,8 +116,7 @@
                     }
                 }
                 if (hadBadWorker) {
-                    const keys = await caches.keys();
-                    await Promise.all(keys.map(k => caches.delete(k)));
+                    await window.UkiScope.deleteOwnCaches();
                     window.location.reload(true);
                     return;
                 }

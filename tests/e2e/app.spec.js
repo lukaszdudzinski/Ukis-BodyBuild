@@ -1,4 +1,4 @@
-const { test, expect } = require('@playwright/test');
+const { test, expect } = require('../fixtures');
 
 const setupPWA = async (page) => {
   await page.addInitScript(() => {
@@ -20,7 +20,7 @@ const setupPWA = async (page) => {
       return origMatchMedia ? origMatchMedia.call(window, query) : { matches: false, media: query };
     };
     window.localStorage.setItem('tutorial_global_v21', 'true');
-    window.localStorage.setItem('tutorial_global_v22', 'true'); window.localStorage.setItem('uki-bodybuild-last-version', 'v2026.9.17.02');
+    window.localStorage.setItem('tutorial_global_v22', 'true');
     window.localStorage.setItem('uki-bodybuild-last-version', 'v2026.8.22.02');
   });
 };

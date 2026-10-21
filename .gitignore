@@ -1,0 +1,6 @@
+# Artefakty Playwright (D5)
+test-results/
+playwright-report/
+blob-report/
+# Lokalny build Jekyll
+_site/

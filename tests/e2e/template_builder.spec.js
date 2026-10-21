@@ -1,27 +1,27 @@
-const { test, expect } = require('@playwright/test');
+const { test, expect } = require('../fixtures');
 
 test.describe('Kreator Szablonów - Zastosuj do zaznaczonych', () => {
     test('Powinien zmieniać serie tylko dla zaznaczonych ćwiczeń w koszyku', async ({ page }) => {
         await page.addInitScript(() => { 
-            window.localStorage.setItem('tutorial_global_v22', 'true'); window.localStorage.setItem('uki-bodybuild-last-version', 'v2026.9.17.02'); 
+            window.localStorage.setItem('tutorial_global_v22', 'true');
         });
         await page.goto('/');
     await page.waitForTimeout(1000);
 
-        await page.evaluate(() => window.switchTab('template-builder-dashboard'));
+        await page.evaluate(() => window.TemplateBuilderUI.openBuilder());
         await page.waitForSelector('#template-builder-dashboard', { state: 'visible' });
 
         for(let i=1; i<=3; i++) {
             await page.evaluate(() => window.TemplateBuilderUI.openCatalogModal());
             await page.waitForTimeout(300);
             await page.fill('#builder-custom-name', `Cwiczenie Testowe ${i}`);
-            await page.click('button:has-text("Dodaj")');
+            await page.click('#builder-catalog-modal button:has-text("Dodaj")');
         }
 
-        const cartItems = page.locator('.cart-item');
+        const cartItems = page.locator('#builder-cart-list > div');
         await expect(cartItems).toHaveCount(3);
 
-        const checkboxes = page.locator('.mass-edit-checkbox');
+        const checkboxes = page.locator('#builder-cart-list input[type="checkbox"]');
         await checkboxes.nth(1).uncheck();
 
         await page.fill('#builder-mass-sets', '4');
@@ -42,7 +42,7 @@ test.describe('Kreator Szablonów - Zastosuj do zaznaczonych', () => {
 
     test('Powinien edytować i nadpisywać istniejący szablon bez tworzenia klonu', async ({ page }) => {
         await page.addInitScript(() => {
-            window.localStorage.setItem('tutorial_global_v22', 'true'); window.localStorage.setItem('uki-bodybuild-last-version', 'v2026.9.17.02');
+            window.localStorage.setItem('tutorial_global_v22', 'true');
             window.localStorage.setItem('uki_workout_templates', JSON.stringify([{
                 id: 123456789,
                 name: "Stary Szablon do Edycji",
@@ -68,11 +68,7 @@ test.describe('Kreator Szablonów - Zastosuj do zaznaczonych', () => {
         });
         await page.waitForSelector('#templates-modal-overlay', { state: 'visible' });
 
-        await page.evaluate(() => {
-            const buttons = Array.from(document.querySelectorAll('button'));
-            const editBtn = buttons.find(b => b.textContent.includes('✏️ Edytuj'));
-            if(editBtn) editBtn.click();
-        });
+        await page.locator('#templates-modal-overlay button', { hasText: 'Edytuj' }).first().click();
 
         await page.waitForSelector('#template-builder-dashboard', { state: 'visible' });
 

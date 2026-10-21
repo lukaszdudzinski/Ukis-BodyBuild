@@ -63,7 +63,7 @@ export const TrainingComponent = {
             <!-- Active Training View -->
             <div id="active-training-view" style="display: none;">
                 <div style="margin-bottom: 15px;">
-                    <input type="text" id="training-name-input" placeholder="Wpisz nazwę treningu..." style="width: 100%; padding: 16px; border-radius: 16px; border: 1px solid rgba(255,255,255,0.05); color: #FFF; font-size: 18px; font-weight: 600; text-align: center; box-sizing: border-box; box-shadow: 0 4px 15px rgba(0,0,0,0.2);">
+                    <input type="text" id="training-name-input" placeholder="Wpisz nazwę treningu..." style="width: 100%; padding: 16px; border-radius: 16px; border: 1px solid rgba(255,255,255,0.05); background: rgba(0,0,0,0.4); color: #FFF; font-size: 18px; font-weight: 600; text-align: center; box-sizing: border-box; box-shadow: 0 4px 15px rgba(0,0,0,0.2);">
                 </div>
 
                 <div style="margin-bottom: 15px;">

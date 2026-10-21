@@ -341,14 +341,8 @@ export const DiagnosticsUI = {
                 const confirmed = confirm("Czy na pewno chcesz wykonać Twardy Reset?\n\nWyczyści to ukryty Cache aplikacji i zmusi ją do pobrania czystej wersji. Twoje treningi są bezpieczne.");
                 if (confirmed) {
                     try {
-                        if ('serviceWorker' in navigator) {
-                            const regs = await navigator.serviceWorker.getRegistrations();
-                            for (let r of regs) {
-                                await r.unregister();
-                            }
-                        }
-                        const keys = await caches.keys();
-                        await Promise.all(keys.map(k => caches.delete(k)));
+                        await window.UkiScope.unregisterOwn();
+                        await window.UkiScope.deleteOwnCaches();
                         
                         alert("Cache wyczyszczony! Aplikacja zrestartuje się za chwilę...");
                         setTimeout(() => window.location.reload(true), 1000);
@@ -462,8 +456,9 @@ export const DiagnosticsUI = {
         const clearLocalBtn = document.getElementById('db-clear-local-btn');
         if (clearLocalBtn) {
             clearLocalBtn.addEventListener('click', () => {
-                if (confirm("Usunąć dane konfiguracyjne z LocalStorage? Twoje treningi w bazie nie zostaną ruszone, ale będziesz musiał podać Nick od nowa.")) {
-                    localStorage.clear();
+                if (confirm("Usunąć ustawienia BodyBuild zapisane w przeglądarce (wygląd, samouczki, preferencje)?\n\nTreningi, pomiary, dieta, szablony, plany, własne ćwiczenia, Twój nick, status PRO oraz dane innych aplikacji UKIS zostaną zachowane.")) {
+                    // Nie localStorage.clear(): domena jest wspólna dla aplikacji UKIS; uprawnienia, kvvfs i klucze współdzielone zostają (ukis-scope.js)
+                    window.UkiScope.clearOwnLocalStorage();
                     alert("Zrobione. Aplikacja się odświeży.");
                     window.location.reload();
                 }

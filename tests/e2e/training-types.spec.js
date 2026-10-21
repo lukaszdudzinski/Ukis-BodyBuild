@@ -1,8 +1,8 @@
-const { test, expect } = require('@playwright/test');
+const { test, expect } = require('../fixtures');
 
 test.describe('Training Types UI', () => {
   test('should show and hide exercises container based on training type', async ({ page }) => {
-    await page.addInitScript(() => { window.localStorage.setItem('tutorial_global_v22', 'true'); window.localStorage.setItem('uki-bodybuild-last-version', 'v2026.9.17.02');  });
+    await page.addInitScript(() => { window.localStorage.setItem('tutorial_global_v22', 'true'); });
     await page.goto('/');
     await page.waitForTimeout(1000);
 
@@ -28,7 +28,7 @@ test.describe('Training Types UI', () => {
   });
 
   test('powinien przełączać typ ćwiczenia w pętli 3-stanowej (Siłowy -> Cardio -> Zajęcia)', async ({ page }) => {
-    await page.addInitScript(() => { window.localStorage.setItem('tutorial_global_v22', 'true'); window.localStorage.setItem('uki-bodybuild-last-version', 'v2026.9.17.02'); });
+    await page.addInitScript(() => { window.localStorage.setItem('tutorial_global_v22', 'true'); });
     await page.goto('/');
     await page.waitForTimeout(1000);
 
