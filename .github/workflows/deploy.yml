@@ -28,7 +28,6 @@ jobs:
         with: { name: linux-snapshots, path: 'tests/**/*-linux.png', if-no-files-found: ignore, retention-days: 14 }
   build:
     needs: test
-    if: github.ref == 'refs/heads/master' && github.event_name != 'pull_request'
     runs-on: ubuntu-latest
     permissions: { contents: read, pages: read }
     steps:
@@ -45,6 +44,8 @@ jobs:
         with: { path: ./_site }
   deploy:
     needs: build
+    # Publikacja tylko z master; build na gałęziach i PR to kontrola (Jekyll, configure-pages, zawartość) bez publikacji.
+    if: github.ref == 'refs/heads/master' && github.event_name != 'pull_request'
     runs-on: ubuntu-latest
     permissions: { pages: write, id-token: write }
     concurrency: { group: pages, cancel-in-progress: false }

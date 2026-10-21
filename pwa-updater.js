@@ -104,6 +104,8 @@
         },
 
         registerAndMonitor: () => {
+            // Mieszany stan cache (brak ukis-scope.js): rejestruj worker bez pętli czyszczącej i niczego nie kasuj.
+            if (!window.UkiScope) return window.PWAUpdateUI._doRegister();
             window.UkiScope.getOwnRegistrations().then(async registrations => {
                 let hadBadWorker = false;
                 for (let reg of registrations) {

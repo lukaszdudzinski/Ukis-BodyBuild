@@ -33,6 +33,12 @@ test.describe('repozytorium i CI', () => {
     expect(fs.existsSync(path.join(ROOT, 'vercel.json'))).toBe(false);
     const wf = read('.github/workflows/deploy.yml');
     for (const s of ['needs: test', "github.ref == 'refs/heads/master'", 'actions/jekyll-build-pages@v1', 'npx playwright install --with-deps chromium', '--update-snapshots=missing']) expect(wf).toContain(s);
+    const buildJob = wf.slice(wf.indexOf('\n  build:'), wf.indexOf('\n  deploy:'));
+    const deployJob = wf.slice(wf.indexOf('\n  deploy:'));
+    expect(buildJob).toContain('needs: test');
+    expect(buildJob).not.toMatch(/^\s+if:/m);
+    expect(deployJob).toContain('needs: build');
+    expect(deployJob).toMatch(/^\s+if: github\.ref == 'refs\/heads\/master' && github\.event_name != 'pull_request'/m);
     expect(wf).not.toMatch(/path:\s*['"]?\.\/?['"]?\s*($|[},])/m);
   });
 });
