@@ -13,7 +13,82 @@
  *    Jako wartość wklej swój klucz od Google (ten który podałeś mi wyżej). Zaznacz jako Encrypt/Secret.
  * 7. Kliknij "Deploy" (Zapisz). Skopiuj URL Twojego workera (np. https://ukis-diet-ai.twojanazwa.workers.dev)
  * 8. Wklej ten URL w Ustawieniach w aplikacji Uki's BodyBuild!
+ *
+ * Opcjonalne zmienne (Variables, zwykły tekst) — tylko modele z DARMOWEGO planu Gemini:
+ *    GEMINI_MODEL           (domyślnie gemini-3.8-flash)
+ *    GEMINI_FALLBACK_MODEL  (domyślnie gemini-3.5-flash-lite; używany przy 429/5xx głównego modelu)
  */
+
+const DEFAULT_MODEL = "gemini-3.8-flash";
+const DEFAULT_FALLBACK_MODEL = "gemini-3.5-flash-lite";
+
+// Kody, przy których warto spróbować modelu zapasowego (osobna pula mocy i osobny limit darmowy).
+const FALLBACK_STATUSES = [429, 500, 502, 503, 504];
+
+// Błąd z prawdziwym kodem HTTP i polami dla aplikacji (status, model, quota, retryAfterSec, reason).
+class UpstreamError extends Error {
+  constructor(message, status, extra = {}) {
+    super(message);
+    this.status = status;
+    this.extra = extra;
+  }
+}
+
+// Szczegóły 429 z Gemini: limit dzienny czy minutowy i po ilu sekundach ponowić.
+const quotaInfo = (geminiError) => {
+  const details = Array.isArray(geminiError?.details) ? geminiError.details : [];
+  const quotaIds = details.flatMap(d => (d.violations || []).map(v => v.quotaId || ""));
+  const retry = details.find(d => typeof d.retryDelay === "string");
+  const info = {};
+  if (quotaIds.some(id => /PerMinute/i.test(id))) info.quota = "minute";
+  else if (quotaIds.some(id => /PerDay/i.test(id))) info.quota = "day";
+  if (retry) info.retryAfterSec = Math.ceil(parseFloat(retry.retryDelay));
+  return info;
+};
+
+// Jedno wywołanie Gemini; zwraca tekst odpowiedzi (bez części „myślowych”) albo rzuca UpstreamError.
+const callGemini = async (model, apiKey, payload) => {
+  const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
+  const geminiResponse = await fetch(geminiUrl, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload)
+  });
+
+  const rawText = await geminiResponse.text();
+  let geminiData = null;
+  try { geminiData = JSON.parse(rawText); } catch (e) { /* np. strona HTML błędu Google */ }
+
+  if (!geminiResponse.ok) {
+    const message = geminiData?.error?.message || `HTTP ${geminiResponse.status} ${geminiResponse.statusText || ""}`.trim();
+    const extra = geminiResponse.status === 429 ? quotaInfo(geminiData?.error) : {};
+    throw new UpstreamError(`Google API Błąd: ${message}`, geminiResponse.status, extra);
+  }
+
+  const parts = geminiData?.candidates?.[0]?.content?.parts;
+  if (!Array.isArray(parts) || parts.length === 0) {
+    throw new UpstreamError("Google API nie zwróciło żadnych danych (prawdopodobnie zdjęcie naruszyło filtry bezpieczeństwa).", 422);
+  }
+  return parts.filter(p => !p.thought && typeof p.text === "string").map(p => p.text).join("");
+};
+
+// Wyciąga obiekt JSON z tekstu modelu (wstęp, ```json, komentarz po nim). Zwraca obiekt albo null.
+const extractJson = (text) => {
+  const tryParse = (s) => {
+    try {
+      const v = JSON.parse(s);
+      return v && typeof v === "object" && !Array.isArray(v) ? v : null;
+    } catch (e) {
+      return null;
+    }
+  };
+  const trimmed = (text || "").replace(/```(?:json)?/gi, "").trim();
+  const direct = tryParse(trimmed);
+  if (direct) return direct;
+  const start = trimmed.indexOf("{");
+  const end = trimmed.lastIndexOf("}");
+  return start !== -1 && end > start ? tryParse(trimmed.slice(start, end + 1)) : null;
+};
 
 export default {
   async fetch(request, env, ctx) {
@@ -28,6 +103,11 @@ export default {
     if (request.method === "OPTIONS") {
       return new Response(null, { headers: corsHeaders });
     }
+
+    const jsonResponse = (data, status = 200) => new Response(JSON.stringify(data), {
+      status,
+      headers: { "Content-Type": "application/json", ...corsHeaders }
+    });
 
     if (request.method !== "POST") {
       return new Response("Method not allowed", { status: 405, headers: corsHeaders });
@@ -100,9 +180,6 @@ Format:
 }`;
       }
 
-      // Zaktualizowano model do najnowszego gemini-3.6-flash (Sierpień 2026)
-      const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key=${GEMINI_API_KEY}`;
-      
       const parts = [ { text: prompt } ];
       
       for (const img of imageList) {
@@ -128,47 +205,52 @@ Format:
           parts: parts
         }]
       };
-
-      const geminiResponse = await fetch(geminiUrl, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(geminiPayload)
-      });
-
-      const geminiData = await geminiResponse.json();
-
-      if (!geminiResponse.ok) {
-        throw new Error(`Google API Błąd: ${geminiData.error?.message || geminiResponse.statusText}`);
+      // Analiza diety: wymuszamy czysty JSON (bez wstępów i markdownu), czat zostaje tekstowy
+      if (action !== "chat") {
+        geminiPayload.generationConfig = { responseMimeType: "application/json" };
       }
 
-      // 5. Ekstrakcja danych i odpowiedź do aplikacji
-      if (!geminiData.candidates || geminiData.candidates.length === 0) {
-        throw new Error("Google API nie zwróciło żadnych danych (prawdopodobnie zdjęcie naruszyło filtry bezpieczeństwa).");
+      // 5. Wywołanie Gemini: model główny, a przy przeciążeniu/limicie model zapasowy (oba darmowe)
+      const models = [env.GEMINI_MODEL || DEFAULT_MODEL, env.GEMINI_FALLBACK_MODEL || DEFAULT_FALLBACK_MODEL]
+        .filter((m, i, all) => m && all.indexOf(m) === i);
+      let rawText = null;
+      let usedModel = models[0];
+      let lastError = null;
+      for (const model of models) {
+        usedModel = model;
+        try {
+          rawText = await callGemini(model, GEMINI_API_KEY, geminiPayload);
+          break;
+        } catch (err) {
+          err.model = model;
+          lastError = err;
+          if (!(err instanceof UpstreamError) || !FALLBACK_STATUSES.includes(err.status)) throw err;
+        }
       }
+      if (rawText === null) throw lastError;
 
-      const rawText = geminiData.candidates[0].content.parts[0].text;
-      
+      // 6. Odpowiedź do aplikacji
       if (action === "chat") {
-          return new Response(JSON.stringify({ response: rawText.trim() }), { 
-            headers: { 
-                "Content-Type": "application/json",
-                ...corsHeaders 
-            } 
-          });
+          return jsonResponse({ response: rawText.trim() });
       }
-      
-      // Czasem Gemini zwraca z markdownem, usuwamy go (tylko w trybie JSON)
-      const cleanJsonStr = rawText.replace(/```json/g, '').replace(/```/g, '').trim();
-      
-      return new Response(cleanJsonStr, { 
-        headers: { 
-            "Content-Type": "application/json",
-            ...corsHeaders 
-        } 
-      });
+
+      const meal = extractJson(rawText);
+      if (!meal) {
+        const err = new UpstreamError("Model AI zwrócił odpowiedź bez danych JSON.", 502, { reason: "invalid_output" });
+        err.model = usedModel;
+        throw err;
+      }
+      return jsonResponse(meal);
 
     } catch (err) {
-      return new Response(JSON.stringify({ error: err.message }), { status: 500, headers: corsHeaders });
+      // Prawdziwy kod HTTP (429/503/…) i szczegóły, żeby aplikacja wiedziała, czy ponawiać
+      const status = err instanceof UpstreamError ? err.status : 500;
+      return jsonResponse({
+        error: err.message,
+        status,
+        ...(err.model ? { model: err.model } : {}),
+        ...(err.extra || {})
+      }, status);
     }
   }
 };
