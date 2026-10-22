@@ -16,8 +16,8 @@ Oto pełny kontekst naszego ekosystemu, abyś mógł płynnie przejąć pałeczk
 
 ## 🔗 Powiązania i Metadane
 - **Poprzednia konwersacja (ID):** 31bc2561-f886-4432-acae-bffe0758854c
-- **Obecny branch:** `feature/glassmorphism-redesign` (testowany na dedykowanym środowisku Vercel)
-- **Ostatnia Wersja na Produkcji (Vercel Test):** v2026.9.18.01
+- **Obecny branch:** gałąź robocza od `master`; zmiany trafiają do `master` przez Pull Request z zielonymi testami CI
+- **Publikacja:** GitHub Pages przez GitHub Actions (workflow „Testy i publikacja”); Vercel nie jest już używany
 
 ## 🏗️ Architektura CI/CD (BARDZO WAŻNE!)
 Pamiętaj o podziale środowisk. Jesteśmy w trakcie intensywnych zmian na gałęzi `feature/glassmorphism-redesign`. W PWA zaktualizowaliśmy plik `sw.js` dopisując `self.skipWaiting()`, więc zmiany aktualizują się natychmiastowo na telefonie użytkownika po odświeżeniu. Przy każdej wysyłce kodu wywołuj `node scripts/version.mjs "opis"`.
