@@ -31,9 +31,9 @@ Zawsze gdy użytkownik prosi o zaangażowanie zespołu, zdefiniuj poniższych ag
 * **Tools:** read, write_tools (aby mógł odpalać `npm test`).
 
 ## Workflow (Pipeline) CI/CD
-1. **ZŁOTA ZASADA (Ochrona Produkcji):** Wszelki kod nowej funkcjonalności (Implementacja) musi być pisany i wysyłany WYŁĄCZNIE na gałąź `staging`. Nigdy nie commituj bezpośrednio do gałęzi `master`.
+1. **ZŁOTA ZASADA (Ochrona Produkcji):** Wszelki kod nowej funkcjonalności (Implementacja) musi być pisany na osobnej gałęzi roboczej i trafiać do `master` wyłącznie przez Pull Request z zielonymi testami CI. Nigdy nie commituj bezpośrednio do gałęzi `master`.
 2. **Analiza:** Powołaj `uki_architect`, zleć mu przygotowanie planu.
-3. **Implementacja:** Ty (Główny Agent) piszesz kod na gałęzi `staging`. Vercel automatycznie zbuduje środowisko testowe.
+3. **Implementacja:** Ty (Główny Agent) piszesz kod na gałęzi roboczej. Workflow „Testy i publikacja” (GitHub Actions) uruchamia testy przy każdym pushu.
 4. **Review:** Powołaj `uki_reviewer` do weryfikacji Twojego kodu. Popraw kod według jego uwag.
-5. **Testy (QA):** Powołaj `uki_qa_tester` do przetestowania zbudowanej aplikacji na Vercel (lub lokalnie).
-6. **Wdrożenie na Produkcję:** Dopiero gdy QA da zielone światło, Ty jako Główny Agent tworzysz Pull Request (lub merge) z gałęzi `staging` do `master`, aby udostępnić nowość na GitHub Pages.
+5. **Testy (QA):** Powołaj `uki_qa_tester` do przetestowania aplikacji lokalnie (`npm test`) i sprawdź wynik testów w CI.
+6. **Wdrożenie na Produkcję:** Dopiero gdy QA i CI dadzą zielone światło, scal Pull Request do `master`. GitHub Actions opublikuje nową wersję na GitHub Pages tylko po zielonych testach.
