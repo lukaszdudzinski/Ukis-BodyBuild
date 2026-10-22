@@ -1,5 +1,13 @@
 [
   {
+    "version": "v2026.10.21.02",
+    "date": "2026-10-21",
+    "changes": [
+      "🛠️ Analiza posiłków AI lepiej znosi przeciążenie serwerów Google: ponawia próbę z rosnącym odstępem zamiast od razu zgłaszać błąd",
+      "🩹 Naprawiono błąd „The string did not match the expected pattern” na iPhone'ach przy analizie posiłku oraz uczytelniono komunikaty o limicie i braku połączenia"
+    ]
+  },
+  {
     "version": "v2026.10.21.01",
     "date": "2026-10-21",
     "changes": [
