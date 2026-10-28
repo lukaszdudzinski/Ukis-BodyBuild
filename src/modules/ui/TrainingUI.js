@@ -1,0 +1,2041 @@
+import { DatabaseManager } from '../db/DatabaseManager.js';
+import { MediaManager } from '../db/MediaManager.js';
+import { TrainingComponent } from '../../components/TrainingComponent.js';
+import { ExerciseCatalog, ExerciseCategories } from '../../data/ExerciseCatalog.js';
+
+let currentTraining = {
+    date: null,
+    startTime: null,
+    timerInterval: null,
+    exercises: [],
+    name: '',
+    type: 'strength',
+    isPaused: false,
+    pauseStartTime: null,
+    totalPausedTime: 0
+};
+
+let currentMonth = new Date().getMonth();
+let currentYear = new Date().getFullYear();
+let trainingDates = new Set(); // Stores dates in YYYY-MM-DD format
+let allTrainingsCache = [];
+let selectedDate = new Date().toISOString().split('T')[0];
+
+export const TrainingUI = {
+    init: () => {
+        TrainingUI.injectCatalogModalHTML();
+
+        const container = document.getElementById('training-dashboard');
+        if (container) {
+            container.innerHTML = TrainingComponent.render();
+            
+            // Add Datalist for Exercise Catalog if not exists
+            if (!document.getElementById('exercise-catalog-list')) {
+                const dataList = document.createElement('datalist');
+                dataList.id = 'exercise-catalog-list';
+                
+                let customExercises = [];
+                try { customExercises = JSON.parse(localStorage.getItem('uki_custom_exercises') || '[]'); } catch(e) {}
+                const fullCatalog = [...ExerciseCatalog, ...customExercises];
+                
+                fullCatalog.forEach(exName => {
+                    const option = document.createElement('option');
+                    option.value = exName;
+                    dataList.appendChild(option);
+                });
+                container.appendChild(dataList);
+            }
+        }
+
+        const startNewBtn = document.getElementById('start-new-session-btn');
+        if (startNewBtn) {
+            startNewBtn.addEventListener('click', () => TrainingUI.startTraining(null));
+        }
+
+        const addExerciseBtn = document.getElementById('add-exercise-to-plan-btn');
+        if (addExerciseBtn) {
+            addExerciseBtn.addEventListener('click', TrainingUI.addExercise);
+        }
+
+        const addSupersetBtn = document.getElementById('add-superset-to-plan-btn');
+        if (addSupersetBtn) {
+            addSupersetBtn.addEventListener('click', TrainingUI.addSuperset);
+        }
+
+        const finishBtn = document.getElementById('finish-training-btn');
+        if (finishBtn) {
+            finishBtn.addEventListener('click', TrainingUI.finishTraining);
+        }
+
+        const saveTemplateBtn = document.getElementById('save-as-template-btn');
+        if (saveTemplateBtn) {
+            saveTemplateBtn.addEventListener('click', TrainingUI.saveAsTemplate);
+        }
+
+        const loadTemplateBtn = document.getElementById('load-template-session-btn');
+        if (loadTemplateBtn) {
+            loadTemplateBtn.addEventListener('click', TrainingUI.loadTemplatesDialog);
+        }
+
+        const cancelBtn = document.getElementById('cancel-training-btn');
+        if (cancelBtn) {
+            cancelBtn.addEventListener('click', TrainingUI.cancelTraining);
+        }
+
+        const pauseBtn = document.getElementById('pause-training-btn');
+        if (pauseBtn) {
+            pauseBtn.addEventListener('click', TrainingUI.togglePause);
+        }
+
+        const continueBtn = document.getElementById('continue-session-btn');
+        if (continueBtn) {
+            continueBtn.addEventListener('click', () => TrainingUI.continueTraining());
+        }
+
+        // Calendar listeners
+        const prevMonthBtn = document.getElementById('cal-prev-month');
+        if (prevMonthBtn) prevMonthBtn.addEventListener('click', () => {
+            currentMonth--;
+            if (currentMonth < 0) { currentMonth = 11; currentYear--; }
+            TrainingUI.renderCalendar();
+        });
+
+        // Smart Assistant - Trainer Edward visibility check
+        document.addEventListener('visibilitychange', () => {
+            if (document.visibilityState === 'visible') {
+                if (currentTraining && currentTraining.startTime && !currentTraining.isPaused && document.getElementById('active-training-view').style.display !== 'none') {
+                    // Update timer immediately
+                    TrainingUI.updateTimer();
+                    // Show bubble
+                    if (window.ChatUI) {
+                        window.ChatUI.showContextualBubble("Trenuj, a nie siedzisz w telefonie! 📱💪", true);
+                    }
+                }
+            }
+        });
+        
+        const nextMonthBtn = document.getElementById('cal-next-month');
+        if (nextMonthBtn) nextMonthBtn.addEventListener('click', () => {
+            currentMonth++;
+            if (currentMonth > 11) { currentMonth = 0; currentYear++; }
+            TrainingUI.renderCalendar();
+        });
+
+        document.addEventListener('tabChanged', (e) => {
+            if(e.detail && e.detail.tab === 'training-dashboard') {
+                TrainingUI.loadHistoryAndCalendar();
+            }
+        });
+
+        TrainingUI.loadHistoryAndCalendar();
+        
+        // Draft check
+        setTimeout(() => {
+            const draft = TrainingUI.loadDraft();
+            if (draft && (!currentTraining || !currentTraining.timerInterval)) {
+                if (confirm("Wykryto niezapisany trening (draft) z poprzedniej sesji. Czy chcesz go przywrócić? Jeśli klikniesz Anuluj, zostanie on usunięty.")) {
+                    TrainingUI.restoreDraft(draft);
+                } else {
+                    TrainingUI.clearDraft();
+                }
+            }
+        }, 500);
+    },
+
+    injectCatalogModalHTML: () => {
+        if (document.getElementById('catalog-modal-overlay')) return;
+        const html = `
+            <div id="catalog-modal-overlay" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.85); z-index: 10000; justify-content: center; align-items: center; padding: 20px;">
+                <div style="background: #1e1e1e; width: 100%; max-width: 500px; border-radius: 12px; border: 1px solid rgba(0, 191, 255, 0.3); display: flex; flex-direction: column; max-height: 85vh;">
+                    <div style="padding: 15px 20px; border-bottom: 1px solid rgba(255, 255, 255, 0.1); display: flex; justify-content: space-between; align-items: center;">
+                        <h3 id="catalog-modal-title" style="margin: 0; color: #00BFFF; font-size: 1.3em;">Wybierz partię</h3>
+                        <button onclick="document.getElementById('catalog-modal-overlay').style.display='none';" style="background: none; border: none; color: #aaa; font-size: 1.8rem; cursor: pointer; padding: 0; line-height: 1;">&times;</button>
+                    </div>
+                    <div id="catalog-modal-content" style="padding: 15px; overflow-y: auto; flex: 1; display: flex; flex-direction: column; gap: 10px;">
+                    </div>
+                </div>
+            </div>
+        `;
+        document.body.insertAdjacentHTML('beforeend', html);
+    },
+
+    
+    toggleExerciseType: (exId) => {
+        const ex = currentTraining.exercises.find(e => e.id === exId);
+        if (ex) {
+            if (ex.type === 'strength') ex.type = 'cardio';
+            else if (ex.type === 'cardio') ex.type = 'classes';
+            else ex.type = 'strength';
+            TrainingUI.renderCurrentExercises();
+            TrainingUI.saveDraft();
+        }
+    },
+    openExerciseSelector: (exId) => {
+        TrainingUI.openCatalogModal(exId);
+    },
+
+    openCatalogModal: (exerciseId) => {
+        const overlay = document.getElementById('catalog-modal-overlay');
+        const content = document.getElementById('catalog-modal-content');
+        const title = document.getElementById('catalog-modal-title');
+        
+        title.innerText = "Wybierz partię";
+        content.innerHTML = '';
+        
+        Object.keys(ExerciseCategories).forEach(cat => {
+            const btn = document.createElement('button');
+            btn.innerText = cat;
+            btn.style.cssText = 'background: #333; color: #fff; padding: 15px; border-radius: 8px; border: 1px solid #444; font-size: 1.1em; cursor: pointer; text-align: left; font-weight: bold; margin-bottom: 5px;';
+            btn.onclick = () => TrainingUI.selectCategory(cat, exerciseId);
+            content.appendChild(btn);
+        });
+        
+        overlay.style.display = 'flex';
+    },
+
+    selectCategory: (category, exerciseId) => {
+        const content = document.getElementById('catalog-modal-content');
+        const title = document.getElementById('catalog-modal-title');
+        
+        title.innerText = category;
+        content.innerHTML = '';
+        
+        const backBtn = document.createElement('button');
+        backBtn.innerText = '⬅ Powrót do partii';
+        backBtn.style.cssText = 'background: rgba(0,191,255,0.1); color: #00BFFF; padding: 10px; border-radius: 8px; border: 1px solid rgba(0,191,255,0.3); font-size: 1em; cursor: pointer; margin-bottom: 10px; font-weight: bold;';
+        backBtn.onclick = () => TrainingUI.openCatalogModal(exerciseId);
+        content.appendChild(backBtn);
+        
+        ExerciseCategories[category].forEach(exName => {
+            const btn = document.createElement('button');
+            btn.innerText = exName;
+            btn.style.cssText = 'background: #222; color: #ccc; padding: 12px 15px; border-radius: 6px; border: 1px solid #333; font-size: 0.95em; cursor: pointer; text-align: left; transition: all 0.2s; margin-bottom: 5px;';
+            btn.onclick = () => {
+                TrainingUI.updateExerciseField(exerciseId, 'name', exName);
+                document.getElementById('catalog-modal-overlay').style.display = 'none';
+                TrainingUI.renderCurrentExercises();
+            };
+            content.appendChild(btn);
+        });
+    },
+
+    getTemplates: () => {
+        try {
+            const templates = localStorage.getItem('uki_workout_templates');
+            return templates ? JSON.parse(templates) : [];
+        } catch (e) {
+            console.error("Error reading templates", e);
+            return [];
+        }
+    },
+
+    saveAsTemplate: () => {
+        if (!currentTraining || !currentTraining.exercises || currentTraining.exercises.length === 0) {
+            if (window.ChatUI) window.ChatUI.showContextualBubble("Hej, nie masz żadnych ćwiczeń żeby zapisać szablon! Dodaj coś najpierw. 😅");
+            else alert("Dodaj ćwiczenia przed zapisaniem szablonu.");
+            return;
+        }
+
+        const templateName = prompt("Podaj nazwę planu treningowego (np. 'Plan Masa: Push Wtorek'):");
+        if (!templateName || templateName.trim() === '') return;
+
+        // Clone current training and remove specific data
+        const template = {
+            id: Date.now(),
+            name: templateName.trim(),
+            type: currentTraining.type || 'strength',
+            exercises: currentTraining.exercises.map(ex => {
+                const newEx = { ...ex, cardioInterval: null };
+                // Keep the structure but reset weights/reps? Or maybe keep them as baseline. Let's keep them as baseline.
+                return newEx;
+            })
+        };
+
+        const templates = TrainingUI.getTemplates();
+        templates.push(template);
+        localStorage.setItem('uki_workout_templates', JSON.stringify(templates));
+        
+        if (window.ChatUI) window.ChatUI.showContextualBubble(`Elegancko! Plan Treningowy "${template.name}" zapisany. 💪 Możesz go załadować przy kolejnym treningu.`);
+        else alert(`Plan Treningowy "${template.name}" został zapisany.`);
+    },
+
+    
+    exportTemplate: (id) => {
+        const templates = TrainingUI.getTemplates();
+        const t = templates.find(x => String(x.id) === String(id));
+        if (!t) return;
+        
+        const blob = new Blob([JSON.stringify(t, null, 2)], { type: "application/json" });
+        const url = URL.createObjectURL(blob);
+        
+        const dlAnchorElem = document.createElement('a');
+        dlAnchorElem.setAttribute("href", url);
+        dlAnchorElem.setAttribute("download", "UkiPlan_" + t.name.replace(/\s+/g, '_') + ".json");
+        document.body.appendChild(dlAnchorElem);
+        dlAnchorElem.click();
+        document.body.removeChild(dlAnchorElem);
+        URL.revokeObjectURL(url);
+    },
+
+    importTemplate: () => {
+        const input = document.createElement('input');
+        input.type = 'file';
+        input.accept = '.json';
+        input.onchange = e => {
+            const file = e.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = event => {
+                try {
+                    const imported = JSON.parse(event.target.result);
+                    if (!imported.name || !imported.exercises) throw new Error("Nieprawidłowy plik planu.");
+                    
+                    imported.id = Date.now(); // nadaj nowe ID by uniknąć konfliktów
+                    const templates = TrainingUI.getTemplates();
+                    templates.push(imported);
+                    localStorage.setItem('uki_workout_templates', JSON.stringify(templates));
+                    alert("Pomyślnie zaimportowano plan: " + imported.name);
+                    
+                    document.getElementById('templates-modal-overlay').remove();
+                    TrainingUI.loadTemplatesDialog(); // odśwież modal
+                } catch(err) {
+                    alert("Błąd importu pliku JSON: " + err.message);
+                }
+            };
+            reader.readAsText(file);
+        };
+        input.click();
+    },
+
+    loadTemplatesDialog: () => {
+        const templates = TrainingUI.getTemplates();
+        if (templates.length === 0) {
+            if (window.ChatUI) window.ChatUI.showContextualBubble("Nie masz jeszcze żadnych zapisanych planów treningowych. Zapisz jakiś podczas treningu! 📝");
+            else alert("Brak zapisanych planów treningowych.");
+            return;
+        }
+
+        let html = `
+            <div id="templates-modal-overlay" onclick="if(event.target.id === 'templates-modal-overlay') { this.remove(); window.TrainingUI.renderCalendar(); }" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 10000; display: flex; justify-content: center; align-items: center; padding: 16px; box-sizing: border-box;">
+                <div style="background: rgba(30, 30, 30, 0.6); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border: 1px solid rgba(255, 152, 0, 0.4); border-radius: 20px; width: 100%; max-width: 480px; max-height: 85vh; display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 15px 50px rgba(0,0,0,0.7); box-sizing: border-box;">
+                    
+                    <!-- Fixed Header with Title and Close X -->
+                    <div style="padding: 16px 20px; border-bottom: 1px solid rgba(255,152,0,0.3); display: flex; justify-content: space-between; align-items: center; background: rgba(0, 0, 0, 0.3); flex-shrink: 0;">
+                        <div>
+                            <h3 style="color: #FF9800; margin: 0; font-size: 1.15em;">Szablony Planów Treningowych</h3>
+                            <p style="color: #888; font-size: 0.8em; margin: 3px 0 0 0;">Wybierz zapisany plan by rozpocząć sesję:</p>
+<button onclick="window.TrainingUI.importTemplate()" style="margin-top: 8px; background: rgba(76, 175, 80, 0.2); border: 1px solid rgba(76, 175, 80, 0.4); color: #81c784; padding: 6px 12px; border-radius: 8px; font-size: 0.85em; font-weight: bold; cursor: pointer;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 4px; vertical-align: middle;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></svg>Importuj z JSON</button>
+                        </div>
+                        <button onclick="document.getElementById('templates-modal-overlay').remove(); window.TrainingUI.renderCalendar();" style="background: rgba(255,255,255,0.1); border: none; color: #fff; width: 34px; height: 34px; border-radius: 50%; font-size: 1.4em; cursor: pointer; display: flex; align-items: center; justify-content: center; line-height: 1;">&times;</button>
+                    </div>
+
+                    <!-- Scrollable Cards Container -->
+                    <div style="padding: 16px; overflow-y: auto; flex: 1; -webkit-overflow-scrolling: touch; display: flex; flex-direction: column; gap: 12px;">
+        `;
+
+        let schedules = [];
+        try {
+            schedules = JSON.parse(localStorage.getItem('uki_workout_schedules') || '[]');
+        } catch(e) {}
+
+        templates.forEach(t => {
+            let typeLabel = 'Trening Siłowy';
+            if (t.type === 'cardio') typeLabel = 'Cardio';
+            else if (t.type === 'classes') typeLabel = 'Zajęcia zorganizowane';
+            
+            let durationInfo = t.duration_seconds ? `<br>Przewidywany czas: ${TrainingUI.formatTime(t.duration_seconds)}` : '';
+            
+            const mySchedule = schedules.find(s => s.templateId === t.id) || { daysOfWeek: [] };
+            const days = [
+                { num: 1, name: 'Pn' }, { num: 2, name: 'Wt' }, { num: 3, name: 'Śr' }, 
+                { num: 4, name: 'Czw' }, { num: 5, name: 'Pt' }, { num: 6, name: 'Sb' }, { num: 0, name: 'Nd' }
+            ];
+
+            let daysHtml = `<div style="display: flex; gap: 4px; justify-content: center; flex-wrap: wrap; margin-top: 5px; padding-top: 10px; border-top: 1px dashed #444;">
+                <div style="width: 100%; text-align: center; font-size: 0.85em; color: #888; margin-bottom: 4px;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 4px; vertical-align: middle;"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" x2="16" y1="2" y2="6"/><line x1="8" x2="8" y1="2" y2="6"/><line x1="3" x2="21" y1="10" y2="10"/></svg>Automatyczny Harmonogram w Kalendarzu:</div>`;
+            days.forEach(d => {
+                const isSelected = mySchedule.daysOfWeek.includes(d.num);
+                const bg = isSelected ? '#FF9800' : 'rgba(255,255,255,0.05)';
+                const col = isSelected ? '#000' : '#888';
+                const border = isSelected ? '#FF9800' : '#444';
+                daysHtml += `<button onclick="window.TrainingUI.toggleScheduleDay('${t.id}', ${d.num})" style="background: ${bg}; color: ${col}; border: 1px solid ${border}; border-radius: 12px; padding: 4px 10px; font-size: 0.85em; font-weight: bold; cursor: pointer; transition: all 0.2s;">${d.name}</button>`;
+            });
+            daysHtml += `</div>`;
+
+            html += `
+                <div style="background: rgba(255, 255, 255, 0.05); padding: 16px; border-radius: 16px; border: 1px solid rgba(255, 255, 255, 0.1); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); display: flex; flex-direction: column; gap: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.3);">
+                    <div style="text-align: center; border-bottom: 1px solid #444; padding-bottom: 8px;">
+                        <strong style="color: #00BFFF; font-size: 1.1em;">${t.name}</strong>
+<button onclick="window.TrainingUI.exportTemplate('${t.id}')" style="background: rgba(0, 191, 255, 0.1); border: 1px solid #00BFFF; color: #00BFFF; border-radius: 6px; padding: 3px 8px; font-size: 0.8em; margin-left: 10px; cursor: pointer;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 4px; vertical-align: middle;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" x2="12" y1="3" y2="15"/></svg>Eksport</button>
+                    </div>
+                    <div style="font-size: 0.9em; color: #bbb; text-align: center; line-height: 1.5;">
+                        Typ: ${typeLabel}<br>
+                        Ilość ćwiczeń w treningu: ${t.exercises && t.exercises.length ? t.exercises.length : 0}
+                        ${durationInfo}
+                    </div>
+                    <div style="display: flex; flex-direction: column; gap: 8px; width: 100%; margin-top: 8px; box-sizing: border-box;">
+                        <button onclick="window.TrainingUI.startFromTemplate('${t.id}')" class="action-button" style="width: 100%; background: rgba(46, 204, 113, 0.2); border: 1px solid rgba(46, 204, 113, 0.5); color: #2ECC71; padding: 12px 10px; font-weight: bold; border-radius: 12px; font-size: 0.95em; cursor: pointer; backdrop-filter: blur(5px);"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 6px; vertical-align: middle;"><polygon points="5 3 19 12 5 21 5 3"/></svg>Wybierz</button>
+                        <div style="display: flex; gap: 8px; width: 100%;">
+                            <button onclick="window.TemplateBuilderUI.editTemplate('${t.id}'); document.getElementById('templates-modal-overlay').remove();" class="action-button" style="flex: 1; background: rgba(0, 191, 255, 0.15); border: 1px solid rgba(0, 191, 255, 0.4); color: #00BFFF; padding: 10px; font-weight: bold; border-radius: 8px; font-size: 0.9em; cursor: pointer;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 4px; vertical-align: middle;"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>Edytuj</button>
+                            <button onclick="window.TrainingUI.deleteTemplate('${t.id}')" class="action-button" style="flex: 1; background: rgba(231, 76, 60, 0.15); border: 1px solid rgba(231, 76, 60, 0.4); color: #E74C3C; padding: 10px; font-weight: bold; border-radius: 8px; font-size: 0.9em; cursor: pointer;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 4px; vertical-align: middle;"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/></svg>Usuń</button>
+                        </div>
+                    </div>
+                    ${daysHtml}
+                </div>
+            `;
+        });
+
+        html += `
+                    </div>
+
+                    <!-- Fixed Footer with Close Button -->
+                    <div style="padding: 12px 16px; border-top: 1px solid #333; background: rgba(0, 0, 0, 0.3); flex-shrink: 0;">
+                        <button onclick="document.getElementById('templates-modal-overlay').remove(); window.TrainingUI.renderCalendar();" class="action-button" style="width: 100%; background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.2); color: #fff; padding: 12px; border-radius: 12px; font-weight: bold; font-size: 0.95em; cursor: pointer; backdrop-filter: blur(5px);">Zamknij</button>
+                    </div>
+                </div>
+            </div>
+        `;
+
+        const existingModal = document.getElementById('templates-modal-overlay');
+        if (existingModal) existingModal.remove();
+        document.body.insertAdjacentHTML('beforeend', html);
+    },
+
+    toggleScheduleDay: (templateId, dayNum) => {
+        let schedules = [];
+        try { schedules = JSON.parse(localStorage.getItem("uki_workout_schedules") || "[]"); } catch(e) {}
+        
+        let sched = schedules.find(s => String(s.templateId) === String(templateId));
+        if (!sched) {
+            sched = { templateId: templateId, daysOfWeek: [] };
+            schedules.push(sched);
+        }
+        
+        const idx = sched.daysOfWeek.indexOf(dayNum);
+        if (idx > -1) {
+            sched.daysOfWeek.splice(idx, 1);
+        } else {
+            sched.daysOfWeek.push(dayNum);
+        }
+        
+        // Remove empty schedules
+        schedules = schedules.filter(s => s.daysOfWeek.length > 0);
+        
+        localStorage.setItem("uki_workout_schedules", JSON.stringify(schedules));
+        TrainingUI.loadTemplatesDialog(); // Re-render modal to show updated colors
+        
+        // Refresh calendar if its open (CalendarUI removed — use TrainingUI.renderCalendar)
+        const calendarEl = document.getElementById("calendar-grid");
+        if (calendarEl) {
+            TrainingUI.renderCalendar();
+        }
+    },
+
+    restorePlannedTraining: (dateStr) => {
+        let exceptions = [];
+        try { exceptions = JSON.parse(localStorage.getItem("uki_schedule_exceptions") || "[]"); } catch(e) {}
+        
+        exceptions = exceptions.filter(e => e.date !== dateStr);
+        
+        localStorage.setItem("uki_schedule_exceptions", JSON.stringify(exceptions));
+        TrainingUI.renderCalendar();
+        TrainingUI.handleDayClick(dateStr);
+    },
+
+    skipPlannedTraining: (dateStr, templateId) => {
+        let exceptions = [];
+        try { exceptions = JSON.parse(localStorage.getItem("uki_schedule_exceptions") || "[]"); } catch(e) {}
+        
+        exceptions.push({
+            date: dateStr,
+            templateId: templateId,
+            status: "skipped"
+        });
+        
+        localStorage.setItem("uki_schedule_exceptions", JSON.stringify(exceptions));
+        TrainingUI.renderCalendar();
+    },
+
+    deleteTemplate: (id) => {
+        if (confirm("Na pewno usunąć ten plan treningowy?")) {
+            let templates = TrainingUI.getTemplates();
+            templates = templates.filter(t => String(t.id) !== String(id));
+            localStorage.setItem('uki_workout_templates', JSON.stringify(templates));
+            const modal = document.getElementById('templates-modal-overlay');
+            if (modal) modal.remove();
+            TrainingUI.loadTemplatesDialog(); // Refresh
+        }
+    },
+
+    startFromTemplate: (templateId) => {
+        const modal = document.getElementById('templates-modal-overlay');
+        if (modal) modal.remove();
+
+        const templates = TrainingUI.getTemplates();
+        const template = templates.find(t => String(t.id) === String(templateId));
+        if (!template) return;
+
+        // Initialize new session from template
+        document.getElementById('training-calendar-view').style.display = 'none';
+        document.getElementById('active-training-view').style.display = 'block';
+
+        currentTraining = {
+            date: selectedDate, // Use selected day instead of today!
+            startTime: Date.now(),
+            timerInterval: null,
+            exercises: (template.exercises || []).map(ex => {
+                const newEx = JSON.parse(JSON.stringify(ex));
+                newEx.id = Math.random().toString(36).substr(2, 9);
+                if (newEx.type === 'superset' && Array.isArray(newEx.exercises)) {
+                    newEx.exercises.forEach(nestedEx => {
+                        nestedEx.id = Math.random().toString(36).substr(2, 9);
+                        if (Array.isArray(nestedEx.sets)) nestedEx.sets.forEach(s => s.isCompleted = false);
+                    });
+                } else {
+                    if (Array.isArray(newEx.sets)) newEx.sets.forEach(s => s.isCompleted = false);
+                }
+                return newEx;
+            }),
+            name: template.name,
+            type: template.type || 'strength',
+            isPaused: false,
+            pauseStartTime: null,
+            totalPausedTime: 0,
+            templateId: templateId
+        };
+
+        const nameInput = document.getElementById('training-name-input');
+        if (nameInput) nameInput.value = currentTraining.name || '';
+        
+        const typeSelect = document.getElementById('training-type-select');
+        if (typeSelect) {
+            typeSelect.value = currentTraining.type;
+            if (typeof window.TrainingUI.handleTypeChange === 'function') {
+                window.TrainingUI.handleTypeChange(currentTraining.type);
+            }
+        }
+
+        const manualToggle = document.getElementById('manual-duration-toggle');
+        if (manualToggle) manualToggle.checked = false;
+        const manualInputs = document.getElementById('manual-duration-inputs');
+        if (manualInputs) manualInputs.style.display = 'none';
+
+        const calInput = document.getElementById('smartwatch-calories');
+        const hrInput = document.getElementById('smartwatch-hr');
+        if (calInput) calInput.value = '';
+        if (hrInput) hrInput.value = '';
+
+        const pauseBtn = document.getElementById('pause-training-btn');
+        if(pauseBtn) {
+            pauseBtn.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 4px;"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg> Pauza';
+            pauseBtn.style.color = '#f39c12';
+            pauseBtn.style.backgroundColor = 'transparent';
+            pauseBtn.style.borderColor = '#f39c12';
+        }
+
+        TrainingUI.renderCurrentExercises();
+        currentTraining.timerInterval = setInterval(TrainingUI.updateTimer, 1000);
+        TrainingUI.saveDraft();
+        
+        if (window.ChatUI) {
+            window.ChatUI.showContextualBubble("Ogień! 🔥 Plan Treningowy załadowany, zegar tyka – bierzemy się do roboty! 💪", true);
+        }
+    },
+
+    saveDraft: () => {
+        if (!currentTraining || !currentTraining.startTime) return;
+        // Kopiujemy obiekt by nie zepsuć setIntervals
+        const draftCopy = { ...currentTraining, timerInterval: null };
+        if (draftCopy.exercises) {
+            draftCopy.exercises = draftCopy.exercises.map(ex => ({ ...ex, cardioInterval: null }));
+        }
+
+        const nameInput = document.getElementById('training-name-input');
+        if (nameInput) draftCopy.name = nameInput.value;
+
+        const manualToggle = document.getElementById('manual-duration-toggle');
+        const hoursInput = document.getElementById('manual-training-hours');
+        const minutesInput = document.getElementById('manual-training-minutes');
+        if (manualToggle && manualToggle.checked) {
+            draftCopy.manualTime = {
+                hours: hoursInput ? hoursInput.value : '',
+                minutes: minutesInput ? minutesInput.value : ''
+            };
+        }
+
+        const calInput = document.getElementById('smartwatch-calories');
+        const hrInput = document.getElementById('smartwatch-hr');
+        if ((calInput && calInput.value) || (hrInput && hrInput.value)) {
+            draftCopy.smartwatch = {
+                calories: calInput ? calInput.value : '',
+                hr: hrInput ? hrInput.value : ''
+            };
+        }
+
+        try {
+            localStorage.setItem('uki_active_training_draft', JSON.stringify(draftCopy));
+        } catch(e) {
+            console.warn("Nie udało się zapisać draftu treningu", e);
+        }
+    },
+
+    loadDraft: () => {
+        try {
+            const draft = localStorage.getItem('uki_active_training_draft');
+            if (draft) return JSON.parse(draft);
+        } catch(e) {}
+        return null;
+    },
+
+    clearDraft: () => {
+        localStorage.removeItem('uki_active_training_draft');
+    },
+
+    restoreDraft: (draft) => {
+        document.getElementById('training-calendar-view').style.display = 'none';
+        document.getElementById('active-training-view').style.display = 'block';
+        
+        currentTraining = draft;
+        
+        // HEAL: Naprawa uszkodzonych draftów ze starymi "undefined" ID
+        if (currentTraining.exercises) {
+            const seenIds = new Set();
+            currentTraining.exercises.forEach(ex => {
+                if (!ex.id || ex.id === 'undefined' || seenIds.has(ex.id)) {
+                    ex.id = Math.random().toString(36).substr(2, 9);
+                }
+                seenIds.add(ex.id);
+                if (ex.type === 'superset' && Array.isArray(ex.exercises)) {
+                    ex.exercises.forEach(nestedEx => {
+                        if (!nestedEx.id || nestedEx.id === 'undefined' || seenIds.has(nestedEx.id)) {
+                            nestedEx.id = Math.random().toString(36).substr(2, 9);
+                        }
+                        seenIds.add(nestedEx.id);
+                    });
+                }
+            });
+        }
+        
+        const nameInput = document.getElementById('training-name-input');
+        if (nameInput) nameInput.value = currentTraining.name || '';
+        
+        TrainingUI.renderCurrentExercises();
+        if (currentTraining.socialPhotos && currentTraining.socialPhotos.length > 0) {
+            TrainingUI.renderTrainingPhotos();
+        }
+
+        if (currentTraining.manualTime) {
+            const manualToggle = document.getElementById('manual-duration-toggle');
+            if (manualToggle && !manualToggle.checked) {
+                manualToggle.checked = true;
+                const manualContainer = document.getElementById('manual-duration-inputs');
+                if (manualContainer) manualContainer.style.display = 'flex';
+            }
+            const hoursInput = document.getElementById('manual-training-hours');
+            const minutesInput = document.getElementById('manual-training-minutes');
+            if (hoursInput && currentTraining.manualTime.hours) hoursInput.value = currentTraining.manualTime.hours;
+            if (minutesInput && currentTraining.manualTime.minutes) minutesInput.value = currentTraining.manualTime.minutes;
+        }
+
+        if (currentTraining.smartwatch) {
+            const calInput = document.getElementById('smartwatch-calories');
+            const hrInput = document.getElementById('smartwatch-hr');
+            if (calInput && currentTraining.smartwatch.calories) calInput.value = currentTraining.smartwatch.calories;
+            if (hrInput && currentTraining.smartwatch.hr) hrInput.value = currentTraining.smartwatch.hr;
+        }
+        
+        // Zawsze zakładamy że był zablokowany/zatrzymany przy przywracaniu, dajemy pause
+        if (!currentTraining.isPaused) {
+            currentTraining.isPaused = true;
+            currentTraining.pauseStartTime = Date.now();
+            const pauseBtn = document.getElementById('pause-training-btn');
+            if(pauseBtn) {
+                pauseBtn.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" style="vertical-align: middle; margin-right: 4px;"><polygon points="5 3 19 12 5 21 5 3"/></svg> Wznów'; pauseBtn.style.color = '#fff'; pauseBtn.style.backgroundColor = '#2ECC71'; pauseBtn.style.borderColor = '#2ECC71';
+                pauseBtn.style.backgroundColor = '#2ECC71';
+                pauseBtn.style.borderColor = '#2ECC71';
+            }
+        }
+        
+        currentTraining.timerInterval = setInterval(TrainingUI.updateTimer, 1000);
+    },
+
+    loadHistoryAndCalendar: async () => {
+        try {
+            const records = await DatabaseManager.getTrainings();
+            allTrainingsCache = records;
+            trainingDates.clear();
+            records.forEach(rec => {
+                trainingDates.add(rec.date);
+            });
+            if (selectedDate) {
+                TrainingUI.handleDayClick(selectedDate, true);
+            } else {
+                TrainingUI.renderCalendar();
+            }
+        } catch (err) {
+            console.error("Error loading training history:", err);
+        }
+    },
+
+    renderCalendar: () => {
+        const grid = document.getElementById('training-calendar-grid');
+        const monthYearLabel = document.getElementById('cal-month-year');
+        if (!grid || !monthYearLabel) return;
+
+        const months = ['Styczeń', 'Luty', 'Marzec', 'Kwiecień', 'Maj', 'Czerwiec', 'Lipiec', 'Sierpień', 'Wrzesień', 'Październik', 'Listopad', 'Grudzień'];
+        monthYearLabel.textContent = `${months[currentMonth]} ${currentYear}`;
+
+        let html = '';
+        const daysOfWeek = ['Pn', 'Wt', 'Śr', 'Cz', 'Pt', 'So', 'Nd'];
+        daysOfWeek.forEach(day => {
+            html += `<div class="calendar-day-header">${day}</div>`;
+        });
+
+        const firstDay = new Date(currentYear, currentMonth, 1).getDay();
+        const adjustedFirstDay = firstDay === 0 ? 6 : firstDay - 1;
+        const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
+
+        for (let i = 0; i < adjustedFirstDay; i++) {
+            html += `<div class="calendar-day empty"></div>`;
+        }
+
+        const todayDate = new Date().toISOString().split('T')[0];
+        
+        let schedules = [];
+        try { schedules = JSON.parse(localStorage.getItem('uki_workout_schedules') || '[]'); } catch(e) {}
+        let exceptions = [];
+        try { exceptions = JSON.parse(localStorage.getItem('uki_schedule_exceptions') || '[]'); } catch(e) {}
+
+        for (let day = 1; day <= daysInMonth; day++) {
+            const dateStr = `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+            const dateObj = new Date(currentYear, currentMonth, day);
+            const dow = dateObj.getDay();
+            const hasTraining = trainingDates.has(dateStr);
+            const isToday = dateStr === todayDate;
+            const isSelected = dateStr === selectedDate;
+            
+            // Harmonogram działa dla wybranego dnia
+            const isScheduledDay = schedules.some(s => s.daysOfWeek.includes(dow));
+            const isPlanned = (dateStr >= todayDate) && isScheduledDay;
+            const isException = exceptions.some(e => e.date === dateStr && e.status === 'skipped');
+            
+            let dotHtml = '';
+            if (hasTraining) {
+                dotHtml = '<div class="training-dot" style="background-color: #2ECC71; box-shadow: 0 0 5px #2ECC71;"></div>'; // Green
+            } else if (isPlanned && !isException) {
+                dotHtml = '<div class="training-dot" style="background-color: #FF9800; box-shadow: 0 0 5px #FF9800;"></div>'; // Orange (Future/Today planned)
+            } else if (isScheduledDay && isException) {
+                dotHtml = '<div class="training-dot" style="background-color: #E74C3C; box-shadow: 0 0 5px #E74C3C;"></div>'; // Red solid (Explicitly Skipped)
+            }
+
+            let classes = 'calendar-day';
+            if (hasTraining) classes += ' has-training';
+            if (isToday) classes += ' today';
+            if (isSelected) classes += ' selected';
+
+            html += `
+                <div class="${classes}" onclick="window.TrainingUI.handleDayClick('${dateStr}')">
+                    ${day}
+                    ${dotHtml}
+                </div>
+            `;
+        }
+        grid.innerHTML = html;
+
+        const container = grid.parentElement;
+        if (container && !document.getElementById('cal-legend')) {
+            const legendHtml = `
+                <div id="cal-legend" style="display: flex; justify-content: center; gap: 15px; margin-top: 15px; font-size: 0.8em; color: #aaa; flex-wrap: wrap;">
+                    <div style="display: flex; align-items: center; gap: 4px;">
+                        <div style="width: 8px; height: 8px; border-radius: 50%; background-color: #2ECC71; box-shadow: 0 0 5px #2ECC71;"></div> Wykonany
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 4px;">
+                        <div style="width: 8px; height: 8px; border-radius: 50%; background-color: #FF9800; box-shadow: 0 0 5px #FF9800;"></div> Zaplanowany
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 4px;">
+                        <div style="width: 8px; height: 8px; border-radius: 50%; background-color: #E74C3C; box-shadow: 0 0 5px #E74C3C;"></div> Pominięty
+                    </div>
+                </div>
+            `;
+            container.insertAdjacentHTML('beforeend', legendHtml);
+        }
+    },
+
+    handleDayClick: (dateStr, preventScroll = false) => {
+        selectedDate = dateStr;
+        TrainingUI.renderCalendar(); // To update the 'selected' visual state
+        
+        const panel = document.getElementById('day-action-panel');
+        const label = document.getElementById('selected-day-label');
+        
+        const emptyState = document.getElementById('day-action-empty-state');
+        const existingState = document.getElementById('day-action-existing-state');
+        const existingPreview = document.getElementById('existing-training-preview');
+        const plannedState = document.getElementById('day-action-planned-state');
+        const plannedPreview = document.getElementById('planned-training-preview');
+        const postponeBtn = document.getElementById('postpone-planned-btn');
+        const cancelPlannedBtn = document.getElementById('cancel-planned-btn');
+        const historyList = document.getElementById('history-sessions-list');
+        
+        if (!panel) return;
+        panel.style.display = 'block';
+        label.textContent = `Opcje dla: ${dateStr}`;
+
+        const existingTrainingsOnDay = allTrainingsCache.filter(t => t.date === dateStr);
+
+        // Always show emptyState which now contains "start new session"
+        if (emptyState) emptyState.style.display = 'block';
+        
+        let isPlanned = false;
+        if (plannedState) {
+            plannedState.style.display = 'none'; // hide by default
+            
+            let schedules = [];
+            try { schedules = JSON.parse(localStorage.getItem("uki_workout_schedules") || "[]"); } catch(e) {}
+            let exceptions = [];
+            try { exceptions = JSON.parse(localStorage.getItem("uki_schedule_exceptions") || "[]"); } catch(e) {}
+            
+            const dateObj = new Date(dateStr);
+            const dow = dateObj.getDay();
+            const sched = schedules.find(s => s.daysOfWeek.includes(dow));
+            const isException = exceptions.some(e => e.date === dateStr && e.status === "skipped");
+            
+            if (sched && existingTrainingsOnDay.length === 0) {
+                if (!isException) {
+                    isPlanned = true;
+                    plannedState.style.display = 'block';
+                    
+                    let templates = [];
+                    try { templates = JSON.parse(localStorage.getItem("uki_workout_templates") || "[]"); } catch(e) {}
+                    const template = templates.find(t => t.id === sched.templateId);
+                    const tName = template ? template.name : "Nieznany szablon";
+                    const typeLabel = template ? (template.type === "cardio" ? "Cardio" : (template.type === "classes" ? "Zajęcia zorganizowane" : "Trening Siłowy")) : "";
+                    
+                    if (plannedPreview) {
+                        plannedPreview.innerHTML = `
+                            <div style="background: rgba(255, 152, 0, 0.1); border: 1px solid rgba(255, 152, 0, 0.3); backdrop-filter: blur(10px); border-radius: 12px; padding: 15px; box-shadow: 0 4px 6px rgba(0,0,0,0.3);">
+                                <strong style="color: #FF9800; font-size: 1.1em;">${tName}</strong><br>
+                                <span style="font-size: 0.9em; color: #aaa;">${typeLabel} ${template && template.exercises ? `| Ćwiczeń: ${template.exercises.length}` : ""}</span>
+                                <div style="margin-top: 10px;">
+                                    <button onclick="window.TrainingUI.startFromTemplate('${sched.templateId}')" class="action-button pulse" style="width: 100%; background-color: #FF9800; border-color: #FF9800; color: #000; font-weight: bold; padding: 10px;">▶ Rozpocznij ten plan</button>
+                                </div>
+                            </div>
+                        `;
+                    }
+                    if (postponeBtn) {
+                        postponeBtn.style.display = 'block';
+                        postponeBtn.onclick = () => {
+                            window.TrainingUI.skipPlannedTraining(dateStr, sched.templateId);
+                            alert("Trening dzisiejszy przełożony. Jutro musisz go wywołać ręcznie z kalendarza lub szablonów.");
+                            TrainingUI.handleDayClick(dateStr);
+                        };
+                    }
+                    if (cancelPlannedBtn) {
+                        cancelPlannedBtn.style.display = 'block';
+                        cancelPlannedBtn.onclick = () => {
+                            window.TrainingUI.skipPlannedTraining(dateStr, sched.templateId);
+                            TrainingUI.handleDayClick(dateStr);
+                        };
+                    }
+                } else {
+                    // Odwołany trening
+                    plannedState.style.display = 'block';
+                    if (plannedPreview) {
+                        plannedPreview.innerHTML = `
+                            <div style="background: rgba(231, 76, 60, 0.05); border: 1px dashed rgba(231, 76, 60, 0.4); backdrop-filter: blur(10px); border-radius: 12px; padding: 15px; box-shadow: 0 4px 6px rgba(0,0,0,0.3);">
+                                <strong style="color: #E74C3C; font-size: 1.1em;">Trening odwołany</strong><br>
+                                <span style="font-size: 0.9em; color: #aaa;">Ten dzień został celowo pominięty z harmonogramu.</span>
+                                <div style="margin-top: 10px;">
+                                    <button onclick="window.TrainingUI.restorePlannedTraining('${dateStr}')" class="action-button" style="width: 100%; background-color: transparent; border: 1px solid #E74C3C; color: #E74C3C; padding: 10px;">Przywróć trening na dziś</button>
+                                </div>
+                            </div>
+                        `;
+                    }
+                    if (postponeBtn) postponeBtn.style.display = 'none';
+                    if (cancelPlannedBtn) cancelPlannedBtn.style.display = 'none';
+                }
+            }
+        }
+
+        if (existingTrainingsOnDay.length > 0) {
+            // Day has trainings
+            if (existingState) existingState.style.display = 'block';
+            
+            if (existingPreview) {
+                let html = '';
+                existingTrainingsOnDay.forEach(existingTraining => {
+                    const nameDisplay = existingTraining.name ? `<strong style="color: #00BFFF; font-size: 1.1em;">${existingTraining.name}</strong><br>` : '';
+                    html += `
+                        <div style="background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); backdrop-filter: blur(10px); margin-bottom: 15px; border-radius: 12px; padding: 15px; text-align: left; box-shadow: 0 4px 6px rgba(0,0,0,0.3);">
+                            ${nameDisplay}
+                            <span style="font-size: 0.9em;">Czas treningu: ${TrainingUI.formatTime(existingTraining.duration_seconds)}</span><br>
+                            <span style="font-size: 0.8em; color: #888;">Liczba ćwiczeń: ${existingTraining.exercises.length}</span>
+                            <div style="margin-top: 10px; display: flex; gap: 8px;">
+                                <button onclick="window.TrainingUI.viewTraining(${existingTraining.id})" class="action-button" style="flex: 1; background: rgba(52, 152, 219, 0.15); border: 1px solid rgba(52, 152, 219, 0.4); color: #3498db; border-radius: 8px; font-size: 0.9em; padding: 8px; backdrop-filter: blur(5px);"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:4px; vertical-align:middle;"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>Podgląd</button>
+                                <button onclick="window.TrainingUI.continueTraining(${existingTraining.id})" class="action-button pulse" style="flex: 1; background: rgba(46, 204, 113, 0.15); border: 1px solid rgba(46, 204, 113, 0.4); color: #2ecc71; border-radius: 8px; font-size: 0.9em; padding: 8px; backdrop-filter: blur(5px);"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:4px; vertical-align:middle;"><polygon points="5 3 19 12 5 21 5 3"/></svg>Kontynuuj</button>
+                                <button onclick="window.TrainingUI.deleteTraining(${existingTraining.id})" class="action-button" style="flex: 1; background: rgba(231, 76, 60, 0.15); border: 1px solid rgba(231, 76, 60, 0.4); color: #e74c3c; border-radius: 8px; font-size: 0.9em; padding: 8px; backdrop-filter: blur(5px);"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:4px; vertical-align:middle;"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/></svg>Usuń</button>
+                            </div>
+                        </div>
+                    `;
+                });
+                existingPreview.innerHTML = html;
+            }
+        } else {
+            // Day has no training
+            if (existingState) existingState.style.display = 'none';
+
+            if (historyList) {
+                // Build recent history for copying
+                let historyHtml = '<h5 style="color: #ccc; margin-bottom: 10px; display: flex; align-items: center; gap: 8px;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1" ry="1"/></svg> Ostatnie treningi (wybierz, aby skopiować na dziś):</h5>';
+                const recentTrainings = allTrainingsCache.slice(0, 5); // Take last 5
+                
+                if (recentTrainings.length === 0) {
+                    historyHtml += `<p style="color: #888; font-size: 0.9em; font-style: italic;">Brak sesji w historii do skopiowania.</p>`;
+                } else {
+                    recentTrainings.forEach((rec, idx) => {
+                        const nameDisplay = rec.name ? `<strong style="color: #00BFFF; font-size: 1.1em;">${rec.name}</strong> <span style="color: #aaa; font-size: 0.9em;">(${rec.date})</span>` : `<strong style="color: #00BFFF; font-size: 1.1em;">${rec.date}</strong>`;
+                        
+                        let exercisesPreview = '';
+                        if (rec.exercises && rec.exercises.length > 0) {
+                            rec.exercises.forEach(ex => {
+                                if (ex.type === 'superset' && ex.exercises && ex.exercises.length > 0) {
+                                    exercisesPreview += `<div style="margin-bottom: 8px; border-left: 2px dashed #E91E63; padding-left: 10px;">
+                                        <strong style="color: #E91E63; font-size: 0.85em; text-transform: uppercase;">Blok Łączony (Superseria)</strong><br>`;
+                                    ex.exercises.forEach(nestedEx => {
+                                        exercisesPreview += `<strong>${nestedEx.name || 'Brak nazwy'}</strong> <span style="font-size: 0.8em; color: #888;">(${nestedEx.type === 'cardio' ? 'Cardio' : 'Siłowe'})</span><br>`;
+                                        if (nestedEx.sets && nestedEx.sets.length > 0) {
+                                            exercisesPreview += `<ul style="margin: 3px 0 10px 0; padding-left: 20px; font-size: 0.9em; color: #ccc;">`;
+                                            nestedEx.sets.forEach((s, i) => {
+                                                exercisesPreview += `<li>Seria ${i+1}: <strong style="color: #00BFFF;">${s.weight} kg</strong> x <strong>${s.reps} powt.</strong></li>`;
+                                            });
+                                            exercisesPreview += `</ul>`;
+                                        } else {
+                                            exercisesPreview += `<div style="font-size: 0.9em; color: #888; margin-bottom: 10px;">Brak zapisanych serii</div>`;
+                                        }
+                                    });
+                                    exercisesPreview += `</div>`;
+                                } else {
+                                    exercisesPreview += `<div style="margin-bottom: 8px;"><strong>${ex.name || 'Brak nazwy'}</strong> <span style="font-size: 0.8em; color: #888;">(${ex.type === 'cardio' ? 'Cardio' : 'Siłowe'})</span><br>`;
+                                    if (ex.sets && ex.sets.length > 0) {
+                                        exercisesPreview += `<ul style="margin: 3px 0 0 0; padding-left: 20px; font-size: 0.9em; color: #ccc;">`;
+                                        ex.sets.forEach((s, i) => {
+                                            exercisesPreview += `<li>Seria ${i+1}: <strong style="color: #00BFFF;">${s.weight} kg</strong> x <strong>${s.reps} powt.</strong></li>`;
+                                        });
+                                        exercisesPreview += `</ul>`;
+                                    } else {
+                                        exercisesPreview += `<span style="font-size: 0.9em; color: #888; padding-left: 10px;">Brak zapisanych serii</span>`;
+                                    }
+                                    exercisesPreview += `</div>`;
+                                }
+                            });
+                        } else {
+                            exercisesPreview = `<p style="font-size: 0.9em; color: #888;">Brak zapisanych ćwiczeń.</p>`;
+                        }
+
+                        historyHtml += `
+                            <div class="history-item-container glass-card" style="background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); margin-bottom: 10px; border-radius: 16px; padding: 15px; text-align: left; box-shadow: 0 4px 6px rgba(0,0,0,0.3);">
+                                <div style="display: flex; justify-content: space-between; align-items: center; cursor: pointer;" onclick="window.TrainingUI.toggleHistoryPreview(${idx})">
+                                    <div style="flex: 1;">
+                                        ${nameDisplay}<br>
+                                        <span style="font-size: 0.85em; color: #ccc;">Czas: ${TrainingUI.formatTime(rec.duration_seconds)} | Ćwiczeń: ${rec.exercises.length}</span>
+                                    </div>
+                                    <div style="color: #00BFFF; font-size: 1.2em; padding-left: 10px;">
+                                        <span id="preview-icon-${idx}">▼</span>
+                                    </div>
+                                </div>
+                                <div id="preview-content-${idx}" style="display: none; margin-top: 15px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 15px;">
+                                    <div style="margin-bottom: 15px;">
+                                        <h6 style="color: #ccc; margin-top: 0; margin-bottom: 10px;">Podgląd ćwiczeń:</h6>
+                                        ${exercisesPreview}
+                                    </div>
+                                    <button onclick="window.TrainingUI.startTraining(${idx})" class="action-button" style="width: 100%; background-color: #2ECC71; border-color: #2ECC71; color: #fff; font-weight: bold;">
+                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 4px; vertical-align: middle;"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1" ry="1"/></svg>Skopiuj do tego dnia
+                                    </button>
+                                </div>
+                            </div>
+                        `;
+                    });
+                }
+                historyList.innerHTML = historyHtml;
+            }
+        }
+        
+        // Scroll to panel
+        if (!preventScroll) {
+            panel.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+    },
+
+    deleteTraining: async (id) => {
+        if (confirm("Czy na pewno chcesz bezpowrotnie usunąć ten trening?")) {
+            await DatabaseManager.deleteTraining(id);
+            if (typeof TrainingUI.loadHistoryAndCalendar === 'function') {
+                await TrainingUI.loadHistoryAndCalendar();
+            }
+        }
+    },
+
+    toggleHistoryPreview: (idx) => {
+        const content = document.getElementById(`preview-content-${idx}`);
+        const icon = document.getElementById(`preview-icon-${idx}`);
+        if (!content || !icon) return;
+        if (content.style.display === 'none') {
+            content.style.display = 'block';
+            icon.textContent = '▲';
+        } else {
+            content.style.display = 'none';
+            icon.textContent = '▼';
+        }
+    },
+
+    formatTime: (seconds) => {
+        const h = Math.floor(seconds / 3600).toString().padStart(2, '0');
+        const m = Math.floor((seconds % 3600) / 60).toString().padStart(2, '0');
+        const s = (seconds % 60).toString().padStart(2, '0');
+        return `${h}:${m}:${s}`;
+    },
+
+    updateTimer: () => {
+        if (!currentTraining || currentTraining.isPaused) return;
+
+        const now = Date.now();
+        const duration = Math.floor((now - currentTraining.startTime - currentTraining.totalPausedTime) / 1000);
+        
+        // Coach Edward AI co 15 min (900s)
+        const edwardInterval = 900;
+        if (duration > 0 && Math.floor(duration / edwardInterval) > (currentTraining.lastEdwardIndex || 0)) {
+            currentTraining.lastEdwardIndex = Math.floor(duration / edwardInterval);
+            
+            const messages = [
+                "Jak Ci idzie? Ćwicz, a nie siedzisz w telefonie!",
+                "Jedziesz! Pamiętaj o oddechu!",
+                "Nie odpuszczaj, to buduje charakter!",
+                "Czas na kolejną serię. Pokaż na co Cię stać!"
+            ];
+            const msgText = messages[Math.floor(Math.random() * messages.length)];
+
+            if (window.ChatUI) {
+                window.ChatUI.showContextualBubble(`⏱ ${msgText}`, true);
+            }
+
+            try {
+                if ('speechSynthesis' in window) {
+                    const msg = new SpeechSynthesisUtterance(msgText);
+                    msg.lang = 'pl-PL';
+                    const voices = window.speechSynthesis.getVoices();
+                    const maleVoice = voices.find(v => v.lang.includes('pl') && v.name.toLowerCase().includes('male'));
+                    if (maleVoice) msg.voice = maleVoice;
+                    window.speechSynthesis.speak(msg);
+                }
+            } catch(e) {}
+        }
+
+        document.getElementById('training-timer').innerText = TrainingUI.formatTime(duration);
+    },
+
+    togglePause: () => {
+        const pauseBtn = document.getElementById('pause-training-btn');
+        if (!pauseBtn) return;
+
+        if (currentTraining.isPaused) {
+            // Wznów
+            currentTraining.isPaused = false;
+            currentTraining.totalPausedTime += (Date.now() - currentTraining.pauseStartTime);
+            currentTraining.pauseStartTime = null;
+            pauseBtn.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 4px;"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg> Pauza';
+            pauseBtn.style.color = '#f39c12';
+            pauseBtn.style.backgroundColor = 'transparent';
+            pauseBtn.style.borderColor = '#f39c12';
+        } else {
+            // Zapauzuj
+            currentTraining.isPaused = true;
+            currentTraining.pauseStartTime = Date.now();
+            pauseBtn.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 4px;"><polygon points="5 3 19 12 5 21 5 3"/></svg> Wznów';
+            pauseBtn.style.color = '#fff';
+            pauseBtn.style.backgroundColor = '#2ECC71';
+            pauseBtn.style.borderColor = '#2ECC71';
+        }
+    },
+
+    cancelTraining: () => {
+        if (confirm("Czy na pewno chcesz anulować i porzucić ten trening? Ta akcja jest nieodwracalna i wyczyści cały brudnopis!")) {
+            if (currentTraining && currentTraining.timerInterval) {
+                clearInterval(currentTraining.timerInterval);
+            }
+            if (currentTraining && currentTraining.exercises) {
+                currentTraining.exercises.forEach(ex => {
+                    if (ex.cardioInterval) clearInterval(ex.cardioInterval);
+                    if (ex.exercises) {
+                        ex.exercises.forEach(nex => {
+                            if (nex.cardioInterval) clearInterval(nex.cardioInterval);
+                        });
+                    }
+                });
+            }
+            TrainingUI.clearDraft();
+            currentTraining = null;
+            document.getElementById('active-training-view').style.display = 'none';
+            document.getElementById('training-calendar-view').style.display = 'block';
+            TrainingUI.loadHistoryAndCalendar();
+        }
+    },
+
+    continueTraining: (trainingId) => {
+        const existingTraining = trainingId !== undefined 
+            ? allTrainingsCache.find(t => t.id === trainingId)
+            : allTrainingsCache.find(t => t.date === selectedDate);
+        if (!existingTraining) return;
+
+        document.getElementById('training-calendar-view').style.display = 'none';
+        document.getElementById('active-training-view').style.display = 'block';
+
+        currentTraining = {
+            id: existingTraining.id,
+            date: selectedDate,
+            startTime: Date.now() - (existingTraining.duration_seconds * 1000), // Simulate started in the past
+            timerInterval: null,
+            exercises: JSON.parse(JSON.stringify(existingTraining.exercises)),
+            name: existingTraining.name || '',
+            isPaused: false,
+            pauseStartTime: null,
+            totalPausedTime: 0
+        };
+
+        const nameInput = document.getElementById('training-name-input');
+        if (nameInput) {
+            nameInput.value = currentTraining.name;
+        }
+
+        TrainingUI.renderCurrentExercises();
+        currentTraining.timerInterval = setInterval(TrainingUI.updateTimer, 1000);
+    },
+
+    viewTraining: (trainingId) => {
+        const rec = allTrainingsCache.find(t => t.id === trainingId);
+        if (!rec) return;
+        
+        let html = `
+            <div id="view-modal-overlay" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 10000; display: flex; justify-content: center; align-items: center; padding: 20px; box-sizing: border-box;">
+                <div style="background: #222; border: 1px solid #3498db; border-radius: 12px; width: 100%; max-width: 500px; max-height: 80vh; overflow-y: auto; padding: 20px; color: #fff;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 10px;">
+                        <h3 style="color: #3498db; margin: 0;">Podgląd Treningu</h3>
+                        <button onclick="document.getElementById('view-modal-overlay').remove()" style="background: transparent; border: none; color: #fff; font-size: 1.5em; cursor: pointer;">&times;</button>
+                    </div>
+                    <div style="margin-bottom: 15px;">
+                        <strong style="color: #00BFFF; font-size: 1.2em;">${rec.date} ${rec.name ? ' - ' + rec.name : ''}</strong><br>
+                        <span style="color: #aaa; font-size: 0.9em;">Czas trwania: ${TrainingUI.formatTime(rec.duration_seconds)}</span><br>
+                        <span style="color: #aaa; font-size: 0.9em;">Ćwiczeń: ${rec.exercises.length}</span>
+                    </div>
+                    <h4 style="color: #00BFFF; margin-bottom: 10px;">Zapisane ćwiczenia:</h4>
+        `;
+        
+        rec.exercises.forEach((ex, i) => {
+            if (ex.type === 'superset' && ex.exercises && ex.exercises.length > 0) {
+                html += `
+                    <div style="margin-bottom: 10px; padding: 10px; background: rgba(233, 30, 99, 0.05); border-radius: 5px; border-left: 2px solid #E91E63;">
+                        <div style="color: #E91E63; font-weight: bold; margin-bottom: 5px; text-transform: uppercase;">${i+1}. Blok Łączony (Superseria)</div>
+                `;
+                ex.exercises.forEach((nestedEx, nIdx) => {
+                    html += `
+                        <div style="margin-bottom: 5px; margin-top: 10px; color: #fff; font-weight: bold;">${i+1}.${nIdx+1}. ${nestedEx.name || 'Nieznane ćwiczenie'}</div>
+                        <div style="padding-left: 10px; border-left: 2px solid #E91E63;">
+                            ${(!nestedEx.sets || nestedEx.sets.length === 0) ? '<em style="color: #777;">Brak serii</em>' : ''}
+                            ${(nestedEx.sets || []).map((set, sIdx) => `<div>Seria ${sIdx + 1}: ${set.weight} kg x ${set.reps} powt.</div>`).join('')}
+                        </div>
+                    `;
+                });
+                html += `</div>`;
+            } else {
+                html += `
+                    <div style="margin-bottom: 10px; padding: 10px; background: rgba(255,255,255,0.05); border-radius: 5px;">
+                        <div style="color: #fff; font-weight: bold; margin-bottom: 5px;">${i+1}. ${ex.name || 'Nieznane ćwiczenie'}</div>
+                        <div style="padding-left: 10px; border-left: 2px solid #00BFFF;">
+                            ${(!ex.sets || ex.sets.length === 0) ? '<em style="color: #777;">Brak serii</em>' : ''}
+                            ${(ex.sets || []).map((set, sIdx) => `<div>Seria ${sIdx + 1}: ${set.weight} kg x ${set.reps} powt.</div>`).join('')}
+                        </div>
+                    </div>
+                `;
+            }
+        });
+
+        html += `
+                    <button onclick="document.getElementById('view-modal-overlay').remove()" class="action-button" style="width: 100%; margin-top: 20px; background: #555; border-color: #555; color: #fff;">Zamknij</button>
+                </div>
+            </div>
+        `;
+        const existingModal = document.getElementById('view-modal-overlay');
+        if (existingModal) existingModal.remove();
+        document.body.insertAdjacentHTML('beforeend', html);
+    },
+
+    startTraining: (copyFromIndex = null) => {
+        document.getElementById('training-calendar-view').style.display = 'none';
+        document.getElementById('active-training-view').style.display = 'block';
+        
+        currentTraining = {
+            date: selectedDate,
+            startTime: Date.now(),
+            exercises: [],
+            name: '',
+            type: 'strength',
+            isPaused: false,
+            pauseStartTime: null,
+            totalPausedTime: 0,
+            socialPhotos: [],
+            smartwatch: { calories: null, hr: null }
+        };
+
+        const typeSelect = document.getElementById('training-type-select');
+        if (typeSelect) typeSelect.value = 'strength';
+        TrainingUI.handleTypeChange('strength');
+        
+        const nameInput = document.getElementById('training-name-input');
+        if (nameInput) {
+            nameInput.value = '';
+            setTimeout(() => nameInput.focus(), 50);
+        }
+
+        const smartwatchHr = document.getElementById('smartwatch-hr');
+        const smartwatchCal = document.getElementById('smartwatch-calories');
+        if(smartwatchHr) smartwatchHr.value = '';
+        if(smartwatchCal) smartwatchCal.value = '';
+
+        if (copyFromIndex !== null && allTrainingsCache[copyFromIndex]) {
+            const rec = allTrainingsCache[copyFromIndex];
+            currentTraining.exercises = rec.exercises.map(ex => {
+                if (ex.type === 'superset') {
+                    return {
+                        id: Math.random().toString(36).substr(2, 9),
+                        type: 'superset',
+                        name: ex.name || '',
+                        exercises: (ex.exercises || []).map(nestedEx => ({
+                            id: Math.random().toString(36).substr(2, 9),
+                            type: nestedEx.type || 'strength',
+                            name: nestedEx.name || '',
+                            sets: (nestedEx.sets || []).map(s => ({ ...s, completed: false }))
+                        }))
+                    };
+                } else {
+                    return {
+                        id: Math.random().toString(36).substr(2, 9),
+                        type: ex.type || 'strength',
+                        name: ex.name || '',
+                        sets: (ex.sets || []).map(s => ({ ...s, completed: false }))
+                    };
+                }
+            });
+            if (rec.name && nameInput) {
+                currentTraining.name = rec.name;
+                nameInput.value = rec.name;
+            }
+        }
+        
+        // If empty, start with one empty exercise block
+        if (currentTraining.exercises.length === 0) {
+            TrainingUI.addExercise();
+        } else {
+            TrainingUI.renderCurrentExercises();
+        }
+
+        currentTraining.timerInterval = setInterval(TrainingUI.updateTimer, 1000);
+    },
+
+    addExercise: () => {
+        currentTraining.exercises.push({
+            id: Date.now().toString(),
+            type: 'strength',
+            name: '',
+            sets: []
+        });
+        TrainingUI.renderCurrentExercises();
+        
+        // Focus the newly added exercise name input
+        setTimeout(() => {
+            const inputs = document.querySelectorAll('.exercise-name-input');
+            if (inputs.length > 0) {
+                inputs[inputs.length - 1].focus();
+                inputs[inputs.length - 1].scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+        }, 100);
+    },
+    toggleSign: (inputId) => {
+        const el = document.getElementById(inputId);
+        if(el) {
+            let val = parseFloat(el.value || '0');
+            el.value = (val * -1).toString();
+        }
+    },
+
+    addSuperset: (exerciseId = null) => {
+        if (!exerciseId || typeof exerciseId !== 'string') {
+            // Default behavior - append to end (used by tests or global buttons)
+            currentTraining.exercises.push({
+                id: Date.now().toString(),
+                type: 'superset',
+                name: '',
+                exercises: [
+                    { id: Date.now().toString() + '-1', type: 'strength', name: '', sets: [] }
+                ]
+            });
+            TrainingUI.renderCurrentExercises();
+            return;
+        }
+
+        const index = currentTraining.exercises.findIndex(e => String(e.id) === String(exerciseId));
+        if (index > -1) {
+            const ex = currentTraining.exercises[index];
+            if (ex.type === 'superset') return; // already a superset
+            const supersetId = Date.now().toString();
+            const newEx = {
+                id: supersetId + '-1',
+                type: 'strength',
+                name: '',
+                sets: []
+            };
+            const supersetObj = {
+                id: supersetId,
+                type: 'superset',
+                name: '',
+                exercises: [ex, newEx]
+            };
+            currentTraining.exercises[index] = supersetObj;
+            TrainingUI.renderCurrentExercises();
+        }
+    },
+
+    addNestedSuperset: (supersetId) => {
+        const superset = currentTraining.exercises.find(e => String(e.id) === String(supersetId));
+        if (superset) {
+            superset.exercises.push({
+                id: Date.now().toString() + '-' + Math.random().toString(36).substr(2,5),
+                type: 'strength',
+                name: '',
+                sets: []
+            });
+            TrainingUI.renderCurrentExercises();
+        }
+    },
+
+    getExerciseById: (id) => {
+        for (let ex of currentTraining.exercises) {
+            if (String(ex.id) === String(id)) return ex;
+            if (ex.type === 'superset' && ex.exercises) {
+                const nested = ex.exercises.find(e => String(e.id) === String(id));
+                if (nested) return nested;
+            }
+        }
+        return null;
+    },
+
+    removeExercise: (exerciseId) => {
+        if (confirm("Na pewno usunąć to ćwiczenie?")) {
+            let foundInSuperset = false;
+            for (let i = 0; i < currentTraining.exercises.length; i++) {
+                const ex = currentTraining.exercises[i];
+                if (ex.type === 'superset' && ex.exercises) {
+                    const nestedIdx = ex.exercises.findIndex(e => String(e.id) === String(exerciseId));
+                    if (nestedIdx > -1) {
+                        ex.exercises.splice(nestedIdx, 1);
+                        if (ex.exercises.length === 0) {
+                            currentTraining.exercises.splice(i, 1);
+                        }
+                        foundInSuperset = true;
+                        break;
+                    }
+                }
+            }
+            if (!foundInSuperset) {
+                currentTraining.exercises = currentTraining.exercises.filter(e => String(e.id) !== String(exerciseId));
+            }
+            TrainingUI.saveDraft();
+            TrainingUI.renderCurrentExercises();
+        }
+    },
+
+    updateExerciseField: (exerciseId, field, value) => {
+        const exercise = TrainingUI.getExerciseById(exerciseId);
+        if (exercise) {
+            exercise[field] = value;
+        }
+    },
+
+    handleCopyCheckbox: (exerciseId, checked) => {
+        window.TrainingUI.updateExerciseField(exerciseId, 'autoCopy', checked);
+        if (checked) {
+            const exercise = TrainingUI.getExerciseById(exerciseId);
+            if (exercise && exercise.sets && exercise.sets.length > 0) {
+                const lastSet = exercise.sets[exercise.sets.length - 1];
+                const w = document.getElementById(`weight-${exerciseId}`);
+                const r = document.getElementById(`reps-${exerciseId}`);
+                if (w) w.value = lastSet.weight;
+                if (r) r.value = lastSet.reps;
+            }
+        }
+    },
+
+    startCardio: (exerciseId) => {
+        const exercise = TrainingUI.getExerciseById(exerciseId);
+        if (!exercise) return;
+        if (!exercise.cardioSeconds) exercise.cardioSeconds = 0;
+        if (exercise.cardioInterval) return; // already running
+
+        exercise.cardioInterval = setInterval(() => {
+            exercise.cardioSeconds++;
+            const display = document.getElementById(`cardio-display-${exerciseId}`);
+            if (display) {
+                display.innerText = window.TrainingUI.formatTime(exercise.cardioSeconds);
+            }
+            // Zapisujemy na żywo w minutach by backend chwycił
+            exercise.duration_minutes = Math.round(exercise.cardioSeconds / 60);
+        }, 1000);
+        
+        TrainingUI.renderCurrentExercises();
+    },
+
+    stopCardio: (exerciseId) => {
+        const exercise = TrainingUI.getExerciseById(exerciseId);
+        if (!exercise || !exercise.cardioInterval) return;
+        clearInterval(exercise.cardioInterval);
+        exercise.cardioInterval = null;
+        TrainingUI.renderCurrentExercises();
+    },
+
+    updateCardioManual: (exerciseId, minutes) => {
+        const exercise = TrainingUI.getExerciseById(exerciseId);
+        if (exercise) {
+            let m = parseInt(minutes, 10);
+            if (isNaN(m) || m < 0) m = 0;
+            exercise.cardioSeconds = m * 60;
+            exercise.duration_minutes = m;
+            TrainingUI.saveDraft();
+        }
+    },
+
+    addSet: (exerciseId, isDropset = false) => {
+        try {
+            const exercise = TrainingUI.getExerciseById(exerciseId);
+            if (!exercise) return;
+
+            const bodyweightKeywords = ['brzuch', 'brzus', 'podciąg', 'podciag', 'pompk', 'plank', 'deska', 'drąż', 'draz'];
+            const isBodyweight = exercise.name && bodyweightKeywords.some(kw => exercise.name.toLowerCase().includes(kw));
+
+            let wVal = "0";
+            let rVal = "0";
+
+            // Kopiuj ostatnią serię TYLKO jeśli autoCopy jest włączone
+            if (exercise.autoCopy && exercise.sets && exercise.sets.length > 0) {
+                const lastSet = exercise.sets[exercise.sets.length - 1];
+                wVal = String(lastSet.weight ?? "0");
+                rVal = String(lastSet.reps ?? "0");
+            } else if (!exercise.autoCopy) {
+                // Nowa seria zawsze zaczyna się pusta gdy autoCopy wyłączone
+                wVal = "";
+                rVal = "";
+            }
+
+            const newSet = {
+                weight: parseFloat(wVal) || 0,
+                reps: parseInt(rVal, 10) || 0,
+                type: isDropset ? 'dropset' : 'normal'
+            };
+            
+            // 1RM & PR Logic
+            if (!isBodyweight && newSet.weight > 0 && newSet.reps > 0) {
+                const current1RM = newSet.weight * (1 + (newSet.reps / 30));
+                let maxHistorical1RM = 0;
+                
+                if (exercise.name && allTrainingsCache) {
+                    const exNameLower = exercise.name.toLowerCase().trim();
+                    allTrainingsCache.forEach(t => {
+                        if (t.exercises && Array.isArray(t.exercises)) {
+                            t.exercises.forEach(e => {
+                                const checkExercise = (ex) => {
+                                    if (ex && ex.name && ex.name.toLowerCase().trim() === exNameLower && Array.isArray(ex.sets)) {
+                                        ex.sets.forEach(s => {
+                                            const s1RM = (s.weight || 0) * (1 + ((s.reps || 0) / 30));
+                                            if (s1RM > maxHistorical1RM) maxHistorical1RM = s1RM;
+                                        });
+                                    }
+                                };
+                                if (e && e.type === 'superset' && Array.isArray(e.exercises)) {
+                                    e.exercises.forEach(checkExercise);
+                                } else {
+                                    checkExercise(e);
+                                }
+                            });
+                        }
+                    });
+                }
+                
+                // Check within current training as well, in case they did multiple sets today
+                if (Array.isArray(exercise.sets)) {
+                    exercise.sets.forEach(s => {
+                        const s1RM = (s.weight || 0) * (1 + ((s.reps || 0) / 30));
+                        if (s1RM > maxHistorical1RM) maxHistorical1RM = s1RM;
+                    });
+                }
+                
+                if (current1RM > maxHistorical1RM && maxHistorical1RM > 0) {
+                    newSet.isPR = true;
+                    if (window.ChatUI) {
+                        window.ChatUI.showContextualBubble(`🏆 Nowy Rekord Życiowy (PR)! 💪 Świetna forma, idziesz jak czołg! 🐗🔥`);
+                    }
+                } else if (maxHistorical1RM === 0) {
+                    newSet.isPR = true; 
+                }
+            }
+
+            if (!Array.isArray(exercise.sets)) {
+                exercise.sets = [];
+            }
+            exercise.sets.push(newSet);
+
+            TrainingUI.renderCurrentExercises();
+            TrainingUI.saveDraft(); 
+
+            // Refill the inputs if autoCopy is enabled
+            if (exercise.autoCopy) {
+                setTimeout(() => {
+                    const w = document.getElementById(`weight-${exerciseId}`);
+                    const r = document.getElementById(`reps-${exerciseId}`);
+                    if(w) w.value = wVal; // use parsed wVal, not weightInput.value which might be detached
+                    if(r) r.value = rVal;
+                }, 50);
+            } else {
+                setTimeout(() => {
+                    const w = document.getElementById(`weight-${exerciseId}`);
+                    const r = document.getElementById(`reps-${exerciseId}`);
+                    if(w) w.value = '';
+                    if(r) r.value = '';
+                }, 50);
+            }
+        } catch (error) {
+            console.error("Error in addSet:", error);
+            alert("Błąd podczas dodawania serii: " + error.message);
+        }
+    },
+
+    removeSet: (exerciseId, setIndex) => {
+        const exercise = TrainingUI.getExerciseById(exerciseId);
+        if (exercise) {
+            exercise.sets.splice(setIndex, 1);
+            TrainingUI.renderCurrentExercises();
+            TrainingUI.saveDraft();
+        }
+    },
+
+    toggleSetCompletion: (exerciseId, setIndex, isCompleted) => {
+        const exercise = TrainingUI.getExerciseById(exerciseId);
+        if (exercise && exercise.sets[setIndex]) {
+            exercise.sets[setIndex].isCompleted = isCompleted;
+            TrainingUI.renderCurrentExercises();
+        }
+    },
+
+    updateSetInline: (exerciseId, setIndex, field, value) => {
+        const exercise = TrainingUI.getExerciseById(exerciseId);
+        if (exercise && exercise.sets[setIndex]) {
+            exercise.sets[setIndex][field] = parseFloat(value) || 0;
+            TrainingUI.saveDraft();
+        }
+    },
+
+    updateSetStepper: (exerciseId, setIndex, delta) => {
+        const exercise = TrainingUI.getExerciseById(exerciseId);
+        if (exercise && exercise.sets[setIndex]) {
+            let newVal = parseInt(exercise.sets[setIndex].reps) + delta;
+            if (newVal < 0) newVal = 0;
+            exercise.sets[setIndex].reps = newVal;
+            
+            // Update DOM element directly
+            const inputEl = document.getElementById(`exp-reps-${exerciseId}-${setIndex}`);
+            if (inputEl) inputEl.value = newVal;
+            
+            TrainingUI.saveDraft();
+            if (window.navigator && window.navigator.vibrate) window.navigator.vibrate(20);
+        }
+    },
+
+    renderCurrentExercises: () => {
+        const list = document.getElementById('current-exercises-list');
+        if (currentTraining.exercises.length === 0) {
+            list.innerHTML = '';
+            return;
+        }
+
+        let html = '';
+
+        // Helper to render a single flat exercise block
+        const renderExBlock = (ex, isInsideSuperset = false) => {
+            const setsCount = (ex.sets || []).filter(s => s.type !== 'dropset').length;
+            
+            html += `
+                <div style="margin-bottom: ${isInsideSuperset ? '0' : '30px'};">
+                    <div style="margin-bottom: 10px;">
+                        <textarea class="exercise-name-input" placeholder="Wpisz nazwę..." onchange="window.TrainingUI.updateExerciseField('${ex.id}', 'name', this.value); window.TrainingUI.renderCurrentExercises();" style="width: 100%; background: transparent; border: none; color: #FFF; font-size: 26px; font-weight: 800; letter-spacing: -0.5px; outline: none; padding: 0; margin-bottom: 5px; resize: none; text-align: center; overflow: hidden; line-height: 1.2;" rows="2">${ex.name}</textarea>
+                        <div style="color: #888; font-size: 14px; margin-bottom: 12px;">${setsCount} serie</div>
+                        
+                        <div style="display: flex; gap: 8px; margin-bottom: 15px; width: 100%;">
+                            <!-- Katalog -->
+                            <button onclick="window.TrainingUI.openExerciseSelector('${ex.id}')" style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; color: #FFF; padding: 8px 12px; font-size: 13px; font-weight: 500; display: flex; align-items: center; justify-content: center; flex: 1; gap: 6px; cursor: pointer;">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20"/></svg>
+                                Katalog
+                            </button>
+                            
+                            <!-- Typ treningu -->
+                            <button onclick="window.TrainingUI.toggleExerciseType('${ex.id}')" style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; color: #FFF; padding: 8px 12px; font-size: 13px; font-weight: 500; display: flex; align-items: center; justify-content: center; flex: 1; gap: 6px; cursor: pointer;">
+                                ${ex.type === 'classes' ? '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5a2 2 0 1 0 0-4 2 2 0 0 0 0 4z"/><path d="M5 19l4-6V8l-4 3"/><path d="M19 19l-4-6V8l4 3"/><path d="M15 22H9"/></svg> Zajęcia' : (ex.type === 'cardio' ? '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5a2 2 0 1 0 0-4 2 2 0 0 0 0 4z"/><path d="M16 11l-3 4-2-2-4 5"/><path d="M4 17l3-4"/></svg> Cardio' : '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 9v6"/><path d="M9 7v10"/><path d="M15 7v10"/><path d="M19 9v6"/><path d="M9 12h6"/></svg> Siłowy')}
+                            </button>
+                            
+                            <!-- Aparat -->
+                            <label style="cursor: pointer; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; color: #FFF; padding: 8px 12px; display: flex; align-items: center; justify-content: center; flex: 1;">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3"/></svg>
+                                <input type="file" accept="image/*" style="display: none;" onchange="window.TrainingUI.handleTrainingPhoto(event)">
+                            </label>
+                            
+                            <!-- Kosz -->
+                            <button onclick="window.TrainingUI.removeExercise('${ex.id}')" style="background: rgba(255,69,58,0.1); border: 1px solid rgba(255,69,58,0.3); border-radius: 8px; color: #FF453A; padding: 8px 12px; display: flex; align-items: center; justify-content: center; flex: 1; cursor: pointer;">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/></svg>
+                            </button>
+                        </div>
+                    </div>`;
+
+            if (ex.type === 'cardio') {
+                const cTime = ex.cardioSeconds || (ex.duration_minutes ? ex.duration_minutes * 60 : 0);
+                html += `
+                    <div style="background: #1C1C1E; border-radius: 16px; padding: 20px; text-align: center;">
+                        <div style="color: #888; font-size: 13px; margin-bottom: 10px;">Czas trwania (Stoper lub wpisz ręcznie)</div>
+                        <div style="font-size: 36px; color: #00D26A; font-family: monospace; font-weight: 700; display: ${ex.cardioInterval ? 'block' : 'none'};" id="cardio-display-${ex.id}">${window.TrainingUI.formatTime(cTime)}</div>
+                        <div style="display: ${ex.cardioInterval ? 'none' : 'flex'}; align-items: center; justify-content: center; gap: 5px;">
+                            <input type="number" id="cardio-manual-min-${ex.id}" value="${Math.floor(cTime/60)}" onchange="window.TrainingUI.updateCardioManual('${ex.id}', this.value)" style="width: 80px; padding: 10px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1); background: #2C2C2E; color: #FFF; font-size: 24px; text-align: center; font-weight: 700;" inputmode="numeric">
+                            <span style="color: #888; font-size: 16px;">min</span>
+                        </div>
+                        <div style="display: flex; gap: 10px; justify-content: center; margin-top: 20px;">
+                            <button id="cardio-btn-start-${ex.id}" onclick="window.TrainingUI.startCardio('${ex.id}')" style="background: #00D26A; color: #000; border: none; padding: 12px 24px; border-radius: 8px; font-weight: 700; cursor: pointer; ${ex.cardioInterval ? 'opacity: 0.5;' : ''}">Start</button>
+                            <button id="cardio-btn-stop-${ex.id}" onclick="window.TrainingUI.stopCardio('${ex.id}')" style="background: rgba(231,76,60,0.1); color: #E74C3C; border: none; padding: 12px 24px; border-radius: 8px; font-weight: 700; cursor: pointer; ${!ex.cardioInterval ? 'opacity: 0.5;' : ''}">Stop</button>
+                        </div>
+                    </div>`;
+            } else {
+                // Wrapper for Sets exactly like the mockup: A single dark #1C1C1E card
+                html += `<div style="background: #1C1C1E; border-radius: 16px; display: flex; flex-direction: column; overflow: hidden; margin-bottom: 15px;">`;
+                let seriesCount = 0;
+                (ex.sets || []).forEach((set, i) => {
+                    const isDropset = set.type === 'dropset';
+                    if (!isDropset) seriesCount++;
+                    const rowStyle = isDropset ? 'padding-left: 20px;' : '';
+                    
+                    const borderBottom = i < (ex.sets.length - 1) ? 'border-bottom: 1px solid rgba(255,255,255,0.05);' : '';
+
+                    html += `
+                        <div style="display: flex; align-items: center; justify-content: space-between; padding: 15px; ${borderBottom} ${rowStyle} ${set.isCompleted ? 'background: rgba(0, 210, 106, 0.05); box-shadow: inset 2px 0 0 #00D26A;' : ''}">
+                            <div style="display: flex; align-items: center; gap: 15px; flex: 1;">
+                                <!-- Checkbox circle -->
+                                <div onclick="window.TrainingUI.toggleSetCompletion('${ex.id}', ${i}, ${!set.isCompleted})" style="width: 24px; height: 24px; border-radius: 50%; border: 1px solid #555; display: flex; align-items: center; justify-content: center; cursor: pointer; background: ${set.isCompleted ? '#00D26A' : 'transparent'}; border-color: ${set.isCompleted ? '#00D26A' : '#555'}; color: #000; font-weight: bold; font-size: 14px;; flex-shrink: 0;"></div>
+                                
+                                <div style="display: flex; align-items: center; gap: 10px; flex: 1; justify-content: flex-start;">
+                                    <div style="display: flex; flex-direction: column; align-items: center;">
+                                        <div style="background: #2C2C2E; border-radius: 8px; padding: 8px 16px; display: flex; align-items: center; min-width: 90px; justify-content: center;">
+                                            <input type="number" value="${set.weight || ''}" placeholder="Ciężar (kg)" onchange="window.TrainingUI.updateSetInline('${ex.id}', ${i}, 'weight', this.value)" style="width: 100%; background: transparent; border: none; color: ${isDropset ? '#FF9800' : '#888'}; font-size: 16px; font-weight: 500; text-align: center; padding: 0; outline: none;" inputmode="decimal">
+                                        </div>
+                                        <span style="color: #666; font-size: 11px; margin-top: 4px;">(Max: ~33 kg)</span>
+                                    </div>
+                                    <span style="color: #666; font-size: 16px; font-weight: 300; margin-bottom: 15px;">×</span>
+                                    <div style="display: flex; flex-direction: column; align-items: center;">
+                                        <div style="background: #2C2C2E; border-radius: 8px; padding: 8px 16px; display: flex; align-items: center; min-width: 90px; justify-content: center;">
+                                            <input type="number" value="${set.reps || ''}" placeholder="Powtórzenia" onchange="window.TrainingUI.updateSetInline('${ex.id}', ${i}, 'reps', this.value)" style="width: 100%; background: transparent; border: none; color: #888; font-size: 16px; font-weight: 500; text-align: center; padding: 0; outline: none;" inputmode="numeric">
+                                        </div>
+                                        <span style="visibility: hidden; font-size: 11px; margin-top: 4px;">Spacer</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <button onclick="window.TrainingUI.removeSet('${ex.id}', ${i})" style="background: transparent; border: none; color: #555; font-size: 20px; cursor: pointer; padding: 5px 10px; margin-bottom: 15px;"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/></svg></button>
+                        </div>`;
+                });
+                html += `</div>`; // End sets dark card wrapper
+
+                // Buttons OUTSIDE the card
+                html += `
+                    <div style="display: flex; gap: 6px; flex-wrap: nowrap; overflow-x: auto; padding-bottom: 5px;">
+                        <button onclick="window.TrainingUI.addSet('${ex.id}', false)" style="background: #FFF; color: #000; border: none; border-radius: 8px; padding: 8px 12px; font-size: 13px; white-space: nowrap; flex: 1; justify-content: center; font-weight: 700; cursor: pointer;">[ + Seria ]</button>
+                        <button onclick="window.TrainingUI.addSet('${ex.id}', true)" style="background: #1C1C1E; color: #FFF; border: none; border-radius: 8px; padding: 8px 12px; font-size: 13px; white-space: nowrap; flex: 1; justify-content: center; font-weight: 500; cursor: pointer; display: flex; align-items: center; gap: 6px;">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/></svg> Dropset
+                        </button>
+                        ${!isInsideSuperset ? `
+                            <button onclick="window.TrainingUI.addSuperset('${ex.id}')" style="background: #1C1C1E; color: #FFF; border: none; border-radius: 8px; padding: 8px 12px; font-size: 13px; white-space: nowrap; flex: 1; justify-content: center; font-weight: 500; cursor: pointer; display: flex; align-items: center; gap: 6px;">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg> Superseria
+                            </button>
+                        ` : ''}
+                    </div>`;
+                
+                // Minimalist auto-copy
+                html += `
+                    <div style="margin-top: 15px; display: flex; align-items: center; gap: 8px;">
+                        <input type="checkbox" onchange="window.TrainingUI.handleCopyCheckbox('${ex.id}', this.checked)" ${ex.autoCopy ? 'checked' : ''} style="accent-color: #FFF; width: 16px; height: 16px;">
+                        <span style="color: #666; font-size: 12px;">Auto-kopiuj z poprzedniej serii</span>
+                    </div>`;
+            }
+
+            html += `</div>`; // End exercise block
+        }; // end renderExBlock
+
+        // MAIN LOOP — handles flat exercises AND nested superset objects
+        currentTraining.exercises.forEach((ex) => {
+            if (ex.type === 'superset' && Array.isArray(ex.exercises)) {
+                // Superset group: render a pink bordered card wrapping all exercises inside
+                html += `
+                    <div style="margin-bottom: 24px; position: relative; border: 2px solid #E91E63; border-radius: 16px; padding: 36px 16px 16px 16px; background: rgba(233,30,99,0.05);">
+                        <div style="position: absolute; top: -13px; left: 16px; background: #E91E63; color: #FFF; padding: 4px 14px; font-size: 11px; font-weight: 800; border-radius: 20px; text-transform: uppercase; letter-spacing: 1px; z-index: 10; display: flex; align-items: center; gap: 4px;">
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg> Superseria
+                        </div>
+                        <button onclick="window.TrainingUI.removeExercise('${ex.id}')" style="position: absolute; top: 10px; right: 14px; background: transparent; border: none; color: #666; cursor: pointer;">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/></svg>
+                        </button>`;
+                ex.exercises.forEach((subEx, subIdx) => {
+                    if (subIdx > 0) {
+                        html += `<div style="height: 2px; background: rgba(233,30,99,0.3); margin: 16px 0; border-radius: 2px;"></div>`;
+                    }
+                    renderExBlock(subEx, true);
+                });
+                html += `</div>`; // end superset pink card
+            } else {
+                // Normal flat exercise
+                renderExBlock(ex, false);
+            }
+        });
+
+        list.innerHTML = html;
+    },
+
+    handleTrainingPhoto: async (event) => {
+        const file = event.target.files[0];
+        if (!file) return;
+        if (!currentTraining.socialPhotos) currentTraining.socialPhotos = [];
+        if (currentTraining.socialPhotos.length >= 3) {
+            alert("Możesz dodać maksymalnie 3 zdjęcia z treningu!");
+            return;
+        }
+
+        TrainingUI.compressImage(file, async (compressedDataUrl) => {
+            try {
+                const id = await MediaManager.saveMedia(compressedDataUrl);
+                currentTraining.socialPhotos.push(id);
+                TrainingUI.renderTrainingPhotos();
+            } catch(e) {
+                alert("Błąd zapisu zdjęcia: " + e.message);
+            }
+        });
+    },
+
+    removeTrainingPhoto: (index) => {
+        if(currentTraining.socialPhotos) {
+            currentTraining.socialPhotos.splice(index, 1);
+            TrainingUI.renderTrainingPhotos();
+        }
+    },
+
+    renderTrainingPhotos: () => {
+        const list = document.getElementById('training-social-photos-list');
+        if (!list) return;
+        list.innerHTML = '';
+        if (currentTraining.socialPhotos && currentTraining.socialPhotos.length > 0) {
+            currentTraining.socialPhotos.forEach((photoId, index) => {
+                const imgWrap = document.createElement('div');
+                imgWrap.style.position = 'relative';
+                
+                const img = document.createElement('img');
+                img.style.width = '60px';
+                img.style.height = '60px';
+                img.style.objectFit = 'cover';
+                img.style.borderRadius = '8px';
+                
+                MediaManager.getMediaUrl(photoId).then(url => {
+                    if (url) img.src = url;
+                });
+
+                const delBtn = document.createElement('button');
+                delBtn.innerText = 'X';
+                delBtn.style.position = 'absolute';
+                delBtn.style.top = '-5px';
+                delBtn.style.right = '-5px';
+                delBtn.style.background = 'red';
+                delBtn.style.color = 'white';
+                delBtn.style.border = 'none';
+                delBtn.style.borderRadius = '50%';
+                delBtn.style.width = '20px';
+                delBtn.style.height = '20px';
+                delBtn.style.fontSize = '10px';
+                delBtn.onclick = () => window.TrainingUI.removeTrainingPhoto(index);
+
+                imgWrap.appendChild(img);
+                imgWrap.appendChild(delBtn);
+                list.appendChild(imgWrap);
+            });
+        }
+    },
+
+    handleTypeChange: (type) => {
+        if (!currentTraining) return;
+        currentTraining.type = type;
+        const exercisesContainer = document.getElementById('exercises-container-section');
+        const classContainer = document.getElementById('class-type-container');
+        
+        if (exercisesContainer && classContainer) {
+            if (type === 'strength') {
+                exercisesContainer.style.display = 'block';
+                classContainer.style.display = 'none';
+            } else if (type === 'cardio') {
+                exercisesContainer.style.display = 'none';
+                classContainer.style.display = 'none';
+            } else if (type === 'class') {
+                exercisesContainer.style.display = 'none';
+                classContainer.style.display = 'block';
+            }
+        }
+    },
+
+    handleClassChange: (className) => {
+        if (!currentTraining) return;
+        if (className === 'custom') {
+            const customName = prompt("Wpisz nazwę zajęć:");
+            if (customName) {
+                currentTraining.name = customName;
+                const nameInput = document.getElementById('training-name-input');
+                if (nameInput) nameInput.value = customName;
+            }
+        } else {
+            currentTraining.name = className;
+            const nameInput = document.getElementById('training-name-input');
+            if (nameInput) nameInput.value = className;
+        }
+    },
+
+    finishTraining: async () => {
+        if(confirm("Czy na pewno chcesz zakończyć i zapisać ten trening?")) {
+            if (currentTraining.timerInterval) {
+                clearInterval(currentTraining.timerInterval);
+            }
+
+            if (currentTraining.isPaused) {
+                currentTraining.totalPausedTime += (Date.now() - currentTraining.pauseStartTime);
+            }
+
+            let duration = Math.floor((Date.now() - currentTraining.startTime - currentTraining.totalPausedTime) / 1000);
+            
+            const manualToggle = document.getElementById('manual-duration-toggle');
+            if (manualToggle && manualToggle.checked) {
+                const hoursInput = document.getElementById('manual-training-hours');
+                const minutesInput = document.getElementById('manual-training-minutes');
+                const hrs = hoursInput ? parseInt(hoursInput.value, 10) || 0 : 0;
+                const mins = minutesInput ? parseInt(minutesInput.value, 10) || 0 : 0;
+                if (hrs > 0 || mins > 0) {
+                    duration = (hrs * 3600) + (mins * 60);
+                }
+            }
+            
+            // Flush pending exercise names
+            document.querySelectorAll('.exercise-name-input').forEach(input => {
+                input.blur(); // Force onchange if pending
+            });
+
+            // Flush pending sets if they didn't click + Seria (auto-add)
+            currentTraining.exercises.forEach(ex => {
+                const processEx = (exercise) => {
+                    const wInput = document.getElementById(`weight-${exercise.id}`);
+                    const rInput = document.getElementById(`reps-${exercise.id}`);
+                    if (wInput && rInput && wInput.value && rInput.value) {
+                        // Auto-add the set if they typed it but forgot to click +
+                        exercise.sets = exercise.sets || [];
+                        exercise.sets.push({
+                            weight: parseFloat(wInput.value) || 0,
+                            reps: parseInt(rInput.value, 10) || 0,
+                            type: 'normal'
+                        });
+                        wInput.value = '';
+                        rInput.value = '';
+                    }
+                };
+                if (ex.type === 'superset' && Array.isArray(ex.exercises)) {
+                    ex.exercises.forEach(processEx);
+                } else {
+                    processEx(ex);
+                }
+            });
+
+            // Filter out empty exercises, supporting nested supersets without throwing TypeError
+            const validExercises = currentTraining.exercises.filter(ex => {
+                if (ex.type === 'superset' && Array.isArray(ex.exercises)) {
+                    return ex.exercises.some(subEx => (subEx.name && subEx.name.trim() !== '') || (Array.isArray(subEx.sets) && subEx.sets.length > 0));
+                }
+                return (ex.name && ex.name.trim() !== '') || (Array.isArray(ex.sets) && ex.sets.length > 0);
+            });
+
+            const nameInput = document.getElementById('training-name-input');
+            const trainingName = nameInput ? nameInput.value.trim() : '';
+
+            const calInput = document.getElementById('smartwatch-calories');
+            const hrInput = document.getElementById('smartwatch-hr');
+            if ((calInput && calInput.value) || (hrInput && hrInput.value)) {
+                if (!currentTraining.smartwatch) currentTraining.smartwatch = {};
+                if (calInput && calInput.value) currentTraining.smartwatch.calories = parseInt(calInput.value, 10);
+                if (hrInput && hrInput.value) currentTraining.smartwatch.hr = parseInt(hrInput.value, 10);
+            }
+
+            // Safety cleanup for cardioIntervals to avoid circular reference crashes in DB storage
+            currentTraining.exercises.forEach(ex => {
+                if (ex.cardioInterval) {
+                    clearInterval(ex.cardioInterval);
+                    delete ex.cardioInterval;
+                }
+            });
+
+            // Zapisz własne ćwiczenia do prywatnego katalogu
+            let customExercises = [];
+            try { customExercises = JSON.parse(localStorage.getItem('uki_custom_exercises') || '[]'); } catch(e) {}
+            const allKnownExercises = new Set([...ExerciseCatalog, ...customExercises]);
+            let addedNew = false;
+            
+            const processCustomExercise = (name) => {
+                const n = name && name.trim();
+                if (n && !allKnownExercises.has(n)) {
+                    customExercises.push(n);
+                    allKnownExercises.add(n);
+                    addedNew = true;
+                }
+            };
+            
+            validExercises.forEach(ex => {
+                if (ex.type === 'superset' && Array.isArray(ex.exercises)) {
+                    ex.exercises.forEach(subEx => processCustomExercise(subEx.name));
+                } else {
+                    processCustomExercise(ex.name);
+                }
+            });
+            
+            if (addedNew) {
+                localStorage.setItem('uki_custom_exercises', JSON.stringify(customExercises));
+            }
+
+            // Ensure exercises_json doesn't break if validExercises is empty
+            const exercisesToSave = validExercises.length > 0 ? validExercises : [];
+
+            try {
+                if (currentTraining.id) {
+                    await DatabaseManager.updateTraining({
+                        id: currentTraining.id,
+                        date: currentTraining.date,
+                        duration_seconds: duration,
+                        exercises: exercisesToSave,
+                        name: trainingName,
+                        type: currentTraining.type || 'strength',
+                        socialPhotos: currentTraining.socialPhotos,
+                        smartwatch: currentTraining.smartwatch
+                    });
+                } else {
+                    await DatabaseManager.addTraining({
+                        date: currentTraining.date,
+                        duration_seconds: duration,
+                        exercises: exercisesToSave,
+                        name: trainingName,
+                        type: currentTraining.type || 'strength',
+                        socialPhotos: currentTraining.socialPhotos,
+                        smartwatch: currentTraining.smartwatch
+                    });
+                }
+                
+                if (currentTraining.templateId) {
+                    if (confirm("Ten trening został utworzony z szablonu. Czy zapisać wprowadzone modyfikacje (ćwiczenia, serie, ciężary) z powrotem do szablonu? Zmiany zostaną uwzględnione w przyszłych treningach w kalendarzu.")) {
+                        let templates = TrainingUI.getTemplates();
+                        const templateIndex = templates.findIndex(t => String(t.id) === String(currentTraining.templateId));
+                        if (templateIndex > -1) {
+                            templates[templateIndex].exercises = JSON.parse(JSON.stringify(exercisesToSave));
+                            templates[templateIndex].name = trainingName;
+                            templates[templateIndex].type = currentTraining.type || 'strength';
+                            localStorage.setItem('uki_workout_templates', JSON.stringify(templates));
+                        }
+                    }
+                }
+                
+                if (window.AchievementsSystem) {
+                    window.AchievementsSystem.checkPostTrainingAchievements({
+                        exercises: exercisesToSave
+                    });
+                }
+                
+                TrainingUI.clearDraft(); // Czyścimy brudnopis po sukcesie
+                alert("Trening zapisany pomyślnie!");
+                
+                // Hide active view and show calendar
+                document.getElementById('active-training-view').style.display = 'none';
+                document.getElementById('training-calendar-view').style.display = 'block';
+                TrainingUI.loadHistoryAndCalendar();
+
+                // Trener Edward AI - Gratulacje
+                setTimeout(async () => {
+                    if (window.ChatUI && window.DatabaseManager) {
+                        try {
+                            const trainings = await window.DatabaseManager.getTrainings();
+                            const count = trainings.length;
+                            if (count === 1) {
+                                window.ChatUI.showContextualBubble("Świetna robota z pierwszym treningiem! Oby tak dalej! 💪", true);
+                            } else if (count % 7 === 0) {
+                                window.ChatUI.showContextualBubble(`Niesamowite! Masz już na koncie ${count} treningów! Konsekwencja to klucz do sukcesu! 🏆`, true);
+                            } else if (Math.random() > 0.7) {
+                                window.ChatUI.showContextualBubble("Dobra robota dzisiaj! Odpocznij, zjedz coś zdrowego i wracaj silniejszy! 🚀", true);
+                            }
+                        } catch(e) { console.error(e) }
+                    }
+                }, 1500);
+
+            } catch (err) {
+                console.error("Error saving training:", err);
+                alert("Wystąpił błąd podczas zapisu treningu! (Prawdopodobnie limit miejsca - disk I/O). Trening został zachowany w pamięci jako szkic.");
+                
+                // Awaryjne zrzucenie treningu do logów i pliku lokalnego
+                try {
+                    localStorage.setItem('uki_active_training_draft', JSON.stringify({
+                        ...currentTraining, 
+                        isCrashRecovery: true,
+                        crashError: err.toString()
+                    }));
+                } catch(e) {}
+                
+                if (window.ukiLogError) {
+                    window.ukiLogError("KRYTYCZNY Błąd podczas zapisu w finishTraining", err ? err.stack || err.toString() : '');
+                } else {
+                    // Fallback jeśli ukiLogError nie istnieje
+                    console.error("KRYTYCZNY Błąd:", err);
+                }
+                
+                alert("Wystąpił błąd podczas zapisywania treningu! Bez obaw - twoje dane zostały zrzucone jako kopia zapasowa do pamięci i będziesz mógł je przywrócić po odświeżeniu aplikacji.");
+                return; // Przerwij żeby nie znikał ekran (nie przełączaj widoków)
+            }
+
+            document.getElementById('active-training-view').style.display = 'none';
+            document.getElementById('training-calendar-view').style.display = 'block';
+            TrainingUI.loadHistoryAndCalendar();
+        }
+    },
+
+    // Funkcja kompresji zdjęć — używana przez handleTrainingPhoto i SettingsUI (tapeta)
+    compressImage: (file, callback) => {
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onload = (event) => {
+            const img = new Image();
+            img.src = event.target.result;
+            img.onload = () => {
+                const canvas = document.createElement('canvas');
+                const MAX = 1200;
+                let w = img.width, h = img.height;
+                if (w > MAX) { h = Math.round(h * MAX / w); w = MAX; }
+                if (h > MAX) { w = Math.round(w * MAX / h); h = MAX; }
+                canvas.width = w; canvas.height = h;
+                canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+                callback(canvas.toDataURL('image/jpeg', 0.82));
+            };
+        };
+        reader.onerror = () => callback(null);
+    }
+};
+
+window.TrainingUI = TrainingUI;

@@ -1,0 +1,24 @@
+{
+    "name": "Uki's BodyBuild",
+    "short_name": "Uki's BodyBuild",
+    "description": "Profesjonalne narzędzie do monitorowania postępów sylwetkowych.",
+    "start_url": "./index.html",
+    "display": "standalone",
+    "version": "v1.0.0",
+    "background_color": "#121212",
+    "theme_color": "#00BFFF",
+    "orientation": "any",
+    "scope": "./",
+    "icons": [
+        {
+            "src": "img/logo.png",
+            "sizes": "192x192",
+            "type": "image/png"
+        },
+        {
+            "src": "img/logo.png",
+            "sizes": "512x512",
+            "type": "image/png"
+        }
+    ]
+}
