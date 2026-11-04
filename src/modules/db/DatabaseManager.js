@@ -209,6 +209,16 @@ export const DatabaseManager = {
                 // column might already exist
             }
         }
+
+        await DatabaseManager.ensureSourceColumn();
+    },
+
+    // Kolumna `source` (np. 'zeszyt') — dodawana tylko gdy jej brak, żeby nie sypać błędów "duplicate column" w konsoli.
+    ensureSourceColumn: async () => {
+        const info = await sendMessage('exec', { sql: `PRAGMA table_info(trainings)`, rowMode: 'object' });
+        if (!info.result.some(col => col.name === 'source')) {
+            await sendMessage('exec', { sql: `ALTER TABLE trainings ADD COLUMN source TEXT` });
+        }
     },
 
     addMeasurement: async (data) => {
@@ -236,7 +246,7 @@ export const DatabaseManager = {
     addTraining: async (data) => {
         await DatabaseManager.init();
         const response = await sendMessage('exec', {
-            sql: `INSERT INTO trainings (date, duration_seconds, exercises_json, name, type, social_photos_json, smartwatch_json) VALUES (?, ?, ?, ?, ?, ?, ?)`,
+            sql: `INSERT INTO trainings (date, duration_seconds, exercises_json, name, type, social_photos_json, smartwatch_json, source) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
             bind: [
                 data.date, 
                 isNaN(data.duration_seconds) ? 0 : data.duration_seconds, 
@@ -244,7 +254,8 @@ export const DatabaseManager = {
                 data.name || '',
                 data.type || 'strength',
                 data.socialPhotos ? JSON.stringify(data.socialPhotos) : null,
-                data.smartwatch ? JSON.stringify(data.smartwatch) : null
+                data.smartwatch ? JSON.stringify(data.smartwatch) : null,
+                data.source ?? null
             ],
             needLastInsertId: true
         });
@@ -254,7 +265,7 @@ export const DatabaseManager = {
     updateTraining: async (data) => {
         await DatabaseManager.init();
         await sendMessage('exec', {
-            sql: `UPDATE trainings SET duration_seconds = ?, exercises_json = ?, name = ?, type = ?, social_photos_json = ?, smartwatch_json = ? WHERE id = ?`,
+            sql: `UPDATE trainings SET duration_seconds = ?, exercises_json = ?, name = ?, type = ?, social_photos_json = ?, smartwatch_json = ?, source = COALESCE(?, source) WHERE id = ?`,
             bind: [
                 isNaN(data.duration_seconds) ? 0 : data.duration_seconds, 
                 JSON.stringify(data.exercises),
@@ -262,6 +273,7 @@ export const DatabaseManager = {
                 data.type || 'strength',
                 data.socialPhotos ? JSON.stringify(data.socialPhotos) : null,
                 data.smartwatch ? JSON.stringify(data.smartwatch) : null,
+                data.source ?? null,
                 data.id
             ]
         });
@@ -274,12 +286,43 @@ export const DatabaseManager = {
             sql: `SELECT * FROM trainings ORDER BY date DESC, created_at DESC`,
             rowMode: 'object'
         });
-        return response.result.map(row => ({
-            ...row,
-            exercises: JSON.parse(row.exercises_json),
-            socialPhotos: row.social_photos_json ? JSON.parse(row.social_photos_json) : [],
-            smartwatch: row.smartwatch_json ? JSON.parse(row.smartwatch_json) : { calories: null, hr: null }
-        }));
+        return response.result.map(DatabaseManager._mapTrainingRow);
+    },
+
+    _mapTrainingRow: (row) => ({
+        ...row,
+        exercises: JSON.parse(row.exercises_json),
+        socialPhotos: row.social_photos_json ? JSON.parse(row.social_photos_json) : [],
+        smartwatch: row.smartwatch_json ? JSON.parse(row.smartwatch_json) : { calories: null, hr: null }
+    }),
+
+    // Kartka Zeszytu z danego dnia (trening z source = 'zeszyt') albo null.
+    getNotebookTraining: async (date) => {
+        await DatabaseManager.init();
+        const response = await sendMessage('exec', {
+            sql: `SELECT * FROM trainings WHERE date = ? AND source = 'zeszyt' ORDER BY id LIMIT 1`,
+            bind: [date],
+            rowMode: 'object'
+        });
+        return response.result.length ? DatabaseManager._mapTrainingRow(response.result[0]) : null;
+    },
+
+    // id === null → nowa kartka (zwraca nowe id); inaczej aktualizuje listę ćwiczeń kartki i zwraca id.
+    saveNotebookTraining: async ({ id, date, exercises }) => {
+        await DatabaseManager.init();
+        if (id === null) {
+            const response = await sendMessage('exec', {
+                sql: `INSERT INTO trainings (date, duration_seconds, exercises_json, name, type, source) VALUES (?, 0, ?, 'Zeszyt', 'strength', 'zeszyt')`,
+                bind: [date, JSON.stringify(exercises)],
+                needLastInsertId: true
+            });
+            return response.lastInsertId;
+        }
+        await sendMessage('exec', {
+            sql: `UPDATE trainings SET exercises_json = ? WHERE id = ?`,
+            bind: [JSON.stringify(exercises), id]
+        });
+        return id;
     },
 
     deleteTraining: async (id) => {
@@ -493,7 +536,7 @@ export const DatabaseManager = {
                 let swJson = t.smartwatch ? JSON.stringify(t.smartwatch) : (t.smartwatch_json || null);
                 
                 queries.push({
-                    sql: `INSERT INTO trainings (id, date, duration_seconds, exercises_json, name, type, social_photos_json, smartwatch_json) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+                    sql: `INSERT INTO trainings (id, date, duration_seconds, exercises_json, name, type, social_photos_json, smartwatch_json, source) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
                     bind: [
                         t.id, 
                         t.date, 
@@ -502,7 +545,8 @@ export const DatabaseManager = {
                         t.name,
                         t.type || 'strength',
                         spJson,
-                        swJson
+                        swJson,
+                        t.source ?? null
                     ].map(v => v === undefined ? null : v)
                 });
             });

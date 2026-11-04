@@ -19,6 +19,7 @@ let currentMonth = new Date().getMonth();
 let currentYear = new Date().getFullYear();
 let trainingDates = new Set(); // Stores dates in YYYY-MM-DD format
 let allTrainingsCache = [];
+const NOTEBOOK_ICON_SVG = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 6h4"/><path d="M2 10h4"/><path d="M2 14h4"/><path d="M2 18h4"/><rect width="16" height="20" x="4" y="2" rx="2"/><path d="M16 2v20"/></svg>';
 let selectedDate = new Date().toISOString().split('T')[0];
 
 export const TrainingUI = {
@@ -864,6 +865,19 @@ export const TrainingUI = {
             if (existingPreview) {
                 let html = '';
                 existingTrainingsOnDay.forEach(existingTraining => {
+                    if (existingTraining.source === 'zeszyt') {
+                        html += `
+                        <div style="background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); backdrop-filter: blur(10px); margin-bottom: 15px; border-radius: 12px; padding: 15px; text-align: left; box-shadow: 0 4px 6px rgba(0,0,0,0.3);">
+                            <strong style="color: #00BFFF; font-size: 1.1em; display: inline-flex; align-items: center; gap: 8px;">${NOTEBOOK_ICON_SVG}Zeszyt</strong><br>
+                            <span style="font-size: 0.8em; color: #888;">Liczba ćwiczeń: ${existingTraining.exercises.length}</span>
+                            <div style="margin-top: 10px; display: flex; gap: 8px;">
+                                <button data-testid="open-in-notebook" onclick="window.NotebookUI.openDay('${existingTraining.date}')" class="action-button" style="flex: 2; background: rgba(0, 191, 255, 0.15); border: 1px solid rgba(0, 191, 255, 0.4); color: #00BFFF; border-radius: 8px; font-size: 0.9em; padding: 8px; backdrop-filter: blur(5px);">Otwórz w Zeszycie</button>
+                                <button onclick="window.TrainingUI.deleteTraining(${existingTraining.id})" class="action-button" style="flex: 1; background: rgba(231, 76, 60, 0.15); border: 1px solid rgba(231, 76, 60, 0.4); color: #e74c3c; border-radius: 8px; font-size: 0.9em; padding: 8px; backdrop-filter: blur(5px);"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:4px; vertical-align:middle;"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/></svg>Usuń</button>
+                            </div>
+                        </div>
+                        `;
+                        return;
+                    }
                     const nameDisplay = existingTraining.name ? `<strong style="color: #00BFFF; font-size: 1.1em;">${existingTraining.name}</strong><br>` : '';
                     html += `
                         <div style="background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); backdrop-filter: blur(10px); margin-bottom: 15px; border-radius: 12px; padding: 15px; text-align: left; box-shadow: 0 4px 6px rgba(0,0,0,0.3);">
@@ -887,12 +901,16 @@ export const TrainingUI = {
             if (historyList) {
                 // Build recent history for copying
                 let historyHtml = '<h5 style="color: #ccc; margin-bottom: 10px; display: flex; align-items: center; gap: 8px;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1" ry="1"/></svg> Ostatnie treningi (wybierz, aby skopiować na dziś):</h5>';
-                const recentTrainings = allTrainingsCache.slice(0, 5); // Take last 5
+                // Kartki Zeszytu nie nadają się do kopiowania; indeks z pełnej listy zostaje dla startTraining/toggleHistoryPreview.
+                const recentTrainings = allTrainingsCache
+                    .map((rec, cacheIdx) => ({ rec, cacheIdx }))
+                    .filter(({ rec }) => rec.source !== 'zeszyt')
+                    .slice(0, 5); // Take last 5
                 
                 if (recentTrainings.length === 0) {
                     historyHtml += `<p style="color: #888; font-size: 0.9em; font-style: italic;">Brak sesji w historii do skopiowania.</p>`;
                 } else {
-                    recentTrainings.forEach((rec, idx) => {
+                    recentTrainings.forEach(({ rec, cacheIdx: idx }) => {
                         const nameDisplay = rec.name ? `<strong style="color: #00BFFF; font-size: 1.1em;">${rec.name}</strong> <span style="color: #aaa; font-size: 0.9em;">(${rec.date})</span>` : `<strong style="color: #00BFFF; font-size: 1.1em;">${rec.date}</strong>`;
                         
                         let exercisesPreview = '';

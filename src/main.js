@@ -16,6 +16,7 @@ import { AiAnalyticsUI } from './modules/ui/AiAnalyticsUI.js';
 import { TemplateBuilderUI } from './modules/ui/TemplateBuilderUI.js';
 import { NumpadUI } from './modules/ui/NumpadUI.js';
 import { BackupUI } from './modules/ui/BackupUI.js';
+import { NotebookUI } from './modules/notebook/NotebookUI.js';
 
 window.ukiLogError = (msg, stack) => {
     let logs = [];
@@ -53,6 +54,7 @@ window.DatabaseManager = DatabaseManager;
 window.APP_VERSION = APP_VERSION;
 window.AiAnalyticsUI = AiAnalyticsUI;
 window.DietUI = DietUI;
+window.NotebookUI = NotebookUI;
 
 // Initialize Application
 const initApp = () => {
@@ -74,6 +76,7 @@ const initApp = () => {
     
     MeasurementsUI.init();
     TrainingUI.init();
+    NotebookUI.init();
     window.SettingsUI = SettingsUI;
     SettingsUI.init();
     HistoryUI.init();

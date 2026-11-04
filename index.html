@@ -9,7 +9,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="description" content="Aplikacja dla dzików, by uki. Dźwigaj i rośnij!">
     <meta name="theme-color" content="#FF9800" />
-    <meta name="app-version" content="v2026.11.3.01">
+    <meta name="app-version" content="v2026.11.3.02">
     <title>Uki's BodyBuild</title>
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="styles/glassmorphism.css">
@@ -396,6 +396,8 @@
                 
                 <div id="training-dashboard" class="tab-content" style="display: none;">
                 </div>
+
+                <div id="notebook-dashboard" class="tab-content" style="display: none;"></div>
 
                 <div id="template-builder-dashboard" class="tab-content" style="display: none;">
                 </div>
@@ -840,6 +842,10 @@
             <div class="nav-btn" onclick="switchTab('training-dashboard')">
                 <div class="nav-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6.5 6.5 11 11"/><path d="m21 21-1-1"/><path d="m3 3 1 1"/><path d="m18 22 4-4"/><path d="m2 6 4-4"/><path d="m3 10 7-7"/><path d="m14 21 7-7"/></svg></div>
                 <span>Trening</span>
+            </div>
+            <div class="nav-btn" onclick="switchTab('notebook-dashboard')">
+                <div class="nav-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 6h4"/><path d="M2 10h4"/><path d="M2 14h4"/><path d="M2 18h4"/><rect width="16" height="20" x="4" y="2" rx="2"/><path d="M16 2v20"/></svg></div>
+                <span>Zeszyt</span>
             </div>
             <div class="nav-btn" onclick="switchTab('settings-panel')">
                 <div class="nav-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></div>
