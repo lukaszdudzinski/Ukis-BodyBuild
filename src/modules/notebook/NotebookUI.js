@@ -7,6 +7,7 @@ import {
     parseReps, parseWeight, toExercisesJson, fromExercisesJson, localDateStr, shiftDate, formatDayLabel,
 } from './notebookModel.js';
 import { buildSuggestionSource, suggest } from './exerciseSuggest.js';
+import { DEFAULT_SETTINGS, loadSettings, saveSettings } from './notebookSettings.js';
 
 const TAB = 'notebook-dashboard';
 const SAVE_DELAY = 400;
@@ -40,6 +41,7 @@ const state = {
     failed: new Set(),     // dni, których ostatni zapis się nie udał
     loadSeq: 0,
     loadPromise: Promise.resolve(),
+    settings: { ...DEFAULT_SETTINGS }, // co „+ seria” przepisuje z poprzedniej serii (okienko pod kołem zębatym)
 };
 
 const root = () => document.getElementById(TAB);
@@ -90,6 +92,29 @@ function renderList(focus = null) {
             input.scrollIntoView({ block: 'nearest' });
         }
     }
+}
+
+// ---------- okienko „Nowa seria” (koło zębate; poza .nb-list, więc rysowanie listy go nie niszczy) ----------
+
+const settingsPanel = () => q('[data-testid="nb-settings-panel"]');
+const settingsOpen = () => { const p = settingsPanel(); return !!p && !p.hidden; };
+
+function setSettingsOpen(open) {
+    const panel = settingsPanel();
+    const gear = q('[data-testid="nb-settings"]');
+    if (!panel || !gear) return;
+    if (!open && panel.contains(document.activeElement)) gear.focus(); // fokus nie ginie razem z okienkiem
+    panel.hidden = !open;
+    gear.setAttribute('aria-expanded', String(open));
+}
+
+function renderSettings() {
+    root().querySelectorAll('[data-option]').forEach((box) => { box.checked = !!state.settings[box.dataset.option]; });
+}
+
+function onSettingChange(box) {
+    state.settings = { ...state.settings, [box.dataset.option]: box.checked };
+    saveSettings(state.settings);
 }
 
 function showSuggestions(value) {
@@ -286,7 +311,7 @@ function commitName(raw) {
     const name = String(raw ?? '').trim();
     let focus = null;
     if (name && ed.id === null) {
-        const r = addExercise(state.page, name, newId());
+        const r = addExercise(state.page, name, newId(), state.settings);
         state.page = r.page;
         state.lastExerciseId = r.exerciseId;
         const ex = r.page.exercises.find((e) => e.id === r.exerciseId);
@@ -318,7 +343,7 @@ function onAddSet() {
     if (!state.page || !state.page.exercises.length) return;
     const ids = state.page.exercises.map((e) => e.id);
     const exId = ids.includes(state.lastExerciseId) ? state.lastExerciseId : ids[ids.length - 1];
-    const r = addSet(state.page, exId);
+    const r = addSet(state.page, exId, state.settings);
     if (r.setIndex < 0) return;
     state.page = r.page;
     state.lastExerciseId = exId;
@@ -386,7 +411,9 @@ function onClick(e) {
     const t = e.target.closest('[data-testid]');
     if (!t || !root().contains(t)) return;
     const id = t.dataset.testid;
-    if (id === 'nb-prev' || id === 'nb-next') {
+    if (id === 'nb-settings') {
+        setSettingsOpen(!settingsOpen());
+    } else if (id === 'nb-prev' || id === 'nb-next') {
         if (state.date) changeDay(shiftDate(state.date, id === 'nb-prev' ? -1 : 1));
     } else if (id === 'nb-date') {
         try { t.showPicker(); } catch (err) { /* iOS otwiera wybór sam */ }
@@ -441,6 +468,8 @@ export const NotebookUI = {
         const el = root();
         if (!el) return;
         el.innerHTML = NotebookComponent.render();
+        state.settings = loadSettings();
+        renderSettings();
 
         el.addEventListener('click', onClick);
         el.addEventListener('keydown', onKeyDown);
@@ -461,6 +490,7 @@ export const NotebookUI = {
             const id = e.target.dataset.testid;
             if (id === 'nb-reps' || id === 'nb-weight') flush();
             else if (id === 'nb-date') changeDay(e.target.value);
+            else if (e.target.dataset.option) onSettingChange(e.target);
         });
         el.addEventListener('focusin', (e) => {
             const row = e.target.closest('[data-testid="nb-set"]');
@@ -473,7 +503,21 @@ export const NotebookUI = {
             commitName(e.target.value);
         });
 
+        // Okienko zamyka stuknięcie poza nim (i poza kołem, które samo je przełącza) oraz Escape.
+        document.addEventListener('pointerdown', (e) => {
+            if (!settingsOpen()) return;
+            const t = e.target;
+            if (t instanceof Node && (settingsPanel().contains(t) || q('[data-testid="nb-settings"]').contains(t))) return;
+            setSettingsOpen(false);
+        }, true);
+        document.addEventListener('keydown', (e) => {
+            if (e.key !== 'Escape' || !settingsOpen()) return;
+            setSettingsOpen(false);
+            e.stopPropagation(); // Escape zamyka tylko okienko (nie anuluje np. wpisywanej nazwy ćwiczenia)
+        }, true);
+
         document.addEventListener('tabChanged', (e) => {
+            setSettingsOpen(false);
             if (e.detail && e.detail.tab === TAB) enter();
         });
         // Zapis przed zamknięciem / schowaniem aplikacji (iPhone: przełączenie aplikacji, zablokowanie ekranu).

@@ -18,25 +18,32 @@ const cloneExercise = (e) => ({ id: e.id, name: e.name, sets: e.sets.map(cloneSe
 const withExtra = (next, page) => (page.extra && page.extra.length ? { ...next, extra: page.extra } : next);
 const clonePage = (page) => withExtra({ exercises: page.exercises.map(cloneExercise) }, page);
 
-// Powtórzenia podpowiadane z ostatniej serii, która je ma (szkice null pomijamy).
-function suggestedReps(sets) {
+// Ostatnia nie-null wartość pola z serii ćwiczenia (szkice null pomijamy).
+function lastValue(sets, field) {
   for (let i = sets.length - 1; i >= 0; i--) {
-    if (sets[i].reps !== null && sets[i].reps !== undefined) return sets[i].reps;
+    if (sets[i][field] !== null && sets[i][field] !== undefined) return sets[i][field];
   }
   return null;
 }
 
-export function addSet(page, exerciseId) {
+const DEFAULT_COPY = { copyReps: true, copyWeight: false };
+
+// options: { copyReps = true, copyWeight = false } — co skopiować z poprzednich serii do nowej.
+export function addSet(page, exerciseId, options = DEFAULT_COPY) {
+  const { copyReps, copyWeight } = { ...DEFAULT_COPY, ...options };
   const next = clonePage(page);
   const ex = next.exercises.find((e) => e.id === exerciseId);
   if (!ex) return { page: next, exerciseId, setIndex: -1 };
-  ex.sets.push({ reps: suggestedReps(ex.sets), weight: null });
+  ex.sets.push({
+    reps: copyReps ? lastValue(ex.sets, 'reps') : null,
+    weight: copyWeight ? lastValue(ex.sets, 'weight') : null,
+  });
   return { page: next, exerciseId, setIndex: ex.sets.length - 1 };
 }
 
-export function addExercise(page, name, newId) {
+export function addExercise(page, name, newId, options) {
   const existing = page.exercises.find((e) => sameName(e.name, name));
-  if (existing) return addSet(page, existing.id);
+  if (existing) return addSet(page, existing.id, options);
   const next = clonePage(page);
   next.exercises.push({ id: newId, name: String(name).trim(), sets: [{ reps: null, weight: null }] });
   return { page: next, exerciseId: newId, setIndex: 0 };

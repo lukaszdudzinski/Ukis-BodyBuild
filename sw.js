@@ -1,4 +1,4 @@
-const CACHE_NAME = 'ukis-bodybuild-v2026.11.4.01'; // deployed: 2026-08-27T00:01
+const CACHE_NAME = 'ukis-bodybuild-v2026.11.4.02'; // deployed: 2026-08-27T00:01
 const OWN_CACHE_PREFIXES = ['ukis-bodybuild-', 'uki-bodybuild-']; // własne cache (także historyczne uki-bodybuild-v2026.8.x); cudze cache w domenie zostają
 // Core assets that MUST be cached immediately
 const CORE_ASSETS = [
@@ -22,6 +22,7 @@ const CORE_ASSETS = [
     './src/components/NotebookComponent.js',
     './src/modules/notebook/NotebookUI.js',
     './src/modules/notebook/notebookModel.js',
+    './src/modules/notebook/notebookSettings.js',
     './src/modules/notebook/exerciseSuggest.js',
     './src/modules/ui/LogbookUI.js',
     './src/modules/ui/ChangelogUI.js',

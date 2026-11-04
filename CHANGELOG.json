@@ -1,5 +1,12 @@
 [
   {
+    "version": "v2026.11.4.02",
+    "date": "2026-11-04",
+    "changes": [
+      "📓 Zeszyt na cały ekran: podpisane serie, czerwony przycisk „+ seria” i koło zębate, w którym ustawisz kopiowanie powtórzeń i ciężaru z poprzedniej serii."
+    ]
+  },
+  {
     "version": "v2026.11.4.01",
     "date": "2026-11-04",
     "changes": [
