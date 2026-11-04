@@ -6,6 +6,8 @@
 (function() {
     window.PWAUpdateUI = {
         pwaWorker: null,
+        // Aktualizacja tylko na żądanie: przeładowanie po zmianie workera wyłącznie po kliknięciu „Zaktualizuj”
+        userClickedUpdate: false,
         
         init: () => {
             if (!('serviceWorker' in navigator)) return;
@@ -61,6 +63,7 @@
         },
 
         doPwaUpdate: async () => {
+            window.PWAUpdateUI.userClickedUpdate = true;
             if (window.PWAUpdateUI.pwaWorker) {
                 window.PWAUpdateUI.pwaWorker.postMessage('SKIP_WAITING');
                 setTimeout(async () => {
@@ -87,10 +90,10 @@
                 }
             });
 
-            // Kiedy nowy SW przejmuje kontrole - restart
+            // Nowy SW przejął kontrolę po kliknięciu „Zaktualizuj”: restart. Bez kliknięcia nic nie przeładowujemy.
             let refreshing = false;
             navigator.serviceWorker.addEventListener('controllerchange', () => {
-                if (!refreshing) {
+                if (!refreshing && window.PWAUpdateUI.userClickedUpdate) {
                     refreshing = true;
                     window.location.reload(true);
                 }

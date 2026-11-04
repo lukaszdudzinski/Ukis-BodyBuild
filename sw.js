@@ -1,4 +1,4 @@
-const CACHE_NAME = 'ukis-bodybuild-v2026.11.3.02'; // deployed: 2026-08-27T00:01
+const CACHE_NAME = 'ukis-bodybuild-v2026.11.4.01'; // deployed: 2026-08-27T00:01
 const OWN_CACHE_PREFIXES = ['ukis-bodybuild-', 'uki-bodybuild-']; // własne cache (także historyczne uki-bodybuild-v2026.8.x); cudze cache w domenie zostają
 // Core assets that MUST be cached immediately
 const CORE_ASSETS = [
@@ -50,8 +50,8 @@ const CORE_ASSETS = [
     './libs/sqlite/sqlite3.js'
 ];
 
+// Bez skipWaiting(): nowa wersja czeka, aż użytkownik sam kliknie „Zaktualizuj” (AGENTS.md, zasada 3).
 self.addEventListener('install', (e) => {
-    self.skipWaiting();
     e.waitUntil(
         caches.open(CACHE_NAME).then((cache) => {
             return Promise.all(CORE_ASSETS.map(url => fetch(new Request(url + '?_t=' + Date.now(), { cache: 'no-store' })).then(r => { if(!r.ok) throw new Error('Fetch failed'); return cache.put(new Request(url), r); })));
@@ -60,7 +60,6 @@ self.addEventListener('install', (e) => {
 });
 
 self.addEventListener('activate', (e) => {
-    e.waitUntil(self.clients.claim());
     e.waitUntil(
         caches.keys().then((keyList) => {
             return Promise.all(keyList.map((key) => {
@@ -68,9 +67,8 @@ self.addEventListener('activate', (e) => {
                     return caches.delete(key);
                 }
             }));
-        })
+        }).then(() => self.clients.claim())
     );
-    return self.clients.claim(); // Take control of all clients immediately
 });
 
 self.addEventListener('fetch', (e) => {
