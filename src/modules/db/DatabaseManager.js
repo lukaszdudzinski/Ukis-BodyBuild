@@ -86,7 +86,7 @@ export const DatabaseManager = {
         initPromise = new Promise(async (resolve, reject) => {
             try {
                 if (!worker) {
-                    worker = new Worker(new URL('./dbWorker.js?v=15', import.meta.url));
+                    worker = new Worker(new URL('./dbWorker.js?v=16', import.meta.url));
                     worker.onmessage = (e) => {
                         const { id, success, result, lastInsertId, error } = e.data;
                         if (resolvers[id]) {
@@ -108,6 +108,8 @@ export const DatabaseManager = {
                 resolve(true);
             } catch (err) {
                 console.error('Failed to initialize SQLite Worker:', err);
+                // Bez tego jedna nieudana próba (np. plik bazy chwilowo zajęty) blokowałaby bazę do przeładowania.
+                initPromise = null;
                 reject(err);
             }
         });

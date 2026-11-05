@@ -1,5 +1,12 @@
 [
   {
+    "version": "v2026.11.4.03",
+    "date": "2026-11-04",
+    "changes": [
+      "🛡️ Bezpieczniejszy zapis danych: gdy zapis na telefonie się nie uda, zobaczysz błąd zamiast „zapisano”, a ponowne otwarcie aplikacji nie wymaże już wcześniejszych wpisów."
+    ]
+  },
+  {
     "version": "v2026.11.4.02",
     "date": "2026-11-04",
     "changes": [
