@@ -1,6 +1,6 @@
 import { PremiumUI } from "./PremiumUI.js";
 
-export const APP_VERSION = 'v2026.11.4.03'; // Faza 6.2: Katalog z podziałem na partie i Fixy UI
+export const APP_VERSION = 'v2026.11.5.01'; // Faza 6.2: Katalog z podziałem na partie i Fixy UI
 
 // Obsługa błędów globalnych — zdefiniowana w main.js (klucz: uki_error_logs)
 
@@ -22,7 +22,7 @@ export const AppUI = {
         // Expose do global scope dla index.html
         window.APP_VERSION = APP_VERSION;
 
-        const versionDisplays = document.querySelectorAll('.version-info, .app-version-display, #dashboard-version');
+        const versionDisplays = document.querySelectorAll('.version-info, .app-version-display');
         
         const premiumStatus = PremiumUI.getTrialStatus();
         
@@ -44,6 +44,12 @@ export const AppUI = {
                 el.textContent = `${variantName} ${APP_VERSION}`;
             }
         });
+
+        // Stopka Menu: sam numer wersji + osobny napis wariantu (Heavy tylko z tokenem Pro, reszta to Light).
+        const dashVersion = document.getElementById('dashboard-version');
+        if (dashVersion) dashVersion.textContent = APP_VERSION;
+        const premiumLabel = document.getElementById('premium-status');
+        if (premiumLabel) premiumLabel.textContent = premiumStatus.isProToken ? 'Wersja Heavy' : 'Wersja Light';
 
         // CHANGELOG AUTO-SHOW LOGIC
         const lastSeen = localStorage.getItem('uki-bodybuild-last-version');

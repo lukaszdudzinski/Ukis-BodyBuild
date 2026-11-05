@@ -110,6 +110,10 @@ function setSettingsOpen(open) {
 
 function renderSettings() {
     root().querySelectorAll('[data-option]').forEach((box) => { box.checked = !!state.settings[box.dataset.option]; });
+    const size = state.settings.fontSize;
+    const sheet = q('.nb-sheet');
+    if (sheet) sheet.dataset.font = size;
+    root().querySelectorAll('[data-font-size]').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.fontSize === size)));
 }
 
 function onSettingChange(box) {
@@ -413,6 +417,10 @@ function onClick(e) {
     const id = t.dataset.testid;
     if (id === 'nb-settings') {
         setSettingsOpen(!settingsOpen());
+    } else if (t.dataset.fontSize) {
+        state.settings = { ...state.settings, fontSize: t.dataset.fontSize };
+        saveSettings(state.settings);
+        renderSettings();
     } else if (id === 'nb-prev' || id === 'nb-next') {
         if (state.date) changeDay(shiftDate(state.date, id === 'nb-prev' ? -1 : 1));
     } else if (id === 'nb-date') {
