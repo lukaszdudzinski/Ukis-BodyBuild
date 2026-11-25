@@ -3,6 +3,8 @@ export const OnboardingUI = {
     CLOSED_EVENT: 'onboardingClosed',
 
     init: () => {
+        // Powitanie należy do zainstalowanej aplikacji, nie do strony instalacji w przeglądarce.
+        if (window.UkiUiSwitch && !window.UkiUiSwitch.isAppMode()) return;
         // Główny wyzwalacz powitania
         if (localStorage.getItem('tutorial_global_v22') !== 'true') {
             // Okna startowe pokazują się kolejno: najpierw ewentualne powitanie nowego wyglądu (ui-switch.js).

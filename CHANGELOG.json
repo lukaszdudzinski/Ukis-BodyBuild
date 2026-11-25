@@ -1,5 +1,13 @@
 [
   {
+    "version": "v2026.11.25.01",
+    "date": "2026-11-25",
+    "changes": [
+      "🐛 Okno powitania pokazuje się dopiero w zainstalowanej aplikacji. Strona otwarta w przeglądarce pokazuje tylko instrukcję instalacji.",
+      "📲 Odświeżona instrukcja instalacji na stronie startowej: aktualne kroki dla iPhone’a z iOS 26 i dla Androida."
+    ]
+  },
+  {
     "version": "v2026.11.22.01",
     "date": "2026-11-22",
     "changes": [

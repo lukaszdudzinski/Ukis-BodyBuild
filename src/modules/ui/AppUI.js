@@ -1,6 +1,6 @@
 import { PremiumUI } from "./PremiumUI.js";
 
-export const APP_VERSION = 'v2026.11.22.01'; // Faza 6.2: Katalog z podziałem na partie i Fixy UI
+export const APP_VERSION = 'v2026.11.25.01'; // Faza 6.2: Katalog z podziałem na partie i Fixy UI
 
 // Obsługa błędów globalnych — zdefiniowana w main.js (klucz: uki_error_logs)
 
@@ -51,13 +51,16 @@ export const AppUI = {
         const premiumLabel = document.getElementById('premium-status');
         if (premiumLabel) premiumLabel.textContent = premiumStatus.isProToken ? 'Wersja Heavy' : 'Wersja Light';
 
-        // CHANGELOG AUTO-SHOW LOGIC
+        // CHANGELOG AUTO-SHOW LOGIC (tylko w zainstalowanej aplikacji; w karcie przeglądarki nic nie zapisujemy)
+        const appMode = !window.UkiUiSwitch || window.UkiUiSwitch.isAppMode();
         const lastSeen = localStorage.getItem('uki-bodybuild-last-version');
         // Powitanie Edwarda (OnboardingUI) jeszcze przed użytkownikiem.
         const onboardingPending = localStorage.getItem('tutorial_global_v22') !== 'true';
         // Nowa instalacja: nie ma czego pokazywać w „Co nowego?”, jedynym oknem jest powitanie Edwarda.
         const freshInstall = onboardingPending && lastSeen === null;
-        if (freshInstall) {
+        if (!appMode) {
+            // Strona instalacji: „Co nowego?” pokaże zainstalowana aplikacja.
+        } else if (freshInstall) {
             localStorage.setItem('uki-bodybuild-last-version', APP_VERSION);
         } else if (lastSeen !== APP_VERSION) {
             localStorage.setItem('uki-bodybuild-last-version', APP_VERSION);

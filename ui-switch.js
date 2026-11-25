@@ -15,6 +15,20 @@
         // true od startu strony, dopóki powitanie nowego wyglądu ma się pokazać albo jest otwarte.
         welcomePending: false,
 
+        // Aplikacja uruchomiona jako zainstalowana (PWA z ekranu początkowego). W zwykłej karcie przeglądarki
+        // index.html pokazuje stronę z instrukcją instalacji, więc okna startowe aplikacji się nie pokazują.
+        // navigator.webdriver: testy automatyczne działają jak aplikacja (tak samo jak w index.html).
+        isAppMode: function () {
+            try {
+                return window.matchMedia('(display-mode: standalone)').matches
+                    || window.navigator.standalone === true
+                    || navigator.webdriver === true
+                    || document.referrer.indexOf('android-app://') === 0;
+            } catch (e) {
+                return true;
+            }
+        },
+
         // Nowa instalacja: nikt tu jeszcze nie przeszedł powitania Edwarda ani nie widział żadnej wersji.
         // Taki użytkownik nie zna starego wyglądu, więc powitanie nowego wyglądu jest mu zbędne.
         isFreshInstall: function () {
@@ -197,6 +211,8 @@
         },
 
         init: function () {
+            // W karcie przeglądarki nic nie oceniamy i nic nie zapisujemy: zainstalowana aplikacja zacznie od powitania.
+            if (!this.isAppMode()) return;
             if (!this.isClassicPage()) {
                 // Ocena musi zapaść tutaj (skrypt w <head>), zanim AppUI zapisze bieżącą wersję.
                 if (this.isFreshInstall()) {
