@@ -1,5 +1,12 @@
 [
   {
+    "version": "v2026.11.25.02",
+    "date": "2026-11-25",
+    "changes": [
+      "🐛 Strona otwarta w przeglądarce (np. z linku w WhatsAppie) od razu pokazuje instrukcję instalacji: bez mignięcia aplikacji i bez okien o kopii zapasowej czy PRO."
+    ]
+  },
+  {
     "version": "v2026.11.25.01",
     "date": "2026-11-25",
     "changes": [

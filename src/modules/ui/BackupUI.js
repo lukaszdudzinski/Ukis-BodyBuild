@@ -6,6 +6,8 @@ export const BackupUI = {
     },
     
     checkDailyBackup: async () => {
+        // Strona instalacji w karcie przeglądarki: przypomnienie należy do zainstalowanej aplikacji.
+        if (window.UkiUiSwitch && !window.UkiUiSwitch.isAppMode()) return;
         const freq = localStorage.getItem('uki_backup_frequency') || 'activity';
         if (freq === 'never') return;
 
