@@ -17,6 +17,7 @@ import { TemplateBuilderUI } from './modules/ui/TemplateBuilderUI.js';
 import { NumpadUI } from './modules/ui/NumpadUI.js';
 import { BackupUI } from './modules/ui/BackupUI.js';
 import { NotebookUI } from './modules/notebook/NotebookUI.js';
+import { applyDefaultAvatar } from './modules/ui/defaultAvatar.js';
 
 window.ukiLogError = (msg, stack) => {
     let logs = [];
@@ -63,13 +64,20 @@ const initApp = () => {
     ChangelogUI.init();
     AppUI.init();
     
+    // Domyślna sylwetka SVG (odświeżana po zmianie nicku); własne zdjęcie poniżej ma pierwszeństwo.
+    applyDefaultAvatar();
+    document.addEventListener('nickUpdated', () => applyDefaultAvatar());
+
     // Set dynamic avatar
     const base64Id = localStorage.getItem('uki-bodybuild-avatar') || localStorage.getItem('uki-avatar');
     if (base64Id) {
         MediaManager.getMediaUrl(base64Id).then(url => {
             if (url) {
                 const img = document.getElementById('user-avatar-img');
-                if (img) img.src = url;
+                if (img) {
+                    img.src = url;
+                    img.dataset.avatarSource = 'photo';
+                }
             }
         }).catch(e => console.warn('Avatar err', e));
     }

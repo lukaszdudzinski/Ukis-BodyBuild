@@ -5,10 +5,36 @@
 (function () {
     const STORAGE_KEY = 'uki-ui-version';
     const WELCOME_KEY = 'uki-ui-welcome-seen';
+    const WELCOME_CLOSED_EVENT = 'ukiUiWelcomeClosed';
 
     const UkiUiSwitch = {
         STORAGE_KEY,
         WELCOME_KEY,
+        WELCOME_CLOSED_EVENT,
+
+        // true od startu strony, dopóki powitanie nowego wyglądu ma się pokazać albo jest otwarte.
+        welcomePending: false,
+
+        // Nowa instalacja: nikt tu jeszcze nie przeszedł powitania Edwarda ani nie widział żadnej wersji.
+        // Taki użytkownik nie zna starego wyglądu, więc powitanie nowego wyglądu jest mu zbędne.
+        isFreshInstall: function () {
+            try {
+                return localStorage.getItem('tutorial_global_v22') !== 'true'
+                    && localStorage.getItem('uki-bodybuild-last-version') === null;
+            } catch (e) {
+                return false;
+            }
+        },
+
+        // Wywołuje cb, gdy powitanie nowego wyglądu jest zamknięte (od razu, jeśli go nie będzie).
+        // Dzięki temu kolejne okna startowe (powitanie Edwarda, „Co nowego?”) nie nakładają się na nie.
+        whenWelcomeClosed: function (cb) {
+            if (!this.welcomePending) {
+                cb();
+                return;
+            }
+            document.addEventListener(WELCOME_CLOSED_EVENT, () => cb(), { once: true });
+        },
 
         getCurrentVersion: function () {
             try {
@@ -104,9 +130,13 @@
         showWelcomeModal: function () {
             // Pokazujemy tylko na nowym wyglądzie i tylko raz
             if (this.isClassicPage()) return;
+            let seen = true;
             try {
-                if (localStorage.getItem(WELCOME_KEY) === 'true') return;
-            } catch (e) {
+                seen = localStorage.getItem(WELCOME_KEY) === 'true';
+            } catch (e) {}
+            if (seen) {
+                // Np. zamknięte w innej karcie: nie każ następnym oknom czekać.
+                this.markWelcomeClosed();
                 return;
             }
 
@@ -145,6 +175,7 @@
             const dismiss = () => {
                 try { localStorage.setItem(WELCOME_KEY, 'true'); } catch (e) {}
                 modal.remove();
+                UkiUiSwitch.markWelcomeClosed();
             };
 
             const btnExplore = modal.querySelector('#btn-welcome-explore');
@@ -159,7 +190,25 @@
             }
         },
 
+        markWelcomeClosed: function () {
+            if (!this.welcomePending) return;
+            this.welcomePending = false;
+            document.dispatchEvent(new Event(WELCOME_CLOSED_EVENT));
+        },
+
         init: function () {
+            if (!this.isClassicPage()) {
+                // Ocena musi zapaść tutaj (skrypt w <head>), zanim AppUI zapisze bieżącą wersję.
+                if (this.isFreshInstall()) {
+                    try { localStorage.setItem(WELCOME_KEY, 'true'); } catch (e) {}
+                }
+                try {
+                    this.welcomePending = localStorage.getItem(WELCOME_KEY) !== 'true';
+                } catch (e) {
+                    this.welcomePending = false;
+                }
+            }
+
             // Auto-wywołanie powitania po załadowaniu drzewa DOM
             if (document.readyState === 'loading') {
                 document.addEventListener('DOMContentLoaded', () => {

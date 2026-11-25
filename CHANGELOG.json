@@ -1,5 +1,12 @@
 [
   {
+    "version": "v2026.11.22.01",
+    "date": "2026-11-22",
+    "changes": [
+      "🩹 Przy pierwszym uruchomieniu pokazuje się tylko jedno okno powitania, a pole na imię da się normalnie stuknąć i wpisać. 👤 Zamiast liter „UK” widać sylwetkę dopasowaną do imienia; w Profilu możesz ją zmienić ręcznie."
+    ]
+  },
+  {
     "version": "v2026.11.5.01",
     "date": "2026-11-05",
     "changes": [

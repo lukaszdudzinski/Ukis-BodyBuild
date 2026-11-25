@@ -1,6 +1,6 @@
 import { PremiumUI } from "./PremiumUI.js";
 
-export const APP_VERSION = 'v2026.11.5.01'; // Faza 6.2: Katalog z podziałem na partie i Fixy UI
+export const APP_VERSION = 'v2026.11.22.01'; // Faza 6.2: Katalog z podziałem na partie i Fixy UI
 
 // Obsługa błędów globalnych — zdefiniowana w main.js (klucz: uki_error_logs)
 
@@ -53,11 +53,17 @@ export const AppUI = {
 
         // CHANGELOG AUTO-SHOW LOGIC
         const lastSeen = localStorage.getItem('uki-bodybuild-last-version');
-        if (lastSeen !== APP_VERSION) {
+        // Powitanie Edwarda (OnboardingUI) jeszcze przed użytkownikiem.
+        const onboardingPending = localStorage.getItem('tutorial_global_v22') !== 'true';
+        // Nowa instalacja: nie ma czego pokazywać w „Co nowego?”, jedynym oknem jest powitanie Edwarda.
+        const freshInstall = onboardingPending && lastSeen === null;
+        if (freshInstall) {
+            localStorage.setItem('uki-bodybuild-last-version', APP_VERSION);
+        } else if (lastSeen !== APP_VERSION) {
             localStorage.setItem('uki-bodybuild-last-version', APP_VERSION);
             
             if (window.showChangelogModal) {
-                setTimeout(async () => {
+                AppUI.afterStartupOverlays(onboardingPending, () => setTimeout(async () => {
                     const btn = document.getElementById('changelog-update-now-btn');
                     if (btn) btn.style.display = 'none';
                     
@@ -84,13 +90,26 @@ export const AppUI = {
                     }
                     
                     window.showChangelogModal(compareVersion ? compareVersion : 'all');
-                }, 800);
+                }, 800));
             }
         }
 
         // Setup Nickname Welcome
         AppUI.updateWelcomeMessage();
         document.addEventListener('nickUpdated', AppUI.updateWelcomeMessage);
+    },
+
+    // Okna startowe pokazują się kolejno, nigdy naraz: powitanie nowego wyglądu (ui-switch.js)
+    // → powitanie Edwarda (OnboardingUI, zdarzenie 'onboardingClosed') → dopiero potem cb (np. „Co nowego?”).
+    afterStartupOverlays: (onboardingPending, cb) => {
+        if (onboardingPending) {
+            // Powitanie Edwarda samo czeka na powitanie nowego wyglądu, więc wystarczy czekać na nie.
+            document.addEventListener('onboardingClosed', () => cb(), { once: true });
+        } else if (window.UkiUiSwitch && typeof window.UkiUiSwitch.whenWelcomeClosed === 'function') {
+            window.UkiUiSwitch.whenWelcomeClosed(cb);
+        } else {
+            cb();
+        }
     },
 
     updateWelcomeMessage: () => {

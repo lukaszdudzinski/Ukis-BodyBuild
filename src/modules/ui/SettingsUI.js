@@ -1,6 +1,7 @@
 import { DatabaseManager } from '../db/DatabaseManager.js';
 import { MediaManager } from '../db/MediaManager.js';
 import { ShareUtils } from '../../utils/ShareUtils.js';
+import { applyDefaultAvatar, loadAvatarChoice, saveAvatarChoice } from './defaultAvatar.js';
 
 export const SettingsUI = {
     init: () => {
@@ -267,6 +268,15 @@ export const SettingsUI = {
             });
         }
 
+        const silhouetteSelect = document.getElementById('profile-avatar-silhouette');
+        if (silhouetteSelect) {
+            silhouetteSelect.value = loadAvatarChoice();
+            silhouetteSelect.addEventListener('change', (e) => {
+                saveAvatarChoice(e.target.value);
+                applyDefaultAvatar();
+            });
+        }
+
         const expSelect = document.getElementById('profile-experience-select');
         if (expSelect) {
             const savedExp = localStorage.getItem('trainingExperience') || '1-3 lata (Średniozaawansowany)';
@@ -387,6 +397,7 @@ export const SettingsUI = {
         const newAvatarImg = document.getElementById('user-avatar-img');
         if (newAvatarImg && avatarUrl) {
             newAvatarImg.src = avatarUrl;
+            newAvatarImg.dataset.avatarSource = 'photo';
         }
 
         // Create or update avatar in the header

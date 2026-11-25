@@ -9,7 +9,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="description" content="Aplikacja dla dzików, by uki. Dźwigaj i rośnij!">
     <meta name="theme-color" content="#FF9800" />
-    <meta name="app-version" content="v2026.11.5.01">
+    <meta name="app-version" content="v2026.11.22.01">
     <title>Uki's BodyBuild</title>
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="styles/glassmorphism.css">
@@ -317,11 +317,11 @@
                     <!-- Top Header -->
                     <div class="glass-header" style="margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; border: none; background: transparent; box-shadow: none;">
                         <div class="avatar-circle" onclick="switchTab('settings-panel')" style="width: 40px; height: 40px;">
-                            <img id="user-avatar-img" src="https://ui-avatars.com/api/?name=Uki&background=111&color=fff&rounded=true" alt="Avatar" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">
+                            <img id="user-avatar-img" alt="Awatar" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">
                         </div>
                         
                         <div style="display: flex; justify-content: center; align-items: center; flex: 1;">
-                            <img src="img/logo.png" alt="Logo" style="height: 75px; width: 75px; object-fit: contain; border-radius: 50%; border: 2px solid rgba(0, 191, 255, 0.4); background: rgba(0,0,0,0.5); box-shadow: 0 0 15px rgba(0, 191, 255, 0.6); animation: pulseGlowBlue 2s infinite alternate ease-in-out;" onerror="this.src='https://ui-avatars.com/api/?name=Uki&background=111&color=fff&rounded=true'"/>
+                            <img src="img/logo.png" alt="Logo" style="height: 75px; width: 75px; object-fit: contain; border-radius: 50%; border: 2px solid rgba(0, 191, 255, 0.4); background: rgba(0,0,0,0.5); box-shadow: 0 0 15px rgba(0, 191, 255, 0.6); animation: pulseGlowBlue 2s infinite alternate ease-in-out;"/>
                         </div>
                         
                         <div style="width: 40px; height: 40px; visibility: hidden;"><!-- Spacer for flex --></div>
@@ -632,6 +632,16 @@
                         <div style="margin-bottom: 15px;">
                             <label style="display: block; margin-bottom: 5px; color: #ccc;">Twój Nick:</label>
                             <input type="text" id="profile-nick-input" placeholder="Wpisz swój nick..." style="width: 100%; padding: 10px; border-radius: 4px; border: 1px solid #00BFFF; background: #222; color: #fff; box-sizing: border-box; font-size: 1.2em; font-weight: bold; text-align: center;">
+                        </div>
+
+                        <div style="margin-bottom: 15px;">
+                            <label for="profile-avatar-silhouette" style="display: block; margin-bottom: 5px; color: #ccc;">Sylwetka awatara:</label>
+                            <select id="profile-avatar-silhouette" style="width: 100%; padding: 10px; border-radius: 4px; border: 1px solid #00BFFF; background: #222; color: #fff; font-size: 1.1em; text-align: center;">
+                                <option value="auto">Automatycznie</option>
+                                <option value="male">Mężczyzna</option>
+                                <option value="female">Kobieta</option>
+                            </select>
+                            <p style="font-size: 0.8em; color: #888; margin-top: 5px;">Domyślny obrazek w Menu, gdy nie masz własnego zdjęcia. „Automatycznie” zgaduje po imieniu.</p>
                         </div>
 
                         <div style="margin-bottom: 20px;">
