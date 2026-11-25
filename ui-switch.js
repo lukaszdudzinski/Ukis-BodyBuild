@@ -85,10 +85,31 @@
             }
         },
 
+        // Strefa trenera istnieje tylko w nowym wyglądzie, więc przy włączonym „Jestem trenerem” nie ma przejścia na klasyczny.
+        isTrainerEnabled: function () {
+            try {
+                return localStorage.getItem('ukis.bodybuild.trener.wlaczony') === 'true';
+            } catch (e) {
+                return false;
+            }
+        },
+
         mountSettingsCard: function (container) {
             if (!container) return;
             // Unikaj duplikowania karty jeśli montowana wielokrotnie
             if (document.getElementById('uki-ui-switch-card')) return;
+
+            // Przełącznik „Jestem trenerem” w Profilu przebudowuje kartę od razu.
+            if (!this._trainerListener) {
+                this._trainerListener = true;
+                document.addEventListener('trainerAccessChanged', () => {
+                    const old = document.getElementById('uki-ui-switch-card');
+                    if (!old) return;
+                    const parent = old.parentNode;
+                    old.remove();
+                    UkiUiSwitch.mountSettingsCard(parent);
+                });
+            }
 
             const current = this.getCurrentVersion();
             const isClassic = current === 'classic';
@@ -123,6 +144,26 @@
                     </button>
                 </div>
             `;
+
+            if (this.isTrainerEnabled()) {
+                // Na classic.html zostaje przycisk powrotu do nowego wyglądu, inaczej trener nie miałby wyjścia.
+                const onClassicPage = this.isClassicPage();
+                card.innerHTML = `
+                    <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
+                        <span style="font-size: 1.4em;">🎨</span>
+                        <h4 style="margin: 0; color: #fff; font-size: 1.05em; font-weight: 700;">Styl i Wygląd Aplikacji</h4>
+                    </div>
+                    <p style="margin: 0; color: #bbb; font-size: 0.85em; line-height: 1.4;">Strefa trenera działa tylko w nowym wyglądzie.</p>
+                    ${onClassicPage ? `
+                    <button id="btn-switch-ui-new" style="margin-top: 14px; width: 100%; padding: 12px 10px; border-radius: 12px; font-weight: 700; font-size: 0.85em; cursor: pointer; border: 2px solid #00D26A; background: rgba(0, 210, 106, 0.2); color: #00D26A;">
+                        Nowy (Liquid Glass)
+                    </button>` : ''}
+                `;
+                container.appendChild(card);
+                const btnBack = card.querySelector('#btn-switch-ui-new');
+                if (btnBack) btnBack.addEventListener('click', () => UkiUiSwitch.switchTo('new'));
+                return;
+            }
 
             container.appendChild(card);
 
@@ -170,7 +211,7 @@
                     <p style="margin: 0 0 16px 0; color: #ccc; font-size: 0.92em; line-height: 1.5; text-align: left;">
                         Odświeżyliśmy interfejs aplikacji: zyskał nowoczesny styl <strong>iOS Glassmorphism</strong>, powiększone wektorowe ikony SVG oraz zunifikowaną siatkę kafelków.
                     </p>
-                    <div style="background: rgba(255, 255, 255, 0.05); border-left: 3px solid #FF9800; padding: 10px 14px; border-radius: 8px; margin-bottom: 22px; text-align: left; font-size: 0.85em; color: #bbb;">
+                    <div data-welcome-classic-hint style="background: rgba(255, 255, 255, 0.05); border-left: 3px solid #FF9800; padding: 10px 14px; border-radius: 8px; margin-bottom: 22px; text-align: left; font-size: 0.85em; color: #bbb;">
                         💡 <strong>Możesz wrócić w każdej chwili:</strong> Jeżeli wolisz klasyczny, ciemny widok, przełączysz go jednym kliknięciem w zakładce <strong>Profil → Ustawienia</strong>.
                     </div>
                     <div style="display: flex; flex-direction: column; gap: 10px;">
@@ -183,6 +224,14 @@
                     </div>
                 </div>
             `;
+
+            // Strefa trenera jest tylko w nowym wyglądzie: przy włączonym „Jestem trenerem” bez drogi do klasycznego.
+            if (this.isTrainerEnabled()) {
+                const toClassic = modal.querySelector('#btn-welcome-to-classic');
+                if (toClassic) toClassic.remove();
+                const hint = modal.querySelector('[data-welcome-classic-hint]');
+                if (hint) hint.remove();
+            }
 
             document.body.appendChild(modal);
 

@@ -16,7 +16,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="description" content="Aplikacja dla dzików, by uki. Dźwigaj i rośnij!">
     <meta name="theme-color" content="#FF9800" />
-    <meta name="app-version" content="v2026.11.25.02">
+    <meta name="app-version" content="v2026.11.25.03">
     <title>Uki's BodyBuild</title>
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="styles/glassmorphism.css">
@@ -24,6 +24,7 @@
     <link rel="manifest" href="manifest.json">
     <link rel="stylesheet" href="styles/lightbox.css">
     <link rel="stylesheet" href="styles/components/calendar.css">
+    <link rel="stylesheet" href="styles/trainer.css">
     <link rel="icon" type="image/png" href="img/logo.png">
     <link rel="apple-touch-icon" href="img/logo.png">
     <meta name="mobile-web-app-capable" content="yes">
@@ -337,7 +338,7 @@
                     </div>
 
                     <!-- Main CTA -->
-                    <div class="glass-card main-cta" onclick="switchTab('training-dashboard')" style="flex-shrink: 0; border: 1px solid rgba(255,255,255,0.05); border-radius: 16px; padding: 20px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center;">
+                    <div class="glass-card main-cta" data-sekcja="trening" onclick="switchTab('training-dashboard')" style="flex-shrink: 0; border: 1px solid rgba(255,255,255,0.05); border-radius: 16px; padding: 20px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center;">
                         <div class="cta-content" style="text-align: left;">
                             <h2 class="cta-title" style="color: #FFF; font-size: 20px; font-weight: 700; margin: 0;">Twój Trening</h2>
                             
@@ -350,42 +351,42 @@
 
                     <!-- Grid -->
                     <div class="glass-grid" style="flex-shrink: 0; display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px;">
-                        <div class="glass-card grid-item uniform-tool" onclick="switchTab('analytics-dashboard')" style="border: 1px solid rgba(255,255,255,0.05); border-radius: 16px; padding: 25px 15px; text-align: center;">
+                        <div class="glass-card grid-item uniform-tool" data-sekcja="analiza" onclick="switchTab('analytics-dashboard')" style="border: 1px solid rgba(255,255,255,0.05); border-radius: 16px; padding: 25px 15px; text-align: center;">
                             <div class="icon-box">
                                 <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="m19 9-5 5-4-4-3 3"/></svg>
                             </div>
                             <h3 style="color: #FFF; margin: 0 0 4px 0; font-size: 16px; font-weight: 600;">Analiza</h3>
                             
                         </div>
-                        <div class="glass-card grid-item uniform-tool" onclick="switchTab('history-dashboard')" style="border: 1px solid rgba(255,255,255,0.05); border-radius: 16px; padding: 25px 15px; text-align: center;">
+                        <div class="glass-card grid-item uniform-tool" data-sekcja="historia" onclick="switchTab('history-dashboard')" style="border: 1px solid rgba(255,255,255,0.05); border-radius: 16px; padding: 25px 15px; text-align: center;">
                             <div class="icon-box">
                                 <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="4" rx="2" ry="2"/><line x1="16" x2="16" y1="2" y2="6"/><line x1="8" x2="8" y1="2" y2="6"/><line x1="3" x2="21" y1="10" y2="10"/><path d="M8 14h.01"/><path d="M12 14h.01"/><path d="M16 14h.01"/><path d="M8 18h.01"/><path d="M12 18h.01"/><path d="M16 18h.01"/></svg>
                             </div>
                             <h3 style="color: #FFF; margin: 0 0 4px 0; font-size: 16px; font-weight: 600;">Historia</h3>
                             
                         </div>
-                        <div class="glass-card grid-item uniform-tool" onclick="switchTab('measurements-dashboard')" style="border: 1px solid rgba(255,255,255,0.05); border-radius: 16px; padding: 25px 15px; text-align: center;">
+                        <div class="glass-card grid-item uniform-tool" data-sekcja="pomiary" onclick="switchTab('measurements-dashboard')" style="border: 1px solid rgba(255,255,255,0.05); border-radius: 16px; padding: 25px 15px; text-align: center;">
                             <div class="icon-box">
                                 <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="12" rx="2"/><path d="M6 12h.01M10 12h.01M14 12h.01M18 12h.01"/></svg>
                             </div>
                             <h3 style="color: #FFF; margin: 0 0 4px 0; font-size: 16px; font-weight: 600;">Pomiary</h3>
                             
                         </div>
-                        <div class="glass-card grid-item uniform-tool" onclick="switchTab('diet-dashboard')" style="border: 1px solid rgba(255,255,255,0.05); border-radius: 16px; padding: 25px 15px; text-align: center;">
+                        <div class="glass-card grid-item uniform-tool" data-sekcja="dieta" onclick="switchTab('diet-dashboard')" style="border: 1px solid rgba(255,255,255,0.05); border-radius: 16px; padding: 25px 15px; text-align: center;">
                             <div class="icon-box">
                                 <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2"/><path d="M7 2v20"/><path d="M21 15V2v0a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3Zm0 0v7"/></svg>
                             </div>
                             <h3 style="color: #FFF; margin: 0 0 4px 0; font-size: 16px; font-weight: 600;">Dieta</h3>
                         </div>
                         
-                        <div class="glass-card grid-item uniform-tool" onclick="switchTab('ai-analytics-dashboard')" style="border: 1px solid rgba(255,152,0,0.5); border-radius: 16px; padding: 25px 15px; text-align: center; cursor: pointer;">
+                        <div class="glass-card grid-item uniform-tool" data-sekcja="ai" onclick="switchTab('ai-analytics-dashboard')" style="border: 1px solid rgba(255,152,0,0.5); border-radius: 16px; padding: 25px 15px; text-align: center; cursor: pointer;">
                             <div class="icon-box" style="background: rgba(255,152,0,0.1); color: #FF9800; width: 56px; height: 56px; border-radius: 50%; display: flex; justify-content: center; align-items: center; margin: 0 auto 10px auto;">
                                 <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 8V4H8"/><rect width="16" height="12" x="4" y="8" rx="2"/><path d="M2 14h2"/><path d="M20 14h2"/><path d="M15 13v2"/><path d="M9 13v2"/></svg>
                             </div>
                             <h3 style="color: #FFF; margin: 0 0 4px 0; font-size: 16px; font-weight: 600;">Analizy AI <span style="color: #FF9800; font-size: 11px;">PRO</span></h3>
                         </div>
                         
-                        <div class="glass-card grid-item uniform-tool" onclick="window.open('https://suppi.pl/ukidives', '_blank')" style="border: 1px solid rgba(255,193,7,0.5); border-radius: 16px; padding: 25px 15px; text-align: center; cursor: pointer;">
+                        <div class="glass-card grid-item uniform-tool" data-sekcja="kawa" onclick="window.open('https://suppi.pl/ukidives', '_blank')" style="border: 1px solid rgba(255,193,7,0.5); border-radius: 16px; padding: 25px 15px; text-align: center; cursor: pointer;">
                             <div class="icon-box" style="background: rgba(255,193,7,0.1); color: #FFC107; width: 56px; height: 56px; border-radius: 50%; display: flex; justify-content: center; align-items: center; margin: 0 auto 10px auto;">
                                 <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 8h1a4 4 0 1 1 0 8h-1"/><path d="M3 8h14v9a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4Z"/><line x1="6" x2="6" y1="2" y2="4"/><line x1="10" x2="10" y1="2" y2="4"/><line x1="14" x2="14" y1="2" y2="4"/></svg>
                             </div>
@@ -393,24 +394,36 @@
                         </div>
                     </div>
                     
+                    <!-- Strefa trenera: widoczna tylko po włączeniu „Jestem trenerem” w Profilu -->
+                    <div id="trainer-menu-tile" hidden>
+                        <div class="glass-card" role="button" tabindex="0" onclick="TrainerUI.open()" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();TrainerUI.open();}" style="border: 1px solid rgba(255,255,255,0.05); border-radius: 16px; padding: 18px 20px; margin-bottom: 20px; cursor: pointer; display: flex; align-items: center; gap: 14px;">
+                            <div class="icon-box" style="margin: 0; width: 48px; height: 48px; flex-shrink: 0;">
+                                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                            </div>
+                            <h3 style="color: #FFF; margin: 0; font-size: 16px; font-weight: 600;">Strefa trenera</h3>
+                        </div>
+                    </div>
+
                     <!-- Moved Version Info to be right below Postaw Kawę -->
                     <div style="text-align: center; font-size: 0.75em; color: #555; margin-top: 15px; margin-bottom: 20px;">
                         <span id="dashboard-version">v2026.9.X</span> · <span id="premium-status">Wersja Light</span>
                     </div>
                     
                 </div>
-        <div id="measurements-dashboard" class="tab-content" style="display: none;">
+        <div id="measurements-dashboard" class="tab-content" data-sekcja="pomiary" style="display: none;">
                 </div>
                 
-                <div id="training-dashboard" class="tab-content" style="display: none;">
+                <div id="training-dashboard" class="tab-content" data-sekcja="trening" style="display: none;">
                 </div>
 
-                <div id="notebook-dashboard" class="tab-content" style="display: none;"></div>
+                <div id="notebook-dashboard" class="tab-content" data-sekcja="zeszyt" style="display: none;"></div>
 
-                <div id="template-builder-dashboard" class="tab-content" style="display: none;">
+                <div id="trainer-zone" class="tab-content" style="display:none"></div>
+
+                <div id="template-builder-dashboard" class="tab-content" data-sekcja="trening" style="display: none;">
                 </div>
 
-                <div id="history-dashboard" class="tab-content" style="display: none;">
+                <div id="history-dashboard" class="tab-content" data-sekcja="historia" style="display: none;">
                     <div class="view-header">
                         <h2>Historia Treningów</h2>
                         <p style="color: #00BFFF;">Rozwiń, by zobaczyć szczegóły</p>
@@ -420,7 +433,7 @@
                     </div>
                 </div>
 
-                <div id="analytics-dashboard" class="tab-content" style="display: none;">
+                <div id="analytics-dashboard" class="tab-content" data-sekcja="analiza" style="display: none;">
                     <div class="view-header">
                         <h2>Analiza Progresu</h2>
                         <p style="color: #b0b0b0;">Wykresy i statystyki</p>
@@ -430,7 +443,7 @@
                     </div>
                 </div>
 
-                <div id="ai-analytics-dashboard" class="tab-content" style="display: none;">
+                <div id="ai-analytics-dashboard" class="tab-content" data-sekcja="ai" style="display: none;">
                     <div class="view-header">
                         <h2 style="color: #FF9800;">🤖 Analizy AI</h2>
                         <p style="color: #aaa;">Trener Edward analizuje Twoje dane</p>
@@ -440,7 +453,7 @@
                     </div>
                 </div>
 
-                <div id="diet-dashboard" class="tab-content" style="display: none; padding-bottom: 90px;">
+                <div id="diet-dashboard" class="tab-content" data-sekcja="dieta" style="display: none; padding-bottom: 90px;">
                     <div style="margin-bottom: 20px;">
                         <h2 style="color: #FFF; font-size: 28px; font-weight: 700; margin: 0 0 5px 0;">Dieta i Kalorie</h2>
                         <p style="color: #888; margin: 0; font-size: 14px;">Dzisiaj</p>
@@ -857,11 +870,11 @@
                 <div class="nav-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></div>
                 <span>Menu</span>
             </div>
-            <div class="nav-btn" onclick="switchTab('training-dashboard')">
+            <div class="nav-btn" data-sekcja="trening" onclick="switchTab('training-dashboard')">
                 <div class="nav-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6.5 6.5 11 11"/><path d="m21 21-1-1"/><path d="m3 3 1 1"/><path d="m18 22 4-4"/><path d="m2 6 4-4"/><path d="m3 10 7-7"/><path d="m14 21 7-7"/></svg></div>
                 <span>Trening</span>
             </div>
-            <div class="nav-btn" onclick="switchTab('notebook-dashboard')">
+            <div class="nav-btn" data-sekcja="zeszyt" onclick="switchTab('notebook-dashboard')">
                 <div class="nav-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 6h4"/><path d="M2 10h4"/><path d="M2 14h4"/><path d="M2 18h4"/><rect width="16" height="20" x="4" y="2" rx="2"/><path d="M16 2v20"/></svg></div>
                 <span>Zeszyt</span>
             </div>

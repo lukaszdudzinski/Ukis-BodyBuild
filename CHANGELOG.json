@@ -1,5 +1,13 @@
 [
   {
+    "version": "v2026.11.25.03",
+    "date": "2026-11-25",
+    "changes": [
+      "🏋️ Nowość dla trenerów personalnych: Strefa trenera, czyli zaszyfrowana na Twoim telefonie kartoteka klientów na hasło (wywiad, cel, ocena funkcjonalna, pomiary ze składem ciała). Włączysz ją w Profilu: „Jestem trenerem”.",
+      "⚡ Aplikacja pewniej uruchamia się bez internetu."
+    ]
+  },
+  {
     "version": "v2026.11.25.02",
     "date": "2026-11-25",
     "changes": [

@@ -1,6 +1,7 @@
 import { DatabaseManager } from '../db/DatabaseManager.js';
 import { MediaManager } from '../db/MediaManager.js';
 import { ShareUtils } from '../../utils/ShareUtils.js';
+import { isTrainerEnabled, setTrainerEnabled, getTrainerLicense } from '../trainer/trainerAccess.js';
 import { applyDefaultAvatar, loadAvatarChoice, saveAvatarChoice } from './defaultAvatar.js';
 
 export const SettingsUI = {
@@ -48,12 +49,68 @@ export const SettingsUI = {
 
         // SettingsUI logic cleaned up
 
+        SettingsUI.initTrainerCard();
         SettingsUI.initTheme();
         SettingsUI.initLaboratory();
         SettingsUI.initProfile();
         SettingsUI.initDietSettings();
         
         SettingsUI.renderBadges();
+    },
+
+    // Karta „Jestem trenerem”: przełącznik pokazujący kafelek Strefy oraz imię z ważnego kodu.
+    initTrainerCard: () => {
+        const panel = document.getElementById('settings-panel');
+        if (!panel || document.getElementById('trainer-profile-card')) return;
+
+        const checkbox = document.createElement('input');
+        checkbox.type = 'checkbox';
+        checkbox.checked = isTrainerEnabled();
+        checkbox.style.cssText = 'width: 22px; height: 22px; accent-color: #00BFFF; cursor: pointer;';
+        const labelText = document.createElement('span');
+        labelText.textContent = 'Jestem trenerem';
+        labelText.style.cssText = 'color: #fff; font-weight: 600;';
+        const toggle = document.createElement('label');
+        toggle.className = 'trainer-switch';
+        toggle.style.cssText = 'display: flex; align-items: center; gap: 12px; min-height: 44px; cursor: pointer;';
+        toggle.append(checkbox, labelText);
+
+        const hint = document.createElement('p');
+        hint.textContent = 'Pokazuje w Menu kafelek Strefy trenera: osobne, szyfrowane miejsce na dane klientów.';
+        hint.style.cssText = 'margin: 4px 0 0 0; color: #bbb; font-size: 0.85em; line-height: 1.4;';
+        const who = document.createElement('p');
+        who.style.cssText = 'margin: 8px 0 0 0; color: #00BFFF; font-weight: 600;';
+        who.hidden = true;
+
+        const card = document.createElement('div');
+        card.id = 'trainer-profile-card';
+        card.style.cssText = 'background: rgba(0,0,0,0.4); padding: 15px; border-radius: 8px; border: 1px solid #00BFFF; margin-bottom: 20px;';
+        const title = document.createElement('h4');
+        title.textContent = 'Strefa trenera';
+        title.style.cssText = 'margin: 0 0 6px 0; color: #00BFFF;';
+        card.append(title, toggle, hint, who);
+
+        const showName = async () => {
+            const license = await getTrainerLicense();
+            who.hidden = !license.ok;
+            who.textContent = license.ok ? `Trener: ${license.name}` : '';
+        };
+        checkbox.addEventListener('change', () => {
+            setTrainerEnabled(checkbox.checked);
+            document.dispatchEvent(new CustomEvent('trainerAccessChanged'));
+        });
+        document.addEventListener('trainerAccessChanged', (e) => {
+            if (e.detail && e.detail.license) {
+                who.hidden = !e.detail.license.ok;
+                who.textContent = e.detail.license.ok ? `Trener: ${e.detail.license.name}` : '';
+            }
+        });
+
+        const container = panel.querySelector('.settings-container') || panel;
+        const profile = container.querySelector('.profile-section');
+        if (profile && profile.nextSibling) container.insertBefore(card, profile.nextSibling);
+        else container.appendChild(card);
+        showName();
     },
 
     renderBadges: () => {
@@ -482,7 +539,16 @@ export const SettingsUI = {
             const reader = new FileReader();
             reader.onload = async (event) => {
                 const jsonString = event.target.result;
-                const success = await DatabaseManager.importDatabase(jsonString);
+                let success = false;
+                try {
+                    success = await DatabaseManager.importDatabase(jsonString).catch((err) => {
+                        if (err?.message !== 'SEJF_ISTNIEJE') throw err;
+                        const replaceTrainerVault = confirm("Zastąpić dane Strefy trenera danymi z kopii?");
+                        return DatabaseManager.importDatabase(jsonString, { replaceTrainerVault });
+                    });
+                } catch (err) {
+                    console.error(err);
+                }
                 
                 if (success) {
                     alert("Baza została pomyślnie zaimportowana! Aplikacja zostanie przeładowana.");

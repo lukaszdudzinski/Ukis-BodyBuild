@@ -440,7 +440,11 @@ export const DiagnosticsUI = {
                 reader.onload = async (e) => {
                     try {
                         const jsonStr = e.target.result;
-                        await DatabaseManager.importDatabase(jsonStr);
+                        await DatabaseManager.importDatabase(jsonStr).catch((vaultErr) => {
+                            if (vaultErr?.message !== 'SEJF_ISTNIEJE') throw vaultErr;
+                            const replaceTrainerVault = confirm("Zastąpić dane Strefy trenera danymi z kopii?");
+                            return DatabaseManager.importDatabase(jsonStr, { replaceTrainerVault });
+                        });
                         alert("Dane przywrócone pomyślnie! Aplikacja zostanie zrestartowana.");
                         window.location.reload();
                     } catch (err) {

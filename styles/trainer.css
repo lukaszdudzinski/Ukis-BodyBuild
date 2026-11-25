@@ -1,0 +1,1056 @@
+/* ============================================================
+   STREFA TRENERA — powłoka, motywy i klasy z płótna („Czerwony żar”)
+   Kolory motywów wyłącznie przez zmienne na .tz[data-motyw] (spec rozdz. 12).
+   Czcionki lokalne (libs/fonts, licencja OFL), bo Strefa działa bez sieci.
+   ============================================================ */
+
+@font-face { font-family: 'Barlow'; font-style: normal; font-weight: 500; font-display: swap; src: url(../libs/fonts/barlow-latin-ext-500-normal.woff2) format('woff2'); unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF; }
+@font-face { font-family: 'Barlow'; font-style: normal; font-weight: 500; font-display: swap; src: url(../libs/fonts/barlow-latin-500-normal.woff2) format('woff2'); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD; }
+@font-face { font-family: 'Barlow'; font-style: italic; font-weight: 600; font-display: swap; src: url(../libs/fonts/barlow-latin-ext-600-italic.woff2) format('woff2'); unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF; }
+@font-face { font-family: 'Barlow'; font-style: italic; font-weight: 600; font-display: swap; src: url(../libs/fonts/barlow-latin-600-italic.woff2) format('woff2'); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD; }
+@font-face { font-family: 'Barlow'; font-style: italic; font-weight: 700; font-display: swap; src: url(../libs/fonts/barlow-latin-ext-700-italic.woff2) format('woff2'); unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF; }
+@font-face { font-family: 'Barlow'; font-style: italic; font-weight: 700; font-display: swap; src: url(../libs/fonts/barlow-latin-700-italic.woff2) format('woff2'); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD; }
+@font-face { font-family: 'Inter'; font-style: normal; font-weight: 400; font-display: swap; src: url(../libs/fonts/inter-latin-ext-400-normal.woff2) format('woff2'); unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF; }
+@font-face { font-family: 'Inter'; font-style: normal; font-weight: 400; font-display: swap; src: url(../libs/fonts/inter-latin-400-normal.woff2) format('woff2'); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD; }
+@font-face { font-family: 'Inter'; font-style: normal; font-weight: 500; font-display: swap; src: url(../libs/fonts/inter-latin-ext-500-normal.woff2) format('woff2'); unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF; }
+@font-face { font-family: 'Inter'; font-style: normal; font-weight: 500; font-display: swap; src: url(../libs/fonts/inter-latin-500-normal.woff2) format('woff2'); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD; }
+@font-face { font-family: 'Inter'; font-style: normal; font-weight: 600; font-display: swap; src: url(../libs/fonts/inter-latin-ext-600-normal.woff2) format('woff2'); unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF; }
+@font-face { font-family: 'Inter'; font-style: normal; font-weight: 600; font-display: swap; src: url(../libs/fonts/inter-latin-600-normal.woff2) format('woff2'); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD; }
+
+/* ---------- Motywy ---------- */
+.tz {
+    --tz-text: #ffffff;
+}
+
+.tz[data-motyw="zar"],
+.tz-swatch[data-motyw="zar"] {
+    --tz-bg: #070707;
+    --tz-acc: #e10600;
+    --tz-on-acc: #ffffff;
+    --tz-hi: #ff6b64;
+    --tz-sub: #c9c1bf;
+    --tz-mut: #a8a09e;
+    --tz-acc-soft: rgba(225, 6, 0, 0.35);
+    --tz-card-tint: rgba(7, 7, 7, 0.6);
+    --tz-glow-1: radial-gradient(55% 35% at 15% 8%, rgba(255, 30, 30, 0.40), transparent 70%);
+    --tz-glow-2: radial-gradient(50% 35% at 90% 55%, rgba(179, 0, 0, 0.33), transparent 70%);
+    --tz-glow-3: radial-gradient(55% 40% at 30% 100%, rgba(255, 74, 26, 0.27), transparent 70%);
+}
+
+.tz[data-motyw="granat"],
+.tz-swatch[data-motyw="granat"] {
+    --tz-bg: #0b1220;
+    --tz-acc: #3563d9;
+    --tz-on-acc: #ffffff;
+    --tz-hi: #8fb3ff;
+    --tz-sub: #c3cad6;
+    --tz-mut: #a9b2c1;
+    --tz-acc-soft: rgba(53, 99, 217, 0.35);
+    --tz-card-tint: rgba(11, 18, 32, 0.6);
+    --tz-glow-1: radial-gradient(55% 35% at 15% 8%, rgba(53, 99, 217, 0.42), transparent 70%);
+    --tz-glow-2: radial-gradient(50% 35% at 90% 55%, rgba(120, 134, 160, 0.26), transparent 70%);
+    --tz-glow-3: radial-gradient(55% 40% at 30% 100%, rgba(30, 58, 138, 0.40), transparent 70%);
+}
+
+.tz[data-motyw="pomarancz"],
+.tz-swatch[data-motyw="pomarancz"] {
+    --tz-bg: #0a0908;
+    --tz-acc: #ff8a1f;
+    --tz-on-acc: #140a00;
+    --tz-hi: #ffa24d;
+    --tz-sub: #cfc7bd;
+    --tz-mut: #b0a89d;
+    --tz-acc-soft: rgba(255, 138, 31, 0.30);
+    --tz-card-tint: rgba(10, 9, 8, 0.6);
+    --tz-glow-1: radial-gradient(55% 35% at 15% 8%, rgba(255, 138, 31, 0.34), transparent 70%);
+    --tz-glow-2: radial-gradient(50% 35% at 90% 55%, rgba(150, 60, 0, 0.30), transparent 70%);
+    --tz-glow-3: radial-gradient(55% 40% at 30% 100%, rgba(255, 170, 60, 0.20), transparent 70%);
+}
+
+/* ---------- Powłoka ---------- */
+#trainer-zone.tab-content {
+    padding: 0 !important;
+    min-height: 0 !important;
+}
+
+/* Strefa ma własny pasek (R10). Pływający czat AI aplikacji też znika, bo zasłaniałby ekrany Strefy. */
+body.tz-on .bottom-nav-bar,
+body.tz-on #edward-chat-toggle,
+body.tz-on #edward-chat-window,
+body.tz-on #edward-contextual-bubble {
+    display: none !important;
+}
+
+/* Okrojenie zwykłej części aplikacji (spec rozdz. 10). Wyłączona sekcja tylko się chowa.
+   Czat AI powstaje dynamicznie, więc chowa go klasa na <body>.
+   W trybie „Tylko Strefa trenera” paska aplikacji nie ma także w Profilu i Serwisie. */
+[data-sekcja][hidden],
+body.tz-bez-ai #edward-chat-toggle,
+body.tz-bez-ai #edward-chat-window,
+body.tz-bez-ai #edward-contextual-bubble,
+body.tz-tylko .bottom-nav-bar {
+    display: none !important;
+}
+
+/* Mniej przycisków na pasku → węższy, wyśrodkowany pasek (pełny pasek ma 5 przycisków po 20%).
+   !important, bo widok telefonu (glassmorphism.css) wymusza width: 100% !important. */
+.bottom-nav-bar.tz-pasek-wezszy {
+    left: 0 !important;
+    right: 0;
+    margin: 0 auto;
+    width: calc(var(--tz-pasek-n, 5) * 20%) !important;
+    min-width: 240px;
+    border-radius: 22px 22px 0 0;
+    border-left: 1px solid rgba(255, 255, 255, 0.25);
+    border-right: 1px solid rgba(255, 255, 255, 0.25);
+}
+
+/* Powrót z Profilu i Serwisu do Strefy (tylko w trybie „Tylko Strefa trenera”). */
+.tz-return {
+    display: none;
+    position: fixed;
+    left: 50%;
+    bottom: calc(16px + env(safe-area-inset-bottom, 0px));
+    transform: translateX(-50%);
+    z-index: 1000;
+    min-height: 48px;
+    padding: 0 22px 0 16px;
+    align-items: center;
+    gap: 8px;
+    border-radius: 999px;
+    border: 1px solid rgba(255, 255, 255, 0.22);
+    background: rgba(20, 20, 22, 0.94);
+    color: #ffffff;
+    font: 600 15px/1 'Inter', system-ui, sans-serif;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.45);
+    cursor: pointer;
+    white-space: nowrap;
+}
+
+body.tz-tylko:not(.tz-on) .tz-return {
+    display: flex;
+}
+
+.tz-return .tz-ic {
+    width: 20px;
+    height: 20px;
+}
+
+.tz {
+    position: fixed;
+    inset: 0;
+    z-index: 1001;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    background-color: var(--tz-bg);
+    background-image: var(--tz-glow-1), var(--tz-glow-2), var(--tz-glow-3);
+    color: var(--tz-text);
+    font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
+    font-size: 15px;
+    line-height: 1.45;
+    text-shadow: none;
+    -webkit-font-smoothing: antialiased;
+}
+
+.tz *,
+.tz *::before,
+.tz *::after {
+    box-sizing: border-box;
+}
+
+.tz [hidden] {
+    display: none !important;
+}
+
+.tz .tz-ic {
+    width: 20px;
+    height: 20px;
+    flex-shrink: 0;
+}
+
+.tz-head {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: calc(env(safe-area-inset-top, 0px) + 8px) 10px 8px;
+    flex-shrink: 0;
+}
+
+.tz-logo {
+    width: 28px;
+    height: 28px;
+    border-radius: 8px;
+    object-fit: contain;
+    margin-left: 4px;
+}
+
+.tz-title {
+    flex: 1;
+    min-width: 0;
+    font-family: 'Barlow', 'Inter', sans-serif;
+    font-style: italic;
+    font-weight: 700;
+    font-size: 21px;
+    letter-spacing: 0.2px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    color: var(--tz-text);
+}
+
+.tz-icbtn {
+    width: 44px;
+    height: 44px;
+    border-radius: 999px;
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    background: rgba(255, 255, 255, 0.06);
+    color: var(--tz-text);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    flex-shrink: 0;
+    padding: 0;
+}
+
+.tz-main {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    padding: 4px 16px calc(56px + 32px + env(safe-area-inset-bottom, 0px));
+}
+
+.tz-view {
+    max-width: 640px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.tz-nav {
+    position: absolute;
+    left: 14px;
+    right: 14px;
+    bottom: calc(14px + env(safe-area-inset-bottom, 0px));
+    max-width: 480px;
+    margin: 0 auto;
+    height: 56px;
+    padding: 6px;
+    display: flex;
+    gap: 6px;
+    border-radius: 999px;
+    background: rgba(20, 20, 22, 0.6);
+    border: 1px solid rgba(255, 255, 255, 0.16);
+    backdrop-filter: blur(18px) saturate(160%);
+    -webkit-backdrop-filter: blur(18px) saturate(160%);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.45);
+}
+
+.tz-navbtn {
+    flex: 1;
+    min-height: 44px;
+    border: none;
+    border-radius: 999px;
+    background: transparent;
+    color: var(--tz-sub);
+    font: 600 14px/1 'Inter', sans-serif;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    cursor: pointer;
+}
+
+.tz-navbtn.tz-navon {
+    background: var(--tz-acc);
+    color: var(--tz-on-acc);
+    box-shadow: 0 6px 18px var(--tz-acc-soft);
+}
+
+.tz button:focus-visible,
+.tz input:focus-visible,
+.tz select:focus-visible,
+.tz textarea:focus-visible {
+    outline: 2px solid var(--tz-hi);
+    outline-offset: 2px;
+}
+
+/* ---------- Klasy z płótna ---------- */
+.tz .card {
+    background-color: var(--tz-card-tint);
+    background-image: linear-gradient(145deg, rgba(255, 255, 255, 0.13), rgba(255, 255, 255, 0.03));
+    border: 1px solid rgba(255, 255, 255, 0.22);
+    border-radius: 20px;
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
+    padding: 16px;
+}
+
+.tz .hd {
+    font-family: 'Barlow', 'Inter', sans-serif;
+    font-style: italic;
+    font-weight: 700;
+    font-size: 24px;
+    line-height: 1.15;
+    letter-spacing: 0.2px;
+    color: var(--tz-text);
+    margin: 0;
+}
+
+.tz p {
+    margin: 0;
+}
+
+.tz .sub {
+    color: var(--tz-sub);
+    font-size: 14px;
+}
+
+.tz .mut {
+    color: var(--tz-mut);
+    font-size: 13px;
+}
+
+.tz .hi {
+    color: var(--tz-hi);
+}
+
+.tz .btn,
+.tz .ghost {
+    min-height: 44px;
+    padding: 0 20px;
+    border-radius: 999px;
+    font: 600 15px/1 'Inter', sans-serif;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    cursor: pointer;
+    text-decoration: none;
+}
+
+.tz .btn {
+    border: none;
+    background: var(--tz-acc);
+    color: var(--tz-on-acc);
+    box-shadow: 0 8px 22px var(--tz-acc-soft);
+}
+
+.tz .ghost {
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.28);
+    color: var(--tz-text);
+}
+
+.tz .btn:disabled,
+.tz .ghost:disabled {
+    opacity: 0.45;
+    cursor: default;
+    box-shadow: none;
+}
+
+.tz .chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    min-height: 44px;
+    padding: 0 14px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.22);
+    color: var(--tz-sub);
+    font: 500 14px/1 'Inter', sans-serif;
+    cursor: pointer;
+}
+
+.tz .chip.chipon {
+    background: var(--tz-acc);
+    border-color: transparent;
+    color: var(--tz-on-acc);
+}
+
+.tz .tabs {
+    display: flex;
+    gap: 4px;
+    padding: 4px;
+    border-radius: 999px;
+    background: rgba(0, 0, 0, 0.38);
+    border: 1px solid rgba(255, 255, 255, 0.14);
+}
+
+.tz .tab {
+    flex: 1;
+    min-height: 44px;
+    border: none;
+    border-radius: 999px;
+    background: transparent;
+    color: var(--tz-sub);
+    font: 600 14px/1 'Inter', sans-serif;
+    cursor: pointer;
+}
+
+.tz .tab.tabon {
+    background: var(--tz-acc);
+    color: var(--tz-on-acc);
+}
+
+.tz .in {
+    width: 100%;
+    min-height: 44px;
+    padding: 10px 14px;
+    border-radius: 14px;
+    background: rgba(0, 0, 0, 0.38);
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    color: var(--tz-text);
+    font: 400 16px/1.3 'Inter', sans-serif;
+}
+
+.tz .in::placeholder {
+    color: var(--tz-mut);
+}
+
+.tz .in:focus {
+    border-color: var(--tz-acc);
+}
+
+.tz .tz-stack {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.tz .tz-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+/* ---------- Komunikat i potwierdzenie ---------- */
+.tz-toast {
+    position: absolute;
+    left: 50%;
+    bottom: calc(84px + env(safe-area-inset-bottom, 0px));
+    transform: translateX(-50%);
+    max-width: calc(100% - 32px);
+    padding: 12px 18px;
+    border-radius: 999px;
+    background: rgba(20, 20, 22, 0.94);
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    color: var(--tz-text);
+    font-weight: 500;
+    z-index: 3;
+}
+
+.tz-backdrop {
+    position: absolute;
+    inset: 0;
+    z-index: 4;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+    background: rgba(0, 0, 0, 0.6);
+}
+
+.tz-dialog {
+    width: 100%;
+    max-width: 420px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.tz-dialog-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    margin-top: 4px;
+}
+
+/* ---------- Ekrany bez kodu ---------- */
+.tz .tz-field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.tz textarea.in {
+    resize: vertical;
+}
+
+.tz .tz-error {
+    margin: 0;
+    color: #FFB4A8;
+    font-weight: 600;
+}
+
+.tz .tz-error:empty {
+    display: none;
+}
+
+/* ---------- Hasło i kod awaryjny ---------- */
+.tz .tz-sr {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+}
+
+.tz .tz-pw {
+    position: relative;
+}
+
+.tz .tz-pw .in {
+    padding-right: 52px;
+}
+
+.tz .tz-pwbtn {
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 48px;
+    height: 100%;
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: none;
+    border-radius: 0 14px 14px 0;
+    background: transparent;
+    color: var(--tz-sub);
+    cursor: pointer;
+}
+
+.tz .tz-pwbtn .tz-ic {
+    width: 20px;
+    height: 20px;
+}
+
+.tz .tz-rules {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 6px;
+}
+
+.tz .tz-rule {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--tz-sub);
+    font-size: 14px;
+}
+
+.tz .tz-rule-ic {
+    display: inline-flex;
+    color: var(--tz-mut);
+}
+
+.tz .tz-rule-ic .tz-ic {
+    width: 18px;
+    height: 18px;
+}
+
+.tz .tz-rule[data-ok="true"] {
+    color: var(--tz-text);
+}
+
+.tz .tz-rule[data-ok="true"] .tz-rule-ic {
+    color: var(--tz-hi);
+}
+
+.tz .tz-check {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-height: 44px;
+    color: var(--tz-text);
+    cursor: pointer;
+}
+
+.tz .tz-check input {
+    flex: none;
+    width: 22px;
+    height: 22px;
+    accent-color: var(--tz-acc);
+}
+
+.tz .tz-code {
+    font: 700 22px/1.4 ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+    letter-spacing: 1px;
+    color: var(--tz-text);
+    text-align: center;
+    overflow-wrap: anywhere;
+    padding: 14px 10px;
+    border-radius: 14px;
+    background: rgba(0, 0, 0, 0.38);
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    user-select: all;
+    -webkit-user-select: all;
+}
+
+.tz .tz-mono {
+    font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+    letter-spacing: 1px;
+}
+
+.tz .tz-warn {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    font-weight: 600;
+}
+
+.tz .tz-warn .tz-ic {
+    flex: none;
+    width: 20px;
+    height: 20px;
+}
+
+.tz .tz-links {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+}
+
+.tz .tz-link {
+    min-height: 44px;
+    padding: 0;
+    border: none;
+    background: none;
+    color: var(--tz-sub);
+    font: 500 14px/1.3 'Inter', sans-serif;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+    text-align: left;
+    cursor: pointer;
+}
+
+/* ---------- Klienci ---------- */
+.tz [hidden] {
+    display: none !important;
+}
+
+.tz .tz-between {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.tz .tz-list {
+    display: flex;
+    flex-direction: column;
+    padding: 6px;
+}
+
+.tz .tz-client {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-height: 56px;
+    padding: 8px 10px;
+    border: none;
+    border-radius: 14px;
+    background: transparent;
+    color: var(--tz-text);
+    text-align: left;
+    cursor: pointer;
+    font: 500 16px/1.2 'Inter', sans-serif;
+}
+
+/* Obwódka zamiast jaśniejszego tła: tekst w wierszu ma pod wskaźnikiem ten sam kontrast co bez niego. */
+.tz .tz-client:hover {
+    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.22);
+}
+
+.tz .tz-client-main {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    flex: 1;
+    min-width: 0;
+}
+
+.tz .tz-client-name {
+    overflow-wrap: anywhere;
+}
+
+/* Ciemna pigułka pod plakietką: kontrast ≥ 4,5 : 1 także na jaśniejszym tle wiersza pod wskaźnikiem. */
+.tz .tz-badge {
+    flex: none;
+    padding: 4px 10px;
+    border-radius: 999px;
+    background: rgba(0, 0, 0, 0.55);
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.tz .tz-avatar {
+    flex: none;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--tz-acc);
+    color: var(--tz-on-acc);
+    font: 700 15px/1 'Inter', sans-serif;
+}
+
+.tz .tz-avatar-lg {
+    width: 52px;
+    height: 52px;
+    font-size: 18px;
+}
+
+.tz .tz-client-head {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-width: 0;
+}
+
+.tz .tz-client-title {
+    overflow-wrap: anywhere;
+}
+
+.tz .tz-note {
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+}
+
+.tz .tz-tiles {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+}
+
+.tz .tz-tile {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    min-height: 96px;
+    padding: 12px 6px;
+    border-radius: 20px;
+    background-color: var(--tz-card-tint);
+    border: 1px solid rgba(255, 255, 255, 0.22);
+    color: var(--tz-text);
+    font: 600 13px/1.2 'Inter', sans-serif;
+    text-align: center;
+    cursor: pointer;
+}
+
+.tz .tz-menu .ghost {
+    justify-content: flex-start;
+}
+
+.tz .tz-danger {
+    color: #FFB4A8;
+}
+
+.tz .tz-pre {
+    margin: 0;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+    font: 400 14px/1.5 'Inter', sans-serif;
+    color: var(--tz-text);
+}
+
+/* ---------- Wywiad i ramka zdrowotna ---------- */
+.tz .tz-health {
+    border: 1px solid var(--tz-hi);
+}
+
+.tz .tz-health-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 0 0 6px;
+    font: 700 15px/1.2 'Inter', sans-serif;
+}
+
+.tz .tz-goalchip {
+    margin-top: 4px;
+    min-height: 28px;
+    padding: 0 10px;
+    font-size: 13px;
+    cursor: default;
+}
+
+.tz .tz-steps {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 4px;
+}
+
+.tz .tz-stepbtn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    min-height: 44px;
+    padding: 6px 2px;
+    background: none;
+    border: 0;
+    border-bottom: 3px solid rgba(255, 255, 255, 0.22);
+    color: var(--tz-sub);
+    font: 600 12px/1.2 'Inter', sans-serif;
+    cursor: pointer;
+}
+
+.tz .tz-stepbtn.tz-stepon {
+    border-bottom-color: var(--tz-acc);
+    color: var(--tz-text);
+}
+
+.tz .tz-stepnum {
+    font-size: 15px;
+}
+
+.tz .tz-q {
+    margin: 0;
+    padding: 0;
+    border: 0;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.tz .tz-q legend {
+    padding: 0;
+    margin-bottom: 6px;
+}
+
+.tz .tz-yn input {
+    width: 18px;
+    height: 18px;
+    margin: 0;
+    accent-color: var(--tz-acc);
+}
+
+.tz .tz-yn:has(input:checked) {
+    background: var(--tz-acc);
+    border-color: transparent;
+    color: var(--tz-on-acc);
+}
+
+.tz fieldset:disabled .tz-yn {
+    opacity: 0.45;
+    cursor: default;
+}
+
+.tz .tz-check {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    min-height: 44px;
+}
+
+.tz .tz-check input {
+    flex: none;
+    width: 22px;
+    height: 22px;
+    margin: 0;
+    accent-color: var(--tz-acc);
+}
+
+.tz .tz-goals {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+}
+
+.tz .tz-goals .chip {
+    justify-content: center;
+    text-align: center;
+    line-height: 1.2;
+}
+
+.tz .tz-cont-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+}
+
+.tz .tz-cont-cell {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    font-size: 14px;
+}
+
+.tz .tz-cont-cell strong {
+    overflow-wrap: anywhere;
+}
+
+/* ---------- Ocena funkcjonalna ---------- */
+.tz .tz-tile-sub {
+    font: 500 11px/1.2 'Inter', sans-serif;
+    color: var(--tz-sub);
+}
+
+.tz .tz-asm-total {
+    margin: 0;
+    font-size: 26px;
+}
+
+.tz .tz-asm-name {
+    margin: 0;
+    font-size: 17px;
+}
+
+.tz .tz-asm-row {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    width: 100%;
+    text-align: left;
+    color: var(--tz-text);
+    cursor: pointer;
+}
+
+.tz .tz-side {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.tz .tz-sidelabel {
+    width: 18px;
+    font-weight: 700;
+}
+
+.tz .tz-scores {
+    flex: 1;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 6px;
+}
+
+.tz .tz-sc {
+    min-height: 44px;
+    border-radius: 12px;
+    border: 2px solid transparent;
+    background: rgba(255, 255, 255, 0.08);
+    color: var(--tz-text);
+    font: 700 16px/1 'Inter', sans-serif;
+    cursor: pointer;
+}
+
+.tz .tz-sc[aria-pressed="true"] {
+    border-color: #ffffff;
+}
+
+.tz .tz-sc3[aria-pressed="true"] { background: #2e9e57; color: #04140a; }
+.tz .tz-sc2[aria-pressed="true"] { background: #f0a030; color: #1a0f00; }
+.tz .tz-sc1[aria-pressed="true"] { background: #a84a4a; color: #ffffff; }
+.tz .tz-sc0[aria-pressed="true"] { background: var(--tz-acc); color: var(--tz-on-acc); }
+
+.tz .tz-info {
+    min-height: 44px;
+    min-width: 44px;
+    padding: 0;
+    justify-content: center;
+}
+
+.tz .tz-crit {
+    margin: 0;
+    padding-left: 18px;
+    font-size: 14px;
+    color: var(--tz-sub);
+}
+
+.tz .tz-how p {
+    margin: 0;
+    font-size: 14px;
+}
+
+.tz .tz-custom .in {
+    flex: 1;
+    min-width: 0;
+}
+
+/* ---------- Pomiary klienta ---------- */
+.tz .tz-meas-row {
+    display: grid;
+    grid-template-columns: 1fr auto auto;
+    gap: 12px;
+    align-items: center;
+}
+
+.tz .tz-chart {
+    display: block;
+    width: 100%;
+    height: 120px;
+}
+
+/* ---------- Ustawienia Strefy ---------- */
+.tz .tz-set-hd {
+    font-size: 20px;
+}
+
+.tz .tz-tight {
+    gap: 2px;
+}
+
+.tz .tz-themes {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+}
+
+.tz .tz-theme {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    min-height: 96px;
+    padding: 10px 6px;
+    border-radius: 16px;
+    border: 2px solid rgba(255, 255, 255, 0.18);
+    background: rgba(0, 0, 0, 0.38);
+    color: var(--tz-text);
+    font: 600 13px/1.2 'Inter', sans-serif;
+    text-align: center;
+    cursor: pointer;
+}
+
+.tz .tz-theme[aria-pressed="true"] {
+    border-color: var(--tz-hi);
+}
+
+.tz .tz-swatch {
+    display: block;
+    width: 100%;
+    height: 44px;
+    border-radius: 10px;
+    background-color: var(--tz-bg);
+    background-image: linear-gradient(135deg, transparent 50%, var(--tz-acc) 50%);
+    border: 1px solid rgba(255, 255, 255, 0.18);
+}
+
+/* ---------- Wydaj kod (właściciel) ---------- */
+.tz .tz-version {
+    user-select: none;
+    -webkit-user-select: none;
+    -webkit-touch-callout: none;
+    touch-action: manipulation;
+}
+
+.tz .tz-issued-code {
+    word-break: break-all;
+    user-select: all;
+}

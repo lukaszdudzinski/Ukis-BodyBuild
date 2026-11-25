@@ -17,6 +17,7 @@ import { TemplateBuilderUI } from './modules/ui/TemplateBuilderUI.js';
 import { NumpadUI } from './modules/ui/NumpadUI.js';
 import { BackupUI } from './modules/ui/BackupUI.js';
 import { NotebookUI } from './modules/notebook/NotebookUI.js';
+import { TrainerUI } from './modules/trainer/ui/TrainerUI.js';
 import { applyDefaultAvatar } from './modules/ui/defaultAvatar.js';
 
 window.ukiLogError = (msg, stack) => {
@@ -56,6 +57,7 @@ window.APP_VERSION = APP_VERSION;
 window.AiAnalyticsUI = AiAnalyticsUI;
 window.DietUI = DietUI;
 window.NotebookUI = NotebookUI;
+window.TrainerUI = TrainerUI;
 
 // Initialize Application
 const initApp = () => {
@@ -85,6 +87,7 @@ const initApp = () => {
     MeasurementsUI.init();
     TrainingUI.init();
     NotebookUI.init();
+    TrainerUI.init();
     window.SettingsUI = SettingsUI;
     SettingsUI.init();
     HistoryUI.init();

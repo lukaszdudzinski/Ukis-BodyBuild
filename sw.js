@@ -1,4 +1,4 @@
-const CACHE_NAME = 'ukis-bodybuild-v2026.11.25.02'; // deployed: 2026-08-27T00:01
+const CACHE_NAME = 'ukis-bodybuild-v2026.11.25.03'; // deployed: 2026-08-27T00:01
 const OWN_CACHE_PREFIXES = ['ukis-bodybuild-', 'uki-bodybuild-']; // własne cache (także historyczne uki-bodybuild-v2026.8.x); cudze cache w domenie zostają
 // Core assets that MUST be cached immediately
 const CORE_ASSETS = [
@@ -6,23 +6,79 @@ const CORE_ASSETS = [
     './index.html',
     './ui-switch.js',
     './ukis-scope.js',
+    './pwa-updater.js',
     './style.css',
+    './styles/base.css',
+    './styles/layout.css',
+    './styles/themes.css',
+    './styles/components/cards.css',
+    './styles/components/forms.css',
+    './styles/components/modals.css',
+    './styles/components/formulas.css',
+    './styles/components/pwa.css',
+    './styles/components/calendar.css',
+    './styles/sections/welcome.css',
+    './styles/sections/pro-dashboard.css',
+    './styles/sections/lectures.css',
+    './styles/sections/settings.css',
+    './styles/sections/tools.css',
+    './styles/sections/science.css',
+    './styles/sections/quiz.css',
+    './styles/sections/game.css',
+    './styles/lightbox.css',
+    './game_styles.css',
     './styles/glassmorphism.css',
     './classic.html',
     './classic-app/style.css',
     './classic-app/game_styles.css',
     './classic-app/src/main.js',
     './img/logo.png',
+    './img/real_app_screenshot.jpg',
     './manifest.json',
     './src/main.js',
     './src/version_check.js',
     './src/utils/ShareUtils.js',
+    './src/data/ExerciseCatalog.js',
     './src/components/TrainingComponent.js',
     './src/components/MeasurementsComponent.js',
     './src/components/NotebookComponent.js',
     './src/modules/notebook/NotebookUI.js',
     './src/modules/notebook/notebookModel.js',
     './src/modules/notebook/notebookSettings.js',
+    './src/modules/trainer/trainerCrypto.js',
+    './src/modules/trainer/trainerCode.js',
+    './src/modules/trainer/trainerAccess.js',
+    './src/modules/trainer/trainerVault.js',
+    './src/modules/trainer/trainerLock.js',
+    './src/modules/trainer/trainerQuestionnaire.js',
+    './src/modules/trainer/trainerModel.js',
+    './src/modules/trainer/trainerAssessment.js',
+    './src/modules/trainer/trainerMeasurements.js',
+    './src/modules/trainer/trainerSections.js',
+    './src/modules/trainer/trainerBackup.js',
+    './src/modules/trainer/ui/dom.js',
+    './src/modules/trainer/ui/gateScreens.js',
+    './src/modules/trainer/ui/vaultScreens.js',
+    './src/modules/trainer/ui/clientScreens.js',
+    './src/modules/trainer/ui/interviewScreen.js',
+    './src/modules/trainer/ui/assessmentScreen.js',
+    './src/modules/trainer/ui/measurementsScreen.js',
+    './src/modules/trainer/ui/settingsScreen.js',
+    './src/modules/trainer/ui/issueScreen.js',
+    './src/modules/trainer/ui/TrainerUI.js',
+    './styles/trainer.css',
+    './libs/fonts/barlow-latin-500-normal.woff2',
+    './libs/fonts/barlow-latin-ext-500-normal.woff2',
+    './libs/fonts/barlow-latin-600-italic.woff2',
+    './libs/fonts/barlow-latin-ext-600-italic.woff2',
+    './libs/fonts/barlow-latin-700-italic.woff2',
+    './libs/fonts/barlow-latin-ext-700-italic.woff2',
+    './libs/fonts/inter-latin-400-normal.woff2',
+    './libs/fonts/inter-latin-ext-400-normal.woff2',
+    './libs/fonts/inter-latin-500-normal.woff2',
+    './libs/fonts/inter-latin-ext-500-normal.woff2',
+    './libs/fonts/inter-latin-600-normal.woff2',
+    './libs/fonts/inter-latin-ext-600-normal.woff2',
     './src/modules/notebook/exerciseSuggest.js',
     './src/modules/ui/LogbookUI.js',
     './src/modules/ui/ChangelogUI.js',
@@ -39,17 +95,23 @@ const CORE_ASSETS = [
     './src/modules/ui/OnboardingUI.js',
     './src/modules/ui/defaultAvatar.js',
     './src/modules/ui/ChatUI.js',
+    './src/modules/ui/PremiumUI.js',
+    './src/modules/ui/TemplateBuilderUI.js',
+    './src/modules/ui/NumpadUI.js',
+    './src/modules/ui/BackupUI.js',
     './src/modules/gamification/AchievementsSystem.js',
     './src/modules/diet/DietAIEngine.js',
     './src/modules/ai/AiAnalyticsEngine.js',
     './src/modules/db/DatabaseManager.js',
     './src/modules/db/dbWorker.js',
+    './src/modules/db/MediaManager.js',
     './src/modules/data/LogbookDB.js',
     './src/modules/data/CalendarDB.js',
     './libs/sqlite/sqlite3.mjs',
     './libs/sqlite/sqlite3-worker1-promiser.js',
     './libs/sqlite/sqlite3-worker1.js',
-    './libs/sqlite/sqlite3.js'
+    './libs/sqlite/sqlite3.js',
+    './libs/sqlite/sqlite3.wasm'
 ];
 
 // Bez skipWaiting(): nowa wersja czeka, aż użytkownik sam kliknie „Zaktualizuj” (AGENTS.md, zasada 3).
@@ -93,10 +155,11 @@ self.addEventListener('fetch', (e) => {
         return;
     }
 
-    // Zawsze pobieraj pliki WASM bezpośrednio z sieci - nie cachuj ich przez SW
-    // (plik jest duży i może być błędnie cachowany jako HTML, co niszczy WebAssembly)
+    // sqlite3.wasm z cache instalacji (CORE_ASSETS, sprawdzony przy instalacji): worker serwuje zatwierdzoną wersję
+    // (AGENTS.md, zasada 3) i baza działa offline. Sieć (bez dopisywania do cache w locie, bo błędna odpowiedź HTML
+    // niszczy WebAssembly) tylko, gdy pliku w cache nie ma.
     if (e.request.url.endsWith('.wasm')) {
-        e.respondWith(fetch(e.request, { cache: 'no-store' }));
+        e.respondWith(caches.match(e.request).then(r => r || fetch(e.request, { cache: 'no-store' })));
         return;
     }
 

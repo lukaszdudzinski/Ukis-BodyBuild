@@ -58,7 +58,10 @@
         'uki_active_training_draft',
         'uki_last_ai_analysis',
         'uki_last_backup_date',
-        'uki-nickname'
+        'uki-nickname',
+        'ukis.bodybuild.trener.wlaczony',
+        'ukis.bodybuild.trener.kod',
+        'ukis.bodybuild.trener.ostatnia-kopia'
     ];
 
     // Prefiksy kluczy chronionych (baza sqlite w trybie kvvfs).

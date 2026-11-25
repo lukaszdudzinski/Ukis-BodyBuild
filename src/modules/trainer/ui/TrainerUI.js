@@ -1,0 +1,453 @@
+// Powłoka Strefy trenera: karta #trainer-zone z własnym nagłówkiem, paskiem, routerem i motywem.
+// Ekrany rejestrują się przez register(route, renderFn) w kolejnych modułach (trasy gate, setup, unlock, clients…).
+import { h, icon } from './dom.js';
+import * as access from '../trainerAccess.js';
+import { registerGateScreens } from './gateScreens.js';
+import { registerVaultScreens, pendingRecoveryCode } from './vaultScreens.js';
+import { registerClientScreens } from './clientScreens.js';
+import { registerInterviewScreen } from './interviewScreen.js';
+import { registerAssessmentScreen } from './assessmentScreen.js';
+import { registerMeasurementsScreen } from './measurementsScreen.js';
+import { registerSettingsScreen } from './settingsScreen.js';
+import { registerIssueScreen } from './issueScreen.js';
+import { loadSections, effectiveSections, isTrainerOnly, applySections } from '../trainerSections.js';
+import { createVault } from '../trainerVault.js';
+import { createAutoLock } from '../trainerLock.js';
+import { DatabaseManager } from '../../db/DatabaseManager.js';
+
+export const MOTYW_KEY = 'ukis.bodybuild.trener.motyw';
+export const MOTYWY = [
+    { id: 'zar', label: 'Czerwony żar' },
+    { id: 'granat', label: 'Grafit i granat' },
+    { id: 'pomarancz', label: 'Czerń i pomarańcz' },
+];
+const DEFAULT_MOTYW = 'zar';
+const TAB_ID = 'trainer-zone';
+
+// Pasek wydania 1. Terminy i Finanse dojdą w wydaniu 3.
+const NAV = [
+    { route: 'clients', label: 'Klienci', icon: 'users', match: (r) => r === 'clients' || r === 'client' || r.startsWith('client-') },
+    { route: 'settings', label: 'Ustawienia', icon: 'settings', match: (r) => r === 'settings' || r.startsWith('settings-') },
+];
+
+const routes = new Map();
+let stack = [];
+let els = null;
+let toastTimer = null;
+let dialogSeq = 0;
+let accessReady = Promise.resolve();
+// Otwarte okna potwierdzenia (funkcje zamykające): blokada zamyka je wszystkie.
+const openDialogs = new Set();
+// Hak bieżącego ekranu z formularzem: { root, saveDraft } (zapis szkicu przed opuszczeniem ekranu).
+let leaveHook = null;
+// Zapisy szkiców w toku (blokada na nie czeka, zanim zabierze klucz).
+let saving = Promise.resolve();
+// Zmiany ekranu czekające na zapis szkicu idą po kolei; blokada unieważnia te sprzed niej.
+let navQueue = Promise.resolve();
+let navPending = 0;
+let navGen = 0;
+// Zapis szkicu, który się nie kończy (zawieszona baza), nie może zatrzymać zmiany ekranu ani blokady.
+const DRAFT_SAVE_TIMEOUT_MS = 3000;
+const TIMED_OUT = Symbol('timeout');
+const DRAFT_FAILED = 'Nie udało się zapisać szkicu.';
+
+function readMotyw() {
+    let id = null;
+    try { id = localStorage.getItem(MOTYW_KEY); } catch (e) { /* prywatne okno */ }
+    return MOTYWY.some((m) => m.id === id) ? id : DEFAULT_MOTYW;
+}
+
+function iconButton(name, label, onClick) {
+    return h('button', { type: 'button', class: 'tz-icbtn', 'aria-label': label, title: label, onclick: onClick }, icon(name));
+}
+
+function buildShell(container) {
+    const back = iconButton('chevron-left', 'Wstecz', () => goBack());
+    const lockBtn = iconButton('lock', 'Zablokuj Strefę', () => ctx.lock && ctx.lock.lockNow());
+    const exit = iconButton('log-out', 'Wyjdź ze Strefy trenera', () => window.switchTab && window.switchTab('welcome-screen'));
+    const navButtons = NAV.map((item) =>
+        h('button', { type: 'button', class: 'tz-navbtn', dataset: { route: item.route }, onclick: () => show(item.route, {}, { reset: true }) },
+            icon(item.icon), item.label));
+    const nav = h('nav', { class: 'tz-nav', 'aria-label': 'Strefa trenera' }, navButtons);
+    const main = h('main', { class: 'tz-main' });
+    const root = h('div', { class: 'tz', dataset: { motyw: readMotyw() } },
+        h('header', { class: 'tz-head' },
+            back,
+            h('img', { class: 'tz-logo', src: 'img/logo.png', alt: '', width: 28, height: 28 }),
+            h('span', { class: 'tz-title' }, 'Strefa trenera'),
+            lockBtn,
+            exit),
+        main,
+        nav);
+    container.replaceChildren(root);
+    return { root, main, nav, navButtons, back, lockBtn, exit };
+}
+
+function updateChrome(route) {
+    const tab = NAV.find((item) => item.match(route));
+    els.nav.hidden = !tab && route !== '__probka';
+    els.navButtons.forEach((btn, i) => {
+        const on = tab ? NAV[i] === tab : route === '__probka' && i === 0;
+        btn.classList.toggle('tz-navon', on);
+        if (on) btn.setAttribute('aria-current', 'page');
+        else btn.removeAttribute('aria-current');
+    });
+    els.back.hidden = stack.length < 2;
+    els.lockBtn.hidden = !(ctx.lock && ctx.vault && ctx.vault.isUnlocked()) || !!pendingRecoveryCode();
+    els.root.dataset.route = route;
+}
+
+function renderPlaceholder(root) {
+    root.append(h('section', { class: 'card' },
+        h('h2', { class: 'hd' }, 'Wkrótce'),
+        h('p', { class: 'sub' }, 'Ten ekran jeszcze powstaje.')));
+}
+
+// Ekran z formularzem rejestruje zapis szkicu. Router woła go przed podmianą ekranu (Wstecz, pasek,
+// wejście do Strefy, powrót z Profilu) i przed blokadą, póki ekran jest jeszcze w DOM.
+// saveDraft sam sprawdza, czy coś się zmieniło. Zwraca funkcję wyrejestrowania (zapis, Anuluj).
+export function onLeave(root, saveDraft) {
+    const hook = { root, saveDraft };
+    leaveHook = hook;
+    return () => { if (leaveHook === hook) leaveHook = null; };
+}
+
+// Zabiera hak bieżącego ekranu i uruchamia zapis szkicu; null, gdy nie ma czego zapisywać.
+function flushLeave() {
+    const hook = leaveHook;
+    leaveHook = null;
+    if (!hook || !hook.root.isConnected) return null;
+    let p;
+    try { p = Promise.resolve(hook.saveDraft()); } catch (e) { p = Promise.reject(e); }
+    p = p.catch((e) => {
+        console.error('[Strefa trenera] szkic:', e && e.message);
+        toast(DRAFT_FAILED);
+    });
+    saving = Promise.all([saving, p]).then(() => {});
+    return p;
+}
+
+// Czeka na zapis najwyżej DRAFT_SAVE_TIMEOUT_MS; po czasie daje TIMED_OUT (zapis może skończyć się później).
+function settleWithin(p) {
+    let timer = null;
+    const limit = new Promise((resolve) => { timer = setTimeout(() => resolve(TIMED_OUT), DRAFT_SAVE_TIMEOUT_MS); });
+    return Promise.race([p, limit]).finally(() => clearTimeout(timer));
+}
+
+// Szkic przed zmianą ekranu: po przekroczeniu czasu ekran i tak się zmienia, z komunikatem.
+async function awaitDraft(pending) {
+    if (!pending) return;
+    if ((await settleWithin(pending)) === TIMED_OUT) {
+        console.error('[Strefa trenera] szkic: zapis nie skończył się w czasie');
+        toast(DRAFT_FAILED);
+    }
+}
+
+// Każda zmiana ekranu: najpierw szkic bieżącego formularza, potem nowy ekran (w kolejności wywołań).
+// Bez szkicu do zapisania i bez kolejki ekran zmienia się od razu, jak dotąd.
+function navigate(apply) {
+    const pending = flushLeave();
+    if (!pending && navPending === 0) {
+        apply();
+        return Promise.resolve();
+    }
+    const gen = navGen;
+    navPending += 1;
+    const run = navQueue
+        .then(() => awaitDraft(pending))
+        .then(() => { if (gen === navGen) apply(); })
+        .catch((e) => reportError('nawigacja', e))
+        .finally(() => { navPending -= 1; });
+    navQueue = run;
+    return run;
+}
+
+function render() {
+    const { route, params } = stack[stack.length - 1];
+    const view = h('div', { class: 'tz-view' });
+    els.main.replaceChildren(view);
+    els.main.scrollTop = 0;
+    updateChrome(route);
+    const fn = routes.get(route) || renderPlaceholder;
+    try {
+        Promise.resolve(fn(view, params, ctx)).catch((e) => reportError(route, e));
+    } catch (e) {
+        reportError(route, e);
+    }
+}
+
+function reportError(route, e) {
+    console.error(`[Strefa trenera] ekran ${route}:`, e);
+    toast('Coś poszło nie tak. Spróbuj jeszcze raz.');
+}
+
+// show(route, params, { reset }) — reset czyści historię (wejście do Strefy, pasek, blokada),
+// inaczej ekran trafia na stos, a powrót do ekranu ze stosu ucina stos do niego.
+export function show(route, params = {}, { reset = false } = {}) {
+    if (!els) return Promise.resolve();
+    return navigate(() => {
+        if (reset) stack = [];
+        const i = stack.findIndex((e) => e.route === route);
+        if (i >= 0) stack = stack.slice(0, i);
+        stack.push({ route, params: params || {} });
+        render();
+    });
+}
+
+function goBack() {
+    if (stack.length < 2) return Promise.resolve();
+    return navigate(() => {
+        if (stack.length < 2) return;
+        stack.pop();
+        render();
+    });
+}
+
+export function register(route, renderFn) {
+    routes.set(route, renderFn);
+}
+
+// Ekran startowy według stanu: brak kodu → gate, brak sejfu → setup, zablokowany → unlock, inaczej → clients.
+async function resolveRoute() {
+    if (!access.hasTrainerLicenseSync()) return 'gate';
+    const vault = ctx.vault;
+    if (!vault || !(await vault.isSetUp())) return 'setup';
+    if (!vault.isUnlocked()) return 'unlock';
+    return pendingRecoveryCode() ? 'recovery-show' : 'clients';
+}
+
+export const ACCESS_EVENT = 'trainerAccessChanged';
+
+function sectionsInput() {
+    let sections = null;
+    let trainerEnabled = false;
+    try {
+        sections = loadSections();
+        trainerEnabled = access.isTrainerEnabled();
+    } catch (e) { /* prywatne okno: pełna aplikacja */ }
+    return { sections, trainerEnabled, hasLicense: access.hasTrainerLicenseSync() };
+}
+
+// Okrojenie zwykłej części aplikacji (spec rozdz. 10). W trybie „Tylko Strefa trenera” każda inna karta
+// niż Strefa, Profil i Serwis otwiera Strefę, a nagłówek Strefy nie ma ikony wyjścia.
+export function applyAppSections() {
+    const input = sectionsInput();
+    const trainerOnly = isTrainerOnly(input);
+    applySections(document, effectiveSections(input), {
+        trainerOnly,
+        openZone: () => { open().catch((e) => reportError('open', e)); },
+    });
+    if (els) els.exit.hidden = trainerOnly;
+    return trainerOnly;
+}
+
+// Powrót z Profilu albo Serwisu do ekranu Strefy, z którego trener wyszedł (zwykle Ustawienia).
+export function returnToZone() {
+    if (!els || !stack.length) return open();
+    if (window.switchTab) window.switchTab(TAB_ID);
+    return navigate(() => { if (stack.length) render(); });
+}
+
+// Kafelek „Strefa trenera” w Menu widzi tylko ten, kto włączył „Jestem trenerem”.
+export function refreshEntryPoints() {
+    const tile = document.getElementById('trainer-menu-tile');
+    if (!tile) return;
+    let on = false;
+    try { on = access.isTrainerEnabled(); } catch (e) { /* prywatne okno */ }
+    tile.hidden = !on;
+}
+
+// Sprawdza zapisany kod i odświeża wszystko, co zależy od licencji (napis Heavy/PRO, karta w Profilu).
+export async function refreshAccess() {
+    let license = { ok: false };
+    try { license = await access.getTrainerLicense(); } catch (e) { console.warn('[Strefa trenera] licencja:', e); }
+    const label = document.getElementById('premium-status');
+    if (label && license.ok) label.textContent = 'Wersja Heavy';
+    if (window.PremiumUI) window.PremiumUI.renderPremiumBanner();
+    refreshEntryPoints();
+    document.dispatchEvent(new CustomEvent(ACCESS_EVENT, { detail: { license } }));
+    return license;
+}
+
+// Ekran poprzedniej wizyty (np. dane klienta) nie może mignąć, zanim trasa się rozstrzygnie.
+// Otwarty formularz zapisuje się najpierw jako szkic. Błąd (np. zajęta baza) daje kartę „Spróbuj ponownie”.
+export async function open() {
+    const pending = flushLeave();
+    if (els) els.main.replaceChildren();
+    if (window.switchTab) window.switchTab(TAB_ID);
+    try {
+        await awaitDraft(pending);
+        await accessReady;
+        const route = await resolveRoute();
+        await show(route, {}, { reset: true });
+    } catch (e) {
+        console.error('[Strefa trenera] otwieranie Strefy:', e);
+        renderOpenError();
+    }
+}
+
+function renderOpenError() {
+    if (!els) return;
+    stack = [];
+    const retry = h('button', { type: 'button', class: 'btn', onclick: () => { open(); } }, 'Spróbuj ponownie');
+    els.main.replaceChildren(h('div', { class: 'tz-view' },
+        h('section', { class: 'card tz-stack', role: 'alert' },
+            h('h2', { class: 'hd' }, 'Nie udało się otworzyć Strefy'),
+            h('p', { class: 'sub' }, 'Baza danych może być chwilowo zajęta. Spróbuj ponownie za chwilę.'),
+            h('div', { class: 'tz-row' }, retry))));
+    els.nav.hidden = true;
+    els.back.hidden = true;
+    els.root.dataset.route = 'blad';
+}
+
+export function toast(msg) {
+    if (!els) return;
+    els.root.querySelectorAll('.tz-toast').forEach((t) => t.remove());
+    const el = h('div', { class: 'tz-toast', role: 'status', 'aria-live': 'polite' }, msg);
+    els.root.append(el);
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => el.remove(), 3500);
+}
+
+export function confirm({ title, text, okLabel = 'OK', danger = false } = {}) {
+    return new Promise((resolve) => {
+        if (!els) { resolve(false); return; }
+        const titleId = `tz-dlg-${++dialogSeq}`;
+        let backdrop = null;
+        const done = (value) => {
+            if (!openDialogs.delete(done)) return;
+            backdrop.remove();
+            document.removeEventListener('keydown', onKey, true);
+            resolve(value);
+        };
+        const onKey = (e) => { if (e.key === 'Escape') { e.preventDefault(); done(false); } };
+        const cancel = h('button', { type: 'button', class: 'ghost', onclick: () => done(false) }, 'Anuluj');
+        const ok = h('button', { type: 'button', class: 'btn', onclick: () => done(true) }, danger ? icon('alert') : null, okLabel);
+        const dialog = h('div', { class: 'card tz-dialog', role: 'dialog', 'aria-modal': 'true', 'aria-labelledby': titleId },
+            h('h2', { class: 'hd', id: titleId }, title || ''),
+            text ? h('p', { class: 'sub' }, text) : null,
+            h('div', { class: 'tz-dialog-actions' }, cancel, ok));
+        backdrop = h('div', { class: 'tz-backdrop', onclick: (e) => { if (e.target === backdrop) done(false); } }, dialog);
+        els.root.append(backdrop);
+        openDialogs.add(done);
+        document.addEventListener('keydown', onKey, true);
+        (danger ? cancel : ok).focus();
+    });
+}
+
+export function setMotyw(id) {
+    if (!MOTYWY.some((m) => m.id === id)) return false;
+    try { localStorage.setItem(MOTYW_KEY, id); } catch (e) { /* prywatne okno: motyw tylko do przeładowania */ }
+    if (els) els.root.dataset.motyw = id;
+    return true;
+}
+
+export async function lockNowForTest() {
+    if (!access.isTestMode() || !ctx.lock) return;
+    await ctx.lock.lockNow();
+}
+
+// Ekran próbny do testu kontrastu: każdy rodzaj tekstu z płótna na szklanej karcie.
+function renderProbe(root) {
+    root.append(
+        h('section', { class: 'card tz-stack' },
+            h('h2', { class: 'hd' }, 'Anna Kowalska'),
+            h('p', {}, 'Zwykły tekst na karcie: Łódź, żółć, gęś.'),
+            h('p', { class: 'sub' }, 'Tekst drugorzędny — ostatnia sesja wczoraj'),
+            h('p', { class: 'mut' }, 'Tekst wyciszony · 3 dni temu'),
+            h('p', { class: 'hi' }, 'Wyróżnienie: brak wywiadu'),
+            h('div', { class: 'tz-list' },
+                h('button', { type: 'button', class: 'tz-client' },
+                    h('span', { class: 'tz-avatar', 'aria-hidden': 'true' }, 'AK'),
+                    h('span', { class: 'tz-client-main' },
+                        h('span', { class: 'tz-client-name' }, 'Anna Kowalska'),
+                        h('span', { class: 'mut' }, '34 lat · Siła')),
+                    h('span', { class: 'hi tz-badge' }, 'wywiad'))),
+            h('div', { class: 'tabs', role: 'tablist' },
+                h('button', { type: 'button', class: 'tab tabon', role: 'tab', 'aria-selected': 'true' }, 'Aktywni'),
+                h('button', { type: 'button', class: 'tab', role: 'tab', 'aria-selected': 'false' }, 'Archiwum')),
+            h('div', { class: 'tz-row' },
+                h('span', { class: 'chip chipon' }, 'Siła'),
+                h('span', { class: 'chip' }, 'Redukcja')),
+            h('input', { class: 'in', type: 'text', value: 'Wpisany tekst', 'aria-label': 'Pole próbne' }),
+            h('div', { class: 'tz-row' },
+                h('button', { type: 'button', class: 'btn' }, icon('plus'), 'Klient'),
+                h('button', { type: 'button', class: 'ghost' }, 'Anuluj'))));
+}
+
+export const ctx = {
+    vault: null, lock: null, access, show, toast, confirm, refreshAccess, resolve: resolveRoute, onLeave,
+    theme: { list: MOTYWY, get: readMotyw, set: setMotyw },
+    applySections: applyAppSections,
+};
+
+const exec = (sql, bind) => DatabaseManager.sendMessage('exec', { sql, bind, rowMode: 'object' }).then((r) => r.result);
+
+// Przed blokadą: szkic otwartego formularza (póki ekran jest w DOM) i zapisy szkiców w toku.
+// Blokada zawsze wygrywa: zapisy, które nie skończyły się w czasie, zostają porzucone.
+async function saveBeforeLock() {
+    flushLeave();
+    if ((await settleWithin(saving)) === TIMED_OUT) {
+        console.error('[Strefa trenera] szkic: zapis nie skończył się przed blokadą');
+        saving = Promise.resolve();
+    }
+}
+
+// Okna potwierdzenia (np. z nazwiskiem klienta) zamykają się jak „Anuluj”, komunikat znika (spec 7.4).
+function closeOverlays() {
+    for (const done of [...openDialogs]) done(false);
+    clearTimeout(toastTimer);
+    if (els) els.root.querySelectorAll('.tz-toast').forEach((t) => t.remove());
+}
+
+// Blokada (ręczna, za brak dotyku, w tle): klucz i rekordy znikają z pamięci, ekran wraca do hasła.
+// Autoblokada startuje dopiero po udanym odblokowaniu (ekrany sejfu wołają ctx.lock.start()).
+function onLock() {
+    // Kod awaryjny jeszcze niezapisany: sejf jest pusty, a blokada zabrałaby kod bez śladu.
+    // Autoblokadę uzbraja dopiero „Gotowe” (lock.start() zdejmuje też stan „zablokowane”).
+    if (pendingRecoveryCode()) return;
+    closeOverlays();
+    ctx.vault.lock();
+    if (!els) return;
+    leaveHook = null;
+    // Zmiany ekranu sprzed blokady nie wyrenderują się; ekran hasła od razu, bez czekania w kolejce.
+    navGen += 1;
+    stack = [{ route: 'unlock', params: {} }];
+    render();
+}
+
+export function init() {
+    const container = document.getElementById(TAB_ID);
+    if (!container || els) return;
+    els = buildShell(container);
+    ctx.vault = createVault({ exec });
+    ctx.lock = createAutoLock({ onLock });
+    ctx.lock.beforeLock(saveBeforeLock);
+    registerGateScreens(register);
+    registerVaultScreens(register);
+    registerClientScreens(register);
+    registerInterviewScreen(register);
+    registerAssessmentScreen(register);
+    registerMeasurementsScreen(register);
+    registerSettingsScreen(register);
+    registerIssueScreen(register);
+    if (access.isTestMode() && new URLSearchParams(location.search).has('tz-probka')) {
+        register('__probka', renderProbe);
+    }
+    // Strefa ma własny pasek: pasek aplikacji chowa się, gdy karta Strefy jest aktywna.
+    // Sekcje sprawdzane po zakończeniu przełączania karty, żeby inne moduły skończyły obsługę zdarzenia.
+    document.addEventListener('tabChanged', (e) => {
+        document.body.classList.toggle('tz-on', !!(e.detail && e.detail.tab === TAB_ID));
+        queueMicrotask(applyAppSections);
+    });
+    document.body.append(h('button', { type: 'button', id: 'tz-return', class: 'tz-return', onclick: () => returnToZone() },
+        icon('chevron-left'), 'Wróć do Strefy trenera'));
+    refreshEntryPoints();
+    document.addEventListener(ACCESS_EVENT, refreshEntryPoints);
+    // Po sprawdzeniu kodu (refreshAccess) i po zmianie „Jestem trenerem” w Profilu.
+    document.addEventListener(ACCESS_EVENT, applyAppSections);
+    // open() czeka na sprawdzenie kodu, inaczej kliknięcie tuż po starcie pokazałoby ekran bez kodu.
+    accessReady = refreshAccess().catch((e) => console.warn('[Strefa trenera] dostęp:', e));
+}
+
+export const TrainerUI = { init, open, show, register, onLeave, ctx, setMotyw, lockNowForTest, refreshEntryPoints, refreshAccess, applyAppSections, returnToZone, MOTYWY };

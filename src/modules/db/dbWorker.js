@@ -40,11 +40,60 @@ function writeWhole(accessHandle, bytes) {
     accessHandle.flush();
 }
 
+// Zapasowy magazyn pliku bazy: IndexedDB, gdy OPFS jest niedostępny (konteksty WebKit w Playwright działają
+// jak tryb prywatny Safari: navigator.storage.getDirectory() rzuca UnknownError). Tylko gdy strona sama na to
+// pozwoli (allowIdbFallback w `init`, czyli tryb testowy: localhost + ?tz-test). U użytkowników błąd OPFS
+// dalej przerywa start, żeby pusta baza nie zajęła miejsca prawdziwych danych.
+const IDB_NAME = 'ukis.bodybuild.baza-zapasowa';
+const IDB_STORE = 'pliki';
+let useIdb = false;
+
+function idbDone(req) {
+    return new Promise((resolve, reject) => {
+        req.onsuccess = () => resolve(req.result);
+        req.onerror = () => reject(req.error);
+    });
+}
+
+async function idbRun(mode, fn) {
+    const open = indexedDB.open(IDB_NAME, 1);
+    open.onupgradeneeded = () => open.result.createObjectStore(IDB_STORE);
+    const idb = await idbDone(open);
+    try {
+        const tx = idb.transaction(IDB_STORE, mode);
+        const result = fn(tx.objectStore(IDB_STORE));
+        await new Promise((resolve, reject) => {
+            tx.oncomplete = resolve;
+            tx.onerror = tx.onabort = () => reject(tx.error);
+        });
+        return result ? result.result : undefined;
+    } finally {
+        idb.close();
+    }
+}
+
+// true: plik bazy w IndexedDB (dozwolone i OPFS niedostępny). Bez pozwolenia zawsze false, jak przed zmianą.
+async function chooseIdb(allowIdbFallback) {
+    if (!allowIdbFallback) return false;
+    try {
+        await navigator.storage.getDirectory();
+        return false;
+    } catch (err) {
+        console.warn('Worker: OPFS niedostępny (' + err.name + '), tryb testowy: plik bazy w IndexedDB.');
+        return true;
+    }
+}
+
+async function writeDbFile(bytes) {
+    if (useIdb) await idbRun('readwrite', st => st.put(bytes.slice(), DB_FILE));
+    else await withAccessHandle(true, ah => writeWhole(ah, bytes));
+}
+
 async function autoSaveOPFS() {
     if (sqlite3 && !sqlite3.opfs && db) {
         const byteArray = sqlite3.capi.sqlite3_js_db_export(db.pointer);
         try {
-            await withAccessHandle(true, ah => writeWhole(ah, byteArray));
+            await writeDbFile(byteArray);
         } catch (e) {
             console.error("Worker: Manual OPFS save failed", e);
             throw new Error('Nie udało się zapisać danych na urządzeniu (' + e.name + '). Spróbuj ponownie.');
@@ -84,7 +133,8 @@ self.onmessage = async function(e) {
                     // (np. zajęty), przerywa start: pusta baza w pamięci nadpisałaby go przy pierwszym zapisie.
                     let saved = null;
                     try {
-                        saved = await withAccessHandle(false, ah => {
+                        useIdb = await chooseIdb(!!(payload && payload.allowIdbFallback));
+                        saved = useIdb ? ((await idbRun('readonly', st => st.get(DB_FILE))) || null) : await withAccessHandle(false, ah => {
                             const size = ah.getSize();
                             if (size === 0) return null;
                             const buffer = new Uint8Array(size);
@@ -171,7 +221,7 @@ self.onmessage = async function(e) {
                     db.close();
                     db = null;
                 }
-                await withAccessHandle(true, ah => writeWhole(ah, new Uint8Array(buffer)));
+                await writeDbFile(new Uint8Array(buffer));
 
                 // Re-init db
                 if (sqlite3.opfs) {

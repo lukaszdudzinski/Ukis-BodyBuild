@@ -1,9 +1,15 @@
+import { hasTrainerLicenseSync } from '../trainer/trainerAccess.js';
+
 export const PremiumUI = {
     checkPremium: () => {
         return PremiumUI.getTrialStatus().hasAccess;
     },
 
     getTrialStatus: () => {
+        if (hasTrainerLicenseSync()) {
+            return { hasAccess: true, isProToken: true, daysLeft: 0, isTrainer: true };
+        }
+
         let installDateStr = localStorage.getItem('uki_install_date');
         if (!installDateStr) {
             installDateStr = new Date().toISOString();

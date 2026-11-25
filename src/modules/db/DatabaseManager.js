@@ -1,3 +1,6 @@
+import { TRAINER_TABLES_SQL, exportVaultRaw, vaultExists, vaultImportQueries } from '../trainer/trainerVault.js';
+import { isTestMode } from '../trainer/trainerAccess.js';
+
 let worker = null;
 let isReady = false;
 let initPromise = null;
@@ -10,6 +13,11 @@ function sendMessage(action, payload = {}) {
         resolvers[id] = { resolve, reject };
         worker.postMessage({ id, action, payload });
     });
+}
+
+// `exec` dla sejfu Strefy trenera: jedno polecenie, wiersze jako obiekty.
+async function execRows(sql, bind) {
+    return (await sendMessage('exec', { sql, bind, rowMode: 'object' })).result;
 }
 
 export const DatabaseManager = {
@@ -86,7 +94,8 @@ export const DatabaseManager = {
         initPromise = new Promise(async (resolve, reject) => {
             try {
                 if (!worker) {
-                    worker = new Worker(new URL('./dbWorker.js?v=16', import.meta.url));
+                    // Adres bez query: service worker ma ten plik w CORE_ASSETS, więc baza startuje także offline.
+                    worker = new Worker(new URL('./dbWorker.js', import.meta.url));
                     worker.onmessage = (e) => {
                         const { id, success, result, lastInsertId, error } = e.data;
                         if (resolvers[id]) {
@@ -100,7 +109,8 @@ export const DatabaseManager = {
                     };
                 }
                 
-                await sendMessage('init');
+                // Zapasowa baza w IndexedDB (bez OPFS) wyłącznie w trybie testowym; u użytkowników błąd OPFS przerywa start.
+                await sendMessage('init', { allowIdbFallback: isTestMode() });
                 
                 await DatabaseManager.createTables();
                 DatabaseManager.runMediaMigrationAndCleanup().catch(e => console.error(e));
@@ -187,7 +197,8 @@ export const DatabaseManager = {
                 type TEXT NOT NULL,
                 content TEXT NOT NULL,
                 created_at DATETIME DEFAULT CURRENT_TIMESTAMP
-            );` }
+            );` },
+            ...TRAINER_TABLES_SQL.map((sql) => ({ sql }))
         ];
 
         await sendMessage('exec_multiple', { queries });
@@ -497,25 +508,42 @@ export const DatabaseManager = {
             customWallpaper: localStorage.getItem("uki-custom-wallpaper") || ""
         };
 
-        return JSON.stringify({
+        // Sejf Strefy trenera jedzie w kopii zaszyfrowany (null, gdy go nie ma).
+        const trainerVault = await exportVaultRaw(execRows);
+        const exportDate = new Date().toISOString();
+
+        const json = JSON.stringify({
             app: "Uki's BodyBuild",
-            exportDate: new Date().toISOString(),
+            exportDate,
             measurements: measurements || [],
             trainings: trainings || [],
             dietLogs: dietLogs || [],
             aiAnalyses: aiAnalyses || [],
             settings: settings,
+            trainerVault,
             version: "2.0"
         }, null, 2);
+        localStorage.setItem('ukis.bodybuild.trener.ostatnia-kopia', exportDate);
+        return json;
     },
 
-    importDatabase: async (jsonString) => {
+    // replaceTrainerVault: true zastępuje sejf z telefonu sejfem z kopii, false go zostawia.
+    // Bez tej opcji, gdy kopia i telefon mają sejf, rzuca SEJF_ISTNIEJE, zanim cokolwiek zmieni.
+    importDatabase: async (jsonString, { replaceTrainerVault } = {}) => {
         await DatabaseManager.init();
         try {
             const data = JSON.parse(jsonString);
             
             if (!data.measurements || !data.trainings) {
                 throw new Error("Nieprawidłowy format pliku archiwum bazy.");
+            }
+
+            // Kopia bez sejfu (stara albo z telefonu bez Strefy) nie rusza tabel trenera.
+            let vaultQueries = [];
+            if (data.trainerVault != null) {
+                const exists = await vaultExists(execRows);
+                if (exists && typeof replaceTrainerVault !== 'boolean') throw new Error('SEJF_ISTNIEJE');
+                if (!exists || replaceTrainerVault === true) vaultQueries = vaultImportQueries(data.trainerVault);
             }
 
             const queries = [];
@@ -582,6 +610,8 @@ export const DatabaseManager = {
                     });
                 });
             }
+
+            queries.push(...vaultQueries);
             
             // Execute all as a transaction in the worker!
             await sendMessage('exec_multiple', { queries });
@@ -602,7 +632,8 @@ export const DatabaseManager = {
 
             return true;
         } catch (e) {
-            console.error("Błąd podczas importu bazy:", e);
+            // SEJF_ISTNIEJE to pytanie do użytkownika, nie błąd.
+            if (e?.message !== 'SEJF_ISTNIEJE') console.error("Błąd podczas importu bazy:", e);
             throw e;
         }
     },
