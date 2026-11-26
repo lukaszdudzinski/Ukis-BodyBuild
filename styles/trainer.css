@@ -31,6 +31,7 @@
     --tz-sub: #c9c1bf;
     --tz-mut: #a8a09e;
     --tz-acc-soft: rgba(225, 6, 0, 0.35);
+    --tz-ok: #4ade80;
     --tz-card-tint: rgba(7, 7, 7, 0.6);
     --tz-glow-1: radial-gradient(55% 35% at 15% 8%, rgba(255, 30, 30, 0.40), transparent 70%);
     --tz-glow-2: radial-gradient(50% 35% at 90% 55%, rgba(179, 0, 0, 0.33), transparent 70%);
@@ -46,6 +47,7 @@
     --tz-sub: #c3cad6;
     --tz-mut: #a9b2c1;
     --tz-acc-soft: rgba(53, 99, 217, 0.35);
+    --tz-ok: #4ade80;
     --tz-card-tint: rgba(11, 18, 32, 0.6);
     --tz-glow-1: radial-gradient(55% 35% at 15% 8%, rgba(53, 99, 217, 0.42), transparent 70%);
     --tz-glow-2: radial-gradient(50% 35% at 90% 55%, rgba(120, 134, 160, 0.26), transparent 70%);
@@ -61,6 +63,7 @@
     --tz-sub: #cfc7bd;
     --tz-mut: #b0a89d;
     --tz-acc-soft: rgba(255, 138, 31, 0.30);
+    --tz-ok: #4ade80;
     --tz-card-tint: rgba(10, 9, 8, 0.6);
     --tz-glow-1: radial-gradient(55% 35% at 15% 8%, rgba(255, 138, 31, 0.34), transparent 70%);
     --tz-glow-2: radial-gradient(50% 35% at 90% 55%, rgba(150, 60, 0, 0.30), transparent 70%);
@@ -879,6 +882,12 @@ body.tz-tylko:not(.tz-on) .tz-return {
     line-height: 1.2;
 }
 
+.tz .tz-cont-goal {
+    margin: 0 0 6px;
+    color: var(--tz-text);
+    font: 600 14px/1.2 'Inter', sans-serif;
+}
+
 .tz .tz-cont-grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
@@ -1053,4 +1062,395 @@ body.tz-tylko:not(.tz-on) .tz-return {
 .tz .tz-issued-code {
     word-break: break-all;
     user-select: all;
+}
+
+/* ---------- Plany klienta i edytor planu ---------- */
+.tz .chip:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+}
+
+.tz .tz-iconline {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.tz .tz-iconline .tz-ic {
+    flex: none;
+    width: 18px;
+    height: 18px;
+}
+
+.tz .tz-ex {
+    padding-top: 12px;
+    border-top: 1px solid rgba(255, 255, 255, 0.14);
+}
+
+/* Superseria z następnym: pasek akcentu łączy ćwiczenie z kolejnym. */
+.tz .tz-ex-ss {
+    padding-left: 10px;
+    border-left: 3px solid var(--tz-acc);
+}
+
+.tz .tz-ex-name {
+    font-weight: 600;
+    overflow-wrap: anywhere;
+    min-width: 0;
+}
+
+.tz .tz-ex-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+}
+
+@media (min-width: 520px) {
+    .tz .tz-ex-grid:not(.tz-ex-grid2) {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+}
+
+.tz .tz-ex-grid .in {
+    padding: 10px 8px;
+}
+
+.tz .tz-check .tz-ic {
+    flex: none;
+    width: 18px;
+    height: 18px;
+}
+
+/* Okno wyboru ćwiczenia: długa lista przewija się w oknie. */
+.tz-picker {
+    max-height: 100%;
+    overflow-y: auto;
+}
+
+.tz .tz-pick-cat {
+    justify-content: space-between;
+    width: 100%;
+}
+
+.tz .tz-pick {
+    min-height: 44px;
+    padding: 8px 10px;
+    border: none;
+    border-radius: 12px;
+    background: transparent;
+    color: var(--tz-text);
+    font: 500 15px/1.25 'Inter', sans-serif;
+    text-align: left;
+    cursor: pointer;
+    overflow-wrap: anywhere;
+}
+
+.tz .tz-pick:hover {
+    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.22);
+}
+
+/* ---------- Przegląd planu ---------- */
+.tz .tz-week {
+    min-width: 76px;
+    justify-content: center;
+}
+
+/* Licznik serii roboczych: ciemna pigułka, żeby kontrast był ≥ 4,5 : 1 na każdej karcie. */
+.tz .tz-count {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    min-height: 32px;
+    padding: 4px 12px;
+    border-radius: 999px;
+    background: rgba(0, 0, 0, 0.55);
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    color: var(--tz-sub);
+    font: 600 14px/1.2 'Inter', sans-serif;
+    font-variant-numeric: tabular-nums;
+}
+
+/* Ponad limit: kolor wyróżnienia i ikona, bez blokady (spec 9.5). */
+.tz .tz-count.tz-over {
+    color: var(--tz-hi);
+    border-color: var(--tz-hi);
+}
+
+.tz .tz-count .tz-ic {
+    flex: none;
+    width: 16px;
+    height: 16px;
+}
+
+.tz .tz-plan-actions:empty {
+    display: none;
+}
+
+.tz .tz-plan-ex + .tz-plan-ex {
+    padding-top: 12px;
+    border-top: 1px solid rgba(255, 255, 255, 0.14);
+}
+
+.tz .tz-plan-ex.tz-ex-ss + .tz-plan-ex {
+    border-top: none;
+}
+
+.tz .tz-warmup summary {
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+}
+
+.tz-dialog fieldset {
+    border: 0;
+    margin: 0;
+    padding: 0;
+    min-width: 0;
+}
+
+.tz-dialog legend {
+    padding: 0;
+    margin-bottom: 6px;
+}
+
+/* ---------- Sesja z klientem (spec 9.6) ---------- */
+.tz .tz-clockbox {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 4px;
+    text-align: right;
+}
+
+.tz .tz-clock {
+    font: italic 700 32px/1 'Barlow', 'Inter', sans-serif;
+    color: var(--tz-text);
+    font-variant-numeric: tabular-nums;
+}
+
+.tz .tz-sess-ex h3 {
+    margin: 0;
+    font-size: 16px;
+    color: var(--tz-text);
+}
+
+/* Ćwiczenia superserii w jednej ramce: pasek akcentu jak w edytorze planu. */
+.tz .tz-ss-group {
+    border-left: 3px solid var(--tz-acc);
+}
+
+.tz .tz-ss-group .tz-sess-ex + .tz-sess-ex {
+    padding-top: 12px;
+    border-top: 1px dashed rgba(255, 255, 255, 0.22);
+}
+
+.tz .tz-sets {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.tz .tz-set,
+.tz .tz-sets-hd {
+    display: grid;
+    grid-template-columns: 44px minmax(0, 1fr) minmax(0, 1fr) 44px;
+    gap: 8px;
+    align-items: center;
+}
+
+.tz .tz-sets-hd {
+    padding: 0 4px;
+    text-align: center;
+}
+
+.tz .tz-set {
+    padding: 4px;
+    border-radius: 14px;
+}
+
+/* Seria wykonana: ciemniejsze tło (kontrast tekstu rośnie) i wypełniony przycisk odhaczenia. */
+.tz .tz-set.tz-done {
+    background: rgba(0, 0, 0, 0.4);
+    box-shadow: inset 0 0 0 1px var(--tz-acc-soft);
+}
+
+.tz .tz-setnum {
+    text-align: center;
+    font: 600 15px/1 'Inter', sans-serif;
+    color: var(--tz-sub);
+    font-variant-numeric: tabular-nums;
+}
+
+.tz .tz-set.tz-done .tz-setnum {
+    color: var(--tz-text);
+}
+
+.tz .tz-drop .tz-setnum {
+    font-size: 13px;
+    color: var(--tz-hi);
+}
+
+.tz .tz-set .in {
+    padding: 10px 6px;
+    text-align: center;
+    font-variant-numeric: tabular-nums;
+}
+
+.tz .in.tz-invalid {
+    border-color: var(--tz-hi);
+}
+
+.tz .tz-tick {
+    width: 44px;
+    height: 44px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.28);
+    color: var(--tz-sub);
+    cursor: pointer;
+}
+
+.tz .tz-tick[aria-pressed="true"] {
+    background: var(--tz-acc);
+    border-color: transparent;
+    color: var(--tz-on-acc);
+}
+
+.tz .ghost.tz-small {
+    padding: 0 14px;
+}
+
+.tz .tz-rpe {
+    min-width: 52px;
+    justify-content: center;
+}
+
+/* ---------- Postępy klienta ---------- */
+.tz .tz-stat {
+    margin: 0;
+    font: 600 18px/1.3 'Inter', sans-serif;
+    color: var(--tz-text);
+    font-variant-numeric: tabular-nums;
+}
+
+/* Wiersz miesiąca: nazwa i liczba, pod nimi pasek na całą szerokość. */
+.tz .tz-month {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: baseline;
+    column-gap: 12px;
+    row-gap: 4px;
+    padding: 4px 0;
+}
+
+.tz .tz-month-count {
+    color: var(--tz-text);
+    font-variant-numeric: tabular-nums;
+}
+
+.tz .tz-bar {
+    grid-column: 1 / -1;
+    height: 8px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.08);
+    overflow: hidden;
+}
+
+.tz .tz-bar-fill {
+    height: 100%;
+    border-radius: inherit;
+    background: var(--tz-acc);
+}
+
+.tz .tz-icbtn:disabled {
+    opacity: 0.4;
+    cursor: default;
+}
+
+/* Eksport planu: przełączniki (role="switch") i zielona ramka „co jest w pliku”. Kolory tekstu tylko ze zmiennych motywu. */
+.tz .tz-switch {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    width: 100%;
+    min-height: 44px;
+    padding: 6px 0;
+    background: none;
+    border: 0;
+    color: var(--tz-text);
+    font: inherit;
+    text-align: left;
+    cursor: pointer;
+}
+
+.tz .tz-switch:disabled {
+    cursor: default;
+}
+
+.tz .tz-switch-text {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.tz .tz-switch-knob {
+    position: relative;
+    flex: none;
+    width: 48px;
+    height: 28px;
+    border-radius: 14px;
+    background: rgba(255, 255, 255, 0.14);
+    border: 1px solid rgba(255, 255, 255, 0.4);
+}
+
+.tz .tz-switch-knob::after {
+    content: '';
+    position: absolute;
+    top: 3px;
+    left: 3px;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: var(--tz-text);
+    transition: transform 0.15s;
+}
+
+.tz .tz-switch[aria-checked="true"] .tz-switch-knob {
+    background: var(--tz-acc);
+    border-color: transparent;
+}
+
+.tz .tz-switch[aria-checked="true"] .tz-switch-knob::after {
+    transform: translateX(20px);
+    background: var(--tz-on-acc);
+}
+
+.tz .tz-switch:disabled .tz-switch-knob {
+    opacity: 0.6;
+}
+
+.tz .tz-switch:focus-visible {
+    outline: 2px solid var(--tz-hi);
+    outline-offset: 2px;
+}
+
+.tz .card.tz-safe {
+    border: 1px solid var(--tz-ok);
+}
+
+.tz .tz-safe .tz-ic {
+    color: var(--tz-ok);
+}
+
+.tz .tz-filename {
+    overflow-wrap: anywhere;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .tz .tz-switch-knob::after { transition: none; }
 }

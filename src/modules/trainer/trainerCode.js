@@ -57,12 +57,26 @@ export function isRealDate(s) {
   return dt.getUTCFullYear() === y && dt.getUTCMonth() === m - 1 && dt.getUTCDate() === d;
 }
 
+const SIG_CHARS = 86;
+
+export function normalizeCode(code) {
+  return String(code ?? '').replace(/[\s\u00AD\u200B-\u200F\u2028-\u202E\u2060-\u2069\uFEFF]/g, '');
+}
+
 export async function verifyTrainerCode(code, { now = new Date(), publicKeyJwk = TRAINER_PUBLIC_KEY_JWK } = {}) {
-  const parts = String(code ?? '').trim().split('.');
+  // Kod wklejony z komunikatora bywa połamany na linie albo ma znaki niewidoczne (miękki dywiz, zero-width).
+  // Żaden z nich nie należy do kodu, więc usuwamy je wszystkie przed sprawdzeniem.
+  const parts = normalizeCode(code).split('.');
   if (parts.length !== 3 || parts[0] !== PREFIX) return { ok: false, reason: 'FORMAT' };
   let payload, sig;
   try {
     payload = JSON.parse(new TextDecoder('utf-8', { fatal: true }).decode(fromB64Url(parts[1])));
+  } catch {
+    return { ok: false, reason: 'FORMAT' };
+  }
+  // Podpis P-256 ma zawsze 64 bajty (86 znaków). Krótszy = kod ucięty przy kopiowaniu.
+  if (parts[2].length !== SIG_CHARS) return { ok: false, reason: 'NIEPELNY' };
+  try {
     sig = fromB64Url(parts[2]);
   } catch {
     return { ok: false, reason: 'FORMAT' };

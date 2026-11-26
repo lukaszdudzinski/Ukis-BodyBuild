@@ -11,6 +11,27 @@ export function goalLabel(id) {
     return g ? g.label : '';
 }
 
+// Cele dodatkowe z wywiadu do pokazania obok celu głównego: znane id, bez celu głównego i bez powtórzeń.
+export function extraGoals(mainGoal, goalExtra) {
+    const seen = new Set([mainGoal]);
+    const out = [];
+    for (const id of Array.isArray(goalExtra) ? goalExtra : []) {
+        if (seen.has(id) || !goalLabel(id)) continue;
+        seen.add(id);
+        out.push(id);
+    }
+    return out;
+}
+
+// „1 sesja”, „3 sesje”, „5 sesji”, „22 sesje” (rozstrzygnięcie C3): forma „few” dla 2–4 na końcu, poza 12–14.
+export function plural(n, one, few, many) {
+    const abs = Math.abs(n);
+    const form = abs === 1 ? one
+        : abs % 10 >= 2 && abs % 10 <= 4 && !(abs % 100 >= 12 && abs % 100 <= 14) ? few
+            : many;
+    return `${n} ${form}`;
+}
+
 export function clientAge(client, today = new Date()) {
     const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec((client && client.birthDate) || '');
     if (m) {
@@ -131,6 +152,17 @@ function assessmentLines(rec) {
     return lines;
 }
 
+function planLine(p) {
+    return `Plan: ${p.name || 'bez nazwy'} (${p.weeks} tyg., od ${p.startDate || '—'}, ${p.status === 'aktywny' ? 'aktywny' : 'nieaktywny'})`;
+}
+
+function sessionLine(r) {
+    const sets = (r.exercises || []).reduce((n, ex) => n + (ex.sets || []).filter((x) => x && x.done).length, 0);
+    const minutes = Math.round((r.durationSec || 0) / 60);
+    const note = filled(r.note) ? `; notatka: ${String(r.note).trim()}` : '';
+    return `Sesja ${r.date || '—'}: ${minutes} min, ${plural(sets, 'seria', 'serie', 'serii')}${note}`;
+}
+
 // Wszystkie znane pola pomiarów, także wyłączone w ustawieniach (dane mogły powstać, gdy były włączone).
 function measurementFieldMap(settings) {
     const cfg = (settings && settings.measurementFields) || {};
@@ -183,5 +215,11 @@ export function clientDataText(client, records = [], today = new Date(), { setti
         const fields = measurementFieldMap(settings);
         measurements.forEach((r) => lines.push(...measurementLines(r, fields)));
     } else lines.push('', 'Pomiary: brak');
+
+    // Plany i zakończone sesje (szkice planów i sesje w toku nie są jeszcze danymi klienta).
+    const plans = records.filter((r) => r && r.kind === 'plan').sort((a, b) => String(b.startDate || '').localeCompare(String(a.startDate || '')));
+    const sessions = records.filter((r) => r && r.kind === 'session' && r.status === 'zakonczona').sort(byDateNewest);
+    if (plans.length) lines.push('', ...plans.map(planLine));
+    if (sessions.length) lines.push('', ...sessions.map(sessionLine));
     return lines.join('\n');
 }

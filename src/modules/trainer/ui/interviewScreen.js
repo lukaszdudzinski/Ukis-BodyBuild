@@ -2,6 +2,7 @@
 // Odpowiedzi trafiają do DOM wyłącznie przez h() jako węzły tekstowe lub właściwości value.
 import { h, icon } from './dom.js';
 import { STEPS, GOALS, QUESTIONNAIRE_VERSION, continuumForGoal } from '../trainerQuestionnaire.js';
+import { goalLabel, extraGoals } from '../trainerModel.js';
 
 const SAVE_FAILED = 'Nie udało się zapisać. Spróbuj jeszcze raz.';
 const CONSENT_LABEL = 'Klient zgodził się na zapisanie danych o zdrowiu w celu prowadzenia treningów';
@@ -164,25 +165,32 @@ function renderInterview(root, params, ctx) {
         return h('div', { class: 'tz-field tz-q' }, h('span', { class: 'sub' }, q.label), h('div', { class: 'tz-row' }, chips));
     }
 
+    // Karta „Podpowiedź do planu”: wiersz dla celu głównego i dla każdego celu dodatkowego, który ma kontinuum.
+    // Odświeżana także przy zmianie celów dodatkowych (ten sam krok „Cel”).
+    let paintHint = () => {};
+
     function renderGoalPicker(q) {
-        const card = h('section', { class: 'card tz-cont', 'aria-live': 'polite' });
+        const card = h('section', { class: 'card tz-cont tz-stack', 'aria-live': 'polite' });
         const buttons = GOALS.map((g) => h('button', {
             type: 'button', class: 'chip', 'aria-pressed': 'false',
             onclick: () => { set(q, state.goal === g.id ? null : g.id); paint(); },
         }, g.label));
+        const cell = (label, value) => h('div', { class: 'tz-cont-cell' }, h('span', { class: 'mut' }, label), h('strong', {}, value));
+        paintHint = () => {
+            const ids = [...(state.goal ? [state.goal] : []), ...extraGoals(state.goal, state.goalExtra)];
+            const rows = ids.map((id) => [id, continuumForGoal(id)]).filter(([, c]) => c).map(([id, c]) => h('div', { class: 'tz-cont-row' },
+                h('h4', { class: 'tz-cont-goal' }, goalLabel(id)),
+                h('div', { class: 'tz-cont-grid' }, cell('Powtórzenia', c.reps), cell('% CM', c.pct), cell('Przerwa', c.rest))));
+            card.hidden = !rows.length;
+            card.replaceChildren(...(rows.length ? [h('h3', { class: 'sub' }, 'Podpowiedź do planu'), ...rows] : []));
+        };
         const paint = () => {
             buttons.forEach((b, i) => {
                 const on = GOALS[i].id === state.goal;
                 b.classList.toggle('chipon', on);
                 b.setAttribute('aria-pressed', String(on));
             });
-            const c = continuumForGoal(state.goal);
-            card.hidden = !c;
-            if (!c) return;
-            const cell = (label, value) => h('div', { class: 'tz-cont-cell' }, h('span', { class: 'mut' }, label), h('strong', {}, value));
-            card.replaceChildren(
-                h('h3', { class: 'sub' }, 'Podpowiedź do planu'),
-                h('div', { class: 'tz-cont-grid' }, cell('Powtórzenia', c.reps), cell('% CM', c.pct), cell('Przerwa', c.rest)));
+            paintHint();
         };
         paint();
         return h('div', { class: 'tz-field tz-q' }, h('span', { class: 'sub' }, q.label),
@@ -195,10 +203,11 @@ function renderInterview(root, params, ctx) {
                 type: 'checkbox', checked: state.goalExtra.includes(g.id),
                 onchange: (e) => {
                     state.goalExtra = e.target.checked ? [...state.goalExtra, g.id] : state.goalExtra.filter((x) => x !== g.id);
+                    paintHint();
                 },
             }), g.label));
         return h('div', { class: 'tz-field tz-q' }, h('span', { class: 'sub' }, q.label),
-            h('div', { class: 'tz-row' }, boxes), noteInput(q, false, q.withNote));
+            h('div', { class: 'tz-goals' }, boxes), noteInput(q, false, q.withNote));
     }
 
     function paintStep() {

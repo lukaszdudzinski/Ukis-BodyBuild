@@ -5,7 +5,12 @@ import { scoreAssessment } from '../trainerAssessment.js';
 import { formatNumber } from '../trainerMeasurements.js';
 import { healthSummary } from '../trainerQuestionnaire.js';
 import { lastBackupAt, backupLabel, needsBackupReminder } from '../trainerBackup.js';
-import { GOALS, clientAge, initials, searchClients, sortClients, clientDataText, goalLabel } from '../trainerModel.js';
+import { GOALS, clientAge, initials, searchClients, sortClients, clientDataText, goalLabel, extraGoals, plural } from '../trainerModel.js';
+import { activePlan, daysPerWeek, mondayOf, addDays, toIso } from '../trainerPlan.js';
+import { finishedSessions } from '../trainerSession.js';
+import { planTileSub } from './planScreens.js';
+import { sessionCard } from './sessionScreen.js';
+import { progressTileSub } from './progressScreen.js';
 
 const SAVE_FAILED = 'Nie udało się zapisać. Spróbuj jeszcze raz.';
 
@@ -25,6 +30,20 @@ function latestInterview(ctx, clientId) {
     return all.find((r) => r.status !== 'szkic') || all[0] || null;
 }
 
+// Cele dodatkowe klienta: z ostatniego zakończonego wywiadu (szkic nie jest danymi klienta), bez celu głównego.
+function clientExtraGoals(ctx, client) {
+    const done = ctx.vault.list('interview', client.id).filter((r) => r.status !== 'szkic')
+        .sort((a, b) => String(b.updatedAt || '').localeCompare(String(a.updatedAt || '')))[0];
+    return done ? extraGoals(client.goal, done.goalExtra) : [];
+}
+
+// Podtytuł wiersza listy: „Hipertrofia +1” (cel główny i liczba celów dodatkowych).
+function goalSummary(ctx, client) {
+    if (!client.goal) return null;
+    const extra = clientExtraGoals(ctx, client).length;
+    return extra ? `${goalLabel(client.goal)} +${extra}` : goalLabel(client.goal);
+}
+
 // Baner „Zrób kopię” (spec 8.3): kopii nie ma albo ma ponad 7 dni, a jest co najmniej jeden klient.
 function backupBanner(clientCount) {
     const last = lastBackupAt();
@@ -39,7 +58,13 @@ function backupBanner(clientCount) {
 function renderList(root, params, ctx) {
     const clients = ctx.vault.list('client');
     const state = { tab: params.tab === 'archive' ? 'archive' : 'active', query: '' };
-    const activeCount = clients.filter((c) => !c.archived).length;
+    const activeIds = new Set(clients.filter((c) => !c.archived).map((c) => c.id));
+    const activeCount = activeIds.size;
+    // Sesje zakończone w bieżącym tygodniu (od poniedziałku) aktywnych klientów.
+    const monday = mondayOf(toIso(new Date()));
+    const sunday = addDays(monday, 6);
+    const weekSessions = finishedSessions(ctx.vault.list('session'))
+        .filter((s) => activeIds.has(s.clientId) && s.date >= monday && s.date <= sunday).length;
 
     const listBox = h('div', { class: 'tz-stack' });
     const search = h('input', { class: 'in', type: 'search', 'aria-label': 'Szukaj klienta', placeholder: 'Szukaj klienta', autocomplete: 'off' });
@@ -64,7 +89,7 @@ function renderList(root, params, ctx) {
                 h('span', { class: 'tz-avatar', 'aria-hidden': 'true' }, initials(c)),
                 h('span', { class: 'tz-client-main' },
                     h('span', { class: 'tz-client-name' }, fullName(c)),
-                    h('span', { class: 'mut' }, [age !== null ? `${age} lat` : null, c.goal ? goalLabel(c.goal) : null].filter(Boolean).join(' · '))),
+                    h('span', { class: 'mut' }, [age !== null ? `${age} lat` : null, goalSummary(ctx, c)].filter(Boolean).join(' · '))),
                 hasInterview(ctx, c.id) ? null : h('span', { class: 'hi tz-badge' }, 'wywiad'));
         })));
     };
@@ -79,7 +104,7 @@ function renderList(root, params, ctx) {
             h('div', { class: 'tz-between' },
                 h('div', {},
                     h('h2', { class: 'hd' }, 'Klienci'),
-                    h('p', { class: 'sub' }, `${activeCount} aktywni`)),
+                    h('p', { class: 'sub' }, `${activeCount} aktywni · ${plural(weekSessions, 'sesja', 'sesje', 'sesji')} w tym tygodniu`)),
                 h('button', { type: 'button', class: 'btn', onclick: () => ctx.show('client-edit', {}) }, icon('plus'), 'Klient')),
             search,
             h('div', { class: 'tabs', role: 'tablist' }, tabActive, tabArchive)),
@@ -206,7 +231,7 @@ function renderEdit(root, params, ctx) {
         field('Data urodzenia', birth), field('Wiek (gdy bez daty urodzenia)', age),
         field('Płeć', sex), field('Wzrost (cm)', height),
         field('Telefon', phone), field('E-mail', email),
-        h('div', { class: 'tz-field' }, h('span', { class: 'sub' }, 'Cel'), h('div', { class: 'tz-row' }, chips)),
+        h('div', { class: 'tz-field' }, h('span', { class: 'sub' }, 'Cel'), h('div', { class: 'tz-goals' }, chips)),
         field('Notatka', note),
         error,
         h('div', { class: 'tz-row' }, save,
@@ -280,6 +305,8 @@ function renderCard(root, params, ctx) {
             }
         }, true));
 
+    const current = activePlan(ctx.vault.list('plan', c.id), new Date());
+    const perWeek = current ? daysPerWeek(current) : 0;
     const health = healthSummary(latestInterview(ctx, c.id));
     const contact = [
         c.phone ? h('a', { class: 'ghost', href: `tel:${c.phone.replace(/[^\d+]/g, '')}` }, icon('phone'), 'Zadzwoń') : null,
@@ -294,25 +321,31 @@ function renderCard(root, params, ctx) {
                     h('div', {},
                         h('h2', { class: 'hd tz-client-title' }, fullName(c)),
                         h('p', { class: 'sub' }, [age !== null ? `${age} lat` : null, c.archived ? 'w archiwum' : null].filter(Boolean).join(' · ')),
-                        c.goal ? h('span', { class: 'chip chipon tz-goalchip' }, `Cel: ${goalLabel(c.goal)}`) : null)),
+                        h('div', { class: 'tz-row' },
+                            c.goal ? h('span', { class: 'chip chipon tz-goalchip' }, `Cel: ${goalLabel(c.goal)}`) : null,
+                            clientExtraGoals(ctx, c).map((id) => h('span', { class: 'chip tz-goalchip' }, `+ ${goalLabel(id)}`)),
+                            current ? h('span', { class: 'chip' }, `${perWeek}× w tygodniu`) : null))),
                 menuBtn),
             contact.length ? h('div', { class: 'tz-row' }, contact) : null,
             c.note ? h('p', { class: 'sub tz-note' }, c.note) : null,
             menu),
+        sessionCard(ctx, c),
         health.flagged ? h('section', { class: 'card tz-health', role: 'note' },
             h('h3', { class: 'hi tz-health-title' }, icon('alert'), 'Uwaga zdrowotna'),
             h('p', { class: 'tz-note' }, health.text)) : null,
         h('div', { class: 'tz-tiles' },
             tile('Wywiad', 'clipboard-list', 'interview', c.id, ctx),
             tile('Ocena funkcjonalna', 'activity', 'assessment', c.id, ctx, assessmentTileSub(ctx, c.id)),
-            tile('Pomiary', 'ruler', 'measurements', c.id, ctx, measurementsTileSub(ctx, c.id)))));
+            tile('Pomiary', 'ruler', 'measurements', c.id, ctx, measurementsTileSub(ctx, c.id)),
+            tile('Plan', 'dumbbell', 'plans', c.id, ctx, planTileSub(ctx.vault.list('plan', c.id))),
+            tile('Postępy', 'trending-up', 'progress', c.id, ctx, progressTileSub(ctx.vault.list('session', c.id))))));
 }
 
 function renderData(root, params, ctx) {
     const c = params.id ? ctx.vault.get(params.id) : null;
     if (!c) { ctx.show('clients', {}, { reset: true }); return; }
     // Szkice (client_draft, assessment_draft, wywiad ze statusem „szkic”) nie trafiają do tekstu.
-    const records = ['interview', 'assessment', 'measurement'].flatMap((k) => ctx.vault.list(k, c.id));
+    const records = ['interview', 'assessment', 'measurement', 'plan', 'session'].flatMap((k) => ctx.vault.list(k, c.id));
     const text = clientDataText(c, records, new Date(), { settings: ctx.vault.list('trainer_settings')[0] || null });
     const actions = [];
     if (navigator.share) {

@@ -1,6 +1,6 @@
 // Dostęp do Strefy trenera: przełącznik, zapisany kod i prośba o kod mailem.
 // Bez efektów ubocznych przy imporcie (moduł jest importowany też w testach).
-import { verifyTrainerCode, TRAINER_PUBLIC_KEY_JWK } from './trainerCode.js';
+import { verifyTrainerCode, normalizeCode, TRAINER_PUBLIC_KEY_JWK } from './trainerCode.js';
 
 export const KEYS = {
     enabled: 'ukis.bodybuild.trener.wlaczony',
@@ -46,7 +46,7 @@ function verifyOptions(options) {
 export async function saveTrainerCode(code, storage = globalThis.localStorage, options = {}) {
     const r = await verifyTrainerCode(code, verifyOptions(options));
     if (!r.ok) return r;
-    storage.setItem(KEYS.code, String(code).trim());
+    storage.setItem(KEYS.code, normalizeCode(code));
     return { ok: true, name: r.name };
 }
 

@@ -9,6 +9,7 @@ import { COMPOSITION_FIELDS, nextCustomFieldId } from '../trainerMeasurements.js
 import { SECTIONS, loadSections, saveSections } from '../trainerSections.js';
 import { lastBackupAt, backupLabel } from '../trainerBackup.js';
 import { ownerKeyEntry, issueCard } from './issueScreen.js';
+import { planSettings, SESSION_MINUTES } from '../trainerPlan.js';
 
 const SAVE_FAILED = 'Nie udało się zapisać. Spróbuj jeszcze raz.';
 const LABEL_MAX = 40;
@@ -142,6 +143,61 @@ function autolockCard(ctx) {
             }
         }),
         h('p', { class: 'mut' }, 'W tle Strefa blokuje się po 1 minucie, a po przeładowaniu zawsze.'));
+}
+
+// Karta „Plan i sesja”: intensywność nowych planów, limit serii na grupę i domyślny czas sesji.
+// Każda zmiana zapisuje się od razu; nieudany zapis cofa wybór i pokazuje komunikat.
+function planCard(ctx) {
+    const current = planSettings(currentSettings(ctx));
+    // Zapisy idą po kolei: dwie szybkie zmiany nie czytają tej samej starej kopii rekordu.
+    let queue = Promise.resolve();
+    const save = (change) => {
+        const run = async () => {
+            try {
+                await updateSettings(ctx, change);
+                return true;
+            } catch (e) {
+                console.error('[Strefa trenera] ustawienia planu:', e && e.message);
+                ctx.toast(SAVE_FAILED);
+                return false;
+            }
+        };
+        const result = queue.then(run);
+        queue = result;
+        return result;
+    };
+
+    const intensity = radioChips('Intensywność w planach',
+        [{ id: 'rir', label: 'RIR' }, { id: 'rpe', label: 'RPE' }], current.intensity,
+        (value) => save((s) => { s.intensity = value; }));
+
+    let savedLimit = current.weeklySetsLimit;
+    const error = h('p', { class: 'tz-error', role: 'alert' });
+    const limit = h('input', { class: 'in', type: 'number', inputmode: 'numeric', min: 1, max: 40, step: 1, value: String(savedLimit) });
+    limit.addEventListener('change', async () => {
+        const raw = limit.value.trim();
+        const n = Number(raw);
+        if (!raw || !Number.isInteger(n) || n < 1 || n > 40) {
+            error.textContent = 'Wpisz liczbę od 1 do 40.';
+            limit.value = String(savedLimit);
+            return;
+        }
+        error.textContent = '';
+        if (n === savedLimit) return;
+        if (await save((s) => { s.weeklySetsLimit = n; })) savedLimit = n;
+        else limit.value = String(savedLimit);
+    });
+
+    const minutes = radioChips('Domyślny czas sesji',
+        SESSION_MINUTES.map((m) => ({ id: m, label: `${m} min` })), current.sessionMinutes,
+        (value) => save((s) => { s.sessionMinutes = value; }));
+
+    return card('plan', 'Plan i sesja',
+        intensity,
+        h('p', { class: 'mut' }, 'Dotyczy nowych planów.'),
+        h('label', { class: 'tz-field' }, h('span', { class: 'sub' }, 'Limit serii roboczych na grupę w tygodniu'), limit),
+        error,
+        minutes);
 }
 
 function themeCard(ctx) {
@@ -315,6 +371,7 @@ async function renderSettings(root, params, ctx) {
         passwordCard(ctx),
         recoveryCard(ctx),
         autolockCard(ctx),
+        planCard(ctx),
         sectionsCard(ctx),
         fieldsCard(ctx),
         themeCard(ctx),

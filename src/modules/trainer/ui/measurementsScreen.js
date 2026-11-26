@@ -2,12 +2,12 @@
 // Pomiary klienta żyją tylko w sejfie (rekordy measurement); tabela measurements aplikacji nie jest ruszana.
 // Niezapisany formularz zostaje jako szkic (rekord measurement_draft w sejfie) przy wyjściu z ekranu
 // i przy blokadzie; „+ Pomiar” przywraca go, zapis albo „Anuluj” go usuwa.
-// Dane trafiają do DOM wyłącznie przez h() i atrybuty SVG ustawiane jako tekst.
+// Dane trafiają do DOM wyłącznie przez h(); wykres rysuje lineChart (chart.js).
 import { h, icon } from './dom.js';
+import { lineChart } from './chart.js';
 import { activeFields, validateMeasurement, seriesFor, formatNumber } from '../trainerMeasurements.js';
 
 const SAVE_FAILED = 'Nie udało się zapisać. Spróbuj jeszcze raz.';
-const SVG_NS = 'http://www.w3.org/2000/svg';
 
 function today() {
     const d = new Date();
@@ -21,40 +21,6 @@ const DRAFT_KIND = 'measurement_draft';
 
 // Wpisane wartości bez pustych pól, w stałej kolejności (do porównania ze stanem z otwarcia).
 const filled = (raw) => Object.entries(raw).filter(([, v]) => String(v ?? '').trim() !== '').sort(([a], [b]) => a.localeCompare(b));
-
-function svg(tag, attrs) {
-    const el = document.createElementNS(SVG_NS, tag);
-    for (const [k, v] of Object.entries(attrs)) el.setAttribute(k, String(v));
-    return el;
-}
-
-// Wykres: polyline w kolorze akcentu motywu, z opisem zmiany dla czytników ekranu.
-function chart(field, series) {
-    if (series.length === 0) return h('p', { class: 'mut' }, 'Brak danych do wykresu.');
-    const W = 300;
-    const H = 120;
-    const pad = 12;
-    const values = series.map((s) => s.value);
-    const min = Math.min(...values);
-    const max = Math.max(...values);
-    const span = max - min || 1;
-    const pts = series.map((s, i) => [
-        series.length === 1 ? W / 2 : pad + (i * (W - 2 * pad)) / (series.length - 1),
-        H - pad - ((s.value - min) / span) * (H - 2 * pad),
-    ]);
-    const unit = field.unit ? ` ${field.unit}` : '';
-    const first = series[0];
-    const last = series[series.length - 1];
-    const label = series.length === 1
-        ? `${field.label}: ${formatNumber(last.value)}${unit}`
-        : `${field.label}: z ${formatNumber(first.value)} do ${formatNumber(last.value)}${unit}`;
-    const el = svg('svg', { class: 'tz-chart', viewBox: `0 0 ${W} ${H}`, role: 'img', 'aria-label': label, preserveAspectRatio: 'none' });
-    if (series.length > 1) {
-        el.appendChild(svg('polyline', { points: pts.map((p) => p.join(',')).join(' '), fill: 'none', stroke: 'var(--tz-hi)', 'stroke-width': 2.5, 'stroke-linecap': 'round', 'stroke-linejoin': 'round', 'vector-effect': 'non-scaling-stroke' }));
-    }
-    pts.forEach(([x, y]) => el.appendChild(svg('circle', { cx: x, cy: y, r: 3.5, fill: 'var(--tz-hi)' })));
-    return el;
-}
 
 function renderMeasurements(root, params, ctx) {
     const client = params.clientId ? ctx.vault.get(params.clientId) : null;
@@ -92,7 +58,7 @@ function renderMeasurements(root, params, ctx) {
             h('section', { class: 'card tz-stack' },
                 h('h2', { class: 'hd' }, 'Pomiary'),
                 h('button', { type: 'button', class: 'btn', onclick: () => { state.adding = true; paint(); } }, icon('plus'), 'Pomiar')),
-            h('section', { class: 'card tz-stack' }, select, chart(field, seriesFor(sorted, field.id))),
+            h('section', { class: 'card tz-stack' }, select, lineChart(field, seriesFor(sorted, field.id))),
             rows);
     };
 

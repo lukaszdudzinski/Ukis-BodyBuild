@@ -10,6 +10,11 @@ import { registerAssessmentScreen } from './assessmentScreen.js';
 import { registerMeasurementsScreen } from './measurementsScreen.js';
 import { registerSettingsScreen } from './settingsScreen.js';
 import { registerIssueScreen } from './issueScreen.js';
+import { registerPlanScreens } from './planScreens.js';
+import { registerPlanEditScreen } from './planEditScreen.js';
+import { registerPlanExportScreen } from './planExportScreen.js';
+import { registerSessionScreens } from './sessionScreen.js';
+import { registerProgressScreen } from './progressScreen.js';
 import { loadSections, effectiveSections, isTrainerOnly, applySections } from '../trainerSections.js';
 import { createVault } from '../trainerVault.js';
 import { createAutoLock } from '../trainerLock.js';
@@ -168,6 +173,8 @@ function render() {
     els.main.replaceChildren(view);
     els.main.scrollTop = 0;
     updateChrome(route);
+    // Tryb sesji autoblokady (decyzja 10): włączony dokładnie wtedy, gdy otwarty jest ekran sesji.
+    ctx.lock?.setSessionActive?.(route === 'session');
     const fn = routes.get(route) || renderPlaceholder;
     try {
         Promise.resolve(fn(view, params, ctx)).catch((e) => reportError(route, e));
@@ -287,6 +294,9 @@ export async function open() {
 }
 
 function renderOpenError() {
+    // Bez render(): tryb sesji autoblokady (włączony np. przez powrót na kartę ze stosem „session”) trzeba wyłączyć tu,
+    // także gdy widoku już nie ma.
+    ctx.lock?.setSessionActive?.(false);
     if (!els) return;
     stack = [];
     const retry = h('button', { type: 'button', class: 'btn', onclick: () => { open(); } }, 'Spróbuj ponownie');
@@ -335,6 +345,18 @@ export function confirm({ title, text, okLabel = 'OK', danger = false } = {}) {
     });
 }
 
+// Własne okno ekranu (np. wybór ćwiczenia): blokada zamyka je jak „Anuluj”, tak jak okna potwierdzenia.
+// el (opcjonalnie) trafia do karty Strefy; zamknięcie usuwa je samo. Zwraca funkcję wyrejestrowania.
+export function registerOverlay(close, el = null) {
+    const done = () => {
+        if (!openDialogs.delete(done)) return;
+        close();
+    };
+    openDialogs.add(done);
+    if (el && els) els.root.append(el);
+    return () => { openDialogs.delete(done); };
+}
+
 export function setMotyw(id) {
     if (!MOTYWY.some((m) => m.id === id)) return false;
     try { localStorage.setItem(MOTYW_KEY, id); } catch (e) { /* prywatne okno: motyw tylko do przeładowania */ }
@@ -369,14 +391,47 @@ function renderProbe(root) {
             h('div', { class: 'tz-row' },
                 h('span', { class: 'chip chipon' }, 'Siła'),
                 h('span', { class: 'chip' }, 'Redukcja')),
+            h('div', { class: 'tz-row' },
+                h('button', { type: 'button', class: 'chip tz-week chipon', 'aria-pressed': 'true' }, 'Tydz. 1'),
+                h('button', { type: 'button', class: 'chip tz-week', 'aria-pressed': 'false' }, 'Tydz. 2')),
+            h('div', { class: 'tz-row' },
+                h('span', { class: 'tz-count' }, 'plecy 8 / 10'),
+                h('span', { class: 'tz-count tz-over' }, icon('alert'), 'nogi 11 / 10')),
+            h('p', { class: 'tz-stat' }, 'Szacowane 1RM: 93,5 kg'),
+            h('div', { class: 'tz-month' },
+                h('span', { class: 'sub' }, 'listopad 2026'),
+                h('strong', { class: 'tz-month-count' }, '2'),
+                h('div', { class: 'tz-bar', 'aria-hidden': 'true' }, h('div', { class: 'tz-bar-fill', style: { width: '60%' } }))),
             h('input', { class: 'in', type: 'text', value: 'Wpisany tekst', 'aria-label': 'Pole próbne' }),
+            h('div', { class: 'tz-sess-ex tz-stack tz-tight' },
+                h('div', { class: 'tz-between' },
+                    h('h3', { class: 'tz-ex-name' }, 'Przysiad ze sztangą'),
+                    h('span', { class: 'tz-clock' }, '12:34')),
+                h('p', { class: 'sub tz-planned' }, 'Plan: 4 × 5 · 80 kg · RIR 2 · tempo 3010 · przerwa 2:30'),
+                h('div', { class: 'tz-sets' },
+                    h('div', { class: 'tz-sets-hd mut' }, h('span', {}, 'Seria'), h('span', {}, 'kg'), h('span', {}, 'Powt.'), h('span', {})),
+                    h('div', { class: 'tz-set tz-done' },
+                        h('span', { class: 'tz-setnum' }, '1'),
+                        h('input', { class: 'in', type: 'text', value: '82,5', 'aria-label': 'Ciężar próbny' }),
+                        h('input', { class: 'in', type: 'text', value: '5', 'aria-label': 'Powtórzenia próbne' }),
+                        h('button', { type: 'button', class: 'tz-tick', 'aria-pressed': 'true', 'aria-label': 'Seria próbna' }, icon('check'))),
+                    h('div', { class: 'tz-set tz-drop' },
+                        h('span', { class: 'tz-setnum' }, 'drop'),
+                        h('input', { class: 'in tz-invalid', type: 'text', value: '60,', 'aria-label': 'Ciężar błędny' }),
+                        h('input', { class: 'in', type: 'text', value: '8', 'aria-label': 'Powtórzenia drop' }),
+                        h('button', { type: 'button', class: 'tz-tick', 'aria-pressed': 'false', 'aria-label': 'Drop próbny' }, icon('check'))))),
+            h('div', { class: 'tz-stack tz-tight' },
+                h('button', { type: 'button', class: 'tz-switch', role: 'switch', 'aria-checked': 'true' },
+                    h('span', { class: 'tz-switch-text' }, h('span', {}, 'Rozgrzewka'), h('span', { class: 'mut' }, 'przełącznik próbny')),
+                    h('span', { class: 'tz-switch-knob', 'aria-hidden': 'true' }))),
+            h('div', { class: 'card tz-safe' }, h('p', { class: 'tz-iconline' }, icon('check'), h('span', {}, 'W pliku jest tylko plan treningowy.'))),
             h('div', { class: 'tz-row' },
                 h('button', { type: 'button', class: 'btn' }, icon('plus'), 'Klient'),
                 h('button', { type: 'button', class: 'ghost' }, 'Anuluj'))));
 }
 
 export const ctx = {
-    vault: null, lock: null, access, show, toast, confirm, refreshAccess, resolve: resolveRoute, onLeave,
+    vault: null, lock: null, access, show, toast, confirm, registerOverlay, refreshAccess, resolve: resolveRoute, onLeave,
     theme: { list: MOTYWY, get: readMotyw, set: setMotyw },
     applySections: applyAppSections,
 };
@@ -407,6 +462,7 @@ function onLock() {
     // Autoblokadę uzbraja dopiero „Gotowe” (lock.start() zdejmuje też stan „zablokowane”).
     if (pendingRecoveryCode()) return;
     closeOverlays();
+    ctx.lock?.setSessionActive?.(false);
     ctx.vault.lock();
     if (!els) return;
     leaveHook = null;
@@ -431,13 +487,22 @@ export function init() {
     registerMeasurementsScreen(register);
     registerSettingsScreen(register);
     registerIssueScreen(register);
+    registerPlanScreens(register);
+    registerPlanEditScreen(register);
+    registerPlanExportScreen(register);
+    registerSessionScreens(register);
+    registerProgressScreen(register);
     if (access.isTestMode() && new URLSearchParams(location.search).has('tz-probka')) {
         register('__probka', renderProbe);
     }
     // Strefa ma własny pasek: pasek aplikacji chowa się, gdy karta Strefy jest aktywna.
     // Sekcje sprawdzane po zakończeniu przełączania karty, żeby inne moduły skończyły obsługę zdarzenia.
     document.addEventListener('tabChanged', (e) => {
-        document.body.classList.toggle('tz-on', !!(e.detail && e.detail.tab === TAB_ID));
+        const onZone = !!(e.detail && e.detail.tab === TAB_ID);
+        document.body.classList.toggle('tz-on', onZone);
+        // Poza kartą Strefy ekran sesji nie jest otwarty: wracają zwykłe progi autoblokady (decyzja 10).
+        const top = stack[stack.length - 1];
+        ctx.lock?.setSessionActive?.(onZone && !!top && top.route === 'session');
         queueMicrotask(applyAppSections);
     });
     document.body.append(h('button', { type: 'button', id: 'tz-return', class: 'tz-return', onclick: () => returnToZone() },

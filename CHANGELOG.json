@@ -1,5 +1,21 @@
 [
   {
+    "version": "v2026.11.25.05",
+    "date": "2026-11-25",
+    "changes": [
+      "🔔 Pasek aktualizacji jest teraz na dole ekranu, tuż nad menu, jak w innych aplikacjach UKIS, i nie zasłania treści. „Wstrzymaj” chowa go do następnego otwarcia aplikacji, a okno „Co nowego” ma te same pomarańczowe kolory."
+    ]
+  },
+  {
+    "version": "v2026.11.25.04",
+    "date": "2026-11-25",
+    "changes": [
+      "📋 Strefa trenera: plany treningowe z progresją tydzień po tygodniu, sesje z klientem i postępy. Plan wyślesz klientowi plikiem.",
+      "📥 Plan od trenera wczytasz z pliku: Trening → Szablony → Wczytaj plan z pliku. Treningi trafią do szablonów i kalendarza.",
+      "🎯 Cele dodatkowe klienta widać na karcie i liście, a żetony celów układają się w równą siatkę."
+    ]
+  },
+  {
     "version": "v2026.11.25.03",
     "date": "2026-11-25",
     "changes": [

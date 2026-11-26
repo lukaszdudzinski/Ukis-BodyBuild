@@ -2,6 +2,22 @@ import { DatabaseManager } from '../db/DatabaseManager.js';
 import { MediaManager } from '../db/MediaManager.js';
 import { TrainingComponent } from '../../components/TrainingComponent.js';
 import { ExerciseCatalog, ExerciseCategories } from '../../data/ExerciseCatalog.js';
+import { PlanImportUI } from './PlanImportUI.js';
+import { parseDate, toIso } from '../trainer/trainerPlan.js';
+import { isScheduleActive, weekIndexFor, applyPlanWeek } from '../trainer/trainerPlanImport.js';
+
+// Encje HTML dla tekstów wstawianych do szablonów HTML (innerHTML) w tym pliku: nazwy szablonów,
+// planów i ćwiczeń mogą pochodzić z obcego pliku (Global Constraints wydania 2).
+const esc = (s) => String(s ?? '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+// Argument funkcji w atrybucie onclick="…": literał JS (JSON.stringify), a potem encje HTML,
+// bo przeglądarka najpierw dekoduje encje atrybutu, a dopiero potem czyta kod JS.
+// Typ wartości zostaje (liczba zostaje liczbą), więc porównania === w harmonogramie działają.
+const jsArg = (v) => esc(JSON.stringify(v ?? null));
 
 let currentTraining = {
     date: null,
@@ -20,7 +36,8 @@ let currentYear = new Date().getFullYear();
 let trainingDates = new Set(); // Stores dates in YYYY-MM-DD format
 let allTrainingsCache = [];
 const NOTEBOOK_ICON_SVG = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 6h4"/><path d="M2 10h4"/><path d="M2 14h4"/><path d="M2 18h4"/><rect width="16" height="20" x="4" y="2" rx="2"/><path d="M16 2v20"/></svg>';
-let selectedDate = new Date().toISOString().split('T')[0];
+// Data lokalna, nie UTC (rozstrzygnięcie C13).
+let selectedDate = toIso(new Date());
 
 export const TrainingUI = {
     init: () => {
@@ -278,43 +295,27 @@ export const TrainingUI = {
         URL.revokeObjectURL(url);
     },
 
+    // Decyzja 21: bez `accept` (Safari na iOS wyszarza pliki .bodybuild); o rodzaju pliku decyduje treść.
+    // Plik planu od trenera i stary szablon JSON rozpoznaje PlanImportUI.handleText.
     importTemplate: () => {
+        document.getElementById('plan-import-file')?.remove();
         const input = document.createElement('input');
         input.type = 'file';
-        input.accept = '.json';
-        input.onchange = e => {
+        input.id = 'plan-import-file';
+        input.style.display = 'none';
+        input.onchange = async e => {
             const file = e.target.files[0];
-            if (!file) return;
-            const reader = new FileReader();
-            reader.onload = event => {
-                try {
-                    const imported = JSON.parse(event.target.result);
-                    if (!imported.name || !imported.exercises) throw new Error("Nieprawidłowy plik planu.");
-                    
-                    imported.id = Date.now(); // nadaj nowe ID by uniknąć konfliktów
-                    const templates = TrainingUI.getTemplates();
-                    templates.push(imported);
-                    localStorage.setItem('uki_workout_templates', JSON.stringify(templates));
-                    alert("Pomyślnie zaimportowano plan: " + imported.name);
-                    
-                    document.getElementById('templates-modal-overlay').remove();
-                    TrainingUI.loadTemplatesDialog(); // odśwież modal
-                } catch(err) {
-                    alert("Błąd importu pliku JSON: " + err.message);
-                }
-            };
-            reader.readAsText(file);
+            input.remove();
+            await PlanImportUI.handleFile(file);
         };
+        document.body.appendChild(input);
         input.click();
     },
 
     loadTemplatesDialog: () => {
+        // Decyzja 22: okno otwiera się także bez szablonów, żeby nowy klient mógł wczytać plan od trenera.
         const templates = TrainingUI.getTemplates();
-        if (templates.length === 0) {
-            if (window.ChatUI) window.ChatUI.showContextualBubble("Nie masz jeszcze żadnych zapisanych planów treningowych. Zapisz jakiś podczas treningu! 📝");
-            else alert("Brak zapisanych planów treningowych.");
-            return;
-        }
+        const todayIso = toIso(new Date());
 
         let html = `
             <div id="templates-modal-overlay" onclick="if(event.target.id === 'templates-modal-overlay') { this.remove(); window.TrainingUI.renderCalendar(); }" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 10000; display: flex; justify-content: center; align-items: center; padding: 16px; box-sizing: border-box;">
@@ -325,7 +326,7 @@ export const TrainingUI = {
                         <div>
                             <h3 style="color: #FF9800; margin: 0; font-size: 1.15em;">Szablony Planów Treningowych</h3>
                             <p style="color: #888; font-size: 0.8em; margin: 3px 0 0 0;">Wybierz zapisany plan by rozpocząć sesję:</p>
-<button onclick="window.TrainingUI.importTemplate()" style="margin-top: 8px; background: rgba(76, 175, 80, 0.2); border: 1px solid rgba(76, 175, 80, 0.4); color: #81c784; padding: 6px 12px; border-radius: 8px; font-size: 0.85em; font-weight: bold; cursor: pointer;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 4px; vertical-align: middle;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></svg>Importuj z JSON</button>
+<button onclick="window.TrainingUI.importTemplate()" style="margin-top: 8px; background: rgba(76, 175, 80, 0.2); border: 1px solid rgba(76, 175, 80, 0.4); color: #81c784; padding: 6px 12px; border-radius: 8px; font-size: 0.85em; font-weight: bold; cursor: pointer;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 4px; vertical-align: middle;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></svg>Wczytaj plan z pliku</button>
                         </div>
                         <button onclick="document.getElementById('templates-modal-overlay').remove(); window.TrainingUI.renderCalendar();" style="background: rgba(255,255,255,0.1); border: none; color: #fff; width: 34px; height: 34px; border-radius: 50%; font-size: 1.4em; cursor: pointer; display: flex; align-items: center; justify-content: center; line-height: 1;">&times;</button>
                     </div>
@@ -338,15 +339,35 @@ export const TrainingUI = {
         try {
             schedules = JSON.parse(localStorage.getItem('uki_workout_schedules') || '[]');
         } catch(e) {}
+        if (!Array.isArray(schedules)) schedules = [];
+
+        if (templates.length === 0) {
+            html += `<p style="color: #bbb; text-align: center; line-height: 1.5; margin: 8px 0;">Nie masz jeszcze szablonów. Wczytaj plan od trenera albo zapisz trening jako szablon.</p>`;
+        }
 
         templates.forEach(t => {
             let typeLabel = 'Trening Siłowy';
             if (t.type === 'cardio') typeLabel = 'Cardio';
             else if (t.type === 'classes') typeLabel = 'Zajęcia zorganizowane';
             
-            let durationInfo = t.duration_seconds ? `<br>Przewidywany czas: ${TrainingUI.formatTime(t.duration_seconds)}` : '';
+            let durationInfo = t.duration_seconds ? `<br>Przewidywany czas: ${esc(TrainingUI.formatTime(t.duration_seconds))}` : '';
             
-            const mySchedule = schedules.find(s => s.templateId === t.id) || { daysOfWeek: [] };
+            const mySchedule = schedules.find(s => String(s.templateId) === String(t.id)) || { daysOfWeek: [] };
+            const src = t.source && t.source.kind === 'trainer-plan' ? t.source : null;
+            // Wiersz źródła (R12c): przed startem „od DD.MM”, po końcu „zakończony”, w trakcie tydzień dla dziś.
+            let sourceHtml = '';
+            if (src) {
+                const start = parseDate(src.startDate);
+                let when;
+                if (start && todayIso < src.startDate) {
+                    when = `od ${String(start.getDate()).padStart(2, '0')}.${String(start.getMonth() + 1).padStart(2, '0')}`;
+                } else if (src.endDate && todayIso > src.endDate) {
+                    when = 'zakończony';
+                } else {
+                    when = `tydz. ${weekIndexFor(src.startDate, src.weeks, todayIso) + 1} z ${src.weeks}`;
+                }
+                sourceHtml = `<div class="template-source" style="font-size: 0.85em; color: #FF9800; margin-top: 4px;">${esc(`Od trenera${src.trainer ? ` ${src.trainer}` : ''} · ${when}`)}</div>`;
+            }
             const days = [
                 { num: 1, name: 'Pn' }, { num: 2, name: 'Wt' }, { num: 3, name: 'Śr' }, 
                 { num: 4, name: 'Czw' }, { num: 5, name: 'Pt' }, { num: 6, name: 'Sb' }, { num: 0, name: 'Nd' }
@@ -355,30 +376,31 @@ export const TrainingUI = {
             let daysHtml = `<div style="display: flex; gap: 4px; justify-content: center; flex-wrap: wrap; margin-top: 5px; padding-top: 10px; border-top: 1px dashed #444;">
                 <div style="width: 100%; text-align: center; font-size: 0.85em; color: #888; margin-bottom: 4px;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 4px; vertical-align: middle;"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" x2="16" y1="2" y2="6"/><line x1="8" x2="8" y1="2" y2="6"/><line x1="3" x2="21" y1="10" y2="10"/></svg>Automatyczny Harmonogram w Kalendarzu:</div>`;
             days.forEach(d => {
-                const isSelected = mySchedule.daysOfWeek.includes(d.num);
+                const isSelected = Array.isArray(mySchedule.daysOfWeek) && mySchedule.daysOfWeek.includes(d.num);
                 const bg = isSelected ? '#FF9800' : 'rgba(255,255,255,0.05)';
                 const col = isSelected ? '#000' : '#888';
                 const border = isSelected ? '#FF9800' : '#444';
-                daysHtml += `<button onclick="window.TrainingUI.toggleScheduleDay('${t.id}', ${d.num})" style="background: ${bg}; color: ${col}; border: 1px solid ${border}; border-radius: 12px; padding: 4px 10px; font-size: 0.85em; font-weight: bold; cursor: pointer; transition: all 0.2s;">${d.name}</button>`;
+                daysHtml += `<button onclick="window.TrainingUI.toggleScheduleDay(${jsArg(t.id)}, ${d.num})" style="background: ${bg}; color: ${col}; border: 1px solid ${border}; border-radius: 12px; padding: 4px 10px; font-size: 0.85em; font-weight: bold; cursor: pointer; transition: all 0.2s;">${d.name}</button>`;
             });
             daysHtml += `</div>`;
 
             html += `
-                <div style="background: rgba(255, 255, 255, 0.05); padding: 16px; border-radius: 16px; border: 1px solid rgba(255, 255, 255, 0.1); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); display: flex; flex-direction: column; gap: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.3);">
+                <div class="template-card" style="background: rgba(255, 255, 255, 0.05); padding: 16px; border-radius: 16px; border: 1px solid rgba(255, 255, 255, 0.1); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); display: flex; flex-direction: column; gap: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.3);">
                     <div style="text-align: center; border-bottom: 1px solid #444; padding-bottom: 8px;">
-                        <strong style="color: #00BFFF; font-size: 1.1em;">${t.name}</strong>
-<button onclick="window.TrainingUI.exportTemplate('${t.id}')" style="background: rgba(0, 191, 255, 0.1); border: 1px solid #00BFFF; color: #00BFFF; border-radius: 6px; padding: 3px 8px; font-size: 0.8em; margin-left: 10px; cursor: pointer;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 4px; vertical-align: middle;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" x2="12" y1="3" y2="15"/></svg>Eksport</button>
+                        <strong style="color: #00BFFF; font-size: 1.1em;">${esc(t.name)}</strong>
+<button onclick="window.TrainingUI.exportTemplate(${jsArg(t.id)})" style="background: rgba(0, 191, 255, 0.1); border: 1px solid #00BFFF; color: #00BFFF; border-radius: 6px; padding: 3px 8px; font-size: 0.8em; margin-left: 10px; cursor: pointer;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 4px; vertical-align: middle;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" x2="12" y1="3" y2="15"/></svg>Eksport</button>
+                        ${sourceHtml}
                     </div>
                     <div style="font-size: 0.9em; color: #bbb; text-align: center; line-height: 1.5;">
                         Typ: ${typeLabel}<br>
-                        Ilość ćwiczeń w treningu: ${t.exercises && t.exercises.length ? t.exercises.length : 0}
+                        Ilość ćwiczeń w treningu: ${Array.isArray(t.exercises) ? t.exercises.length : 0}
                         ${durationInfo}
                     </div>
                     <div style="display: flex; flex-direction: column; gap: 8px; width: 100%; margin-top: 8px; box-sizing: border-box;">
-                        <button onclick="window.TrainingUI.startFromTemplate('${t.id}')" class="action-button" style="width: 100%; background: rgba(46, 204, 113, 0.2); border: 1px solid rgba(46, 204, 113, 0.5); color: #2ECC71; padding: 12px 10px; font-weight: bold; border-radius: 12px; font-size: 0.95em; cursor: pointer; backdrop-filter: blur(5px);"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 6px; vertical-align: middle;"><polygon points="5 3 19 12 5 21 5 3"/></svg>Wybierz</button>
+                        <button onclick="window.TrainingUI.startFromTemplate(${jsArg(t.id)})" class="action-button" style="width: 100%; background: rgba(46, 204, 113, 0.2); border: 1px solid rgba(46, 204, 113, 0.5); color: #2ECC71; padding: 12px 10px; font-weight: bold; border-radius: 12px; font-size: 0.95em; cursor: pointer; backdrop-filter: blur(5px);"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 6px; vertical-align: middle;"><polygon points="5 3 19 12 5 21 5 3"/></svg>Wybierz</button>
                         <div style="display: flex; gap: 8px; width: 100%;">
-                            <button onclick="window.TemplateBuilderUI.editTemplate('${t.id}'); document.getElementById('templates-modal-overlay').remove();" class="action-button" style="flex: 1; background: rgba(0, 191, 255, 0.15); border: 1px solid rgba(0, 191, 255, 0.4); color: #00BFFF; padding: 10px; font-weight: bold; border-radius: 8px; font-size: 0.9em; cursor: pointer;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 4px; vertical-align: middle;"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>Edytuj</button>
-                            <button onclick="window.TrainingUI.deleteTemplate('${t.id}')" class="action-button" style="flex: 1; background: rgba(231, 76, 60, 0.15); border: 1px solid rgba(231, 76, 60, 0.4); color: #E74C3C; padding: 10px; font-weight: bold; border-radius: 8px; font-size: 0.9em; cursor: pointer;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 4px; vertical-align: middle;"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/></svg>Usuń</button>
+                            <button onclick="window.TemplateBuilderUI.editTemplate(${jsArg(t.id)}); document.getElementById('templates-modal-overlay').remove();" class="action-button" style="flex: 1; background: rgba(0, 191, 255, 0.15); border: 1px solid rgba(0, 191, 255, 0.4); color: #00BFFF; padding: 10px; font-weight: bold; border-radius: 8px; font-size: 0.9em; cursor: pointer;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 4px; vertical-align: middle;"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>Edytuj</button>
+                            <button onclick="window.TrainingUI.deleteTemplate(${jsArg(t.id)})" class="action-button" style="flex: 1; background: rgba(231, 76, 60, 0.15); border: 1px solid rgba(231, 76, 60, 0.4); color: #E74C3C; padding: 10px; font-weight: bold; border-radius: 8px; font-size: 0.9em; cursor: pointer;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 4px; vertical-align: middle;"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/></svg>Usuń</button>
                         </div>
                     </div>
                     ${daysHtml}
@@ -406,11 +428,20 @@ export const TrainingUI = {
         let schedules = [];
         try { schedules = JSON.parse(localStorage.getItem("uki_workout_schedules") || "[]"); } catch(e) {}
         
+        if (!Array.isArray(schedules)) schedules = [];
+
+        // Rozstrzygnięcie C18 (decyzja 19): wpis dostaje id szablonu w jego własnym typie (kalendarz porównuje ===),
+        // a szablon planu od trenera także daty planu, żeby wyłączenie i ponowne włączenie dnia ich nie gubiło.
+        const template = TrainingUI.getTemplates().find(t => String(t.id) === String(templateId));
         let sched = schedules.find(s => String(s.templateId) === String(templateId));
         if (!sched) {
-            sched = { templateId: templateId, daysOfWeek: [] };
+            sched = { templateId: template ? template.id : templateId, daysOfWeek: [] };
+            const src = template && template.source && template.source.kind === 'trainer-plan' ? template.source : null;
+            if (src && src.startDate) sched.startDate = src.startDate;
+            if (src && src.endDate) sched.endDate = src.endDate;
             schedules.push(sched);
         }
+        if (!Array.isArray(sched.daysOfWeek)) sched.daysOfWeek = [];
         
         const idx = sched.daysOfWeek.indexOf(dayNum);
         if (idx > -1) {
@@ -420,7 +451,7 @@ export const TrainingUI = {
         }
         
         // Remove empty schedules
-        schedules = schedules.filter(s => s.daysOfWeek.length > 0);
+        schedules = schedules.filter(s => Array.isArray(s.daysOfWeek) && s.daysOfWeek.length > 0);
         
         localStorage.setItem("uki_workout_schedules", JSON.stringify(schedules));
         TrainingUI.loadTemplatesDialog(); // Re-render modal to show updated colors
@@ -457,11 +488,50 @@ export const TrainingUI = {
         TrainingUI.renderCalendar();
     },
 
+    // Szablon planu od trenera po sesji: serie na kolejne tygodnie są w planie (applyPlanWeek), więc zapisujemy
+    // tylko ćwiczenia dodane przez klienta (bez planu) i usunięte. Ćwiczenia z planu zostają z szablonu bez zmian
+    // (plan, planInfo, serie), tak samo nazwa, typ i source szablonu.
+    saveTrainerPlanChanges: (template, sessionExercises) => {
+        const tplExercises = Array.isArray(template.exercises) ? template.exercises : [];
+        const kept = new Set();
+        const next = [];
+        sessionExercises.forEach(ex => {
+            const idx = Number.isInteger(ex.fromTemplateIndex) ? ex.fromTemplateIndex : -1;
+            const original = idx > -1 ? tplExercises[idx] : null;
+            if (original && original.plan) {
+                kept.add(idx);
+                next.push(original);
+                return;
+            }
+            if (original) kept.add(idx);
+            const copy = JSON.parse(JSON.stringify(ex));
+            delete copy.fromTemplateIndex;
+            delete copy.plan;
+            delete copy.planInfo;
+            next.push(copy);
+        });
+        const added = sessionExercises.some(ex => !Number.isInteger(ex.fromTemplateIndex));
+        const removed = tplExercises.some((_, i) => !kept.has(i));
+        if (!added && !removed) return;
+        if (!confirm("Ten trening powstał z planu od trenera. Serie na kolejne tygodnie bierzemy z planu trenera, więc w szablonie zapiszemy tylko dodane lub usunięte ćwiczenia. Zapisać te zmiany?")) return;
+        const templates = TrainingUI.getTemplates();
+        const i = templates.findIndex(t => String(t.id) === String(template.id));
+        if (i < 0) return;
+        templates[i] = { ...templates[i], exercises: next };
+        localStorage.setItem('uki_workout_templates', JSON.stringify(templates));
+    },
+
     deleteTemplate: (id) => {
         if (confirm("Na pewno usunąć ten plan treningowy?")) {
             let templates = TrainingUI.getTemplates();
             templates = templates.filter(t => String(t.id) !== String(id));
             localStorage.setItem('uki_workout_templates', JSON.stringify(templates));
+            // Dni usuniętego szablonu znikają też z kalendarza.
+            let schedules = [];
+            try { schedules = JSON.parse(localStorage.getItem('uki_workout_schedules') || '[]'); } catch(e) {}
+            if (Array.isArray(schedules)) {
+                localStorage.setItem('uki_workout_schedules', JSON.stringify(schedules.filter(s => String(s && s.templateId) !== String(id))));
+            }
             const modal = document.getElementById('templates-modal-overlay');
             if (modal) modal.remove();
             TrainingUI.loadTemplatesDialog(); // Refresh
@@ -476,6 +546,11 @@ export const TrainingUI = {
         const template = templates.find(t => String(t.id) === String(templateId));
         if (!template) return;
 
+        // Szablon planu od trenera: serie i wiersz planInfo z tygodnia mezocyklu wybranego dnia (decyzja 15).
+        // selectedDate to data lokalna RRRR-MM-DD (rozstrzygnięcie C13). Zwykły szablon bez zmian.
+        const isTrainerPlan = template.source && template.source.kind === 'trainer-plan';
+        const sourceExercises = isTrainerPlan ? applyPlanWeek(template, selectedDate) : (template.exercises || []);
+
         // Initialize new session from template
         document.getElementById('training-calendar-view').style.display = 'none';
         document.getElementById('active-training-view').style.display = 'block';
@@ -484,9 +559,11 @@ export const TrainingUI = {
             date: selectedDate, // Use selected day instead of today!
             startTime: Date.now(),
             timerInterval: null,
-            exercises: (template.exercises || []).map(ex => {
+            exercises: sourceExercises.map((ex, i) => {
                 const newEx = JSON.parse(JSON.stringify(ex));
                 newEx.id = Math.random().toString(36).substr(2, 9);
+                // Pozycja ćwiczenia w szablonie planu: na końcu sesji odróżnia ćwiczenia z planu od dodanych.
+                if (isTrainerPlan) newEx.fromTemplateIndex = i;
                 if (newEx.type === 'superset' && Array.isArray(newEx.exercises)) {
                     newEx.exercises.forEach(nestedEx => {
                         nestedEx.id = Math.random().toString(36).substr(2, 9);
@@ -700,10 +777,12 @@ export const TrainingUI = {
             html += `<div class="calendar-day empty"></div>`;
         }
 
-        const todayDate = new Date().toISOString().split('T')[0];
+        // Data lokalna, nie UTC (rozstrzygnięcie C13).
+        const todayDate = toIso(new Date());
         
         let schedules = [];
         try { schedules = JSON.parse(localStorage.getItem('uki_workout_schedules') || '[]'); } catch(e) {}
+        if (!Array.isArray(schedules)) schedules = [];
         let exceptions = [];
         try { exceptions = JSON.parse(localStorage.getItem('uki_schedule_exceptions') || '[]'); } catch(e) {}
 
@@ -715,8 +794,8 @@ export const TrainingUI = {
             const isToday = dateStr === todayDate;
             const isSelected = dateStr === selectedDate;
             
-            // Harmonogram działa dla wybranego dnia
-            const isScheduledDay = schedules.some(s => s.daysOfWeek.includes(dow));
+            // Harmonogram działa dla wybranego dnia; wpis z datami planu tylko od startDate do endDate (decyzja 19).
+            const isScheduledDay = schedules.some(s => isScheduleActive(s, dateStr) && Array.isArray(s.daysOfWeek) && s.daysOfWeek.includes(dow));
             const isPlanned = (dateStr >= todayDate) && isScheduledDay;
             const isException = exceptions.some(e => e.date === dateStr && e.status === 'skipped');
             
@@ -793,12 +872,14 @@ export const TrainingUI = {
             
             let schedules = [];
             try { schedules = JSON.parse(localStorage.getItem("uki_workout_schedules") || "[]"); } catch(e) {}
+            if (!Array.isArray(schedules)) schedules = [];
             let exceptions = [];
             try { exceptions = JSON.parse(localStorage.getItem("uki_schedule_exceptions") || "[]"); } catch(e) {}
             
-            const dateObj = new Date(dateStr);
-            const dow = dateObj.getDay();
-            const sched = schedules.find(s => s.daysOfWeek.includes(dow));
+            // Dzień tygodnia z daty lokalnej (rozstrzygnięcie C13); wpis z datami planu tylko w ich zakresie (decyzja 19).
+            const dateObj = parseDate(dateStr);
+            const dow = dateObj ? dateObj.getDay() : -1;
+            const sched = schedules.find(s => isScheduleActive(s, dateStr) && Array.isArray(s.daysOfWeek) && s.daysOfWeek.includes(dow));
             const isException = exceptions.some(e => e.date === dateStr && e.status === "skipped");
             
             if (sched && existingTrainingsOnDay.length === 0) {
@@ -808,17 +889,18 @@ export const TrainingUI = {
                     
                     let templates = [];
                     try { templates = JSON.parse(localStorage.getItem("uki_workout_templates") || "[]"); } catch(e) {}
-                    const template = templates.find(t => t.id === sched.templateId);
+                    // Starsze wpisy mają templateId jako tekst (C18), więc porównujemy tekstowo.
+                    const template = Array.isArray(templates) ? templates.find(t => String(t.id) === String(sched.templateId)) : null;
                     const tName = template ? template.name : "Nieznany szablon";
                     const typeLabel = template ? (template.type === "cardio" ? "Cardio" : (template.type === "classes" ? "Zajęcia zorganizowane" : "Trening Siłowy")) : "";
                     
                     if (plannedPreview) {
                         plannedPreview.innerHTML = `
                             <div style="background: rgba(255, 152, 0, 0.1); border: 1px solid rgba(255, 152, 0, 0.3); backdrop-filter: blur(10px); border-radius: 12px; padding: 15px; box-shadow: 0 4px 6px rgba(0,0,0,0.3);">
-                                <strong style="color: #FF9800; font-size: 1.1em;">${tName}</strong><br>
-                                <span style="font-size: 0.9em; color: #aaa;">${typeLabel} ${template && template.exercises ? `| Ćwiczeń: ${template.exercises.length}` : ""}</span>
+                                <strong style="color: #FF9800; font-size: 1.1em;">${esc(tName)}</strong><br>
+                                <span style="font-size: 0.9em; color: #aaa;">${typeLabel} ${template && Array.isArray(template.exercises) ? `| Ćwiczeń: ${template.exercises.length}` : ""}</span>
                                 <div style="margin-top: 10px;">
-                                    <button onclick="window.TrainingUI.startFromTemplate('${sched.templateId}')" class="action-button pulse" style="width: 100%; background-color: #FF9800; border-color: #FF9800; color: #000; font-weight: bold; padding: 10px;">▶ Rozpocznij ten plan</button>
+                                    <button onclick="window.TrainingUI.startFromTemplate(${jsArg(sched.templateId)})" class="action-button pulse" style="width: 100%; background-color: #FF9800; border-color: #FF9800; color: #000; font-weight: bold; padding: 10px;">▶ Rozpocznij ten plan</button>
                                 </div>
                             </div>
                         `;
@@ -878,7 +960,7 @@ export const TrainingUI = {
                         `;
                         return;
                     }
-                    const nameDisplay = existingTraining.name ? `<strong style="color: #00BFFF; font-size: 1.1em;">${existingTraining.name}</strong><br>` : '';
+                    const nameDisplay = existingTraining.name ? `<strong style="color: #00BFFF; font-size: 1.1em;">${esc(existingTraining.name)}</strong><br>` : '';
                     html += `
                         <div style="background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); backdrop-filter: blur(10px); margin-bottom: 15px; border-radius: 12px; padding: 15px; text-align: left; box-shadow: 0 4px 6px rgba(0,0,0,0.3);">
                             ${nameDisplay}
@@ -911,7 +993,7 @@ export const TrainingUI = {
                     historyHtml += `<p style="color: #888; font-size: 0.9em; font-style: italic;">Brak sesji w historii do skopiowania.</p>`;
                 } else {
                     recentTrainings.forEach(({ rec, cacheIdx: idx }) => {
-                        const nameDisplay = rec.name ? `<strong style="color: #00BFFF; font-size: 1.1em;">${rec.name}</strong> <span style="color: #aaa; font-size: 0.9em;">(${rec.date})</span>` : `<strong style="color: #00BFFF; font-size: 1.1em;">${rec.date}</strong>`;
+                        const nameDisplay = rec.name ? `<strong style="color: #00BFFF; font-size: 1.1em;">${esc(rec.name)}</strong> <span style="color: #aaa; font-size: 0.9em;">(${rec.date})</span>` : `<strong style="color: #00BFFF; font-size: 1.1em;">${rec.date}</strong>`;
                         
                         let exercisesPreview = '';
                         if (rec.exercises && rec.exercises.length > 0) {
@@ -920,11 +1002,11 @@ export const TrainingUI = {
                                     exercisesPreview += `<div style="margin-bottom: 8px; border-left: 2px dashed #E91E63; padding-left: 10px;">
                                         <strong style="color: #E91E63; font-size: 0.85em; text-transform: uppercase;">Blok Łączony (Superseria)</strong><br>`;
                                     ex.exercises.forEach(nestedEx => {
-                                        exercisesPreview += `<strong>${nestedEx.name || 'Brak nazwy'}</strong> <span style="font-size: 0.8em; color: #888;">(${nestedEx.type === 'cardio' ? 'Cardio' : 'Siłowe'})</span><br>`;
+                                        exercisesPreview += `<strong>${esc(nestedEx.name || 'Brak nazwy')}</strong> <span style="font-size: 0.8em; color: #888;">(${nestedEx.type === 'cardio' ? 'Cardio' : 'Siłowe'})</span><br>`;
                                         if (nestedEx.sets && nestedEx.sets.length > 0) {
                                             exercisesPreview += `<ul style="margin: 3px 0 10px 0; padding-left: 20px; font-size: 0.9em; color: #ccc;">`;
                                             nestedEx.sets.forEach((s, i) => {
-                                                exercisesPreview += `<li>Seria ${i+1}: <strong style="color: #00BFFF;">${s.weight} kg</strong> x <strong>${s.reps} powt.</strong></li>`;
+                                                exercisesPreview += `<li>Seria ${i+1}: <strong style="color: #00BFFF;">${esc(s.weight)} kg</strong> x <strong>${esc(s.reps)} powt.</strong></li>`;
                                             });
                                             exercisesPreview += `</ul>`;
                                         } else {
@@ -933,11 +1015,11 @@ export const TrainingUI = {
                                     });
                                     exercisesPreview += `</div>`;
                                 } else {
-                                    exercisesPreview += `<div style="margin-bottom: 8px;"><strong>${ex.name || 'Brak nazwy'}</strong> <span style="font-size: 0.8em; color: #888;">(${ex.type === 'cardio' ? 'Cardio' : 'Siłowe'})</span><br>`;
+                                    exercisesPreview += `<div style="margin-bottom: 8px;"><strong>${esc(ex.name || 'Brak nazwy')}</strong> <span style="font-size: 0.8em; color: #888;">(${ex.type === 'cardio' ? 'Cardio' : 'Siłowe'})</span><br>`;
                                     if (ex.sets && ex.sets.length > 0) {
                                         exercisesPreview += `<ul style="margin: 3px 0 0 0; padding-left: 20px; font-size: 0.9em; color: #ccc;">`;
                                         ex.sets.forEach((s, i) => {
-                                            exercisesPreview += `<li>Seria ${i+1}: <strong style="color: #00BFFF;">${s.weight} kg</strong> x <strong>${s.reps} powt.</strong></li>`;
+                                            exercisesPreview += `<li>Seria ${i+1}: <strong style="color: #00BFFF;">${esc(s.weight)} kg</strong> x <strong>${esc(s.reps)} powt.</strong></li>`;
                                         });
                                         exercisesPreview += `</ul>`;
                                     } else {
@@ -1590,7 +1672,8 @@ export const TrainingUI = {
             html += `
                 <div style="margin-bottom: ${isInsideSuperset ? '0' : '30px'};">
                     <div style="margin-bottom: 10px;">
-                        <textarea class="exercise-name-input" placeholder="Wpisz nazwę..." onchange="window.TrainingUI.updateExerciseField('${ex.id}', 'name', this.value); window.TrainingUI.renderCurrentExercises();" style="width: 100%; background: transparent; border: none; color: #FFF; font-size: 26px; font-weight: 800; letter-spacing: -0.5px; outline: none; padding: 0; margin-bottom: 5px; resize: none; text-align: center; overflow: hidden; line-height: 1.2;" rows="2">${ex.name}</textarea>
+                        <textarea class="exercise-name-input" placeholder="Wpisz nazwę..." onchange="window.TrainingUI.updateExerciseField('${ex.id}', 'name', this.value); window.TrainingUI.renderCurrentExercises();" style="width: 100%; background: transparent; border: none; color: #FFF; font-size: 26px; font-weight: 800; letter-spacing: -0.5px; outline: none; padding: 0; margin-bottom: 5px; resize: none; text-align: center; overflow: hidden; line-height: 1.2;" rows="2">${esc(ex.name)}</textarea>
+                        ${ex.planInfo ? `<div class="plan-info" style="color: #bbb; font-size: 13px; line-height: 1.4; margin-bottom: 6px;">${esc(ex.planInfo)}</div>` : ''}
                         <div style="color: #888; font-size: 14px; margin-bottom: 12px;">${setsCount} serie</div>
                         
                         <div style="display: flex; gap: 8px; margin-bottom: 15px; width: 100%;">
@@ -1960,7 +2043,12 @@ export const TrainingUI = {
                     });
                 }
                 
-                if (currentTraining.templateId) {
+                const sourceTemplate = currentTraining.templateId
+                    ? TrainingUI.getTemplates().find(t => String(t.id) === String(currentTraining.templateId))
+                    : null;
+                if (sourceTemplate && sourceTemplate.source && sourceTemplate.source.kind === 'trainer-plan') {
+                    TrainingUI.saveTrainerPlanChanges(sourceTemplate, exercisesToSave);
+                } else if (currentTraining.templateId) {
                     if (confirm("Ten trening został utworzony z szablonu. Czy zapisać wprowadzone modyfikacje (ćwiczenia, serie, ciężary) z powrotem do szablonu? Zmiany zostaną uwzględnione w przyszłych treningach w kalendarzu.")) {
                         let templates = TrainingUI.getTemplates();
                         const templateIndex = templates.findIndex(t => String(t.id) === String(currentTraining.templateId));
@@ -2057,3 +2145,4 @@ export const TrainingUI = {
 };
 
 window.TrainingUI = TrainingUI;
+PlanImportUI.connect(TrainingUI);

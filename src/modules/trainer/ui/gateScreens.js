@@ -5,6 +5,7 @@ import { buildCodeRequestMailto, isTestMode } from '../trainerAccess.js';
 const CODE_ERRORS = {
     FORMAT: 'To nie jest kod trenera.',
     PODPIS: 'Kod jest nieprawidłowy.',
+    NIEPELNY: 'Kod jest niepełny. Skopiuj go w całości — kończy się kilkoma literami po ostatniej kropce.',
     WYGASL: 'Kod stracił ważność.',
 };
 

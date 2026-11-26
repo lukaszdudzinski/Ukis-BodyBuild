@@ -1,5 +1,36 @@
 import { ExerciseCatalog, ExerciseCategories } from '../../data/ExerciseCatalog.js';
 
+const esc = (s) => String(s ?? '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+
+const PLAN_HINT = 'Serie z planu trenera — zmiana serii odłączy ćwiczenie od planu.';
+
+// Serie ćwiczenia z planu w chwili wczytania do kreatora (R13). Klucz to obiekt w koszyku,
+// więc przestawianie kolejności i zmiana nazwy niczego nie psują.
+const loadedSets = new WeakMap();
+const setsKey = (sets) => JSON.stringify((sets || []).map(s => [s.type || 'normal', String(s.weight ?? ''), String(s.reps ?? '')]));
+const setsChanged = (ex) => loadedSets.has(ex) && loadedSets.get(ex) !== setsKey(ex.sets);
+
+// Ćwiczenie koszyka → ćwiczenie szablonu. Pola planu od trenera (plan, planInfo) przechodzą bez zmian,
+// chyba że klient zmienił serie (liczbę, ciężar, powtórzenia, typ): wtedy ćwiczenie odłącza się od planu
+// i sesja zaczyna się od jego własnych serii (R13). Sama zmiana nazwy nie odłącza.
+function cartExercise(ex) {
+    const out = {
+        name: ex.name,
+        type: ex.type || 'strength',
+        sets: (ex.sets || []).map(s => ({ ...s }))
+    };
+    if (ex.plan && !setsChanged(ex)) {
+        out.plan = JSON.parse(JSON.stringify(ex.plan));
+        if (ex.planInfo) out.planInfo = ex.planInfo;
+    }
+    return out;
+}
+
 export const TemplateBuilderUI = {
     cart: [],
     currentEditId: null,
@@ -291,8 +322,9 @@ export const TemplateBuilderUI = {
                     </div>
                     <div style="flex: 1;">
                         <div style="color: #fff; font-weight: 600; font-size: 1.0em; display: flex; align-items: center; gap: 8px;">
-                            ${index + 1}. <span style="color: #00BFFF; display: flex; align-items: center;">${iconSvg}</span> ${ex.name}
+                            ${index + 1}. <span style="color: #00BFFF; display: flex; align-items: center;">${iconSvg}</span> ${esc(ex.name)}
                         </div>
+                        ${ex.plan ? `<div class="builder-plan-hint" style="color: #bbb; font-size: 13px; line-height: 1.4; margin-top: 4px;">${esc(PLAN_HINT)}</div>` : ''}
                         ${setsDesc}
                     </div>
                     <div style="display: flex; gap: 8px; align-items: center;">
@@ -329,11 +361,7 @@ export const TemplateBuilderUI = {
             id: Date.now(),
             name: name,
             type: 'strength',
-            exercises: TemplateBuilderUI.cart.map(ex => ({
-                name: ex.name,
-                type: ex.type || 'strength',
-                sets: (ex.sets || []).map(s => ({ ...s }))
-            }))
+            exercises: TemplateBuilderUI.cart.map(cartExercise)
         };
 
         const templatesStr = localStorage.getItem('uki_workout_templates') || "[]";
@@ -344,11 +372,9 @@ export const TemplateBuilderUI = {
             const idx = templates.findIndex(t => String(t.id) === String(TemplateBuilderUI.currentEditId));
             if (idx > -1) {
                 templates[idx].name = name;
-                templates[idx].exercises = TemplateBuilderUI.cart.map(ex => ({
-                    name: ex.name,
-                    type: ex.type || 'strength',
-                    sets: (ex.sets || []).map(s => ({ ...s }))
-                }));
+                // Szablon planu od trenera zachowuje source (tylko name i exercises się zmieniają),
+                // a ćwiczenia swoje tygodnie planu (plan) i wiersz planInfo (decyzja 15).
+                templates[idx].exercises = TemplateBuilderUI.cart.map(cartExercise);
             } else {
                 templates.push(template);
             }
@@ -386,6 +412,7 @@ export const TemplateBuilderUI = {
         }
 
         TemplateBuilderUI.cart = JSON.parse(JSON.stringify(template.exercises || []));
+        TemplateBuilderUI.cart.forEach(ex => { if (ex && ex.plan) loadedSets.set(ex, setsKey(ex.sets)); });
         TemplateBuilderUI.currentEditId = id;
         
         window.switchTab('template-builder-dashboard');
