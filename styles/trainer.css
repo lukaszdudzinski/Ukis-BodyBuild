@@ -415,6 +415,22 @@ body.tz-tylko:not(.tz-on) .tz-return {
     font: 400 16px/1.3 'Inter', sans-serif;
 }
 
+/* iOS Safari: pole daty ma własną minimalną szerokość i wystaje poza kartę (zgłoszenie właściciela 2026-11-26). */
+.tz input.in[type="date"],
+.tz input.in[type="time"] {
+    -webkit-appearance: none;
+    appearance: none;
+    display: block;
+    min-width: 0;
+    max-width: 100%;
+    box-sizing: border-box;
+    text-align: left;
+}
+
+.tz input.in[type="date"]::-webkit-date-and-time-value {
+    text-align: left;
+}
+
 .tz .in::placeholder {
     color: var(--tz-mut);
 }

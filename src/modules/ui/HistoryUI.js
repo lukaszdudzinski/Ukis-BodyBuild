@@ -330,7 +330,7 @@ export const HistoryUI = {
                 
                 // Prompt user to confirm
                 if (confirm(`Czy na pewno chcesz zaimportować trening "${rec.name}" z dnia ${rec.date}?`)) {
-                    await window.DatabaseManager.saveTraining(rec);
+                    await window.DatabaseManager.addTraining(rec);
                     alert("Trening został pomyślnie zaimportowany!");
                     HistoryUI.loadHistory();
                 }

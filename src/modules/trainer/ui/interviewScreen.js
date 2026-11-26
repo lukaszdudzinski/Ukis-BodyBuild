@@ -393,7 +393,7 @@ function renderInterview(root, params, ctx) {
         }));
         body.replaceChildren(...parts);
         prev.hidden = step === 0;
-        next.replaceChildren(step === STEPS.length - 1 ? [icon('check'), 'Zakończ wywiad'] : ['Dalej']);
+        next.replaceChildren(...(step === STEPS.length - 1 ? [icon('check'), 'Zakończ wywiad'] : ['Dalej']));
     }
 
     const busy = (btn, fn) => async () => {
