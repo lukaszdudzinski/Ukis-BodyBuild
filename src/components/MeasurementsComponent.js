@@ -16,18 +16,19 @@ export const MeasurementsComponent = {
                         </div>
                         <div>
                             <label for="measureGender" style="display: block; color: #8E8E93; font-size: 0.85em; font-weight: 500; margin-bottom: 8px;">Płeć</label>
-                            <select id="measureGender" required style="width: 100%; padding: 12px 15px; background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.1); color: #fff; border-radius: 12px; font-size: 1em; box-sizing: border-box; outline: none; appearance: none;">
+                            <select id="measureGender" style="width: 100%; padding: 12px 15px; background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.1); color: #fff; border-radius: 12px; font-size: 1em; box-sizing: border-box; outline: none; appearance: none;">
+                                <option value="" disabled selected>Wybierz płeć</option>
                                 <option value="male">Mężczyzna</option>
                                 <option value="female">Kobieta</option>
                             </select>
                         </div>
                         <div>
                             <label for="measureWeight" style="display: block; color: #8E8E93; font-size: 0.85em; font-weight: 500; margin-bottom: 8px;">Waga (kg)</label>
-                            <input type="number" id="measureWeight" step="0.1" required style="width: 100%; padding: 12px 15px; background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.1); color: #fff; border-radius: 12px; font-size: 1em; box-sizing: border-box; outline: none; appearance: none;">
+                            <input type="number" id="measureWeight" step="0.1" min="25" max="350" required style="width: 100%; padding: 12px 15px; background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.1); color: #fff; border-radius: 12px; font-size: 1em; box-sizing: border-box; outline: none; appearance: none;">
                         </div>
                         <div>
                             <label for="measureHeight" style="display: block; color: #8E8E93; font-size: 0.85em; font-weight: 500; margin-bottom: 8px;">Wzrost (cm)</label>
-                            <input type="number" id="measureHeight" step="1" style="width: 100%; padding: 12px 15px; background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.1); color: #fff; border-radius: 12px; font-size: 1em; box-sizing: border-box; outline: none; appearance: none;">
+                            <input type="number" id="measureHeight" step="1" min="100" max="250" style="width: 100%; padding: 12px 15px; background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.1); color: #fff; border-radius: 12px; font-size: 1em; box-sizing: border-box; outline: none; appearance: none;">
                         </div>
                     </div>
                 </div>

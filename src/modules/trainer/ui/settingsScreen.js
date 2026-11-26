@@ -343,13 +343,42 @@ function fieldsCard(ctx) {
     return card('pola', 'Pola składu ciała', body);
 }
 
-function backupCard() {
+// Powyżej tej sumy nagrań kopia zapasowa robi się ciężka (wysyłka, zapis na telefonie): ostrzeżenie.
+const AUDIO_WARN_BYTES = 25 * 1024 * 1024;
+
+function formatMb(bytes) {
+    const mb = bytes / (1024 * 1024);
+    return `${mb < 0.1 ? '0,1' : mb.toLocaleString('pl-PL', { maximumFractionDigits: 1 })} MB`;
+}
+
+// Nagrania głosowe i zdjęcia sylwetki jadą w kopii zaszyfrowane jako bloby i to one najbardziej ją powiększają.
+function audioStats(ctx) {
+    const line = h('p', { class: 'sub', hidden: true });
+    const warn = h('p', { class: 'hi', hidden: true, role: 'note' },
+        'Nagrania i zdjęcia mocno powiększają kopię. Usuń te, których już nie potrzebujesz.');
+    const audio = ctx.vault.list('interview_audio').length;
+    const photos = ctx.vault.list('measurement_photo').length;
+    if (audio || photos) {
+        ctx.vault.kindStats('blob').then(({ bytes }) => {
+            const parts = [];
+            if (audio) parts.push(`Nagrania głosowe: ${audio}`);
+            if (photos) parts.push(`Zdjęcia sylwetki: ${photos}`);
+            line.textContent = `${parts.join(' · ')}, razem ok. ${formatMb(bytes)} w kopii.`;
+            line.hidden = false;
+            warn.hidden = bytes < AUDIO_WARN_BYTES;
+        }).catch((e) => console.error('[Strefa trenera] rozmiar nagrań:', e && e.message));
+    }
+    return [line, warn];
+}
+
+function backupCard(ctx) {
     const last = lastBackupAt();
     const date = last ? formatDate(last) : '';
     return card('kopia', 'Kopia zapasowa',
         h('p', {}, backupLabel(last)),
         date ? h('p', { class: 'mut' }, date) : null,
         h('p', { class: 'sub' }, 'Kopia obejmuje też zaszyfrowane dane Strefy. Zrobisz ją w Serwisie.'),
+        audioStats(ctx),
         h('div', { class: 'tz-row' },
             h('button', { type: 'button', class: 'ghost', onclick: () => window.switchTab('diagnostics-dashboard') }, 'Przejdź do Serwisu')));
 }
@@ -375,7 +404,7 @@ async function renderSettings(root, params, ctx) {
         sectionsCard(ctx),
         fieldsCard(ctx),
         themeCard(ctx),
-        backupCard(),
+        backupCard(ctx),
         issueCard(ctx),
         wipeCard(ctx),
         ownerKeyEntry(ctx, () => ctx.show('settings')),

@@ -345,7 +345,8 @@ function renderData(root, params, ctx) {
     const c = params.id ? ctx.vault.get(params.id) : null;
     if (!c) { ctx.show('clients', {}, { reset: true }); return; }
     // Szkice (client_draft, assessment_draft, wywiad ze statusem „szkic”) nie trafiają do tekstu.
-    const records = ['interview', 'assessment', 'measurement', 'plan', 'session'].flatMap((k) => ctx.vault.list(k, c.id));
+    // Nagrania i zdjęcia to same opisy (bez treści): tekst podaje, ile ich jest przy kroku i pomiarze.
+    const records = ['interview', 'interview_audio', 'assessment', 'measurement', 'measurement_photo', 'plan', 'session'].flatMap((k) => ctx.vault.list(k, c.id));
     const text = clientDataText(c, records, new Date(), { settings: ctx.vault.list('trainer_settings')[0] || null });
     const actions = [];
     if (navigator.share) {

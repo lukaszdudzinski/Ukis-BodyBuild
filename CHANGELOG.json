@@ -1,5 +1,23 @@
 [
   {
+    "version": "v2026.11.26.02",
+    "date": "2026-11-26",
+    "changes": [
+      "⌨️ Zeszyt: wpisywany wiersz sam podjeżdża nad klawiaturę i tak zostaje, także przy dodawaniu nowej serii na dole kartki.",
+      "🩺 Strefa trenera — wywiad: pytania o kontrolną morfologię i badania hormonów oraz pole „Uwagi” na końcu każdego kroku, w którym notatkę można też nagrać głosem (nagrania zaszyfrowane w sejfie).",
+      "📸 Strefa trenera — wywiad pyta o dyspozycyjność i pokazuje wiek, wagę i wzrost z pomiarów; do pomiarów można dodać zdjęcia sylwetki za zgodą klienta — zaszyfrowane, z porównaniem dwóch dat."
+    ]
+  },
+  {
+    "version": "v2026.11.26.01",
+    "date": "2026-11-26",
+    "changes": [
+      "⚖️ Cel kaloryczny liczy się teraz według Twojej płci i wieku (nowe pole „Rok urodzenia”) — u kobiet był dotąd zawyżony. Wzrost wpisany w milimetrach lub metrach nie psuje już wyliczeń.",
+      "🎯 Cel kaloryczny w Diecie możesz teraz ustawić ręcznie – ikona rączki lub AI pokazuje, skąd pochodzi. Aplikacja odrzuca nierealne wartości (np. 17 000 kcal) i poprosi o ponowne ustawienie celu.",
+      "📊 Analiza sylwetki poprawiona: normy tkanki tłuszczowej dla kobiet i mężczyzn zgodne z ACE, próg ryzyka WHR według WHO, płeć nie zmienia się już sama na „Mężczyzna”."
+    ]
+  },
+  {
     "version": "v2026.11.25.05",
     "date": "2026-11-25",
     "changes": [

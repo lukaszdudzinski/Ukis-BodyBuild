@@ -30,7 +30,7 @@ const STYLE = `
 #notebook-dashboard .nb-status { min-height: 20px; text-align: center; font-size: 0.85em; color: #8E8E93; margin-bottom: 10px; display: flex; align-items: center; justify-content: center; gap: 4px; }
 #notebook-dashboard .nb-status.nb-ok { color: #00D26A; }
 #notebook-dashboard .nb-status.nb-error { color: #ff6b6b; cursor: pointer; }
-#notebook-dashboard .nb-sheet { --nb-scale: 1; position: relative; background-color: #050505; background-image: linear-gradient(#232323 1px, transparent 1px), linear-gradient(90deg, #232323 1px, transparent 1px); background-size: 18px 18px; border: 1px solid #232323; border-radius: 6px; padding: 54px 12px 18px 0; min-height: 216px; font-size: 17px; }
+#notebook-dashboard .nb-sheet { --nb-scale: 1; position: relative; background-color: #050505; background-image: linear-gradient(#232323 1px, transparent 1px), linear-gradient(90deg, #232323 1px, transparent 1px); background-size: 18px 18px; border: 1px solid #232323; border-radius: 6px; padding: 54px 12px calc(18px + var(--nb-kb, 0px)) 0; min-height: 216px; font-size: 17px; }
 #notebook-dashboard .nb-sheet[data-font="large"] { --nb-scale: 1.2; }
 #notebook-dashboard .nb-sheet[data-font="xlarge"] { --nb-scale: 1.4; }
 #notebook-dashboard .nb-sheet::before { content: ""; position: absolute; top: 0; bottom: 0; left: 44px; border-left: 2px solid #a33; pointer-events: none; }
@@ -77,7 +77,7 @@ const STYLE = `
     #notebook-dashboard.tab-content.active-tab { display: flex !important; flex-direction: column; padding-bottom: 0 !important; }
     #notebook-dashboard .nb { flex: 1 0 auto; display: flex; flex-direction: column; width: 100%; padding-bottom: 0; }
     /* 90px u dołu (5 kratek): koniec listy da się przewinąć nad pływający przycisk AI (fixed, bottom 90px). */
-    #notebook-dashboard .nb-sheet { flex: 1 0 auto; padding-bottom: 90px; border-bottom-left-radius: 0; border-bottom-right-radius: 0; }
+    #notebook-dashboard .nb-sheet { flex: 1 0 auto; padding-bottom: calc(90px + var(--nb-kb, 0px)); border-bottom-left-radius: 0; border-bottom-right-radius: 0; }
 }
 </style>`;
 

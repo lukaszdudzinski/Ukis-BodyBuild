@@ -89,9 +89,67 @@ function renderList(focus = null) {
         const input = row && row.querySelector(`[data-field="${focus.field}"]`);
         if (input) {
             input.focus();
-            input.scrollIntoView({ block: 'nearest' });
+            keepVisible(input);
         }
     }
+}
+
+// ---------- klawiatura ekranowa: wpisywany wiersz zawsze nad nią ----------
+// iOS Safari (PWA) nie zmniejsza układu strony, gdy wysuwa się klawiatura: zasłania dół, a rozmiar widocznej
+// części podaje tylko visualViewport. Android Chrome zwykle zmniejsza okno (wtedy nakładanie = 0, a przewinięcie
+// robi przeglądarka; nasza korekta działa tylko, gdy pole nadal wystaje, więc nic nie przewija się podwójnie).
+const KB_MIN = 100;   // niższe nakładanie to pasek adresu, nie klawiatura
+const KB_MARGIN = 16; // zapas nad klawiaturą
+
+function keyboardHeight() {
+    const vv = window.visualViewport;
+    if (!vv) return 0;
+    const h = Math.round(window.innerHeight - vv.height - vv.offsetTop);
+    return h >= KB_MIN ? h : 0;
+}
+
+// Element, który faktycznie się przewija (telefon: .tab-content-wrapper, komputer: też on albo strona).
+function scrollParent(el) {
+    for (let n = el.parentElement; n && n !== document.body; n = n.parentElement) {
+        const oy = getComputedStyle(n).overflowY;
+        if ((oy === 'auto' || oy === 'scroll') && n.scrollHeight > n.clientHeight) return n;
+    }
+    return document.scrollingElement || document.documentElement;
+}
+
+function keepVisible(input) {
+    const el = input && input.isConnected ? input : document.activeElement;
+    if (!el || !root() || !root().contains(el) || !/^(INPUT|TEXTAREA)$/.test(el.tagName)) return;
+    const vv = window.visualViewport;
+    const scroller = scrollParent(el);
+    const row = el.closest('.nb-row') || el;
+    let bottom = vv ? vv.offsetTop + vv.height : window.innerHeight;
+    if (scroller !== document.scrollingElement && scroller !== document.documentElement) {
+        bottom = Math.min(bottom, scroller.getBoundingClientRect().bottom);
+    }
+    const limit = bottom - KB_MARGIN;
+    const topEdge = scroller.getBoundingClientRect ? Math.max(0, scroller.getBoundingClientRect().top) : 0;
+    const inputRect = el.getBoundingClientRect();
+    const rowRect = row.getBoundingClientRect();
+    // Cały wiersz nad klawiaturą, ale nigdy kosztem samego pola (wiersz ze zwiniętym polem nazwy bywa wysoki).
+    let delta = Math.max(inputRect.bottom, Math.min(rowRect.bottom, inputRect.bottom + 24)) - limit;
+    if (delta <= 0) {
+        if (inputRect.top < topEdge) delta = inputRect.top - topEdge;
+        else return;
+    }
+    scroller.scrollTop += delta;
+}
+
+let lastKb = 0;
+function onViewportChange() {
+    const sheet = root() && q('.nb-sheet');
+    if (!sheet) return;
+    const kb = keyboardHeight();
+    if (kb !== lastKb) {
+        lastKb = kb;
+        sheet.style.setProperty('--nb-kb', kb + 'px');
+    }
+    if (kb) keepVisible();
 }
 
 // ---------- okienko „Nowa seria” (koło zębate; poza .nb-list, więc rysowanie listy go nie niszczy) ----------
@@ -500,7 +558,15 @@ export const NotebookUI = {
             else if (id === 'nb-date') changeDay(e.target.value);
             else if (e.target.dataset.option) onSettingChange(e.target);
         });
+        if (window.visualViewport) {
+            window.visualViewport.addEventListener('resize', onViewportChange);
+            window.visualViewport.addEventListener('scroll', onViewportChange);
+        }
         el.addEventListener('focusin', (e) => {
+            // Klawiatura wysuwa się chwilę po fokusie: poprawiamy od razu i po jej animacji (resize też to zrobi).
+            const t = e.target;
+            requestAnimationFrame(() => keepVisible(t));
+            setTimeout(() => keepVisible(t), 300);
             const row = e.target.closest('[data-testid="nb-set"]');
             if (row && exIdFrom(row.dataset.exerciseId) !== undefined) state.lastExerciseId = exIdFrom(row.dataset.exerciseId);
         });

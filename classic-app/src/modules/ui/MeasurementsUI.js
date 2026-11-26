@@ -1,6 +1,8 @@
 import { DatabaseManager } from '../db/DatabaseManager.js';
 import { MediaManager } from '../db/MediaManager.js';
 import { MeasurementsComponent } from '../../components/MeasurementsComponent.js';
+import { normalizeHeightCm } from '../diet/kcalGoal.js';
+import { currentSex, saveSex } from '../body/sexConfirm.js';
 
 export const MeasurementsUI = {
     init: () => {
@@ -25,12 +27,11 @@ export const MeasurementsUI = {
             dateInput.value = today;
         }
 
+        // Płeć: pole bez wartości domyślnej („Wybierz płeć”); zapisujemy tylko świadomy wybór.
         const genderSelect = document.getElementById('measureGender');
         if (genderSelect) {
-            const savedGender = localStorage.getItem('uki-bodybuild-gender');
-            if (savedGender) {
-                genderSelect.value = savedGender;
-            }
+            MeasurementsUI.restoreGender();
+            genderSelect.addEventListener('change', () => saveSex(genderSelect.value));
         }
 
         // Render history on load
@@ -42,6 +43,12 @@ export const MeasurementsUI = {
                 MeasurementsUI.renderHistory();
             }
         });
+    },
+
+    // Pole „Płeć” pokazuje zapisaną płeć albo „Wybierz płeć”, gdy jej nie ma (także po wyczyszczeniu formularza).
+    restoreGender: () => {
+        const select = document.getElementById('measureGender');
+        if (select) select.value = currentSex() || '';
     },
 
     handlePhotoPreview: async (e) => {
@@ -71,7 +78,8 @@ export const MeasurementsUI = {
         const data = {
             date: document.getElementById('measureDate').value,
             weight: parseFloat(document.getElementById('measureWeight').value),
-            height: parseFloat(document.getElementById('measureHeight').value) || null,
+            // Wzrost w metrach (1.75) lub milimetrach (1750) zapisujemy w cm.
+            height: normalizeHeightCm(parseFloat(document.getElementById('measureHeight').value)),
             chest: parseFloat(document.getElementById('measureChest').value) || null,
             waist: parseFloat(document.getElementById('measureWaist').value) || null,
             hips: parseFloat(document.getElementById('measureHips').value) || null,
@@ -82,9 +90,7 @@ export const MeasurementsUI = {
         };
 
         const genderSelect = document.getElementById('measureGender');
-        if (genderSelect) {
-            localStorage.setItem('uki-bodybuild-gender', genderSelect.value);
-        }
+        if (genderSelect) saveSex(genderSelect.value); // pusty wybór niczego nie nadpisuje
 
         try {
             if (window.currentEditMeasurementId) {
@@ -102,6 +108,7 @@ export const MeasurementsUI = {
                 alert("Pomiary zapisane pomyślnie!");
             }
             e.target.reset();
+            MeasurementsUI.restoreGender();
             
             // Set date back to today after reset
             document.getElementById('measureDate').value = new Date().toISOString().split('T')[0];
@@ -214,7 +221,8 @@ window.populateMeasurementForm = async (id, isEdit) => {
     }
 
     if (rec.weight) document.getElementById('measureWeight').value = rec.weight;
-    if (rec.height) document.getElementById('measureHeight').value = rec.height;
+    // Dawne wpisy w mm lub m pokazujemy w cm, żeby dało się je poprawić (pole przyjmuje 100–250).
+    if (rec.height) document.getElementById('measureHeight').value = normalizeHeightCm(rec.height) ?? rec.height;
     if (rec.chest) document.getElementById('measureChest').value = rec.chest;
     if (rec.waist) document.getElementById('measureWaist').value = rec.waist;
     if (rec.hips) document.getElementById('measureHips').value = rec.hips;

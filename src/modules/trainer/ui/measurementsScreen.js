@@ -3,9 +3,12 @@
 // Niezapisany formularz zostaje jako szkic (rekord measurement_draft w sejfie) przy wyjściu z ekranu
 // i przy blokadzie; „+ Pomiar” przywraca go, zapis albo „Anuluj” go usuwa.
 // Dane trafiają do DOM wyłącznie przez h(); wykres rysuje lineChart (chart.js).
+// Zdjęcia sylwetki (za osobną zgodą klienta) obsługuje measurementPhotos.js. params.add otwiera od razu
+// formularz, a params.back { route, params } to ekran, na który wraca zapis i „Anuluj” (np. wywiad).
 import { h, icon } from './dom.js';
 import { lineChart } from './chart.js';
 import { activeFields, validateMeasurement, seriesFor, formatNumber } from '../trainerMeasurements.js';
+import { createPhotoKit } from './measurementPhotos.js';
 
 const SAVE_FAILED = 'Nie udało się zapisać. Spróbuj jeszcze raz.';
 
@@ -27,7 +30,10 @@ function renderMeasurements(root, params, ctx) {
     if (!client) { ctx.show('clients', {}, { reset: true }); return; }
     const settings = ctx.vault.list('trainer_settings')[0];
     const fields = activeFields(settings);
-    const state = { adding: false, chartField: 'weight' };
+    const state = { adding: !!params.add, comparing: false, chartField: 'weight' };
+    const photoKit = createPhotoKit(ctx, client.id);
+    const back = params.back && params.back.route ? params.back : null;
+    const goBack = () => (back ? ctx.show(back.route, back.params || {}) : ctx.show('client', { id: client.id }));
     // Hak szkicu otwartego formularza (zdejmowany, gdy formularz znika z ekranu).
     let leave = () => {};
     const discardDrafts = async () => {
@@ -37,10 +43,17 @@ function renderMeasurements(root, params, ctx) {
     const paint = () => {
         leave();
         leave = () => {};
+        photoKit.revokeAll();
         const all = ctx.vault.list('measurement', client.id);
         const sorted = all.slice().sort((a, b) => String(b.date || '').localeCompare(String(a.date || ''))
             || String(b.updatedAt || '').localeCompare(String(a.updatedAt || '')));
-        root.replaceChildren(state.adding || sorted.length === 0 ? form(sorted.length > 0) : overview(sorted));
+        if (state.comparing) {
+            // Odszyfrowane zdjęcia znikają z pamięci przy wyjściu z ekranu i przy blokadzie.
+            leave = ctx.onLeave(root, async () => photoKit.revokeAll());
+            root.replaceChildren(photoKit.compare(() => { state.comparing = false; paint(); }));
+            return;
+        }
+        root.replaceChildren(state.adding || sorted.length === 0 ? form(sorted.length > 0 || !!back) : overview(sorted));
     };
 
     const overview = (sorted) => {
@@ -50,15 +63,21 @@ function renderMeasurements(root, params, ctx) {
         const select = h('select', { class: 'in', 'aria-label': 'Pole wykresu', value: field.id,
             onchange: (e) => { state.chartField = e.target.value; paint(); } },
             (withData.length ? withData : [field]).map((f) => h('option', { value: f.id }, fieldLabel(f))));
-        const rows = sorted.map((m) => h('div', { class: 'card tz-meas-row' },
-            h('strong', {}, m.date || ''),
-            h('span', { class: 'sub' }, m.values && typeof m.values.weight === 'number' ? `${formatNumber(m.values.weight)} kg` : '—'),
-            h('span', { class: 'sub' }, m.values && typeof m.values.fat_pct === 'number' ? `${formatNumber(m.values.fat_pct)}%` : '—')));
+        const rows = sorted.map((m) => {
+            const pics = photoKit.thumbs(m);
+            const row = h('div', { class: 'card tz-meas-row' },
+                h('strong', {}, m.date || ''),
+                h('span', { class: 'sub' }, m.values && typeof m.values.weight === 'number' ? `${formatNumber(m.values.weight)} kg` : '—'),
+                h('span', { class: 'sub' }, m.values && typeof m.values.fat_pct === 'number' ? `${formatNumber(m.values.fat_pct)}%` : '—'));
+            return pics ? h('div', { class: 'tz-stack tz-tight' }, row, pics) : row;
+        });
+        leave = ctx.onLeave(root, async () => photoKit.revokeAll());
         return h('div', { class: 'tz-stack' },
             h('section', { class: 'card tz-stack' },
                 h('h2', { class: 'hd' }, 'Pomiary'),
                 h('button', { type: 'button', class: 'btn', onclick: () => { state.adding = true; paint(); } }, icon('plus'), 'Pomiar')),
             h('section', { class: 'card tz-stack' }, select, lineChart(field, seriesFor(sorted, field.id))),
+            photoKit.overviewCard({ onChange: paint, onCompare: () => { state.comparing = true; paint(); } }),
             rows);
     };
 
@@ -70,11 +89,20 @@ function renderMeasurements(root, params, ctx) {
         // Nietknięty formularz nie zostawia szkicu; wyczyszczony formularz usuwa szkic.
         const snap = () => JSON.stringify([date, filled(raw)]);
         const baseline = snap();
+        const photosPicker = photoKit.picker();
         const saveDraft = async () => {
-            if (snap() === baseline) return;
-            if (filled(raw).length === 0) { await discardDrafts(); draftId = null; return; }
-            const saved = await ctx.vault.put({ kind: DRAFT_KIND, id: draftId || undefined, clientId: client.id, date, raw: { ...raw } });
-            draftId = saved.id;
+            // Wybrane, niezapisane zdjęcia idą zaszyfrowane do szkicu zdjęć (niezależnie od liczb w formularzu).
+            const pics = photosPicker.persistDraft();
+            if (snap() !== baseline) {
+                if (filled(raw).length === 0) {
+                    await discardDrafts();
+                    draftId = null;
+                } else {
+                    const saved = await ctx.vault.put({ kind: DRAFT_KIND, id: draftId || undefined, clientId: client.id, date, raw: { ...raw } });
+                    draftId = saved.id;
+                }
+            }
+            await pics;
         };
         leave = ctx.onLeave(root, saveDraft);
         const errBoxes = {};
@@ -91,6 +119,11 @@ function renderMeasurements(root, params, ctx) {
         const save = h('button', { type: 'button', class: 'btn' }, icon('check'), 'Zapisz pomiar');
         save.addEventListener('click', async () => {
             const res = validateMeasurement(raw, fields);
+            // Same zdjęcia, bez liczb, też są pomiarem.
+            if (!res.ok && photosPicker.count() && Object.keys(res.errors).every((k) => k === '_form')) {
+                res.ok = true;
+                res.errors = {};
+            }
             fields.forEach((f) => {
                 errBoxes[f.id].textContent = res.errors[f.id] || '';
                 errBoxes[f.id].hidden = !res.errors[f.id];
@@ -102,8 +135,9 @@ function renderMeasurements(root, params, ctx) {
             // Nieudany zapis przywraca hak (a gdy ekranu już nie ma, od razu zapisuje szkic).
             save.disabled = true;
             leave();
+            let saved;
             try {
-                await ctx.vault.put({ kind: 'measurement', clientId: client.id, date, values: res.values, photoMediaId: null });
+                saved = await ctx.vault.put({ kind: 'measurement', clientId: client.id, date, values: res.values, photoMediaId: null });
             } catch (e) {
                 console.error('[Strefa trenera] zapis pomiaru:', e && e.message);
                 if (root.isConnected) leave = ctx.onLeave(root, saveDraft);
@@ -113,12 +147,22 @@ function renderMeasurements(root, params, ctx) {
                 return;
             }
             try { await discardDrafts(); } catch (e) { console.error('[Strefa trenera] szkic pomiaru:', e && e.message); }
+            try {
+                await photosPicker.save(saved);
+            } catch (e) {
+                console.error('[Strefa trenera] zapis zdjęć:', e && e.message);
+                ctx.toast('Pomiar zapisany, ale zdjęć nie udało się zapisać.');
+                if (root.isConnected) goBack();
+                return;
+            }
             ctx.toast('Pomiar zapisany.');
-            if (root.isConnected) ctx.show('client', { id: client.id });
+            if (root.isConnected) goBack();
         });
         const cancel = async () => {
             leave();
+            try { await photosPicker.discard(); } catch (e) { console.error('[Strefa trenera] szkic zdjęć:', e && e.message); }
             try { await discardDrafts(); } catch (e) { console.error('[Strefa trenera] szkic pomiaru:', e && e.message); }
+            if (back) { goBack(); return; }
             state.adding = false;
             paint();
         };
@@ -127,7 +171,9 @@ function renderMeasurements(root, params, ctx) {
                 h('h2', { class: 'hd' }, 'Nowy pomiar'),
                 h('label', { class: 'tz-field' }, h('span', { class: 'sub' }, 'Data'),
                     h('input', { class: 'in', type: 'date', 'aria-label': 'Data', value: date, oninput: (e) => { date = e.target.value || today(); } })),
-                inputs, formErr, save,
+                inputs, formErr),
+            photosPicker.node,
+            h('section', { class: 'card tz-stack' }, save,
                 canCancel ? h('button', { type: 'button', class: 'ghost', onclick: cancel }, 'Anuluj') : null));
     };
 

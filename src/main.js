@@ -16,6 +16,7 @@ import { AiAnalyticsUI } from './modules/ui/AiAnalyticsUI.js';
 import { TemplateBuilderUI } from './modules/ui/TemplateBuilderUI.js';
 import { NumpadUI } from './modules/ui/NumpadUI.js';
 import { BackupUI } from './modules/ui/BackupUI.js';
+import { initSexConfirm } from './modules/body/sexConfirm.js';
 import { NotebookUI } from './modules/notebook/NotebookUI.js';
 import { TrainerUI } from './modules/trainer/ui/TrainerUI.js';
 import { applyDefaultAvatar } from './modules/ui/defaultAvatar.js';
@@ -93,6 +94,7 @@ const initApp = () => {
     HistoryUI.init();
     AnalyticsUI.init();
     DietUI.init();
+    initSexConfirm(); // jednorazowe potwierdzenie zapisanej płci (Pomiary, Dieta)
     OnboardingUI.init();
     ChatUI.init();
     DiagnosticsUI.init();

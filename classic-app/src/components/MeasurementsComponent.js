@@ -15,18 +15,19 @@ export const MeasurementsComponent = {
                     </div>
                     <div class="input-group">
                         <label for="measureGender">Płeć</label>
-                        <select id="measureGender" required style="width: 100%; padding: 10px; border-radius: 4px; border: 1px solid #444; background: #222; color: #fff; box-sizing: border-box;">
+                        <select id="measureGender" style="width: 100%; padding: 10px; border-radius: 4px; border: 1px solid #444; background: #222; color: #fff; box-sizing: border-box;">
+                            <option value="" disabled selected>Wybierz płeć</option>
                             <option value="male">Mężczyzna</option>
                             <option value="female">Kobieta</option>
                         </select>
                     </div>
                     <div class="input-group">
                         <label for="measureWeight">Waga (kg)</label>
-                        <input type="number" id="measureWeight" step="0.1" required>
+                        <input type="number" id="measureWeight" step="0.1" min="25" max="350" required>
                     </div>
                     <div class="input-group">
                         <label for="measureHeight">Wzrost (cm)</label>
-                        <input type="number" id="measureHeight" step="1">
+                        <input type="number" id="measureHeight" step="1" min="100" max="250">
                     </div>
                 </div>
                 

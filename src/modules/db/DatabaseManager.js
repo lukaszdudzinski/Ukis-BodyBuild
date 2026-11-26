@@ -1,5 +1,6 @@
 import { TRAINER_TABLES_SQL, exportVaultRaw, vaultExists, vaultImportQueries } from '../trainer/trainerVault.js';
 import { isTestMode } from '../trainer/trainerAccess.js';
+import { KCAL_GOAL_KEY, BIRTH_YEAR_KEY, importKcalGoal, reportKcalIncident, saveBirthYear } from '../diet/kcalGoal.js';
 
 let worker = null;
 let isReady = false;
@@ -503,6 +504,9 @@ export const DatabaseManager = {
             templates: localStorage.getItem("uki_workout_templates") || "[]",
             trainingExperience: localStorage.getItem("trainingExperience") || "",
             dietGoal: localStorage.getItem("dietGoal") || "",
+            gender: localStorage.getItem("uki-bodybuild-gender") || "",
+            kcalGoal: localStorage.getItem(KCAL_GOAL_KEY) || "",
+            birthYear: localStorage.getItem(BIRTH_YEAR_KEY) || "",
             dietWorkerUrl: localStorage.getItem("dietWorkerUrl") || "",
             schedules: localStorage.getItem("uki_workout_schedules") || "[]",
             customWallpaper: localStorage.getItem("uki-custom-wallpaper") || ""
@@ -625,6 +629,13 @@ export const DatabaseManager = {
                 if (data.settings.templates) localStorage.setItem("uki_workout_templates", typeof data.settings.templates === 'string' ? data.settings.templates : JSON.stringify(data.settings.templates));
                 if (data.settings.trainingExperience) localStorage.setItem("trainingExperience", data.settings.trainingExperience);
                 if (data.settings.dietGoal) localStorage.setItem("dietGoal", data.settings.dietGoal);
+                if (data.settings.gender === "male" || data.settings.gender === "female") localStorage.setItem("uki-bodybuild-gender", data.settings.gender);
+                // Cel kaloryczny z kopii przechodzi przez strażnika wiarygodności (błędny nie trafia do pamięci).
+                if (data.settings.kcalGoal) {
+                    const incident = importKcalGoal(data.settings.kcalGoal);
+                    if (incident) reportKcalIncident(incident);
+                }
+                if (data.settings.birthYear) saveBirthYear(data.settings.birthYear); // błędny rok jest pomijany
                 if (data.settings.dietWorkerUrl) localStorage.setItem("dietWorkerUrl", data.settings.dietWorkerUrl);
                 if (data.settings.schedules) localStorage.setItem("uki_workout_schedules", typeof data.settings.schedules === 'string' ? data.settings.schedules : JSON.stringify(data.settings.schedules));
                 if (data.settings.customWallpaper) localStorage.setItem("uki-custom-wallpaper", data.settings.customWallpaper);

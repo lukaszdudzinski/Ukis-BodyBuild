@@ -1,6 +1,6 @@
 // Model klienta Strefy trenera: wiek, inicjały, wyszukiwanie, sortowanie i tekst „Pokaż dane klienta”.
 
-import { GOALS, STEPS } from './trainerQuestionnaire.js';
+import { GOALS, STEPS, optionLabels, isVisible } from './trainerQuestionnaire.js';
 import { TESTS, EXTRA_TESTS, scoreAssessment } from './trainerAssessment.js';
 import { BASE_FIELDS, COMPOSITION_FIELDS, formatNumber } from './trainerMeasurements.js';
 
@@ -82,14 +82,26 @@ const filled = (v) => v !== undefined && v !== null && String(v).trim() !== '';
 function answerText(q, a) {
     const v = a ? a.value : undefined;
     let text = '';
-    if (q.type === 'yesno') text = v === true ? 'Tak' : v === false ? 'Nie' : '';
-    else if (filled(v)) text = String(v);
+    if (q.type === 'yesno') {
+        text = v === true ? 'Tak' : v === false ? 'Nie' : '';
+        const opts = v === true ? optionLabels(q, a) : [];
+        if (opts.length) text = `${text} — ${opts.join(', ')}`;
+    } else if (q.type === 'days') {
+        const picked = new Set(Array.isArray(v) ? v : []);
+        text = (q.options || []).filter((o) => picked.has(o.id)).map((o) => o.label).join(', ');
+    } else if (filled(v)) text = String(v);
     const note = a && filled(a.note) ? String(a.note).trim() : '';
     if (text && note) return `${text} (${note})`;
     return text || note;
 }
 
-function interviewLines(rec) {
+// Wielowierszowe uwagi: kolejne wiersze z wcięciem, żeby zostały pod swoim krokiem.
+function notesText(v) {
+    return String(v).trim().split(/\r?\n/).map((l) => l.trim()).filter(Boolean).join('\n  ');
+}
+
+// audio: rekordy interview_audio tego wywiadu (bez treści nagrania, liczy się tylko, że są).
+function interviewLines(rec, audio = []) {
     const lines = ['', `Wywiad z dnia ${rec.date || '—'}`];
     const consent = rec.consentHealth || {};
     lines.push(consent.given
@@ -101,6 +113,7 @@ function interviewLines(rec) {
         if (step.id === 'zdrowie' && !consent.given) continue;
         const rows = [];
         for (const q of step.questions) {
+            if (!isVisible(q, answers)) continue;
             let text = '';
             if (q.id === 'cel_glowny') text = goalLabel(rec.goal);
             else if (q.id === 'cel_wlasny') text = filled(rec.goalOwnWords) ? String(rec.goalOwnWords).trim() : '';
@@ -111,6 +124,10 @@ function interviewLines(rec) {
             } else text = answerText(q, answers[q.id]);
             if (text) rows.push(`- ${q.label}: ${text}`);
         }
+        const note = rec.notes && filled(rec.notes[step.id]) ? notesText(rec.notes[step.id]) : '';
+        if (note) rows.push(`- Uwagi: ${note}`);
+        const clips = audio.filter((a) => a.stepId === step.id).length;
+        if (clips) rows.push(`- Nagrania głosowe: ${clips} (do odsłuchu w aplikacji trenera)`);
         if (rows.length) lines.push(`${step.label}:`, ...rows);
     }
     return lines;
@@ -173,7 +190,10 @@ function measurementFieldMap(settings) {
     return map;
 }
 
-function measurementLines(rec, fields) {
+const POSE_LABELS = [['przod', 'Przód'], ['bok', 'Bok'], ['tyl', 'Tył']];
+
+// photos: opisy zdjęć sylwetki tego pomiaru (bez treści zdjęć).
+function measurementLines(rec, fields, photos = []) {
     const values = rec.values || {};
     const lines = ['', `Pomiary z dnia ${rec.date || '—'}`];
     const ids = [...fields.keys()].filter((id) => id in values);
@@ -185,6 +205,9 @@ function measurementLines(rec, fields) {
         const text = typeof v === 'number' ? formatNumber(v) : String(v);
         lines.push(`- ${f.label}: ${text}${f.unit ? ` ${f.unit}` : ''}`);
     }
+    const poses = new Set(photos.map((p) => p.pose));
+    const shown = POSE_LABELS.filter(([id]) => poses.has(id)).map(([, label]) => label);
+    if (shown.length) lines.push(`- Zdjęcia sylwetki: ${shown.join(', ')}`);
     return lines;
 }
 
@@ -200,6 +223,7 @@ export function clientDataText(client, records = [], today = new Date(), { setti
     if (client.phone) lines.push(`Telefon: ${client.phone}`);
     if (client.email) lines.push(`E-mail: ${client.email}`);
     if (client.goal) lines.push(`Cel: ${goalLabel(client.goal)}`);
+    if (client.photoConsent && client.photoConsent.given) lines.push(`Zgoda na zdjęcia sylwetki: tak (${client.photoConsent.date || 'bez daty'})`);
     if (client.note) lines.push(`Notatka: ${client.note}`);
 
     const of = (kind) => records.filter((r) => r && r.kind === kind).sort(byDateNewest);
@@ -207,13 +231,15 @@ export function clientDataText(client, records = [], today = new Date(), { setti
     const assessments = of('assessment');
     const measurements = of('measurement');
 
-    if (interviews.length) interviews.forEach((r) => lines.push(...interviewLines(r)));
+    const audio = records.filter((r) => r && r.kind === 'interview_audio');
+    if (interviews.length) interviews.forEach((r) => lines.push(...interviewLines(r, audio.filter((a) => r.id && a.interviewId === r.id))));
     else lines.push('', 'Wywiad: brak');
     if (assessments.length) assessments.forEach((r) => lines.push(...assessmentLines(r)));
     else lines.push('', 'Ocena funkcjonalna: brak');
     if (measurements.length) {
         const fields = measurementFieldMap(settings);
-        measurements.forEach((r) => lines.push(...measurementLines(r, fields)));
+        const photos = records.filter((r) => r && r.kind === 'measurement_photo');
+        measurements.forEach((r) => lines.push(...measurementLines(r, fields, photos.filter((p) => r.id && p.measurementId === r.id))));
     } else lines.push('', 'Pomiary: brak');
 
     // Plany i zakończone sesje (szkice planów i sesje w toku nie są jeszcze danymi klienta).

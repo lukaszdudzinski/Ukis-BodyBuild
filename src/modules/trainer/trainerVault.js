@@ -39,6 +39,12 @@ const SALT_BYTES = 16;
 const MAX_ITERATIONS = 2000000;
 // Licznik błędnych prób i czas blokady należą do tego telefonu: nie jadą w kopii i nie wracają z niej.
 const LOCAL_META_KEYS = ['failed_count', 'locked_until'];
+// Duże treści (nagrania głosowe, zdjęcia sylwetki) leżą w rekordach „blob” { clientId, data }.
+// Odblokowanie ich nie odszyfrowuje i nie trzyma w pamięci: getBlob(id) czyta jeden na żądanie.
+// Lekki rekord z opisem (interview_audio, measurement_photo) wskazuje go polem blobId.
+// Kopia zapasowa i usuwanie klienta (po client_id) obejmują je jak każdy rekord.
+export const BLOB_KIND = 'blob';
+export const LAZY_KINDS = [BLOB_KIND];
 const REQUIRED_META_KEYS = ['pw_salt', 'pw_iter', 'pw_wrapped', 'rc_salt', 'rc_iter', 'rc_wrapped'];
 
 function validIterations(value) {
@@ -109,9 +115,7 @@ export function createVault({ exec, iterations = PBKDF2_ITERATIONS, now = () => 
     return session;
   };
 
-  async function loadRecords(key) {
-    const rows = await exec('SELECT id, iv, data FROM trainer_records');
-    const records = new Map();
+  async function decryptRows(key, rows, records) {
     for (const row of rows) {
       try {
         const rec = await decryptJson(key, row);
@@ -122,6 +126,14 @@ export function createVault({ exec, iterations = PBKDF2_ITERATIONS, now = () => 
       }
     }
     return records;
+  }
+
+  async function loadRecords(key) {
+    const rows = await exec(
+      `SELECT id, iv, data FROM trainer_records WHERE kind NOT IN (${LAZY_KINDS.map(() => '?').join(', ')})`,
+      LAZY_KINDS,
+    );
+    return decryptRows(key, rows, new Map());
   }
 
   function assertNotLockedOut(meta) {
@@ -157,7 +169,28 @@ export function createVault({ exec, iterations = PBKDF2_ITERATIONS, now = () => 
     }
   }
 
-  const RESET_FAILURES = { failed_count: 0, locked_until: null };
+  // Zapis rekordu kluczem sesji s. Rekord trafia do pamięci dopiero po udanym zapisie i tylko,
+  // gdy sejfu w międzyczasie nie zablokowano; bloby nigdy nie zostają w pamięci.
+  async function putIn(s, record) {
+    if (!record || typeof record.kind !== 'string' || !record.kind) throw new Error('BRAK_RODZAJU');
+    const rec = structuredClone(record);
+    rec.id = rec.id ? String(rec.id) : crypto.randomUUID();
+    rec.version = rec.version ?? RECORD_VERSION;
+    rec.updatedAt = now().toISOString();
+    const { iv, data } = await encryptJson(s.key, rec);
+    await exec(
+      'INSERT OR REPLACE INTO trainer_records (id, kind, client_id, iv, data, updated_at) VALUES (?, ?, ?, ?, ?, ?)',
+      [rec.id, rec.kind, rec.clientId ?? null, iv, data, rec.updatedAt],
+    );
+    if (session === s && !LAZY_KINDS.includes(rec.kind)) s.records.set(rec.id, rec);
+    if (LAZY_KINDS.includes(rec.kind)) {
+      const { data: _omit, ...light } = rec;
+      return structuredClone(light);
+    }
+    return structuredClone(rec);
+  }
+
+  const RESET_FAILURES ={ failed_count: 0, locked_until: null };
 
   return {
     isSetUp: () => vaultExists(exec),
@@ -264,21 +297,28 @@ export function createVault({ exec, iterations = PBKDF2_ITERATIONS, now = () => 
       return rec ? structuredClone(rec) : null;
     },
 
-    put: async (record) => {
+    put: (record) => putIn(requireSession(), record),
+
+    // Jeden blob z bazy, odszyfrowany tylko dla wołającego (bez kopii w pamięci sejfu); null, gdy go nie ma.
+    getBlob: async (id) => {
       const s = requireSession();
-      if (!record || typeof record.kind !== 'string' || !record.kind) throw new Error('BRAK_RODZAJU');
-      const rec = structuredClone(record);
-      rec.id = rec.id ? String(rec.id) : crypto.randomUUID();
-      rec.version = rec.version ?? RECORD_VERSION;
-      rec.updatedAt = now().toISOString();
-      const { iv, data } = await encryptJson(s.key, rec);
-      await exec(
-        'INSERT OR REPLACE INTO trainer_records (id, kind, client_id, iv, data, updated_at) VALUES (?, ?, ?, ?, ?, ?)',
-        [rec.id, rec.kind, rec.clientId ?? null, iv, data, rec.updatedAt],
-      );
-      // Pamięć dopiero po udanym zapisie i tylko, gdy sejfu w międzyczasie nie zablokowano.
-      if (session === s) s.records.set(rec.id, rec);
-      return structuredClone(rec);
+      const rows = await exec('SELECT id, iv, data FROM trainer_records WHERE id = ? AND kind = ?', [id, BLOB_KIND]);
+      const found = await decryptRows(s.key, rows, new Map());
+      return found.get(id) || null;
+    },
+
+    // Zapis kluczem z chwili wywołania: kończy się także, gdy w międzyczasie sejf się zablokował
+    // (nagranie zapisywane przy autoblokadzie). Klucz zostaje w pamięci tylko do końca tych zapisów.
+    writer: () => {
+      const s = requireSession();
+      return { put: (record) => putIn(s, record) };
+    },
+
+    // Liczba rekordów rodzaju i ich rozmiar w bazie (zaszyfrowany tekst), bez odszyfrowywania: ile waży kopia.
+    kindStats: async (kind) => {
+      requireSession();
+      const rows = await exec('SELECT COUNT(*) AS n, COALESCE(SUM(LENGTH(data) + LENGTH(iv)), 0) AS bytes FROM trainer_records WHERE kind = ?', [kind]);
+      return { count: Number(rows[0]?.n) || 0, bytes: Number(rows[0]?.bytes) || 0 };
     },
 
     remove: async (id) => {

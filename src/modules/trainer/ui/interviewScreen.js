@@ -1,12 +1,16 @@
 // Ekran wywiadu (trasa interview): 5 kroków, zgoda RODO, szkic w sejfie (przy wyjściu z ekranu i przy autoblokadzie).
+// Na dole każdego kroku „Uwagi” (notes[stepId]) z nagraniami głosowymi (interviewNotes.js).
 // Odpowiedzi trafiają do DOM wyłącznie przez h() jako węzły tekstowe lub właściwości value.
 import { h, icon } from './dom.js';
-import { STEPS, GOALS, QUESTIONNAIRE_VERSION, continuumForGoal } from '../trainerQuestionnaire.js';
-import { goalLabel, extraGoals } from '../trainerModel.js';
+import { STEPS, GOALS, QUESTIONNAIRE_VERSION, continuumForGoal, isVisible } from '../trainerQuestionnaire.js';
+import { goalLabel, extraGoals, clientAge } from '../trainerModel.js';
+import { latestValue, formatNumber } from '../trainerMeasurements.js';
+import { createInterviewNotes } from './interviewNotes.js';
 
 const SAVE_FAILED = 'Nie udało się zapisać. Spróbuj jeszcze raz.';
 const CONSENT_LABEL = 'Klient zgodził się na zapisanie danych o zdrowiu w celu prowadzenia treningów';
 const NEED_CONSENT = 'Najpierw zgoda klienta';
+const HEALTH_STEP = 'zdrowie';
 
 // Pola rekordu zamiast answers: cel główny, cele dodatkowe, cel własnymi słowami.
 const TOP = { cel_glowny: 'goal', cel_dodatkowy: 'goalExtra', cel_wlasny: 'goalOwnWords' };
@@ -25,6 +29,7 @@ function newest(list) {
     return list.slice().sort((a, b) => String(b.updatedAt || '').localeCompare(String(a.updatedAt || '')))[0] || null;
 }
 
+const QUESTION_BY_ID = new Map(STEPS.flatMap((s) => s.questions.map((q) => [q.id, q])));
 const HEALTH_IDS = new Set(STEPS.find((s) => s.id === 'zdrowie').questions.map((q) => q.id));
 
 // base: wznawiany szkic (przywracany w całości) albo poprzedni wywiad (przenosimy tylko kroki
@@ -33,10 +38,13 @@ function blankState(base, resume) {
     const keep = (id) => resume || !HEALTH_IDS.has(id);
     const answers = {};
     if (base) for (const [id, a] of Object.entries(base.answers || {})) if (keep(id)) answers[id] = structuredClone(a);
+    const notes = {};
+    if (base) for (const [id, n] of Object.entries(base.notes || {})) if ((resume || id !== HEALTH_STEP) && typeof n === 'string') notes[id] = n;
     return {
         id: null,
         consent: base && resume ? { ...base.consentHealth } : { given: false, date: null },
         answers,
+        notes,
         goal: base ? base.goal || null : null,
         goalExtra: base ? (base.goalExtra || []).slice() : [],
         goalOwnWords: base ? base.goalOwnWords || '' : '',
@@ -54,7 +62,7 @@ function renderInterview(root, params, ctx) {
     const state = blankState(draft || lastDone, !!draft);
     if (draft) state.id = draft.id;
     // Zmiana względem stanu początkowego ekranu: nietknięty ekran nie zostawia szkicu.
-    const snap = () => JSON.stringify([state.consent, state.answers, state.goal, state.goalExtra, state.goalOwnWords]);
+    const snap = () => JSON.stringify([state.consent, state.answers, state.notes, state.goal, state.goalExtra, state.goalOwnWords]);
     let baseline = snap();
 
     const get = (q) => {
@@ -62,12 +70,27 @@ function renderInterview(root, params, ctx) {
         const a = state.answers[q.id];
         return a ? a.value : undefined;
     };
+    // Widoczność pytań zależnych (dyspozycyjność: „Stałe” / „Zmienne”) na bieżącym kroku.
+    let refreshVisibility = () => {};
     const set = (q, value) => {
         if (TOP[q.id]) { state[TOP[q.id]] = value; return; }
-        state.answers[q.id] = { ...state.answers[q.id], value };
+        const next = { ...state.answers[q.id], value };
+        // „Nie” przy pytaniu z wyborem (hormony) czyści zaznaczenia: nie zostają ukryte w rekordzie.
+        if (q.options && q.type === 'yesno' && value === false) delete next.options;
+        state.answers[q.id] = next;
+        refreshVisibility();
     };
     const getNote = (q) => (state.answers[q.id] && state.answers[q.id].note) || '';
     const setNote = (q, note) => { state.answers[q.id] = { ...state.answers[q.id], note }; };
+    const getOptions = (q) => (state.answers[q.id] && state.answers[q.id].options) || [];
+    const setOption = (q, id, on) => {
+        const picked = new Set(getOptions(q));
+        if (on) picked.add(id); else picked.delete(id);
+        state.answers[q.id] = { ...state.answers[q.id], options: q.options.filter((o) => picked.has(o.id)).map((o) => o.id) };
+    };
+    // Uwagi kroku: tylko niepuste; bez zgody bez uwag kroku „Zdrowie”.
+    const storedNotes = () => Object.fromEntries(Object.entries(state.notes)
+        .filter(([id, n]) => String(n || '').trim() !== '' && (state.consent.given || id !== HEALTH_STEP)));
 
     const record = (status) => ({
         ...(draft && state.id === draft.id ? draft : {}),
@@ -78,8 +101,10 @@ function renderInterview(root, params, ctx) {
         date: today(),
         status,
         consentHealth: { given: state.consent.given, date: state.consent.given ? state.consent.date : null },
-        answers: state.consent.given ? state.answers
-            : Object.fromEntries(Object.entries(state.answers).filter(([id]) => !HEALTH_IDS.has(id))),
+        // Bez zgody bez odpowiedzi o zdrowiu; odpowiedzi ukrytych pytań (np. dni przy „Zmienne”) nie zostają.
+        answers: Object.fromEntries(Object.entries(state.answers)
+            .filter(([id]) => (state.consent.given || !HEALTH_IDS.has(id)) && isVisible(QUESTION_BY_ID.get(id), state.answers))),
+        notes: storedNotes(),
         goal: state.goal,
         goalExtra: state.goalExtra,
         goalOwnWords: state.goalOwnWords,
@@ -104,14 +129,50 @@ function renderInterview(root, params, ctx) {
         return run;
     };
 
+    // Nagrania należą do wywiadu: bez rekordu wywiadu najpierw powstaje szkic.
+    const notesKit = createInterviewNotes(ctx, {
+        clientId: client.id,
+        interviewId: () => state.id,
+        // Szkic zapisuje się także przy niezapisanych zmianach: nagranie o zdrowiu ma w sejfie wywiad ze zgodą.
+        ensureInterviewId: async () => {
+            if (!state.id || snap() !== baseline) await persist('szkic');
+            return state.id;
+        },
+    });
+    notesKit.load();
+
     // Router zapisuje szkic przed zmianą ekranu (Wstecz, pasek, wyjście ze Strefy) i przed blokadą.
+    // Nagranie w toku kończy się wtedy zapisem, a mikrofon i odtwarzanie są zwalniane.
+    // Tekst zapisuje się pierwszy: wolny zapis nagrania nigdy nie zabiera wpisanych uwag.
     const saveDraft = async () => {
-        if (snap() === baseline) return;
-        await persist('szkic');
+        notesKit.stopPlayback();
+        const audio = notesKit.stopAndSave();
+        if (snap() !== baseline) await persist('szkic');
+        await audio;
     };
     let leave = ctx.onLeave(root, saveDraft);
 
-    let step = 0;
+    // Zwykła część aplikacji albo tło: nagrywanie kończy się zapisem, odtwarzanie się zatrzymuje.
+    const pause = () => {
+        notesKit.stopPlayback();
+        notesKit.stopAndSave().catch(() => {});
+    };
+    const onTab = (e) => {
+        if (!root.isConnected) { detach(); return; }
+        if (!(e.detail && e.detail.tab === 'trainer-zone')) pause();
+    };
+    const onVisibility = () => {
+        if (!root.isConnected) { detach(); return; }
+        if (document.visibilityState === 'hidden') pause();
+    };
+    const detach = () => {
+        document.removeEventListener('tabChanged', onTab);
+        document.removeEventListener('visibilitychange', onVisibility);
+    };
+    document.addEventListener('tabChanged', onTab);
+    document.addEventListener('visibilitychange', onVisibility);
+
+    let step = Number.isInteger(params.step) ? Math.min(Math.max(params.step, 0), STEPS.length - 1) : 0;
     const body = h('div', { class: 'tz-stack' });
     const stepBar = h('div', { class: 'tz-steps', role: 'group', 'aria-label': 'Kroki wywiadu' });
     const prev = h('button', { type: 'button', class: 'ghost' }, icon('chevron-left'), 'Wstecz');
@@ -126,7 +187,17 @@ function renderInterview(root, params, ctx) {
     function renderQuestion(q, locked) {
         if (q.type === 'yesno') {
             const note = noteInput(q, locked, q.withNote);
-            const sync = () => { note.hidden = get(q) !== true; };
+            // Pytanie z wyborem (hormony): pola do zaznaczenia pokazują się po „Tak”, jak notatka.
+            const opts = q.options ? h('div', { class: 'tz-row' }, q.options.map((o) => h('label', { class: 'chip tz-yn' },
+                h('input', {
+                    type: 'checkbox', disabled: locked, checked: getOptions(q).includes(o.id),
+                    onchange: (e) => setOption(q, o.id, e.target.checked),
+                }), o.label))) : null;
+            const sync = () => {
+                note.hidden = get(q) !== true;
+                if (opts) opts.hidden = get(q) !== true;
+                if (opts && get(q) === false) opts.querySelectorAll('input').forEach((i) => { i.checked = false; });
+            };
             const radio = (label, value) => h('label', { class: 'chip tz-yn' },
                 h('input', {
                     type: 'radio', name: `q-${q.id}`, disabled: locked, checked: get(q) === value,
@@ -136,6 +207,7 @@ function renderInterview(root, params, ctx) {
             return h('fieldset', { class: 'tz-q', disabled: locked },
                 h('legend', { class: 'sub' }, q.label),
                 h('div', { class: 'tz-row' }, radio('Tak', true), radio('Nie', false)),
+                opts,
                 note);
         }
         if (q.type === 'text') {
@@ -148,6 +220,25 @@ function renderInterview(root, params, ctx) {
                     class: 'in', type: 'number', inputmode: 'decimal', min: 0, value: get(q) ?? '',
                     oninput: (e) => set(q, e.target.value === '' ? null : Number(e.target.value)),
                 }));
+        }
+        if (q.type === 'days') {
+            const picked = () => new Set(Array.isArray(get(q)) ? get(q) : []);
+            const chips = q.options.map((o) => h('button', {
+                type: 'button', class: 'chip', 'aria-pressed': 'false',
+                onclick: () => {
+                    const cur = picked();
+                    if (cur.has(o.id)) cur.delete(o.id); else cur.add(o.id);
+                    set(q, q.options.filter((x) => cur.has(x.id)).map((x) => x.id));
+                    paint();
+                },
+            }, o.label));
+            const paint = () => chips.forEach((c, i) => {
+                const on = picked().has(q.options[i].id);
+                c.classList.toggle('chipon', on);
+                c.setAttribute('aria-pressed', String(on));
+            });
+            paint();
+            return h('div', { class: 'tz-field tz-q' }, h('span', { class: 'sub' }, q.label), h('div', { class: 'tz-row' }, chips));
         }
         if (q.id === 'cel_glowny') return renderGoalPicker(q);
         if (q.type === 'multi') return renderExtraGoals(q);
@@ -210,8 +301,47 @@ function renderInterview(root, params, ctx) {
             h('div', { class: 'tz-goals' }, boxes), noteInput(q, false, q.withNote));
     }
 
+    // Pytania kroku z nagłówkami sekcji (np. „Dyspozycyjność”); pytania z showIf chowają się same.
+    function questionNodes(s, locked) {
+        const dependent = [];
+        const nodes = s.questions.flatMap((q) => {
+            const node = renderQuestion(q, locked);
+            if (q.showIf) dependent.push([q, node]);
+            return q.section ? [h('h3', { class: 'hd tz-notes-hd' }, q.section), node] : [node];
+        });
+        refreshVisibility = () => dependent.forEach(([q, node]) => { node.hidden = !isVisible(q, state.answers); });
+        refreshVisibility();
+        return nodes;
+    }
+
+    // Wiek z karty klienta, ostatnia waga i wzrost z pomiarów (z datą). Pomiary zostają rekordami w czasie;
+    // „Dodaj pomiar” otwiera formularz pomiaru i wraca na ten krok wywiadu.
+    function bodyFacts() {
+        const fresh = ctx.vault.get(client.id) || client;
+        const ms = ctx.vault.list('measurement', client.id);
+        const age = clientAge(fresh);
+        const weight = latestValue(ms, 'weight');
+        const height = latestValue(ms, 'height');
+        const parts = [];
+        if (age !== null) parts.push(`Wiek: ${age}`);
+        if (weight) parts.push(`Waga: ${formatNumber(weight.value)} kg (${weight.date})`);
+        if (height) parts.push(`Wzrost: ${formatNumber(height.value)} cm (${height.date})`);
+        else if (fresh.heightCm) parts.push(`Wzrost: ${fresh.heightCm} cm (z karty klienta)`);
+        if (!weight && !height) parts.push('Brak pomiarów');
+        return h('div', { class: 'tz-body-facts tz-row tz-between' },
+            h('p', { class: 'sub' }, parts.join(' · ')),
+            h('button', {
+                type: 'button', class: 'ghost',
+                onclick: () => ctx.show('measurements', { clientId: client.id, add: true, back: { route: 'interview', params: { clientId: client.id, step } } }),
+            }, icon('ruler'), 'Dodaj pomiar'));
+    }
+
     function paintStep() {
         const s = STEPS[step];
+        // Karta „Uwagi” poprzedniego kroku znika: nagranie w toku kończy się zapisem.
+        if (notesKit.isRecording()) notesKit.stopAndSave().catch(() => {});
+        notesKit.stopPlayback();
+        notesKit.unmount();
         stepBar.replaceChildren(...STEPS.map((x, i) => h('button', {
             type: 'button', class: `tz-stepbtn${i === step ? ' tz-stepon' : ''}`, 'aria-current': i === step ? 'step' : null,
             onclick: () => { step = i; paintStep(); },
@@ -227,14 +357,23 @@ function renderInterview(root, params, ctx) {
                     if (e.target.checked) {
                         state.consent = { given: true, date: today() };
                     } else {
+                        const clips = notesKit.healthClipCount();
                         const ok = await ctx.confirm({
                             title: 'Usunąć odpowiedzi o zdrowiu?',
-                            text: 'Bez zgody klienta nie przechowujemy danych o zdrowiu. Odpowiedzi z tego kroku zostaną usunięte.',
+                            text: 'Bez zgody klienta nie przechowujemy danych o zdrowiu. Odpowiedzi i uwagi z tego kroku zostaną usunięte'
+                                + (clips ? `, a także nagrania o zdrowiu ze wszystkich wywiadów klienta (${clips}).` : '.'),
                             okLabel: 'Usuń', danger: true,
                         });
                         if (ok) {
                             state.consent = { given: false, date: null };
                             for (const id of HEALTH_IDS) delete state.answers[id];
+                            delete state.notes[HEALTH_STEP];
+                            try {
+                                await notesKit.removeHealthClips();
+                            } catch (err) {
+                                console.error('[Strefa trenera] usuwanie nagrań o zdrowiu:', err && err.message);
+                                ctx.toast('Nie udało się usunąć nagrań. Spróbuj jeszcze raz.');
+                            }
                         }
                     }
                     paintStep();
@@ -246,7 +385,12 @@ function renderInterview(root, params, ctx) {
         }
         parts.push(h('section', { class: 'card tz-stack' },
             h('h2', { class: 'hd' }, s.label),
-            s.questions.map((q) => renderQuestion(q, locked))));
+            questionNodes(s, locked)));
+        parts.push(notesKit.card(s, {
+            value: locked ? '' : state.notes[s.id] || '',
+            disabled: locked,
+            onInput: (v) => { state.notes[s.id] = v; },
+        }));
         body.replaceChildren(...parts);
         prev.hidden = step === 0;
         next.replaceChildren(step === STEPS.length - 1 ? [icon('check'), 'Zakończ wywiad'] : ['Dalej']);
@@ -270,6 +414,8 @@ function renderInterview(root, params, ctx) {
     // nie dokłada szkicu. Nieudany zapis przywraca hak (a gdy ekranu już nie ma, od razu zapisuje szkic).
     next.addEventListener('click', busy(next, async () => {
         if (step < STEPS.length - 1) { step += 1; paintStep(); return; }
+        notesKit.stopPlayback();
+        await notesKit.stopAndSave();
         leave();
         try {
             await persist('gotowy');
@@ -278,14 +424,16 @@ function renderInterview(root, params, ctx) {
             else await saveDraft().catch(() => {});
             throw e;
         }
-        if (state.goal && state.goal !== client.goal) await ctx.vault.put({ ...client, goal: state.goal });
+        const fresh = ctx.vault.get(client.id) || client;
+        if (state.goal && state.goal !== fresh.goal) await ctx.vault.put({ ...fresh, goal: state.goal });
         if (root.isConnected) ctx.show('client', { id: client.id });
     }));
 
     root.append(h('div', { class: 'tz-stack' },
         h('section', { class: 'card tz-stack' },
             h('h2', { class: 'hd' }, 'Wywiad'),
-            stepBar),
+            stepBar,
+            bodyFacts()),
         body,
         h('div', { class: 'tz-row tz-between' }, prev, h('div', { class: 'tz-row' }, draftBtn, next))));
     paintStep();

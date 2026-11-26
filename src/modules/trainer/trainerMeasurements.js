@@ -76,3 +76,10 @@ export function seriesFor(measurements, fieldId) {
 export function formatNumber(n) {
     return String(Math.round(n * 100) / 100).replace('.', ',');
 }
+
+// Najnowsza wartość pola (np. waga, wzrost) z datą pomiaru; null, gdy pole nie ma żadnej wartości.
+export function latestValue(measurements, fieldId) {
+    const series = seriesFor(measurements, fieldId);
+    const last = series[series.length - 1];
+    return last ? { value: last.value, date: last.date } : null;
+}

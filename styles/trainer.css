@@ -20,6 +20,9 @@
 /* ---------- Motywy ---------- */
 .tz {
     --tz-text: #ffffff;
+    /* Wiersze na karcie (np. lista nagrań): przyciemnienie i linia wspólne dla trzech motywów. */
+    --tz-inset-bg: rgba(0, 0, 0, 0.25);
+    --tz-inset-line: rgba(255, 255, 255, 0.12);
 }
 
 .tz[data-motyw="zar"],
@@ -1453,4 +1456,160 @@ body.tz-tylko:not(.tz-on) .tz-return {
 
 @media (prefers-reduced-motion: reduce) {
     .tz .tz-switch-knob::after { transition: none; }
+}
+
+/* ---------- Wywiad: uwagi i nagrania głosowe ---------- */
+.tz .tz-notes-hd {
+    font-size: 20px;
+}
+
+.tz .tz-notes textarea.in {
+    min-height: 96px;
+}
+
+.tz .tz-rec {
+    align-items: center;
+}
+
+.tz .tz-rec-time {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    min-height: 44px;
+    font: 600 16px/1 'Inter', sans-serif;
+    font-variant-numeric: tabular-nums;
+    color: var(--tz-text);
+}
+
+.tz .tz-rec-time::before {
+    content: '';
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: var(--tz-hi);
+    animation: tz-rec-pulse 1.2s ease-in-out infinite;
+}
+
+@keyframes tz-rec-pulse {
+    50% { opacity: 0.35; }
+}
+
+.tz .tz-audio {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.tz .tz-audio-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 6px 8px;
+    border-radius: 14px;
+    background: var(--tz-inset-bg);
+    border: 1px solid var(--tz-inset-line);
+}
+
+.tz .tz-audio-main {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.tz .tz-audio-time {
+    font: 600 15px/1.2 'Inter', sans-serif;
+    font-variant-numeric: tabular-nums;
+    color: var(--tz-text);
+}
+
+.tz .tz-audio-item .tz-icbtn[aria-pressed="true"] {
+    background: var(--tz-acc);
+    border-color: transparent;
+    color: var(--tz-on-acc);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .tz .tz-rec-time::before { animation: none; }
+}
+
+/* ---------- Wywiad: wiek i pomiary ---------- */
+.tz .tz-body-facts {
+    align-items: center;
+}
+
+.tz .tz-body-facts p {
+    margin: 0;
+    flex: 1 1 200px;
+}
+
+/* ---------- Zdjęcia sylwetki ---------- */
+.tz .tz-photo-pick {
+    position: relative;
+    overflow: hidden;
+}
+
+/* Pole pliku zakrywa cały przycisk (dotyk 44 px), ale jest niewidoczne. */
+.tz .tz-file {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    cursor: pointer;
+}
+
+.tz .tz-thumbs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.tz .tz-thumb {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+}
+
+.tz .tz-thumb img {
+    width: 72px;
+    height: 96px;
+    object-fit: cover;
+    border-radius: 10px;
+    border: 1px solid var(--tz-inset-line);
+    background: var(--tz-inset-bg);
+}
+
+.tz .tz-compare,
+.tz .tz-compare-pick {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+}
+
+.tz .tz-compare-side {
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    min-width: 0;
+}
+
+.tz .tz-compare-img,
+.tz .tz-compare-empty {
+    width: 100%;
+    aspect-ratio: 3 / 4;
+    object-fit: contain;
+    border-radius: 12px;
+    border: 1px solid var(--tz-inset-line);
+    background: var(--tz-inset-bg);
+}
+
+.tz .tz-compare-empty {
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }

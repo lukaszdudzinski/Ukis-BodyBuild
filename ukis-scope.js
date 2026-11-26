@@ -13,7 +13,6 @@
         'uki-bodybuild-glass',
         'uki-bodybuild-wallpaper',
         'uki-bodybuild-avatar',
-        'uki-bodybuild-gender',
         'uki-bodybuild-reminder',
         'uki-bodybuild-pwa-banner-dismissed',
         'uki-bodybuild-last-version',
@@ -59,6 +58,10 @@
         'uki_last_ai_analysis',
         'uki_last_backup_date',
         'uki-nickname',
+        'ukis.bodybuild.dieta.cel-kcal',
+        'ukis.bodybuild.rok-urodzenia',
+        'ukis.bodybuild.plec-potwierdzona',
+        'uki-bodybuild-gender',
         'ukis.bodybuild.trener.wlaczony',
         'ukis.bodybuild.trener.kod',
         'ukis.bodybuild.trener.ostatnia-kopia'

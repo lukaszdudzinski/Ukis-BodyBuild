@@ -55,6 +55,10 @@ let navGen = 0;
 const DRAFT_SAVE_TIMEOUT_MS = 3000;
 const TIMED_OUT = Symbol('timeout');
 const DRAFT_FAILED = 'Nie udało się zapisać szkicu.';
+// Zapisy nagrań i zdjęć w toku: zakończenie nagrania i szyfrowanie trwa dłużej niż szkic tekstu,
+// więc blokada czeka na nie osobno, najwyżej SLOW_SAVE_TIMEOUT_MS (szkic tekstu zapisuje się pierwszy).
+const SLOW_SAVE_TIMEOUT_MS = 8000;
+const slowSaves = new Set();
 
 function readMotyw() {
     let id = null;
@@ -133,9 +137,9 @@ function flushLeave() {
 }
 
 // Czeka na zapis najwyżej DRAFT_SAVE_TIMEOUT_MS; po czasie daje TIMED_OUT (zapis może skończyć się później).
-function settleWithin(p) {
+function settleWithin(p, ms = DRAFT_SAVE_TIMEOUT_MS) {
     let timer = null;
-    const limit = new Promise((resolve) => { timer = setTimeout(() => resolve(TIMED_OUT), DRAFT_SAVE_TIMEOUT_MS); });
+    const limit = new Promise((resolve) => { timer = setTimeout(() => resolve(TIMED_OUT), ms); });
     return Promise.race([p, limit]).finally(() => clearTimeout(timer));
 }
 
@@ -425,27 +429,63 @@ function renderProbe(root) {
                     h('span', { class: 'tz-switch-text' }, h('span', {}, 'Rozgrzewka'), h('span', { class: 'mut' }, 'przełącznik próbny')),
                     h('span', { class: 'tz-switch-knob', 'aria-hidden': 'true' }))),
             h('div', { class: 'card tz-safe' }, h('p', { class: 'tz-iconline' }, icon('check'), h('span', {}, 'W pliku jest tylko plan treningowy.'))),
+            h('section', { class: 'card tz-stack tz-notes' },
+                h('label', { class: 'tz-field' }, h('span', { class: 'hd tz-notes-hd' }, 'Uwagi'),
+                    h('textarea', { class: 'in', rows: 3, 'aria-label': 'Uwagi próbne' }, 'Klient woli poranne treningi.')),
+                h('p', { class: 'mut' }, 'Możesz też dyktować z klawiatury (ikona mikrofonu).'),
+                h('div', { class: 'tz-row tz-rec' },
+                    h('span', { class: 'tz-rec-time', role: 'timer' }, '0:42 / 3:00'),
+                    h('button', { type: 'button', class: 'btn' }, icon('square'), 'Zatrzymaj'),
+                    h('button', { type: 'button', class: 'ghost' }, icon('mic'), 'Nagraj')),
+                h('p', { class: 'tz-error' }, 'Brak dostępu do mikrofonu.'),
+                h('div', { class: 'tz-body-facts tz-row tz-between' },
+                    h('p', { class: 'sub' }, 'Wiek: 34 · Waga: 80,5 kg (2026-11-22)'),
+                    h('button', { type: 'button', class: 'ghost' }, icon('ruler'), 'Dodaj pomiar')),
+                h('label', { class: 'ghost tz-photo-pick' }, icon('camera'), 'Przód',
+                    h('input', { type: 'file', class: 'tz-file', 'aria-label': 'Zdjęcie próbne' })),
+                h('div', { class: 'tz-compare' },
+                    h('figure', { class: 'tz-compare-side' }, h('div', { class: 'tz-compare-empty mut' }, 'Brak zdjęcia'),
+                        h('figcaption', { class: 'sub' }, '2026-10-01 · Przód'))),
+                h('ul', { class: 'tz-audio' },
+                    h('li', { class: 'tz-audio-item' },
+                        h('button', { type: 'button', class: 'tz-icbtn', 'aria-pressed': 'true', 'aria-label': 'Nagranie próbne' }, icon('square')),
+                        h('span', { class: 'tz-audio-main' }, h('span', { class: 'tz-audio-time' }, '1:05'), h('span', { class: 'mut' }, '26.11.2026, 12:30')),
+                        h('button', { type: 'button', class: 'tz-icbtn', 'aria-label': 'Usuń próbne' }, icon('trash'))))),
             h('div', { class: 'tz-row' },
                 h('button', { type: 'button', class: 'btn' }, icon('plus'), 'Klient'),
                 h('button', { type: 'button', class: 'ghost' }, 'Anuluj'))));
 }
 
 export const ctx = {
-    vault: null, lock: null, access, show, toast, confirm, registerOverlay, refreshAccess, resolve: resolveRoute, onLeave,
+    vault: null, lock: null, access, show, toast, confirm, registerOverlay, refreshAccess, resolve: resolveRoute, onLeave, holdLock,
     theme: { list: MOTYWY, get: readMotyw, set: setMotyw },
     applySections: applyAppSections,
 };
 
 const exec = (sql, bind) => DatabaseManager.sendMessage('exec', { sql, bind, rowMode: 'object' }).then((r) => r.result);
 
-// Przed blokadą: szkic otwartego formularza (póki ekran jest w DOM) i zapisy szkiców w toku.
-// Blokada zawsze wygrywa: zapisy, które nie skończyły się w czasie, zostają porzucone.
+// Długi zapis (nagranie, zdjęcie), na który blokada poczeka do SLOW_SAVE_TIMEOUT_MS.
+export function holdLock(p) {
+    const tracked = Promise.resolve(p).catch(() => {});
+    slowSaves.add(tracked);
+    tracked.finally(() => slowSaves.delete(tracked));
+    return p;
+}
+
+// Przed blokadą: szkic otwartego formularza (póki ekran jest w DOM) i zapisy szkiców w toku,
+// a osobno, dłużej, zapisy nagrań. Blokada zawsze wygrywa: zapisy, które nie skończyły się w czasie,
+// zostają porzucone (nagranie zaczęte przed blokadą i tak dopisze się kluczem z chwili startu).
 async function saveBeforeLock() {
     flushLeave();
-    if ((await settleWithin(saving)) === TIMED_OUT) {
+    const [draft, slow] = await Promise.all([
+        settleWithin(saving),
+        settleWithin(Promise.all([...slowSaves]), SLOW_SAVE_TIMEOUT_MS),
+    ]);
+    if (draft === TIMED_OUT) {
         console.error('[Strefa trenera] szkic: zapis nie skończył się przed blokadą');
         saving = Promise.resolve();
     }
+    if (slow === TIMED_OUT) console.error('[Strefa trenera] nagranie: zapis nie skończył się przed blokadą');
 }
 
 // Okna potwierdzenia (np. z nazwiskiem klienta) zamykają się jak „Anuluj”, komunikat znika (spec 7.4).

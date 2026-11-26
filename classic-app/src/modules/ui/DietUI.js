@@ -1,6 +1,7 @@
 import { DatabaseManager } from '../db/DatabaseManager.js';
 import { DietAIEngine } from '../diet/DietAIEngine.js';
 import { MediaManager } from '../db/MediaManager.js';
+import { computeTdee, readBodyProfile, ageFromBirthYear, saveBirthYear, profileHint, BIRTH_YEAR_ERROR, NO_DATA_HINT, resolveKcalGoal, loadKcalGoal, saveKcalGoal, useComputedKcalGoal, parseKcalInput, isPlausibleKcal, reportKcalIncident, setKcalSourceIcon, KCAL_MIN, KCAL_MAX } from '../diet/kcalGoal.js';
 
 export const DietUI = {
     attachedImages: [],
@@ -9,7 +10,8 @@ export const DietUI = {
         const dashboard = document.getElementById('diet-dashboard');
         if (!dashboard) return;
 
-        // Inicjalizacja struktury UI
+        // Inicjalizacja struktury UI (okno ustawień z poprzedniego renderu siedzi w <body>, patrz bindEvents)
+        document.getElementById('diet-tdee-modal')?.remove();
         DietUI.renderUI(dashboard);
 
         // Załadowanie dzisiejszych danych i wyliczenie TDEE
@@ -28,7 +30,8 @@ export const DietUI = {
 
             <!-- TDEE & Progress Rings -->
             <div class="diet-summary-card" style="background: rgba(0,0,0,0.4); border-radius: 12px; padding: 20px; border: 1px solid #FF9800; margin-bottom: 20px; text-align: center;">
-                <h3 style="margin-top: 0; color: #FF9800; font-size: 1.1em;">Twój cel: <span id="diet-tdee-display">---</span> kcal</h3>
+                <h3 style="margin-top: 0; color: #FF9800; font-size: 1.1em;">Twój cel: <span id="diet-tdee-display">---</span> kcal <span id="diet-kcal-source" style="display: inline-flex; vertical-align: -2px; margin-left: 4px;"></span></h3>
+                <p id="diet-kcal-hint" style="display: none; margin: 0 0 10px 0; color: #aaa; font-size: 0.85em; line-height: 1.4;"></p>
                 <div style="position: relative; width: 150px; height: 150px; margin: 20px auto;">
                     <!-- SVG Circle Progress -->
                     <svg width="150" height="150" viewBox="0 0 150 150">
@@ -109,8 +112,9 @@ export const DietUI = {
             </div>
 
             <!-- Modal konfiguracji TDEE -->
-            <div id="diet-tdee-modal" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.8); z-index: 1000; justify-content: center; align-items: center; padding: 20px;">
-                <div style="background: #1e1e1e; padding: 25px; border-radius: 12px; max-width: 400px; width: 100%; position: relative; border: 1px solid #333;">
+            <!-- z-index nad menu dolnym i przyciskiem „Start” (2000); okno przewija się na niskich ekranach -->
+            <div id="diet-tdee-modal" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.8); z-index: 2500; justify-content: center; align-items: flex-start; overflow-y: auto; box-sizing: border-box; padding: max(16px, env(safe-area-inset-top)) max(16px, env(safe-area-inset-right)) max(16px, env(safe-area-inset-bottom)) max(16px, env(safe-area-inset-left));">
+                <div style="background: #1e1e1e; padding: 25px; border-radius: 12px; max-width: 400px; width: 100%; position: relative; border: 1px solid #333; margin: auto; box-sizing: border-box; max-height: calc(100vh - 32px); max-height: calc(100dvh - 32px); overflow-y: auto; -webkit-overflow-scrolling: touch;">
                     <button id="diet-tdee-close" style="position: absolute; top: 15px; right: 15px; background: none; border: none; color: #fff; font-size: 1.5em; cursor: pointer;">×</button>
                     <h3 style="margin-top: 0; color: #FF9800; margin-bottom: 20px;">Twój cel kaloryczny</h3>
                     
@@ -134,8 +138,25 @@ export const DietUI = {
                         </select>
                     </div>
 
+                    <div style="margin-bottom: 15px;">
+                        <label for="diet-kcal-birth-year" style="display: block; margin-bottom: 5px; color: #aaa; font-size: 0.9em;">Rok urodzenia</label>
+                        <input type="text" inputmode="numeric" maxlength="4" id="diet-kcal-birth-year" class="input-field" autocomplete="bday-year" placeholder="np. 1990" aria-describedby="diet-kcal-birth-error" style="width: 100%; padding: 10px; background: #222; border: 1px solid #444; color: #fff; border-radius: 5px; font-size: 1.2em; font-weight: bold; box-sizing: border-box;">
+                        <div id="diet-kcal-birth-error" role="alert" style="display: none; color: #ff4444; font-size: 0.85em; margin-top: 5px;"></div>
+                    </div>
+
+                    <div style="margin-bottom: 15px;">
+                        <label for="diet-kcal-manual" style="display: flex; align-items: center; gap: 6px; margin-bottom: 5px; color: #aaa; font-size: 0.9em;">Cel kaloryczny (kcal) <span id="diet-kcal-source-modal" style="display: inline-flex; color: #FF9800;"></span></label>
+                        <input type="text" inputmode="numeric" id="diet-kcal-manual" class="input-field" autocomplete="off" aria-describedby="diet-kcal-manual-error" style="width: 100%; padding: 10px; background: #222; border: 1px solid #444; color: #fff; border-radius: 5px; font-size: 1.2em; font-weight: bold; box-sizing: border-box;">
+                        <div id="diet-kcal-manual-error" role="alert" style="display: none; color: #ff4444; font-size: 0.85em; margin-top: 5px;"></div>
+                        <div style="display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-top: 6px; font-size: 0.85em; color: #888;">
+                            <span id="diet-kcal-suggested"></span>
+                            <button type="button" id="diet-kcal-restore" style="display: none; background: transparent; border: 1px solid #FF9800; color: #FF9800; border-radius: 5px; padding: 5px 8px; font-size: 1em; cursor: pointer; white-space: nowrap;">Przywróć wyliczony</button>
+                        </div>
+                        <div id="diet-kcal-profile-hint" style="display: none; margin-top: 6px; font-size: 0.85em; color: #888; line-height: 1.4;"></div>
+                    </div>
+
                     <p style="font-size: 0.85em; color: #888; margin-bottom: 20px; line-height: 1.4;">
-                        Kalkulator pobierze Twoją ostatnią wagę z modułu "Pomiary Ciała" i na jej podstawie wyliczy propozycję kalorii (wzór Mifflin-St Jeor).
+                        Kalkulator pobierze Twoją ostatnią wagę z modułu "Pomiary Ciała" i na jej podstawie wyliczy propozycję kalorii (wzór Mifflin-St Jeor). Możesz wpisać własny cel; wtedy zmiana wagi czy aktywności go nie nadpisze.
                     </p>
 
                     <button id="diet-tdee-save" style="width: 100%; background: #FF9800; color: #000; border: none; padding: 12px; border-radius: 5px; font-weight: bold; cursor: pointer;">
@@ -164,19 +185,23 @@ export const DietUI = {
 
         const configBtn = document.getElementById('diet-config-btn');
         const modal = document.getElementById('diet-tdee-modal');
+        // Okno ustawień przenosimy do <body>: w zakładce (osobny kontekst warstw) jego z-index nie przykryłby
+        // menu dolnego ani przycisku „Start” (z-index 2000) na telefonie.
+        if (modal && modal.parentElement !== document.body) document.body.appendChild(modal);
         const closeBtn = document.getElementById('diet-tdee-close');
         const saveBtn = document.getElementById('diet-tdee-save');
 
         if (configBtn && modal) {
-            configBtn.addEventListener('click', () => {
+            configBtn.addEventListener('click', async () => {
                 // Załaduj zapisane ustawienia
                 const savedGoal = localStorage.getItem('dietGoal') || 'maintenance';
                 const savedActivity = localStorage.getItem('dietActivity') || '1.55';
-                
+
                 document.getElementById('diet-tdee-goal').value = savedGoal;
                 document.getElementById('diet-tdee-activity').value = savedActivity;
-                
+
                 modal.style.display = 'flex';
+                await DietUI.fillKcalGoalForm();
             });
         }
 
@@ -186,43 +211,180 @@ export const DietUI = {
             });
         }
 
+        // Zmiana aktywności lub celu w oknie: nowe wyliczenie obok (ręczny cel zostaje bez zmian).
+        ['diet-tdee-goal', 'diet-tdee-activity'].forEach(id => {
+            const el = document.getElementById(id);
+            if (el) el.addEventListener('change', () => DietUI.refreshKcalSuggestion());
+        });
+
+        const manualInput = document.getElementById('diet-kcal-manual');
+        if (manualInput) {
+            manualInput.addEventListener('input', () => {
+                DietUI.kcalForm.source = manualInput.value.trim() ? 'manual' : 'auto';
+                DietUI.kcalForm.edited = true;
+                DietUI.showKcalError('');
+                DietUI.renderKcalFormState();
+            });
+        }
+
+        const birthInput = document.getElementById('diet-kcal-birth-year');
+        if (birthInput) {
+            birthInput.addEventListener('input', () => {
+                DietUI.showBirthError('');
+                const v = birthInput.value.trim();
+                if (!v || /^\d{4}$/.test(v)) DietUI.refreshKcalSuggestion();
+            });
+        }
+
+        const restoreBtn = document.getElementById('diet-kcal-restore');
+        if (restoreBtn) {
+            // Tylko w oknie: nic nie zapisuje się przed „Zapisz” (aktywność, rok urodzenia ani cel).
+            restoreBtn.addEventListener('click', async () => {
+                const { birthYear } = DietUI.readTdeeForm();
+                if (birthYear && ageFromBirthYear(birthYear) === null) {
+                    DietUI.showBirthError(BIRTH_YEAR_ERROR);
+                    return;
+                }
+                await DietUI.refreshKcalSuggestion();
+                if (DietUI.kcalForm.suggested === null) return;
+                DietUI.kcalForm.source = 'auto';
+                DietUI.kcalForm.edited = false;
+                if (manualInput) manualInput.value = DietUI.kcalForm.suggested;
+                DietUI.showKcalError('');
+                DietUI.renderKcalFormState();
+            });
+        }
+
         if (saveBtn && modal) {
             saveBtn.addEventListener('click', async () => {
-                const goal = document.getElementById('diet-tdee-goal').value;
-                const activity = document.getElementById('diet-tdee-activity').value;
-                
+                const { goal, activity, birthYear } = DietUI.readTdeeForm();
+
+                if (birthYear && ageFromBirthYear(birthYear) === null) {
+                    DietUI.showBirthError(BIRTH_YEAR_ERROR);
+                    return;
+                }
+
+                let manualKcal = null;
+                if (DietUI.kcalForm.source === 'manual') {
+                    const n = parseKcalInput(manualInput ? manualInput.value : '');
+                    if (n === null || !isPlausibleKcal(n)) {
+                        DietUI.showKcalError(n === null
+                            ? `Wpisz liczbę od ${KCAL_MIN} do ${KCAL_MAX} kcal.`
+                            : `${n} kcal to nierealny cel. Wpisz liczbę od ${KCAL_MIN} do ${KCAL_MAX} kcal.`);
+                        return;
+                    }
+                    manualKcal = n;
+                }
+
                 localStorage.setItem('dietGoal', goal);
                 localStorage.setItem('dietActivity', activity);
-                
+                if (birthYear !== undefined) saveBirthYear(birthYear);
+                if (manualKcal !== null) saveKcalGoal(manualKcal, 'manual');
+                else useComputedKcalGoal(await DietUI.calculateTDEE({ goal, activity, birthYear }));
+
                 modal.style.display = 'none';
                 await DietUI.loadTodayData();
             });
         }
     },
 
-    calculateTDEE: async () => {
+    // Stan pola celu w oknie ustawień: źródło (auto/manual) i aktualne wyliczenie.
+    kcalForm: { source: 'auto', suggested: null, pending: false, edited: false },
+
+    readTdeeForm: () => {
+        const birth = document.getElementById('diet-kcal-birth-year');
+        return {
+            goal: document.getElementById('diet-tdee-goal')?.value || 'maintenance',
+            activity: document.getElementById('diet-tdee-activity')?.value || '1.55',
+            birthYear: birth ? birth.value.trim() : undefined
+        };
+    },
+
+    // Najpierw od razu zapisany cel (pole gotowe do wpisywania), potem wyliczenie z bazy.
+    fillKcalGoalForm: async () => {
+        const input = document.getElementById('diet-kcal-manual');
+        const { goal } = loadKcalGoal();
+        const source = goal && goal.source === 'manual' ? 'manual' : 'auto';
+        DietUI.kcalForm = { source, suggested: null, pending: true, edited: false, noData: false };
+        if (input) input.value = goal ? goal.kcal : '';
+        const birth = document.getElementById('diet-kcal-birth-year');
+        if (birth) birth.value = readBodyProfile().birthYear ?? '';
+        DietUI.showKcalError('');
+        DietUI.showBirthError('');
+        DietUI.renderKcalFormState();
+        await DietUI.refreshKcalSuggestion();
+    },
+
+    refreshKcalSuggestion: async () => {
+        const computed = await DietUI.calculateTDEE(DietUI.readTdeeForm());
+        DietUI.kcalForm.suggested = isPlausibleKcal(computed) ? computed : null;
+        DietUI.kcalForm.noData = computed === null;
+        DietUI.kcalForm.pending = false;
+        const input = document.getElementById('diet-kcal-manual');
+        // Wpis użytkownika ma pierwszeństwo: wyliczenie trafia do pola tylko przy celu automatycznym.
+        if (input && DietUI.kcalForm.source === 'auto' && !DietUI.kcalForm.edited && DietUI.kcalForm.suggested !== null) {
+            input.value = DietUI.kcalForm.suggested;
+        }
+        DietUI.renderKcalFormState();
+    },
+
+    renderKcalFormState: () => {
+        const { source, suggested, pending, noData } = DietUI.kcalForm;
+        // Bez pomiarów nie ma celu „wyliczonego automatycznie”, więc nie ma też ikony AI.
+        setKcalSourceIcon(document.getElementById('diet-kcal-source-modal'), source === 'auto' && (noData || pending) ? null : source);
+        const hint = document.getElementById('diet-kcal-suggested');
+        if (hint) {
+            hint.textContent = pending ? '' : suggested !== null
+                ? `Wyliczony: ${suggested} kcal`
+                : noData ? NO_DATA_HINT : 'Wyliczenie wygląda na błędne. Sprawdź wagę i wzrost w Pomiarach.';
+        }
+        const restore = document.getElementById('diet-kcal-restore');
+        if (restore) restore.style.display = source === 'manual' && suggested !== null ? 'inline-block' : 'none';
+        const profileBox = document.getElementById('diet-kcal-profile-hint');
+        if (profileBox) {
+            const birth = document.getElementById('diet-kcal-birth-year');
+            const text = pending ? '' : profileHint({ sex: readBodyProfile().sex, age: ageFromBirthYear(birth ? birth.value : null) });
+            profileBox.textContent = text;
+            profileBox.style.display = text ? 'block' : 'none';
+        }
+    },
+
+    showBirthError: (text) => {
+        const box = document.getElementById('diet-kcal-birth-error');
+        if (!box) return;
+        box.textContent = text;
+        box.style.display = text ? 'block' : 'none';
+        const input = document.getElementById('diet-kcal-birth-year');
+        if (input) {
+            if (text) input.setAttribute('aria-invalid', 'true');
+            else input.removeAttribute('aria-invalid');
+        }
+    },
+
+    showKcalError: (text) => {
+        const box = document.getElementById('diet-kcal-manual-error');
+        if (!box) return;
+        box.textContent = text;
+        box.style.display = text ? 'block' : 'none';
+        const input = document.getElementById('diet-kcal-manual');
+        if (input) {
+            if (text) input.setAttribute('aria-invalid', 'true');
+            else input.removeAttribute('aria-invalid');
+        }
+    },
+
+    // Wyliczenie z pomiarów (Mifflin-St Jeor) z płcią i wiekiem użytkownika. `settings` z okna ustawień;
+    // domyślnie zapisane ustawienia. Błędne pomiary (np. wzrost w milimetrach) poprawia lub pomija computeTdee.
+    calculateTDEE: async (settings = {}) => {
         const measurements = await DatabaseManager.getMeasurements();
-        if (!measurements || measurements.length === 0) return 2000; // domyślnie
-
-        const latest = measurements[0];
-        const weight = latest.weight;
-        const height = latest.height || 175; // jeśli brakuje wzrostu
-        // Zakładamy płeć męską i wiek 30 jako fallback
-        const age = 30;
-        
-        // Wzór Mifflin-St Jeor dla mężczyzn (uproszczony)
-        // 10 * waga + 6.25 * wzrost - 5 * wiek + 5
-        let bmr = (10 * weight) + (6.25 * height) - (5 * age) + 5;
-        
-        // Mnożnik aktywności z konfiguracji
-        const activityMultiplier = parseFloat(localStorage.getItem('dietActivity') || '1.55');
-        let tdee = bmr * activityMultiplier;
-
-        const goal = localStorage.getItem('dietGoal') || 'maintenance';
-        if (goal === 'cut') tdee -= 500;
-        if (goal === 'bulk') tdee += 300;
-
-        return Math.round(tdee);
+        const profile = readBodyProfile();
+        const kcal = computeTdee(measurements, {
+            activity: parseFloat(settings.activity ?? (localStorage.getItem('dietActivity') || '1.55')),
+            goal: settings.goal ?? (localStorage.getItem('dietGoal') || 'maintenance'),
+            sex: profile.sex,
+            age: settings.birthYear !== undefined ? ageFromBirthYear(settings.birthYear) : profile.age
+        });
+        return kcal; // null, gdy brak pomiaru z wagą (cel domyślny wybiera resolveKcalGoal)
     },
 
     loadTodayData: async () => {
@@ -317,7 +479,19 @@ export const DietUI = {
             }
         }
 
-        const tdee = await DietUI.calculateTDEE();
+        // Cel: ręczny albo wyliczony; błędne wartości odrzuca strażnik (wpis w logu + komunikat, raz na zdarzenie).
+        const goal = resolveKcalGoal(await DietUI.calculateTDEE());
+        goal.incidents.forEach(reportKcalIncident);
+        const tdee = goal.kcal;
+        const noComputed = goal.source === 'auto' && goal.noData;
+        setKcalSourceIcon(document.getElementById('diet-kcal-source'), noComputed ? null : goal.source);
+        // Podpowiedź: brak pomiarów albo przybliżona płeć lub wiek (przy ręcznym celu zbędna).
+        const kcalHint = document.getElementById('diet-kcal-hint');
+        if (kcalHint) {
+            const text = goal.source === 'manual' ? '' : noComputed ? NO_DATA_HINT : profileHint(readBodyProfile());
+            kcalHint.textContent = text;
+            kcalHint.style.display = text ? 'block' : 'none';
+        }
         
         // Aktualizacja interfejsu (Liczniki)
         const kcalDisplay = document.getElementById('diet-kcal-consumed');

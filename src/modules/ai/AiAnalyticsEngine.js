@@ -1,3 +1,6 @@
+import { readBodyProfile } from '../diet/kcalGoal.js';
+import { aiBodyContext } from '../body/bodyMetrics.js';
+
 export const AiAnalyticsEngine = {
     generate: async (days, params = {}) => {
         if (window.PremiumUI && !window.PremiumUI.checkPremium()) {
@@ -103,7 +106,9 @@ export const AiAnalyticsEngine = {
                 }))
             })),
             pelne_dane_diety_makroskladniki: dietSummary,
-            pomiary_historia: (measurements || []).slice(-5) // ostatnie 5 pomiarów do weryfikacji trendu (waga, obwody)
+            // 5 najnowszych pomiarów (od najstarszego z nich) oraz płeć, wiek, BF%, FFMI i WHR.
+            // getMeasurements() zwraca od najnowszego, więc dawne .slice(-5) wysyłało 5 najstarszych.
+            ...aiBodyContext(measurements, readBodyProfile())
         };
 
         const systemPrompt = `Jesteś wirtualnym trenerem personalnym i ekspertem ds. fizjologii, kulturystyki i dietetyki o imieniu Trener Edward z aplikacji premium Uki's BodyBuild.
@@ -125,7 +130,8 @@ Twoja analiza w formacie Markdown MUSI pokrywać dokładnie te punkty (bez pomij
    - Zapytaj użytkownika wprost: "Czy dziennik posiłków był dokładnie wprowadzony, czy nie udało się wszystkiego zapisać?". Zwróć uwagę, że dokładność diety ma kluczowe znaczenie.
    - Jeśli liczba zalogowanych posiłków jest niska (${dietSummary.liczba_zalogowanych_posilkow}) - zaznacz to i zmotywuj do regularnego logowania!
 5. **Analiza Pomiarów Ciała w czasie (Trend)**: 
-   - Spójrz na sekcję "pomiary_historia" (ostatnie 5 wpisów).
+   - Spójrz na sekcję "pomiary_historia" (ostatnie 5 wpisów, od najstarszego do najnowszego).
+   - Uwzględnij sekcję "profil_ciala" (płeć, wiek, szacunkowy BF%, FFMI, WHR) przy ocenie sylwetki, kalorii i białka.
    - Jeśli buduje masę: czy waga i obwody rosną? Jeśli redukuje: czy waga i obwody spadają? Jakie konkretnie kroki podjąć? Zwróć uwagę na wahania.
 6. **Analiza Długoterminowa (Kierunek)**: Porównaj obecny okres do poprzednich analiz. Czy idziemy w dobrą stronę?
 7. **Podsumowanie i Gotowy Plan Treningowy**: 

@@ -1,4 +1,4 @@
-const CACHE_NAME = 'ukis-bodybuild-v2026.11.25.05'; // deployed: 2026-08-27T00:01
+const CACHE_NAME = 'ukis-bodybuild-v2026.11.26.02'; // deployed: 2026-08-27T00:01
 const OWN_CACHE_PREFIXES = ['ukis-bodybuild-', 'uki-bodybuild-']; // własne cache (także historyczne uki-bodybuild-v2026.8.x); cudze cache w domenie zostają
 // Core assets that MUST be cached immediately
 const CORE_ASSETS = [
@@ -61,11 +61,15 @@ const CORE_ASSETS = [
     './src/modules/trainer/trainerProgress.js',
     './src/modules/trainer/trainerPlanFile.js',
     './src/modules/trainer/trainerPlanImport.js',
+    './src/modules/trainer/trainerAudio.js',
+    './src/modules/trainer/trainerPhotos.js',
     './src/modules/trainer/ui/dom.js',
     './src/modules/trainer/ui/gateScreens.js',
     './src/modules/trainer/ui/vaultScreens.js',
     './src/modules/trainer/ui/clientScreens.js',
     './src/modules/trainer/ui/interviewScreen.js',
+    './src/modules/trainer/ui/interviewNotes.js',
+    './src/modules/trainer/ui/measurementPhotos.js',
     './src/modules/trainer/ui/assessmentScreen.js',
     './src/modules/trainer/ui/measurementsScreen.js',
     './src/modules/trainer/ui/settingsScreen.js',
@@ -114,6 +118,9 @@ const CORE_ASSETS = [
     './src/modules/ui/BackupUI.js',
     './src/modules/gamification/AchievementsSystem.js',
     './src/modules/diet/DietAIEngine.js',
+    './src/modules/diet/kcalGoal.js',
+    './src/modules/body/bodyMetrics.js',
+    './src/modules/body/sexConfirm.js',
     './src/modules/ai/AiAnalyticsEngine.js',
     './src/modules/db/DatabaseManager.js',
     './src/modules/db/dbWorker.js',
