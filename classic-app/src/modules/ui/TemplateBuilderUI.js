@@ -1,4 +1,4 @@
-import { ExerciseCatalog, ExerciseCategories } from '../../data/ExerciseCatalog.js';
+import { ExerciseCatalog, ExerciseCategories, exerciseSearchTexts, isCatalogExercise } from '../../data/ExerciseCatalog.js';
 
 export const TemplateBuilderUI = {
     cart: [],
@@ -131,12 +131,15 @@ export const TemplateBuilderUI = {
         let html = '';
         let customExercises = [];
         try { customExercises = JSON.parse(localStorage.getItem('uki_custom_exercises') || '[]'); } catch(e) {}
-        const fullCatalog = [...ExerciseCatalog, ...customExercises];
+        // Ćwiczenie własne, które jest dziś w katalogu (np. dawna nazwa), nie dubluje listy; zapis zostaje bez zmian.
+        const fullCatalog = [...ExerciseCatalog, ...customExercises.filter(n => !isCatalogExercise(n))];
         
         fullCatalog.forEach(exName => {
             const escapedNameForData = exName.replace(/"/g, '&quot;');
+            // Szukanie także po angielskiej i dawnej nazwie; na liście tylko nazwa.
+            const searchText = exerciseSearchTexts(exName).join(' | ').replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;');
             const escapedNameForJS = exName.replace(/'/g, "\\'").replace(/"/g, '&quot;');
-            html += `<div class="builder-catalog-item" data-name="${escapedNameForData}" onclick="TemplateBuilderUI.addToCart('${escapedNameForJS}')" style="background: #222; padding: 12px 15px; border-radius: 8px; border: 1px solid #333; cursor: pointer; display: flex; justify-content: space-between; align-items: center;">
+            html += `<div class="builder-catalog-item" data-name="${escapedNameForData}" data-search="${searchText}" onclick="TemplateBuilderUI.addToCart('${escapedNameForJS}')" style="background: #222; padding: 12px 15px; border-radius: 8px; border: 1px solid #333; cursor: pointer; display: flex; justify-content: space-between; align-items: center;">
                 <span style="color: #ccc; font-size: 0.95em;">${exName}</span>
                 <span style="color: #00BFFF; font-weight: bold; font-size: 1.2em;">+</span>
             </div>`;
@@ -148,7 +151,7 @@ export const TemplateBuilderUI = {
         const query = document.getElementById('builder-search').value.toLowerCase();
         const items = document.querySelectorAll('.builder-catalog-item');
         items.forEach(item => {
-            const name = item.getAttribute('data-name').toLowerCase();
+            const name = (item.getAttribute('data-search') || item.getAttribute('data-name')).toLowerCase();
             if (name.includes(query)) item.style.display = 'flex';
             else item.style.display = 'none';
         });

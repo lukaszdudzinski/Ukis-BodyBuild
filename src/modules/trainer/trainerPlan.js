@@ -5,7 +5,7 @@
 import { continuumForGoal } from './trainerQuestionnaire.js';
 import { goalLabel } from './trainerModel.js';
 import { parseNumber, formatNumber } from './trainerMeasurements.js';
-import { ExerciseCategories } from '../../data/ExerciseCatalog.js';
+import { exerciseMuscleGroup } from '../../data/ExerciseCatalog.js';
 
 // Kolejność tygodnia od poniedziałku; dow jak w Date.getDay().
 export const DAYS = [
@@ -28,25 +28,9 @@ export const MUSCLE_GROUPS = [
     { id: 'brzuch', label: 'brzuch' },
 ];
 
-// Kategorie katalogu bez grupy (Cardio, Zajęcia zorganizowane) i ćwiczenia własne są poza licznikiem serii.
-const CATEGORY_TO_GROUP = {
-    'Klatka': 'klatka',
-    'Plecy': 'plecy',
-    'Nogi i Pośladki': 'nogi',
-    'Barki': 'barki',
-    'Triceps': 'triceps',
-    'Biceps': 'biceps',
-    'Brzuch': 'brzuch',
-};
-
-const GROUP_BY_NAME = new Map();
-for (const [category, names] of Object.entries(ExerciseCategories)) {
-    const group = CATEGORY_TO_GROUP[category];
-    if (group) for (const name of names) GROUP_BY_NAME.set(name, group);
-}
-
+// Grupa z katalogu (wspólna mapa kategorii w ExerciseCatalog.js); ćwiczenia własne, Cardio i Zajęcia poza licznikiem serii.
 export function muscleGroupFor(exerciseName) {
-    return GROUP_BY_NAME.get(String(exerciseName ?? '').trim()) || null;
+    return exerciseMuscleGroup(exerciseName);
 }
 
 export const RAMP_DEFAULT = 'R — rozgrzanie: 5 min lekkiego cardio.\n'

@@ -1,7 +1,9 @@
 // Wybór ćwiczenia do planu: kategorie katalogu rozwijane listą, wyszukiwarka bez polskich znaków
 // i ćwiczenie własne. Okno w stylu ctx.confirm; blokada Strefy zamyka je jak „Anuluj” (ctx.registerOverlay).
+// Pod nazwą wyszarzony wzorzec ruchowy i drobna nazwa angielska; szukanie obejmuje też angielskie i dawne nazwy.
 import { h, icon } from './dom.js';
-import { ExerciseCategories } from '../../../data/ExerciseCatalog.js';
+import { ExerciseEntries } from '../../../data/ExerciseCatalog.js';
+import { movementPatternLabel } from '../../../data/movementPatterns.js';
 import { muscleGroupFor } from '../trainerPlan.js';
 
 const MAX_NAME = 120;
@@ -13,10 +15,17 @@ function fold(s) {
     return String(s || '').toLocaleLowerCase('pl').replace(/ł/g, 'l').normalize('NFD').replace(/[̀-ͯ]/g, '');
 }
 
-const CATALOG = Object.entries(ExerciseCategories).map(([category, names]) => ({
-    category,
-    items: names.map((name) => ({ name, key: fold(name) })),
-}));
+const CATALOG = [];
+for (const e of ExerciseEntries) {
+    let c = CATALOG.find((x) => x.category === e.category);
+    if (!c) CATALOG.push(c = { category: e.category, items: [] });
+    c.items.push({
+        name: e.name,
+        en: e.en || '',
+        pattern: movementPatternLabel(e.wzorzec),
+        key: fold([e.name, e.en, ...(e.aliases || [])].filter(Boolean).join(' | ')),
+    });
+}
 
 // Zwraca { name, muscleGroup } albo null (Anuluj, Escape, tło, blokada).
 export function pickExercise(ctx, { title = 'Wybierz ćwiczenie' } = {}) {
@@ -35,7 +44,15 @@ export function pickExercise(ctx, { title = 'Wybierz ćwiczenie' } = {}) {
         const onKey = (e) => { if (e.key === 'Escape') { e.preventDefault(); close(null); } };
 
         const choose = (name) => close({ name, muscleGroup: muscleGroupFor(name) });
-        const itemButton = (name) => h('button', { type: 'button', class: 'tz-pick', onclick: () => choose(name) }, name);
+        // Nazwa dostępna to sama nazwa ćwiczenia; wzorzec i nazwa angielska jako opis.
+        const itemButton = (it) => {
+            if (!it.pattern && !it.en) return h('button', { type: 'button', class: 'tz-pick', onclick: () => choose(it.name) }, it.name);
+            const subId = `tz-pick-sub-${++seq}`;
+            return h('button', { type: 'button', class: 'tz-pick tz-pick-2l', 'aria-label': it.name, 'aria-describedby': subId, onclick: () => choose(it.name) },
+                h('span', { class: 'tz-pick-name' }, it.name),
+                h('span', { class: 'tz-pick-sub mut', id: subId },
+                    it.pattern, it.en ? h('small', { class: 'tz-pick-en' }, it.pattern ? ` · ${it.en}` : it.en) : null));
+        };
 
         const search = h('input', { class: 'in', type: 'search', autocomplete: 'off', placeholder: 'Szukaj ćwiczenia', 'aria-label': 'Szukaj ćwiczenia' });
         const list = h('div', { class: 'tz-stack tz-tight' });
@@ -46,7 +63,7 @@ export function pickExercise(ctx, { title = 'Wybierz ćwiczenie' } = {}) {
                 const words = q.split(/\s+/);
                 const hits = CATALOG.flatMap((c) => c.items).filter((it) => words.every((w) => it.key.includes(w)));
                 list.replaceChildren(hits.length
-                    ? h('div', { class: 'tz-list' }, hits.slice(0, MAX_RESULTS).map((it) => itemButton(it.name)))
+                    ? h('div', { class: 'tz-list' }, hits.slice(0, MAX_RESULTS).map(itemButton))
                     : h('p', { class: 'sub tz-empty' }, 'Nic nie znaleziono. Dodaj własne ćwiczenie poniżej.'));
                 return;
             }
@@ -57,7 +74,7 @@ export function pickExercise(ctx, { title = 'Wybierz ćwiczenie' } = {}) {
                     onclick: () => { if (expanded) open.delete(c.category); else open.add(c.category); paint(); },
                 }, h('span', {}, c.category), h('span', { class: 'mut' }, String(c.items.length)));
                 return h('div', { class: 'tz-stack tz-tight' }, head,
-                    expanded ? h('div', { class: 'tz-list' }, c.items.map((it) => itemButton(it.name))) : null);
+                    expanded ? h('div', { class: 'tz-list' }, c.items.map(itemButton)) : null);
             }));
         };
         search.addEventListener('input', paint);

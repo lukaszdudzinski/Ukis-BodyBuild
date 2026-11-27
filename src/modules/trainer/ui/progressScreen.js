@@ -11,6 +11,7 @@ import { finishedSessions } from '../trainerSession.js';
 import {
     bestSet, exerciseNames, workingWeightSeries, e1rmSeries, sessionsPerMonth, weeklySetsByGroup,
 } from '../trainerProgress.js';
+import { canonicalExerciseName } from '../../../data/ExerciseCatalog.js';
 
 const fullName = (c) => `${c.firstName || ''} ${c.lastName || ''}`.trim();
 
@@ -28,14 +29,16 @@ export function progressTileSub(sessions, today = new Date()) {
 
 // Ćwiczenie na start: pierwsze z ciężarem roboczym (bestSet) w ostatniej sesji, która takie ma;
 // bez takiej sesji (same ćwiczenia z ciężarem własnym) pierwsze z serią roboczą w ostatniej sesji.
+// `names` to nazwy główne (exerciseNames), więc dawną nazwę z katalogu zamieniamy na nową.
 function defaultExercise(finished, names) {
+    const known = (ex) => names.includes(canonicalExerciseName(ex.name));
     for (const s of finished) {
-        const weighted = (s.exercises || []).find((ex) => names.includes(ex.name) && bestSet(ex));
-        if (weighted) return weighted.name;
+        const weighted = (s.exercises || []).find((ex) => known(ex) && bestSet(ex));
+        if (weighted) return canonicalExerciseName(weighted.name);
     }
     for (const s of finished) {
-        const hit = (s.exercises || []).find((ex) => names.includes(ex.name));
-        if (hit) return hit.name;
+        const hit = (s.exercises || []).find(known);
+        if (hit) return canonicalExerciseName(hit.name);
     }
     return names[0];
 }

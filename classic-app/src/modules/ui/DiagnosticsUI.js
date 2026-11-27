@@ -1,5 +1,6 @@
 import { DatabaseManager } from '../db/DatabaseManager.js';
-import { ExerciseCategories } from '../../data/ExerciseCatalog.js';
+import { ExerciseCategories, isCatalogExercise } from '../../data/ExerciseCatalog.js';
+import { suggestCatalogName } from '../../data/exerciseTraits.js';
 
 export const DiagnosticsUI = {
     init: () => {
@@ -462,10 +463,10 @@ export const DiagnosticsUI = {
                     trainings.forEach(t => {
                         if (t.exercises) {
                             t.exercises.forEach(ex => {
-                                if (ex.name && !validExercises.includes(ex.name)) unknownNames.add(ex.name);
+                                if (ex.name && !isCatalogExercise(ex.name)) unknownNames.add(ex.name);
                                 if (ex.type === 'superset' && ex.exercises) {
                                     ex.exercises.forEach(nx => {
-                                        if (nx.name && !validExercises.includes(nx.name)) unknownNames.add(nx.name);
+                                        if (nx.name && !isCatalogExercise(nx.name)) unknownNames.add(nx.name);
                                     });
                                 }
                             });
@@ -485,14 +486,8 @@ export const DiagnosticsUI = {
                     let rowsHtml = '';
                     Array.from(unknownNames).forEach((unknown, i) => {
                         // Spróbujmy podpowiedzieć z kontekstu (np. po 4 znakach lub całych słowach)
-                        let bestMatch = '';
-                        const lw = unknown.toLowerCase();
-                        if (lw.includes('płaska') && lw.includes('wycisk')) bestMatch = 'Klatka - Wyciskanie sztangi - Ławka płaska';
-                        else if (lw.includes('rozpi') && lw.includes('płas')) bestMatch = 'Klatka - Rozpiętki - Hantle (ławka płaska)';
-                        else if (lw.includes('przysiad')) bestMatch = 'Nogi - Przysiady ze sztangą na karku';
-                        else if (lw.includes('martw') || lw.includes(' mc')) bestMatch = 'Plecy - Martwy ciąg (Klasyczny)';
-                        else if (lw.includes('wiosł') || lw.includes('wioslo')) bestMatch = 'Plecy - Wiosłowanie sztangą w opadzie';
-                        else if (lw.includes('brzuch') || lw.includes('brzus') || lw.includes('spi')) bestMatch = 'Brzuch - Skłony tułowia na ławce rzymskiej'; // Podpowiedź dla brzucha
+                        // Podpowiedź: nazwa główna z katalogu (exerciseTraits.suggestCatalogName).
+                        const bestMatch = suggestCatalogName(unknown);
 
                         rowsHtml += `
                             <div style="background: rgba(255,255,255,0.05); padding: 10px; border-radius: 6px; margin-bottom: 10px; border: 1px solid #444;">

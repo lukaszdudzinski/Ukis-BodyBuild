@@ -3,6 +3,7 @@
 
 import { MUSCLE_GROUPS, addDays, toIso } from './trainerPlan.js';
 import { isWorkingSet, finishedSessions } from './trainerSession.js';
+import { canonicalExerciseName } from '../../data/ExerciseCatalog.js';
 
 const MONTHS = ['styczeń', 'luty', 'marzec', 'kwiecień', 'maj', 'czerwiec',
     'lipiec', 'sierpień', 'wrzesień', 'październik', 'listopad', 'grudzień'];
@@ -29,11 +30,12 @@ export function bestSet(sessionExercise) {
 }
 
 // Nazwy ćwiczeń z co najmniej jedną serią roboczą w zakończonych sesjach, alfabetycznie po polsku.
+// Dawna nazwa z katalogu liczy się jako nazwa główna (jedno ćwiczenie przed i po zmianie nazw).
 export function exerciseNames(sessions) {
     const names = new Set();
     for (const s of finishedSessions(sessions)) {
         for (const ex of s.exercises || []) {
-            if ((ex.sets || []).some(isWorkingSet)) names.add(ex.name);
+            if ((ex.sets || []).some(isWorkingSet)) names.add(canonicalExerciseName(ex.name));
         }
     }
     return [...names].sort(new Intl.Collator('pl').compare);
@@ -42,9 +44,10 @@ export function exerciseNames(sessions) {
 // Wartość dnia = maksimum z sesji tego dnia (i z powtórzeń ćwiczenia w jednej sesji), rosnąco po dacie.
 function dailySeries(sessions, name, valueOf) {
     const byDate = new Map();
+    const wanted = canonicalExerciseName(name);
     for (const s of finishedSessions(sessions)) {
         for (const ex of s.exercises || []) {
-            if (ex.name !== name) continue;
+            if (canonicalExerciseName(ex.name) !== wanted) continue;
             const v = valueOf(ex);
             if (v === null || !s.date) continue;
             if (!byDate.has(s.date) || v > byDate.get(s.date)) byDate.set(s.date, v);

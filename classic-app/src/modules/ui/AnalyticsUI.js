@@ -2,6 +2,8 @@ import { DatabaseManager } from '../db/DatabaseManager.js';
 import { ShareUtils } from '../../utils/ShareUtils.js';
 import { readBodyProfile } from '../diet/kcalGoal.js';
 import { bodySummary, bfRanges, whrRanges } from '../body/bodyMetrics.js';
+import { canonicalExerciseName } from '../../data/ExerciseCatalog.js';
+import { atlasMuscles, bodyweightFactor } from '../../data/exerciseTraits.js';
 
 export const AnalyticsUI = {
     init: () => {
@@ -118,19 +120,17 @@ export const AnalyticsUI = {
             let volMachine = 0;
             const exercises = t.exercises || [];
             exercises.forEach(ex => {
-                const exName = ex.name ? ex.name.toLowerCase() : "";
-                const isBodyweight65 = exName.includes("pompk");
-                const isBodyweight100 = exName.includes("podciąg") || exName.includes("drąż") || exName.includes("brzuszk") || exName.includes("wspięcia");
+                // Ciężar ciała z danych katalogu (pompki 0,65, podciąganie 1); słowa kluczowe tylko dla ćwiczeń własnych.
+                const bwFactor = bodyweightFactor(ex.name);
                 
                 if (ex.sets) {
                     ex.sets.forEach(set => {
                         let weightForVolume = (set.weight !== undefined && set.weight !== null) ? Number(set.weight) : 0;
-                        if (isBodyweight65) weightForVolume += (measurements.length > 0 ? (measurements[0].weight * 0.65) : 0);
-                        else if (isBodyweight100) weightForVolume += (measurements.length > 0 ? measurements[0].weight : 0);
+                        if (bwFactor > 0) weightForVolume += (measurements.length > 0 ? (measurements[0].weight * bwFactor) : 0);
                         
                         const setTonnage = weightForVolume * (set.reps ? Number(set.reps) : 0);
                         vol += setTonnage;
-                        if (isBodyweight65 || isBodyweight100) volBody += setTonnage;
+                        if (bwFactor > 0) volBody += setTonnage;
                         else volMachine += setTonnage;
                     });
                 }
@@ -248,7 +248,7 @@ export const AnalyticsUI = {
         trainings.forEach(t => {
             (t.exercises || []).forEach(ex => {
                 if (!ex.name) return;
-                const cleanName = ex.name.trim();
+                const cleanName = canonicalExerciseName(ex.name); // rekord dawnej nazwy z katalogu liczy się pod nową
                 if (!cleanName) return;
                 (ex.sets || []).forEach(s => {
                     const weight = Number(s.weight), reps = Number(s.reps);
@@ -293,7 +293,7 @@ export const AnalyticsUI = {
 
         // Add Progress Chart
         const uniqueExNames = new Set();
-        trainings.forEach(t => (t.exercises || []).forEach(ex => { if(ex.name && ex.name.trim()) uniqueExNames.add(ex.name.trim()); }));
+        trainings.forEach(t => (t.exercises || []).forEach(ex => { if(ex.name && ex.name.trim()) uniqueExNames.add(canonicalExerciseName(ex.name)); }));
         const exListOptions = Array.from(uniqueExNames).sort();
         
         if (exListOptions.length > 0) {
@@ -425,17 +425,17 @@ export const AnalyticsUI = {
         const recentTrainings = trainings.filter(t => (t.startTime || new Date(t.date).getTime()) > last48h);
 
         const muscles = {
-            chest: { name: 'Klatka Piersiowa', keywords: ['klat', 'wycisk', 'rozpięt', 'pompk'], status: 'green' },
-            back: { name: 'Plecy', keywords: ['plec', 'wiosł', 'drąż', 'martw', 'szrug', 'podciąg'], status: 'green' },
-            legs: { name: 'Nogi', keywords: ['nog', 'przys', 'wykrok', 'suwn', 'łyd'], status: 'green' },
-            shoulders: { name: 'Barki', keywords: ['bark', 'żołnierz', 'unoszen'], status: 'green' },
-            arms: { name: 'Ramiona', keywords: ['bic', 'tric', 'uginan', 'francusk'], status: 'green' },
-            core: { name: 'Brzuch', keywords: ['brzuch', 'plank', 'desk', 'brzus'], status: 'green' }
+            chest: { name: 'Klatka Piersiowa', status: 'green' },
+            back: { name: 'Plecy', status: 'green' },
+            legs: { name: 'Nogi', status: 'green' },
+            shoulders: { name: 'Barki', status: 'green' },
+            arms: { name: 'Ramiona', status: 'green' },
+            core: { name: 'Brzuch', status: 'green' }
         };
 
         recentTrainings.forEach(t => (t.exercises || []).forEach(ex => {
-            const exName = ex.name ? ex.name.toLowerCase() : '';
-            Object.keys(muscles).forEach(key => { if (muscles[key].keywords.some(kw => exName.includes(kw))) muscles[key].status = 'red'; });
+            // Partie z danych katalogu (także pod dawną nazwą); słowa kluczowe tylko dla ćwiczeń własnych.
+            atlasMuscles(ex.name).forEach(key => { if (muscles[key]) muscles[key].status = 'red'; });
         }));
 
         let atlasCards = '';
@@ -482,7 +482,7 @@ export const AnalyticsUI = {
             let found = false;
             
             t.exercises.forEach(ex => {
-                if (ex.name && ex.name.trim() === exerciseName) {
+                if (ex.name && canonicalExerciseName(ex.name) === canonicalExerciseName(exerciseName)) {
                     if (ex.sets) {
                         ex.sets.forEach(s => {
                             const w = Number(s.weight);
@@ -551,7 +551,7 @@ export const AnalyticsUI = {
 
                 exList.forEach(ex => {
                     if (!ex.name) return;
-                    const cleanName = ex.name.trim();
+                    const cleanName = canonicalExerciseName(ex.name);
                     if (!cleanName) return;
 
                     const sets = ex.sets || [];

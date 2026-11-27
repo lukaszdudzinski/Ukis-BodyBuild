@@ -1,4 +1,5 @@
 import { KCAL_GOAL_KEY, BIRTH_YEAR_KEY, importKcalGoal, reportKcalIncident, saveBirthYear } from '../diet/kcalGoal.js';
+import { isCatalogExercise } from '../../data/ExerciseCatalog.js';
 
 let worker = null;
 let isReady = false;
@@ -329,6 +330,8 @@ export const DatabaseManager = {
                     t.exercises.forEach(ex => {
                         if (ex.name) {
                             const trimmedName = ex.name.trim();
+                            // Nazwa, która jest dziś nazwą główną katalogu (np. „Martwy ciąg”), zostaje bez zmian.
+                            if (isCatalogExercise(trimmedName)) return;
                             const oldNameKey = Object.keys(mapping).find(key => key.toLowerCase() === trimmedName.toLowerCase());
                             if (oldNameKey) {
                                 ex.name = mapping[oldNameKey];

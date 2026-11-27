@@ -4,6 +4,8 @@
 // Dane planu trafiają do DOM wyłącznie przez h() jako węzły tekstowe.
 import { h, icon } from './dom.js';
 import { pickExercise } from './exercisePicker.js';
+import { findExercise } from '../../../data/ExerciseCatalog.js';
+import { movementPatternLabel } from '../../../data/movementPatterns.js';
 import { activatePlan, formatDateWords } from './planScreens.js';
 import { GOALS } from '../trainerModel.js';
 import { formatNumber } from '../trainerMeasurements.js';
@@ -13,6 +15,14 @@ import {
 } from '../trainerPlan.js';
 
 const SAVE_FAILED = 'Nie udało się zapisać. Spróbuj jeszcze raz.';
+
+// Wzorzec ruchowy pod nazwą ćwiczenia (także dla dawnej nazwy z katalogu); ćwiczenie własne nie ma wzorca.
+function patternLine(name) {
+    const e = findExercise(name);
+    const label = e ? movementPatternLabel(e.wzorzec) : '';
+    if (!label) return null;
+    return h('p', { class: 'mut tz-ex-pattern' }, label, e.en ? h('small', {}, ` · ${e.en}`) : null);
+}
 const STALE_DRAFT = 'Plan zmienił się po zapisaniu szkicu. Niezapisane zmiany odrzucono.';
 const DRAFT_KIND = 'plan_draft';
 const MAX_WEEKS = 16;
@@ -280,6 +290,7 @@ function renderPlanEdit(root, params, ctx) {
 
         const row = h('div', { class: `tz-ex tz-stack${!last && ex.supersetWithNext ? ' tz-ex-ss' : ''}` },
             h('div', { class: 'tz-between' }, h('span', { class: 'tz-ex-name' }, ex.name), change),
+            patternLine(ex.name),
             errorFor(`${p}.name`),
             field('Grupa', group, null),
             h('p', { class: 'mut' }, source === weekIdx ? `Tydzień ${weekIdx + 1}` : `Tydzień ${weekIdx + 1} · jak tydzień ${source + 1}`),

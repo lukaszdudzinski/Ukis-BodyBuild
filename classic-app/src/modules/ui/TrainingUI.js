@@ -1,7 +1,8 @@
 import { DatabaseManager } from '../db/DatabaseManager.js';
 import { MediaManager } from '../db/MediaManager.js';
 import { TrainingComponent } from '../../components/TrainingComponent.js';
-import { ExerciseCatalog, ExerciseCategories } from '../../data/ExerciseCatalog.js';
+import { ExerciseCatalog, ExerciseCategories, isCatalogExercise } from '../../data/ExerciseCatalog.js';
+import { recordCheck } from '../../data/exerciseTraits.js';
 
 let currentTraining = {
     date: null,
@@ -36,7 +37,8 @@ export const TrainingUI = {
                 
                 let customExercises = [];
                 try { customExercises = JSON.parse(localStorage.getItem('uki_custom_exercises') || '[]'); } catch(e) {}
-                const fullCatalog = [...ExerciseCatalog, ...customExercises];
+                // Ćwiczenie własne, które jest dziś w katalogu (np. dawna nazwa), nie dubluje listy; zapis zostaje bez zmian.
+                const fullCatalog = [...ExerciseCatalog, ...customExercises.filter(n => !isCatalogExercise(n))];
                 
                 fullCatalog.forEach(exName => {
                     const option = document.createElement('option');
@@ -1401,8 +1403,6 @@ export const TrainingUI = {
             const weightInput = document.getElementById(`weight-${exerciseId}`);
             const repsInput = document.getElementById(`reps-${exerciseId}`);
 
-            const bodyweightKeywords = ['brzuch', 'brzus', 'podciąg', 'podciag', 'pompk', 'plank', 'deska', 'drąż', 'draz'];
-            const isBodyweight = exercise.name && bodyweightKeywords.some(kw => exercise.name.toLowerCase().includes(kw));
 
             let wVal = "0";
             let rVal = "0";
@@ -1442,50 +1442,11 @@ export const TrainingUI = {
                 type: isDropset ? 'dropset' : 'normal'
             };
             
-            // 1RM & PR Logic
-            if (!isBodyweight && newSet.weight > 0 && newSet.reps > 0) {
-                const current1RM = newSet.weight * (1 + (newSet.reps / 30));
-                let maxHistorical1RM = 0;
-                
-                if (exercise.name && allTrainingsCache) {
-                    const exNameLower = exercise.name.toLowerCase().trim();
-                    allTrainingsCache.forEach(t => {
-                        if (t.exercises && Array.isArray(t.exercises)) {
-                            t.exercises.forEach(e => {
-                                const checkExercise = (ex) => {
-                                    if (ex && ex.name && ex.name.toLowerCase().trim() === exNameLower && Array.isArray(ex.sets)) {
-                                        ex.sets.forEach(s => {
-                                            const s1RM = (s.weight || 0) * (1 + ((s.reps || 0) / 30));
-                                            if (s1RM > maxHistorical1RM) maxHistorical1RM = s1RM;
-                                        });
-                                    }
-                                };
-                                if (e && e.type === 'superset' && Array.isArray(e.exercises)) {
-                                    e.exercises.forEach(checkExercise);
-                                } else {
-                                    checkExercise(e);
-                                }
-                            });
-                        }
-                    });
-                }
-                
-                // Check within current training as well, in case they did multiple sets today
-                if (Array.isArray(exercise.sets)) {
-                    exercise.sets.forEach(s => {
-                        const s1RM = (s.weight || 0) * (1 + ((s.reps || 0) / 30));
-                        if (s1RM > maxHistorical1RM) maxHistorical1RM = s1RM;
-                    });
-                }
-                
-                if (current1RM > maxHistorical1RM && maxHistorical1RM > 0) {
-                    newSet.isPR = true;
-                    if (window.ChatUI) {
-                        window.ChatUI.showContextualBubble(`🏆 Nowy Rekord Życiowy (PR)! 💪 Świetna forma, idziesz jak czołg! 🐗🔥`);
-                    }
-                } else if (maxHistorical1RM === 0) {
-                    newSet.isPR = true; 
-                }
+            // 1RM i PR z danych katalogu: historia pod dawną i nową nazwą, bez PR dla ćwiczeń z ciężarem ciała.
+            const record = recordCheck(allTrainingsCache, exercise.name, exercise.sets, newSet);
+            if (record && record.isPR) newSet.isPR = true;
+            if (record && record.beaten && window.ChatUI) {
+                window.ChatUI.showContextualBubble(`🏆 Nowy Rekord Życiowy (PR)! 💪 Świetna forma, idziesz jak czołg! 🐗🔥`);
             }
 
             if (!Array.isArray(exercise.sets)) {
@@ -2016,7 +1977,8 @@ export const TrainingUI = {
             
             const processCustomExercise = (name) => {
                 const n = name && name.trim();
-                if (n && !allKnownExercises.has(n)) {
+                // Dawna nazwa z katalogu (np. ze starego szablonu) to nadal ćwiczenie z katalogu, nie własne.
+                if (n && !allKnownExercises.has(n) && !isCatalogExercise(n)) {
                     customExercises.push(n);
                     allKnownExercises.add(n);
                     addedNew = true;

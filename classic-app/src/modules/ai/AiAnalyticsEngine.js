@@ -1,5 +1,6 @@
 import { readBodyProfile } from '../diet/kcalGoal.js';
 import { aiBodyContext } from '../body/bodyMetrics.js';
+import { canonicalExerciseName } from '../../data/ExerciseCatalog.js';
 
 export const AiAnalyticsEngine = {
     generate: async (days, params = {}) => {
@@ -100,7 +101,7 @@ export const AiAnalyticsEngine = {
                 nazwa: t.name || 'Trening',
                 czas_sekundy: t.duration_seconds || 0,
                 cwiczenia: (t.exercises || []).map(e => ({
-                    nazwa: e.name || 'Ćwiczenie',
+                    nazwa: canonicalExerciseName(e.name) || 'Ćwiczenie', // dawna nazwa z katalogu jako nowa: jedno ćwiczenie w analizie
                     serie: e.sets ? e.sets.map(s => `${s.weight || 0}kg x ${s.reps || 0}`) : [],
                     dropsety: e.sets ? e.sets.filter(s => s.type === 'dropset' || s.isDropset).length : 0
                 }))

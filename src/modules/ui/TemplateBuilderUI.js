@@ -1,4 +1,4 @@
-import { ExerciseCatalog, ExerciseCategories } from '../../data/ExerciseCatalog.js';
+import { ExerciseCatalog, ExerciseCategories, exerciseSearchTexts, isCatalogExercise } from '../../data/ExerciseCatalog.js';
 
 const esc = (s) => String(s ?? '')
     .replace(/&/g, '&amp;')
@@ -174,12 +174,15 @@ export const TemplateBuilderUI = {
         let html = '';
         let customExercises = [];
         try { customExercises = JSON.parse(localStorage.getItem('uki_custom_exercises') || '[]'); } catch(e) {}
-        const fullCatalog = [...ExerciseCatalog, ...customExercises];
+        // Ćwiczenie własne, które jest dziś w katalogu (np. dawna nazwa), nie dubluje listy; zapis zostaje bez zmian.
+        const fullCatalog = [...ExerciseCatalog, ...customExercises.filter(n => !isCatalogExercise(n))];
         
         fullCatalog.forEach(exName => {
             const escapedNameForData = exName.replace(/"/g, '&quot;');
+            // Szukanie także po angielskiej i dawnej nazwie; na liście tylko nazwa.
+            const searchText = exerciseSearchTexts(exName).join(' | ').replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;');
             const escapedNameForJS = exName.replace(/'/g, "\\'").replace(/"/g, '&quot;');
-            html += `<div class="builder-catalog-item" data-name="${escapedNameForData}" onclick="TemplateBuilderUI.addToCart('${escapedNameForJS}')" style="background: rgba(255,255,255,0.03); padding: 14px 16px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05); cursor: pointer; display: flex; justify-content: space-between; align-items: center; transition: 0.2s;">
+            html += `<div class="builder-catalog-item" data-name="${escapedNameForData}" data-search="${searchText}" onclick="TemplateBuilderUI.addToCart('${escapedNameForJS}')" style="background: rgba(255,255,255,0.03); padding: 14px 16px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05); cursor: pointer; display: flex; justify-content: space-between; align-items: center; transition: 0.2s;">
                 <span style="color: #fff; font-size: 0.95em; font-weight: 500;">${exName}</span>
                 <span style="color: #00BFFF; display: flex; align-items: center; justify-content: center; background: rgba(0, 191, 255, 0.1); width: 28px; height: 28px; border-radius: 14px;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></span>
             </div>`;
@@ -191,7 +194,7 @@ export const TemplateBuilderUI = {
         const query = document.getElementById('builder-search').value.toLowerCase();
         const items = document.querySelectorAll('.builder-catalog-item');
         items.forEach(item => {
-            const name = item.getAttribute('data-name').toLowerCase();
+            const name = (item.getAttribute('data-search') || item.getAttribute('data-name')).toLowerCase();
             if (name.includes(query)) item.style.display = 'flex';
             else item.style.display = 'none';
         });

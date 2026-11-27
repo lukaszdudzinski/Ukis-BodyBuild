@@ -1,4 +1,7 @@
 // Podpowiedzi nazw ćwiczeń dla Zeszytu. Czysta logika, bez DOM.
+// Dawna nazwa z katalogu (alias) liczy się razem z nazwą główną i podpowiada nazwę główną;
+// wyszukiwanie obejmuje też nazwę angielską i aliasy, ale pokazujemy zawsze tylko nazwę.
+import { canonicalExerciseName, exerciseSearchTexts } from '../../data/ExerciseCatalog.js';
 
 export function normalize(text) {
   return String(text ?? '')
@@ -27,7 +30,8 @@ export function buildSuggestionSource(trainings, catalog) {
 
   // klucz (normalize) -> { count, spellings: Map(pisownia -> ile) }
   const groups = new Map();
-  for (const name of names) {
+  for (const stored of names) {
+    const name = canonicalExerciseName(stored);
     const key = normalize(name);
     let g = groups.get(key);
     if (!g) {
@@ -63,8 +67,8 @@ export function suggest(query, source, limit = 6) {
   ];
   for (const name of candidates) {
     if (out.length >= limit) break;
-    const key = normalize(name);
-    if (seen.has(key) || !key.includes(q)) continue;
+    const key = normalize(canonicalExerciseName(name));
+    if (seen.has(key) || !exerciseSearchTexts(name).some((t) => normalize(t).includes(q))) continue;
     seen.add(key);
     out.push(name);
   }
