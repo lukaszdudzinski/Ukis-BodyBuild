@@ -1,1 +1,142 @@
 /* wyglad: zar */
+/* Szablony planów (spec 8.3, plansza TreningSzablony; TrainingUI.loadTemplatesDialog).
+   Okno pełnoekranowe .z-okno / .z-okno-w jest wspólne z katalogiem ćwiczeń (trening-katalog.css).
+   Dopóki okno istnieje, body ma klasę z-szablony-otwarte: treść aplikacji, pasek dolny i Edward są ukryte,
+   a przez przezroczyste okno widać tło aplikacji (poświata albo tapeta). Okno importu planu (10001) leży nad nim. */
+
+body.z-szablony-otwarte .app-wrapper,
+body.z-szablony-otwarte #edward-chat-toggle,
+body.z-szablony-otwarte #edward-chat-window,
+body.z-szablony-otwarte #edward-chat-widget,
+body.z-szablony-otwarte #edward-contextual-bubble {
+    visibility: hidden;
+}
+
+.z-szablony-opis {
+    margin: 0;
+    line-height: 1.45;
+}
+
+/* ---------- Karta szablonu ---------- */
+.z-szablony .template-card.z-card {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 14px 12px;
+}
+
+.z-szablon-gora {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 10px;
+    padding: 0 2px;
+}
+
+.z-szablon-txt {
+    flex: 1 1 auto;
+    min-width: 0;
+}
+
+.z-szablon-nazwa {
+    font-size: 16px;
+    font-weight: 600;
+    line-height: 1.3;
+    overflow-wrap: anywhere;
+}
+
+.z-szablon-meta {
+    margin-top: 2px;
+}
+
+.z-szablon-gora .z-pill {
+    flex: 0 0 auto;
+    font-size: 11px;
+}
+
+/* Wiersz planu od trenera (R12c). */
+.template-source {
+    margin-top: 2px;
+    font-size: 12px;
+    color: var(--ukis-text-secondary);
+    overflow-wrap: anywhere;
+}
+
+/* ---------- Dni Pn–Nd: siedem przycisków ≥ 44 × 44 w jednym rzędzie (390 px: ok. 45 px każdy) ---------- */
+.z-szablon-dni {
+    display: flex;
+    gap: 3px;
+}
+
+.z-szablon-dzien {
+    flex: 1 1 0;
+    min-width: var(--ukis-touch);
+    min-height: var(--ukis-touch);
+    padding: 0;
+    border: 1px solid var(--ukis-divider);
+    border-radius: 10px;
+    background: var(--ukis-ghost-bg);
+    color: var(--ukis-text-secondary);
+    font-family: var(--ukis-font);
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.z-szablon-dzien.z-on {
+    border-color: var(--ukis-color-primary);
+    background: var(--ukis-color-primary);
+    color: var(--ukis-on-primary);
+    font-weight: 600;
+}
+
+.z-szablon-dzien:focus-visible {
+    outline: 2px solid var(--ukis-color-accent);
+    outline-offset: 2px;
+}
+
+/* ---------- Akcje ---------- */
+.z-szablon-akcje {
+    display: flex;
+    gap: 6px;
+}
+
+.z-szablon-akcje .z-szablon-wybierz {
+    flex: 1 1 auto;
+}
+
+.z-szablon-akcje .z-ghost {
+    flex: 0 0 auto;
+    padding: 10px 14px;
+    font-size: 13px;
+}
+
+.z-szablon-akcje .z-szablon-ikona {
+    width: var(--ukis-touch);
+    padding: 0;
+}
+
+.z-szablon-akcje svg {
+    flex: 0 0 auto;
+}
+
+/* ---------- Pusta lista i nowy szablon ---------- */
+.z-szablony-pusto.z-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    text-align: center;
+}
+
+.z-szablony-pusto p {
+    margin: 0;
+    font-size: 14px;
+    line-height: 1.5;
+    color: var(--ukis-text-secondary);
+}
+
+.z-szablony-nowy {
+    width: 100%;
+}

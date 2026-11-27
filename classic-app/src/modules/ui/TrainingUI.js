@@ -422,7 +422,9 @@ export const TrainingUI = {
         let exceptions = [];
         try { exceptions = JSON.parse(localStorage.getItem("uki_schedule_exceptions") || "[]"); } catch(e) {}
         
-        exceptions = exceptions.filter(e => e.date !== dateStr);
+        // Nowy wygląd (R17) zapisuje też { status: 'added', from } na następny dzień: przywrócenie dnia zdejmuje i ten wpis.
+        // „Tylko przełożony” zdejmuje też zwykły plan następnego dnia ({ status: 'skipped', from, regular: true }): wraca razem.
+        exceptions = exceptions.filter(e => e.date !== dateStr && !(e.from === dateStr && (e.status === 'added' || e.regular === true)));
         
         localStorage.setItem("uki_schedule_exceptions", JSON.stringify(exceptions));
         TrainingUI.renderCalendar();
@@ -703,7 +705,8 @@ export const TrainingUI = {
             // Harmonogram działa dla wybranego dnia
             const isScheduledDay = schedules.some(s => s.daysOfWeek.includes(dow));
             const isPlanned = (dateStr >= todayDate) && isScheduledDay;
-            const isException = exceptions.some(e => e.date === dateStr && e.status === 'skipped');
+            // 'postponed' z nowego wyglądu (R17) to tu dzień odwołany; 'added' nie zmienia zwykłego planu.
+            const isException = exceptions.some(e => e.date === dateStr && (e.status === 'skipped' || e.status === 'postponed'));
             
             let dotHtml = '';
             if (hasTraining) {
@@ -784,7 +787,8 @@ export const TrainingUI = {
             const dateObj = new Date(dateStr);
             const dow = dateObj.getDay();
             const sched = schedules.find(s => s.daysOfWeek.includes(dow));
-            const isException = exceptions.some(e => e.date === dateStr && e.status === "skipped");
+            // 'postponed' z nowego wyglądu (R17) to tu dzień odwołany; 'added' nie zmienia zwykłego planu.
+            const isException = exceptions.some(e => e.date === dateStr && (e.status === "skipped" || e.status === "postponed"));
             
             if (sched && existingTrainingsOnDay.length === 0) {
                 if (!isException) {

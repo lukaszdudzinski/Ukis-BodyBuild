@@ -37,6 +37,7 @@
         // bo skrypt #wyglad-start czyta go, gdy nie ma nowego klucza. Plik tapety w bazie mediów zostaje.
         'ukis.bodybuild.trener.motyw',
         'ukis.bodybuild.wyglad.komunikat-klasyczny',
+        'ukis.bodybuild.wyglad.korekta-tla-r16',
         'ukis.bodybuild.wyglad.motyw',
         'ukis.bodybuild.wyglad.przyciemnienie',
         'ukis.bodybuild.wyglad.przyciemnienie-min',

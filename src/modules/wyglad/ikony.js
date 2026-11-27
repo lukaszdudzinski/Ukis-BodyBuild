@@ -1,5 +1,5 @@
 // wyglad: zar
-// Ikony Lucide (ISC) jako napis SVG: kreska 1,8, aria-hidden. Zestaw startowy z spec 6.2.
+// Ikony Lucide (ISC) jako napis SVG: kreska 1,8, aria-hidden. Zestaw startowy z spec 6.2 (+ „delete” dla klawiatury liczbowej).
 // Ścieżki ikon, które ma Strefa trenera, bierzemy z trainer/ui/dom.js (jedna wersja); reszta tutaj.
 import { ICONS as STREFA } from '../trainer/ui/dom.js';
 
@@ -27,13 +27,15 @@ const WLASNE = {
     notebook: [['path', { d: 'M2 6h4' }], ['path', { d: 'M2 10h4' }], ['path', { d: 'M2 14h4' }], ['path', { d: 'M2 18h4' }], ['rect', { width: 16, height: 20, x: 4, y: 2, rx: 2 }], ['path', { d: 'M16 2v20' }]],
     coffee: [['path', { d: 'M10 2v2' }], ['path', { d: 'M14 2v2' }], ['path', { d: 'M16 8a1 1 0 0 1 1 1v8a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4V9a1 1 0 0 1 1-1h14a4 4 0 1 1 0 8h-1' }], ['path', { d: 'M6 2v4' }]],
     image: [['rect', { width: 18, height: 18, x: 3, y: 3, rx: 2, ry: 2 }], ['circle', { cx: 9, cy: 9, r: 2 }], ['path', { d: 'm21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21' }]],
+    // Klawisz kasowania (Lucide „delete”), klawiatura liczbowa (R15).
+    delete: [['path', { d: 'M10 5a2 2 0 0 0-1.344.519l-6.328 5.74a1 1 0 0 0 0 1.481l6.328 5.741A2 2 0 0 0 10 19h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2z' }], ['path', { d: 'm12 9 6 6' }], ['path', { d: 'm18 9-6 6' }]],
 };
 
 // Nazwy z zestawu startowego (spec 6.2).
 const ZESTAW = ['chevron-left', 'chevron-right', 'chevron-up', 'chevron-down', 'x', 'check', 'plus', 'minus', 'play', 'pause',
     'more-horizontal', 'camera', 'trash', 'pencil', 'copy', 'info', 'upload', 'download', 'share', 'settings', 'search', 'clock',
     'lock', 'users', 'sparkles', 'bot', 'send', 'arrow-up', 'arrow-down', 'calendar', 'ruler', 'utensils', 'line-chart', 'home',
-    'dumbbell', 'notebook', 'user', 'wrench', 'coffee', 'image'];
+    'dumbbell', 'notebook', 'user', 'wrench', 'coffee', 'image', 'delete'];
 
 const KSZTALTY = Object.fromEntries(ZESTAW.map((n) => [n, WLASNE[n] || STREFA[n]]));
 

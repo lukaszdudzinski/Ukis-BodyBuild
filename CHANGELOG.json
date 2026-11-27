@@ -1,5 +1,14 @@
 [
   {
+    "version": "v2026.11.27.02",
+    "date": "2026-11-27",
+    "changes": [
+      "🏋️ Trening i Zeszyt w nowym wyglądzie: kalendarz, sesja, katalog ćwiczeń, szablony i kreator. Większe przyciski łatwiej trafić palcem w trakcie treningu.",
+      "📅 „Przełóż na jutro” naprawdę przenosi trening na następny dzień, a „Kontynuuj” nie gubi już zdjęć z treningu.",
+      "🎨 Domyślnym tłem jest poświata wybranego motywu; własne zdjęcie i tapety włączysz w Profil → Wygląd."
+    ]
+  },
+  {
     "version": "v2026.11.27.01",
     "date": "2026-11-27",
     "changes": [

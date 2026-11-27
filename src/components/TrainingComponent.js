@@ -1,81 +1,111 @@
+// wyglad: zar
 import { naglowek } from '../modules/wyglad/naglowek.js';
+import { ikona } from '../modules/wyglad/ikony.js';
 
 export const TrainingComponent = {
     render: () => {
         return `
             ${naglowek({ wariant: 'main', tytul: 'Trening', podtytul: 'Zaplanuj i wykonuj treningi' })}
             
-            <!-- Calendar View -->
+            <!-- Kalendarz i karta dnia (spec 8.3, plansza TreningKalendarz; kolory w styles/zar/ekrany/trening-kalendarz.css) -->
             <div id="training-calendar-view">
-                <div class="calendar-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
-                    <button id="cal-prev-month" class="icon-btn">◀</button>
-                    <h3 id="cal-month-year" style="margin: 0; color: #00BFFF;">Miesiąc Rok</h3>
-                    <button id="cal-next-month" class="icon-btn">▶</button>
-                </div>
-                
-                <div class="calendar-grid" id="training-calendar-grid">
-                    <!-- Populated by JS -->
-                </div>
-
-                <!-- Day Action Panel (hidden by default) -->
-                <div id="day-action-panel" class="glass-card" style="display: none; margin-top: 20px; padding: 20px;">
-                    <h4 id="selected-day-label" style="color: #FFF; margin-bottom: 15px; text-align: center; font-weight: 700;">Opcje dla dnia</h4>
-                    
-                    <div id="day-action-existing-state" style="display: none; text-align: center; margin-bottom: 20px;">
-                        <h5 style="color: #00BFFF; margin-bottom: 10px;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 4px; vertical-align: middle;"><path d="M5 9v6"/><path d="M9 7v10"/><path d="M15 7v10"/><path d="M19 9v6"/><path d="M9 12h6"/></svg> Treningi w tym dniu:</h5>
-                        <div id="existing-training-preview" style="margin-bottom: 15px; color: #ccc;">
-                            <!-- Previews of existing trainings -->
-                        </div>
-                    </div>
-                    <div id="day-action-planned-state" style="display: none; text-align: center; margin-bottom: 20px;">
-                        <h5 style="color: #FF9800; margin-bottom: 10px;">📅 Zaplanowano na ten dzień:</h5>
-                        <div id="planned-training-preview" style="margin-bottom: 15px; color: #ccc;">
-                            <!-- Populated by JS -->
-                        </div>
-                        <div style="display: flex; gap: 10px;">
-                            <button id="postpone-planned-btn" class="action-button" style="flex: 1; background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.2); color: #ccc; border-radius: 8px; font-size: 0.9em; backdrop-filter: blur(5px);">Przełóż na jutro</button>
-                            <button id="cancel-planned-btn" class="action-button" style="flex: 1; background: rgba(231, 76, 60, 0.15); border: 1px solid rgba(231, 76, 60, 0.4); color: #e74c3c; border-radius: 8px; font-size: 0.9em; backdrop-filter: blur(5px);">Anuluj trening</button>
-                        </div>
+                <div class="z-card z-kal">
+                    <div class="calendar-header z-kal-nav">
+                        <button type="button" id="cal-prev-month" class="z-ic" aria-label="Poprzedni miesiąc">${ikona('chevron-left', 20)}</button>
+                        <h3 id="cal-month-year" class="z-hd z-kal-miesiac">Miesiąc Rok</h3>
+                        <button type="button" id="cal-next-month" class="z-ic" aria-label="Następny miesiąc">${ikona('chevron-right', 20)}</button>
                     </div>
 
-                    <div id="day-action-empty-state">
-                        <button id="start-new-session-btn" class="action-button pulse" style="width: 100%; margin-bottom: 10px; background: rgba(30, 30, 30, 0.4); border: 1px solid rgba(0, 191, 255, 0.4); border-radius: 16px; backdrop-filter: blur(10px); color: #00BFFF; display: flex; justify-content: center; align-items: center; gap: 8px;">
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-                            Dodaj nową sesję treningową
-                        </button>
-                        <button id="load-template-session-btn" class="action-button" style="width: 100%; margin-bottom: 10px; background: rgba(30, 30, 30, 0.4); border: 1px solid rgba(255, 152, 0, 0.4); border-radius: 16px; backdrop-filter: blur(10px); color: #FF9800; display: flex; justify-content: center; align-items: center; gap: 8px;">
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
-                            Wybierz Szablon Treningowy
-                        </button>
-                        <button onclick="window.TemplateBuilderUI && window.TemplateBuilderUI.openBuilder()" class="action-button" style="width: 100%; margin-bottom: 10px; background: rgba(30, 30, 30, 0.4); border: 1px solid rgba(46, 204, 113, 0.4); border-radius: 16px; backdrop-filter: blur(10px); color: #2ECC71; display: flex; justify-content: center; align-items: center; gap: 8px;">
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
-                            Kreator Szablonów (Koszyk)
-                        </button>
-                        <div id="history-sessions-list" style="margin-top: 15px;">
-                            <h5 style="color: #ccc; margin-bottom: 10px;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 4px; vertical-align: middle;"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1" ry="1"/></svg> Skopiuj sesję treningową:</h5>
-                            <!-- Populated with recent sessions -->
+                    <div class="calendar-grid z-kal-siatka" id="training-calendar-grid">
+                        <!-- TrainingUI.renderCalendar -->
+                    </div>
+
+                    <div id="cal-legend" class="z-kal-legenda">
+                        <span class="z-kal-leg"><span class="z-kal-znak z-wykonany" aria-hidden="true"></span>Wykonany</span>
+                        <span class="z-kal-leg"><span class="z-kal-znak z-zaplanowany" aria-hidden="true"></span>Zaplanowany</span>
+                        <span class="z-kal-leg"><span class="z-kal-znak z-pominiety" aria-hidden="true"></span>Pominięty</span>
+                    </div>
+                </div>
+
+                <!-- Karta dnia (ukryta do wyboru dnia); stany: zaplanowany, wykonany, pusty -->
+                <div id="day-action-panel" class="z-card z-dzien" style="display: none;">
+                    <div class="z-dzien-gora">
+                        <h4 id="selected-day-label" class="z-dzien-data">Dzień</h4>
+                        <span id="day-status-pill" class="z-pill" hidden></span>
+                    </div>
+
+                    <div id="day-action-planned-state" class="z-dzien-stan" style="display: none;">
+                        <div id="planned-training-preview" class="z-dzien-stan">
+                            <!-- TrainingUI.handleDayClick -->
+                        </div>
+                        <div class="z-dzien-rzad">
+                            <button type="button" id="postpone-planned-btn" class="z-ghost">Przełóż na jutro</button>
+                            <button type="button" id="cancel-planned-btn" class="z-ghost">Pomiń dzień</button>
+                        </div>
+                    </div>
+
+                    <div id="day-action-existing-state" class="z-dzien-stan" style="display: none;">
+                        <div id="existing-training-preview" class="z-dzien-stan">
+                            <!-- TrainingUI.handleDayClick -->
+                        </div>
+                    </div>
+
+                    <div id="day-action-empty-state" class="z-dzien-stan">
+                        <div class="z-sep" id="day-action-sep"></div>
+                        <div class="z-dzien-rzad z-dzien-akcje">
+                            <button type="button" id="start-new-session-btn" class="z-ghost">+ Nowa sesja</button>
+                            <button type="button" id="load-template-session-btn" class="z-ghost">Szablony</button>
+                            <button type="button" id="copy-session-btn" class="z-ghost" aria-expanded="false" aria-controls="history-sessions-list" onclick="window.TrainingUI.toggleCopyList()">Skopiuj</button>
+                        </div>
+                        <div id="history-sessions-list" class="z-dzien-stan" hidden>
+                            <!-- TrainingUI.handleDayClick: ostatnie sesje do skopiowania -->
                         </div>
                     </div>
                 </div>
             </div>
 
-            <!-- Active Training View -->
-            <div id="active-training-view" style="display: none;">
-                <div style="margin-bottom: 15px;">
-                    <input type="text" id="training-name-input" placeholder="Wpisz nazwę treningu..." style="width: 100%; padding: 16px; border-radius: 16px; border: 1px solid rgba(255,255,255,0.05); background: rgba(0,0,0,0.4); color: #FFF; font-size: 18px; font-weight: 600; text-align: center; box-sizing: border-box; box-shadow: 0 4px 15px rgba(0,0,0,0.2);">
+            <!-- Sesja treningu (spec 8.3, plansza TreningSesja; wygląd w styles/zar/ekrany/trening-sesja.css).
+                 Podczas sesji body ma klasę z-sesja (TrainingUI.odswiezTrybSesji): bez paska dolnego. -->
+            <div id="active-training-view" class="z-sesja-widok" style="display: none;">
+                <div class="z-sesja-gora">
+                    <button type="button" id="session-back-btn" class="z-ic z-card" aria-label="Wróć" onclick="window.TrainingUI.wrocZSesji()">${ikona('chevron-left', 20)}</button>
+                    <div class="z-sesja-czas">
+                        <div class="z-mut">Czas trwania</div>
+                        <div class="z-sesja-zegar"><span id="training-timer">00:00:00</span></div>
+                    </div>
+                    <button type="button" id="manual-duration-btn" class="z-ic z-card" aria-label="Wpisz czas ręcznie" aria-pressed="false" aria-controls="manual-duration-inputs" onclick="window.TrainingUI.przelaczCzasReczny()">${ikona('clock', 20)}</button>
                 </div>
 
-                <div style="margin-bottom: 15px;">
-                    <select id="training-type-select" class="training-select" onchange="window.TrainingUI.handleTypeChange(this.value)">
-                        <option value="strength" selected>Trening Siłowy</option>
-                        <option value="cardio">Cardio</option>
-                        <option value="class">Zajęcia Zorganizowane</option>
-                    </select>
+                <!-- Czas wpisany ręcznie: pole wyboru zostaje źródłem prawdy dla zapisu i szkicu (TrainingUI). -->
+                <input type="checkbox" id="manual-duration-toggle" hidden onchange="window.TrainingUI.pokazCzasReczny()">
+                <div id="manual-duration-inputs" class="z-card z-sesja-reczny" style="display: none;">
+                    <span class="z-mut">Czas treningu</span>
+                    <label class="z-sr" for="manual-training-hours">Godziny</label>
+                    <input type="number" id="manual-training-hours" class="z-in" placeholder="00" min="0" max="23" inputmode="numeric">
+                    <span class="z-mut" aria-hidden="true">:</span>
+                    <label class="z-sr" for="manual-training-minutes">Minuty</label>
+                    <input type="number" id="manual-training-minutes" class="z-in" placeholder="00" min="0" max="59" inputmode="numeric">
                 </div>
-                
-                <div id="class-type-container" style="display: none; margin-bottom: 15px;">
-                    <select id="class-type-select" class="training-select" onchange="window.TrainingUI.handleClassChange(this.value)">
-                        <option value="" disabled selected>Wybierz zajęcia...</option>
+
+                <label class="z-sr" for="training-name-input">Nazwa treningu</label>
+                <input type="text" id="training-name-input" class="z-in z-sesja-nazwa" placeholder="Nazwa treningu">
+
+                <!-- Żetony rodzaju ustawiają ten sam stan co #training-type-select (handleTypeChange). -->
+                <div class="z-sesja-rodzaje" role="group" aria-label="Rodzaj treningu">
+                    <button type="button" class="z-chip z-on" data-rodzaj="strength" aria-pressed="true" onclick="window.TrainingUI.handleTypeChange('strength')">Siłowy</button>
+                    <button type="button" class="z-chip" data-rodzaj="cardio" aria-pressed="false" onclick="window.TrainingUI.handleTypeChange('cardio')">Cardio</button>
+                    <button type="button" class="z-chip" data-rodzaj="class" aria-pressed="false" onclick="window.TrainingUI.handleTypeChange('class')">Zajęcia</button>
+                </div>
+                <select id="training-type-select" hidden onchange="window.TrainingUI.handleTypeChange(this.value)">
+                    <option value="strength" selected>Trening siłowy</option>
+                    <option value="cardio">Cardio</option>
+                    <option value="class">Zajęcia zorganizowane</option>
+                </select>
+
+                <div id="class-type-container" style="display: none;">
+                    <label class="z-sr" for="class-type-select">Rodzaj zajęć</label>
+                    <select id="class-type-select" class="z-in" onchange="window.TrainingUI.handleClassChange(this.value)">
+                        <option value="" disabled selected>Wybierz zajęcia…</option>
                         <option value="Tabata">Tabata</option>
                         <option value="Les Mills CORE">Les Mills CORE (płaski brzuch)</option>
                         <option value="Les Mills BODYPUMP">Les Mills BODYPUMP Heavy</option>
@@ -85,73 +115,43 @@ export const TrainingComponent = {
                         <option value="custom">Własne (wpisz poniżej)</option>
                     </select>
                 </div>
-                
-                <div style="padding: 15px; border-radius: 16px; border: 1px solid rgba(255,255,255,0.05); text-align: center; margin-bottom: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.2);">
-                    <div style="color: #888; font-size: 12px; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 5px;">Czas trwania</div>
-                    <h3 style="margin: 0; color: #FFF; font-size: 28px; font-weight: 700; font-variant-numeric: tabular-nums;"><span id="training-timer">00:00:00</span></h3>
-                    <div style="display: flex; flex-direction: column; align-items: center; gap: 10px;">
-                        <label style="display: flex; align-items: center; gap: 8px; color: #ccc; font-size: 0.9em; cursor: pointer;">
-                            <input type="checkbox" id="manual-duration-toggle" onchange="document.getElementById('manual-duration-inputs').style.display = this.checked ? 'flex' : 'none'" style="cursor: pointer;">
-                            Wpisz czas treningu ręcznie
+
+                <div id="exercises-container-section" class="z-sesja-cwiczenia">
+                    <div id="current-exercises-list" class="z-sesja-lista">
+                        <!-- TrainingUI.renderCurrentExercises -->
+                    </div>
+                    <button type="button" id="add-exercise-to-plan-btn" class="z-ghost z-sesja-dodaj">+ Dodaj ćwiczenie</button>
+                </div>
+
+                <!-- Pasek akcji: pływająca karta nad treścią (pwa-updater.js przesuwa go nad pasek aktualizacji). -->
+                <div id="unified-bottom-sheet" class="z-card z-sesja-akcje">
+                    <div id="bs-action-list" class="z-sesja-wiecej" hidden>
+                        <label class="z-li z-sesja-wiecej-poz">
+                            ${ikona('camera', 20)}<span>Załącz zdjęcia z treningu</span>
+                            <input type="file" accept="image/*" class="z-sr" onchange="window.TrainingUI.handleTrainingPhoto(event)">
                         </label>
-                        <div id="manual-duration-inputs" style="display: none; align-items: center; gap: 5px;">
-                            <input type="number" id="manual-training-hours" placeholder="00" min="0" max="23" style="width: 50px; padding: 8px; border-radius: 4px; border: 1px solid #444; background: #222; color: #fff; text-align: center;" inputmode="numeric">
-                            <span style="color: #888; font-weight: bold;">:</span>
-                            <input type="number" id="manual-training-minutes" placeholder="00" min="0" max="59" style="width: 50px; padding: 8px; border-radius: 4px; border: 1px solid #444; background: #222; color: #fff; text-align: center;" inputmode="numeric">
-                        </div>
-                    </div>
-                </div>
-
-
-
-                <div class="form-full-width" id="exercises-container-section">
-                    <h4 style="color: #00BFFF; margin-bottom: 10px; border-bottom: 1px solid rgba(0,191,255,0.2); padding-bottom: 5px;">Bieżące ćwiczenia</h4>
-                    
-                    <div id="current-exercises-list">
-                        <!-- Populated by JS with Exercise Blocks -->
-                    </div>
-                    
-                    <div style="margin-top: 15px;">
-                        <button type="button" id="add-exercise-to-plan-btn" class="action-button" style="width: 100%; background-color: #00D26A; border: none; border-radius: 12px; color: #000; font-weight: 700; font-size: 16px; padding: 14px;">+ Dodaj ćwiczenie</button>
-                    </div>
-                </div>
-
-                <!-- Dodatkowy padding na dole, by nie przysłaniać ostatniego ćwiczenia -->
-                <div style="height: 120px;"></div>
-
-                <!-- UNIFIED BOTTOM SHEET -->
-                <div id="unified-bottom-sheet" style="position: sticky; bottom: 0; left: 0; right: 0; width: 100%; max-width: 800px; margin: 0 auto; z-index: 2000; background: #1C1C1E; border-top-left-radius: 24px; border-top-right-radius: 24px; box-shadow: 0 -10px 40px rgba(0,0,0,0.8); padding: 15px 20px calc(20px + env(safe-area-inset-bottom, 20px)) 20px; box-sizing: border-box; display: flex; flex-direction: column; gap: 15px; transition: transform 0.3s ease;">
-                    
-                    <!-- Drag handle (Toggles list visibility) -->
-                    <div style="padding: 10px 0; cursor: pointer; display: flex; justify-content: center;" onclick="const list = document.getElementById('bs-action-list'); list.style.display = list.style.display === 'none' ? 'flex' : 'none';">
-                        <div style="width: 50px; height: 5px; background: #555; border-radius: 3px;"></div>
-                    </div>
-                    
-                    <!-- List items (Hideable) -->
-                    <div id="bs-action-list" style="display: none; flex-direction: column; gap: 20px; margin-bottom: 10px;">
-                        <div style="display: flex; align-items: center; gap: 15px; cursor: pointer;">
-                            <span style="color: #888;"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3"/></svg></span>
-                            <span style="color: #FFF; font-size: 16px; font-weight: 400; flex: 1;">Załącz zdjęcia z treningu</span>
-                        </div>
-                        <div style="display: flex; align-items: center; gap: 15px; cursor: pointer;">
-                            <span style="color: #888;"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="3" width="12" height="18" rx="3"/><path d="M6 7h12"/><path d="M6 17h12"/></svg></span>
-                            <span style="color: #FFF; font-size: 16px; font-weight: 400; flex: 1;">Dodaj dane ze Smartwatcha</span>
-                        </div>
-                        <div style="display: flex; align-items: center; gap: 15px; cursor: pointer;">
-                            <span style="color: #888;"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg></span>
-                            <span style="color: #FFF; font-size: 16px; font-weight: 400; flex: 1;">Zapisz jako Plan Treningowy</span>
-                        </div>
-                    </div>
-
-                    <!-- Action Buttons -->
-                    <div style="display: flex; gap: 12px;">
-                        <button type="button" id="pause-training-btn" style="flex: 1; padding: 16px 10px; background: transparent; border: 1px solid #f39c12; color: #f39c12; border-radius: 12px; font-weight: 600; font-size: 15px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px;">
-                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg> Pauza
+                        <div id="training-social-photos-list" class="z-sesja-zdjecia"></div>
+                        <button type="button" id="bs-smartwatch-btn" class="z-li z-sesja-wiecej-poz" aria-expanded="false" aria-controls="smartwatch-fields" onclick="window.TrainingUI.przelaczSmartwatch()">
+                            ${ikona('clock', 20)}<span>Dodaj dane ze smartwatcha</span>
                         </button>
-                        <button type="button" id="finish-training-btn" style="flex: 1; padding: 16px 10px; background: #E74C3C; border: none; color: #FFF; border-radius: 12px; font-weight: 600; font-size: 15px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px;">
-                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/></svg> Zakończ
+                        <div id="smartwatch-fields" class="z-sesja-smartwatch" hidden>
+                            <label class="z-sesja-pole"><span class="z-mut">Kalorie (kcal)</span>
+                                <input type="number" id="smartwatch-calories" class="z-in" min="0" inputmode="numeric" onchange="window.TrainingUI.saveDraft()"></label>
+                            <label class="z-sesja-pole"><span class="z-mut">Średnie tętno</span>
+                                <input type="number" id="smartwatch-hr" class="z-in" min="0" inputmode="numeric" onchange="window.TrainingUI.saveDraft()"></label>
+                        </div>
+                        <button type="button" id="save-as-template-btn" class="z-li z-sesja-wiecej-poz">
+                            ${ikona('download', 20)}<span>Zapisz jako plan treningowy</span>
+                        </button>
+                        <!-- R18: w sesji pływający przycisk Edwarda jest ukryty, więc Edward jest tutaj. -->
+                        <button type="button" id="bs-edward-btn" class="z-li z-sesja-wiecej-poz" onclick="window.TrainingUI.otworzEdwarda()">
+                            ${ikona('bot', 20)}<span>Zapytaj Edwarda</span>
                         </button>
                     </div>
+                    <div class="z-sesja-akcje-rzad">
+                        <button type="button" id="bs-more-btn" class="z-ghost z-sesja-wiecej-btn" aria-label="Więcej: zdjęcia, smartwatch, zapisz jako plan, Edward" aria-expanded="false" aria-controls="bs-action-list" onclick="window.TrainingUI.przelaczWiecej()">${ikona('more-horizontal', 22)}</button>
+                        <button type="button" id="pause-training-btn" class="z-ghost z-sesja-pauza" aria-pressed="false">${ikona('pause', 18)}Pauza</button>
+                        <button type="button" id="finish-training-btn" class="z-btn z-sesja-zakoncz">Zakończ</button>
                     </div>
                 </div>
             </div>

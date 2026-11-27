@@ -1,8 +1,548 @@
 /* wyglad: zar */
+/* Trening — sesja (spec 8.3, plansze TreningSesja, …Granat, …Pomarancz).
+   Znaczniki: TrainingComponent.js (#active-training-view, #unified-bottom-sheet) i TrainingUI.renderCurrentExercises.
+   body.z-sesja ustawia TrainingUI.odswiezTrybSesji: sesja widoczna na aktywnej karcie Treningu. */
 
-/* Pływający pasek dolny (A7): przyklejony arkusz akcji sesji (#unified-bottom-sheet, sticky bottom: 0)
-   stoi na górnej krawędzi pigułki, jak wcześniej na pełnym pasku — bez 16 px zapasu z base.css,
-   przez który pod arkuszem przewijałaby się treść. Wygląd arkusza nad pigułką zmienia etap B (B2). */
-body.zar .app-content > .tab-content-wrapper:has(> #training-dashboard.active-tab) {
-    padding-bottom: calc(56px + 14px + env(safe-area-inset-bottom, 0px) + var(--ukis-banner-space, 0px)) !important;
+/* ---------- Bez paska dolnego i przycisku Edwarda; miejsce na pływający pasek akcji ---------- */
+body.zar.z-sesja .bottom-nav-bar {
+    display: none !important;
+}
+
+/* Treść kończy się 16 px nad paskiem akcji (12 px od dołu + 70 px wysokości). Gdy widać pasek aktualizacji UKIS,
+   pwa-updater.js podnosi pasek akcji o --ukis-banner-space, więc to miejsce też się dolicza. Reguła jest
+   mocniejsza od miejsca na pasek dolny z base.css (body.zar .app-content > .tab-content-wrapper). */
+body.zar.z-sesja .app-content > .tab-content-wrapper {
+    padding-bottom: calc(12px + 70px + 16px + env(safe-area-inset-bottom, 0px) + var(--ukis-banner-space, 0px)) !important;
+}
+
+/* Nagłówek ekranu „Trening” należy do kalendarza; sesja ma własny rząd z czasem (płótno TreningSesja). */
+body.zar.z-sesja #training-dashboard > .z-head-main {
+    display: none;
+}
+
+/* R18: w sesji przycisk Edwarda znika (zasłaniał treść nad paskiem akcji); Edward jest w „⋯ Więcej” (#bs-edward-btn).
+   !important, bo ChatUI.js po zamknięciu czatu wpisuje style="display: flex". */
+body.zar.z-sesja #edward-chat-toggle {
+    display: none !important;
+}
+
+/* Edward w „Więcej” tylko tam, gdzie jest czat: bez niego w Strefie trenera i gdy trener wyłączył AI. */
+body.tz-on #bs-edward-btn,
+body.tz-bez-ai #bs-edward-btn {
+    display: none !important;
+}
+
+#active-training-view [hidden] {
+    display: none !important;
+}
+
+#active-training-view > * + * {
+    margin-top: 10px;
+}
+
+/* ---------- Nagłówek: „Wróć”, czas trwania, „Wpisz czas ręcznie” ---------- */
+.z-sesja-gora {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.z-sesja-czas {
+    flex: 1 1 auto;
+    min-width: 0;
+    text-align: center;
+}
+
+.z-sesja-czas .z-mut {
+    font-size: 11px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+}
+
+.z-sesja-zegar {
+    color: var(--ukis-text);
+    font-family: var(--ukis-font-display);
+    font-size: 32px;
+    font-weight: 600;
+    line-height: 1.1;
+    font-variant-numeric: tabular-nums;
+}
+
+#manual-duration-btn[aria-pressed="true"] {
+    border-color: var(--ukis-color-accent);
+    color: var(--ukis-color-accent);
+}
+
+.z-sesja-reczny.z-card {
+    align-items: center;
+    gap: 8px;
+    padding: 8px 12px;
+}
+
+.z-sesja-reczny > .z-mut:first-child {
+    flex: 1 1 auto;
+    font-size: 13px;
+}
+
+.z-sesja-reczny .z-in {
+    width: 72px;
+    text-align: center;
+    font-variant-numeric: tabular-nums;
+}
+
+/* ---------- Nazwa i rodzaj ---------- */
+#active-training-view .z-sesja-nazwa {
+    text-align: center;
+    font-family: var(--ukis-font-display);
+    font-style: italic;
+    font-weight: 700;
+    font-size: 20px;
+}
+
+.z-sesja-rodzaje {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 6px;
+}
+
+/* ---------- Ćwiczenia ---------- */
+.z-sesja-lista {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.z-sesja-cwiczenia > * + * {
+    margin-top: 10px;
+}
+
+.z-sesja-dodaj {
+    width: 100%;
+}
+
+.z-cw.z-card {
+    padding: 14px;
+}
+
+.z-cw {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    min-width: 0;
+}
+
+/* Nazwa ćwiczenia: pole bez ramki, wygląda jak tytuł karty (16 px, 600). */
+#active-training-view .z-cw-nazwa {
+    display: block;
+    width: 100%;
+    min-height: var(--ukis-touch);
+    margin: 0;
+    padding: 10px 0;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    color: var(--ukis-text);
+    font-family: var(--ukis-font);
+    font-size: 16px;
+    font-weight: 600;
+    line-height: 1.4;
+    resize: none;
+    overflow: hidden;
+    /* Wysokość według treści: field-sizing (Chromium) i TrainingUI.dopasujNazwe (wszędzie, także Safari na iOS). */
+    field-sizing: content;
+    box-sizing: border-box;
+}
+
+#active-training-view .z-cw-nazwa:focus-visible {
+    outline: 2px solid var(--ukis-color-accent);
+    outline-offset: 2px;
+}
+
+#active-training-view .z-cw-nazwa::placeholder {
+    color: var(--ukis-text-muted);
+    opacity: 1;
+}
+
+.z-cw-plan,
+.z-cw-meta {
+    margin-top: -8px;
+    font-size: 12px;
+    line-height: 1.4;
+}
+
+.z-cw-plan + .z-cw-meta {
+    margin-top: -6px;
+}
+
+.z-cw-narzedzia,
+.z-cw-rzad {
+    display: flex;
+    gap: 6px;
+}
+
+.z-cw-narzedzia .z-ghost,
+.z-cw-rzad .z-ghost,
+.z-cw-rzad .z-btn {
+    flex: 1 1 0;
+    min-width: 0;
+    padding: 0 8px;
+    font-size: 13px;
+}
+
+.z-cw-rzad .z-btn {
+    font-size: 14px;
+}
+
+.z-cw-narzedzia .z-cw-foto,
+.z-cw-narzedzia .z-cw-usun {
+    flex: 0 0 var(--ukis-touch);
+    padding: 0;
+}
+
+.z-cw-foto {
+    cursor: pointer;
+}
+
+.z-cw-usun {
+    color: var(--ukis-color-accent);
+    border-color: var(--ukis-accent-line);
+}
+
+.z-cw-narzedzia svg,
+.z-cw-rzad svg {
+    flex: 0 0 auto;
+}
+
+/* ---------- Wiersze serii ---------- */
+.z-cw-serie {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.z-seria {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 2px 0;
+    border: 1px solid transparent;
+    border-radius: 14px;
+}
+
+.z-seria.z-biezaca {
+    background-color: var(--ukis-primary-tint);
+    border-color: var(--ukis-accent-line);
+}
+
+/* Na zabarwionym tle bieżącej serii szarość --ukis-text-muted spadała poniżej 4,5 : 1 (pomarańcz: 3,93). */
+.z-seria.z-biezaca .z-mut {
+    color: var(--ukis-text-secondary);
+}
+
+/* Znacznik 24 px w obszarze dotyku 44 px. */
+.z-seria-znak {
+    display: inline-flex;
+    flex: 0 0 var(--ukis-touch);
+    align-items: center;
+    justify-content: center;
+    width: var(--ukis-touch);
+    height: var(--ukis-touch);
+    margin: 0;
+    padding: 0;
+    border: 0;
+    border-radius: 50%;
+    background: transparent;
+    color: var(--ukis-text);
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.z-seria-znak:focus-visible {
+    outline: 2px solid var(--ukis-color-accent);
+    outline-offset: -2px;
+}
+
+.z-seria-kolo {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    border: 2px solid rgba(255,255,255,.4);
+    border-radius: 50%;
+    box-sizing: border-box;
+}
+
+.z-zrobiona .z-seria-kolo {
+    background-color: var(--ukis-color-primary);
+    border-color: var(--ukis-color-primary);
+    color: var(--ukis-on-primary);
+}
+
+.z-seria-nr {
+    flex: 0 0 12px;
+    text-align: center;
+}
+
+#active-training-view .z-seria .z-in {
+    min-height: var(--ukis-touch);
+    padding: 8px;
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+    -moz-appearance: textfield;
+}
+
+#active-training-view .z-seria .z-in::-webkit-inner-spin-button,
+#active-training-view .z-seria .z-in::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+#active-training-view .z-seria .z-seria-kg {
+    flex: 0 0 78px;
+    width: 78px;
+}
+
+#active-training-view .z-seria .z-seria-powt {
+    flex: 0 0 56px;
+    width: 56px;
+}
+
+.z-seria-x {
+    flex: 0 0 auto;
+    font-size: 13px;
+    white-space: nowrap;
+}
+
+.z-seria-rekord {
+    margin-left: auto;
+    font-size: 11px;
+}
+
+.z-seria-usun.z-ic {
+    margin-left: auto;
+    color: var(--ukis-text-muted);
+}
+
+.z-seria-rekord + .z-seria-usun.z-ic {
+    margin-left: -6px;
+}
+
+.z-seria-usun svg {
+    width: 16px;
+    height: 16px;
+}
+
+.z-cw-kopiuj {
+    font-size: 13px;
+    gap: 10px;
+}
+
+/* ---------- Cardio ---------- */
+.z-cw-cardio {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    text-align: center;
+}
+
+.z-cw-cardio > .z-mut {
+    font-size: 13px;
+}
+
+.z-cw-cardio-czas {
+    color: var(--ukis-text);
+    font-family: var(--ukis-font-display);
+    font-size: 36px;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+}
+
+.z-cw-cardio-reczny {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+#active-training-view .z-cw-cardio-reczny .z-in {
+    width: 96px;
+    text-align: center;
+    font-size: 22px;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+}
+
+.z-cw-cardio .z-cw-rzad {
+    align-self: stretch;
+}
+
+/* ---------- Superseria: jedna karta z ćwiczeniami w środku ---------- */
+.z-superseria.z-card {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 14px;
+    border-color: var(--ukis-accent-line);
+}
+
+.z-superseria-gora {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.z-superseria .z-sep {
+    margin: 4px 0;
+}
+
+.z-superseria-usun.z-ic {
+    color: var(--ukis-color-accent);
+}
+
+/* ---------- Pasek akcji: pływająca karta ---------- */
+#unified-bottom-sheet.z-sesja-akcje {
+    position: fixed;
+    z-index: 1000;
+    left: 12px;
+    right: 12px;
+    bottom: calc(12px + env(safe-area-inset-bottom, 0px));
+    max-width: 560px;
+    margin: 0 auto;
+    padding: 10px;
+    border-radius: 26px;
+    background-color: var(--ukis-session-bar-bg);
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    box-sizing: border-box;
+}
+
+#active-training-view > #unified-bottom-sheet {
+    margin-top: 0;
+}
+
+.z-sesja-akcje-rzad {
+    display: flex;
+    gap: 8px;
+}
+
+.z-sesja-akcje-rzad .z-ghost,
+.z-sesja-akcje-rzad .z-btn {
+    min-height: 48px;
+    padding: 0; /* szerokości 1 : 1,4 liczone od zera (flex-basis 0), bez wewnętrznego odstępu */
+}
+
+.z-sesja-akcje-rzad .z-sesja-wiecej-btn {
+    flex: 0 0 48px;
+    width: 48px;
+    min-width: 48px;
+    padding: 0;
+}
+
+.z-sesja-akcje-rzad .z-sesja-pauza {
+    flex: 1 1 0;
+}
+
+.z-sesja-akcje-rzad .z-sesja-zakoncz {
+    flex: 1.4 1 0;
+}
+
+/* „Efekt szkła” wyłączony (body.glass-off, SettingsUI): pasek akcji bez rozmycia, z pełnym tłem jak karty. */
+body.glass-off #unified-bottom-sheet.z-sesja-akcje {
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    background-color: var(--ukis-glass-bg-solid);
+}
+
+.z-sesja-pauza.z-wznow {
+    border-color: var(--ukis-color-accent);
+}
+
+/* „Więcej”: zdjęcia, smartwatch, zapis jako plan. */
+.z-sesja-wiecej {
+    display: flex;
+    flex-direction: column;
+    padding-bottom: 6px;
+    border-bottom: 1px solid var(--ukis-divider);
+}
+
+.z-sesja-wiecej .z-li {
+    border-radius: var(--ukis-radius-sm);
+    cursor: pointer;
+}
+
+.z-sesja-wiecej .z-li > svg {
+    flex: 0 0 auto;
+    color: var(--ukis-text-secondary);
+}
+
+.z-sesja-zdjecia {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    padding: 12px 16px 4px;
+}
+
+.z-sesja-zdjecia:empty {
+    display: none;
+}
+
+.z-sesja-zdjecie {
+    position: relative;
+    width: 60px;
+    height: 60px;
+}
+
+.z-sesja-zdjecie img {
+    width: 60px;
+    height: 60px;
+    object-fit: cover;
+    border-radius: 10px;
+}
+
+.z-sesja-zdjecie-usun.z-ic {
+    position: absolute;
+    top: -14px;
+    right: -14px;
+}
+
+.z-sesja-zdjecie-usun svg {
+    width: 16px;
+    height: 16px;
+    padding: 3px;
+    border-radius: 50%;
+    background: rgba(0,0,0,.7);
+}
+
+.z-sesja-smartwatch {
+    display: flex;
+    gap: 8px;
+    padding: 4px 16px 8px;
+}
+
+.z-sesja-pole {
+    display: flex;
+    flex: 1 1 0;
+    flex-direction: column;
+    gap: 4px;
+    min-width: 0;
+}
+
+/* Etykiety pól na półprzezroczystym pasku nad białą tapetą: --ukis-text-muted dawał 4,34 : 1. */
+.z-sesja-pole .z-mut {
+    color: var(--ukis-text-secondary);
+}
+
+/* Komunikat Treningu (#trening-komunikat, z-toast) to sam tekst: nie przechwytuje dotyku. W sesji stoi u góry,
+   bo na dole jest pasek akcji z listą „Więcej”. */
+#trening-komunikat {
+    pointer-events: none;
+}
+
+body.z-sesja #trening-komunikat {
+    top: calc(12px + env(safe-area-inset-top, 0px));
+    bottom: auto;
 }

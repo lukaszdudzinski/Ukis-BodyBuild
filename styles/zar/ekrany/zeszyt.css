@@ -1,9 +1,416 @@
 /* wyglad: zar */
+/* ============================================================
+   ZESZYT — kartka dnia (spec 8.3, plansza Zeszyt). Znaczniki: src/components/NotebookComponent.js.
+   Kartka w kratkę 18 px, margines 44 px z linią w kolorze motywu, „seria” i numery akcentem.
+   Wielkość pisma: --nb-scale (×1 / ×1,2 / ×1,4) mnoży pismo, nigdy kratki ani marginesu.
+   --nb-kb: wysokość klawiatury ekranowej (NotebookUI.js), dopełnienie pod listą, żeby wiersz był nad nią.
+   ============================================================ */
 
-/* Pływający pasek dolny (A7): na telefonie pusta kartka sięga do górnej krawędzi pigułki. Kartka ma własne
-   miejsce na końcu listy (padding w NotebookComponent.js), więc bez 16 px zapasu z base.css. */
+#notebook-dashboard .nb {
+    max-width: 640px;
+    margin: 0 auto;
+    padding-bottom: 90px;
+    color: var(--ukis-text);
+}
+
+/* ---------- Nagłówek: strzałki dnia, data, stan zapisu ---------- */
+#notebook-dashboard .nb-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    padding-top: env(safe-area-inset-top, 0px);
+}
+
+#notebook-dashboard .nb-day {
+    position: relative;
+    flex: 1;
+    min-width: 0;
+    min-height: var(--ukis-touch);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+}
+
+#notebook-dashboard .nb-day-label {
+    display: block;
+    font-size: 22px;
+    text-transform: none;
+}
+
+/* „sobota, 21 listopada” → „Sobota, 21 listopada” (tekst w DOM bez zmian). */
+#notebook-dashboard .nb-day-label::first-letter {
+    text-transform: uppercase;
+}
+
+/* Pole daty leży niewidoczne na całym napisie: stuknięcie otwiera kalendarz systemu. */
+#notebook-dashboard .nb-day input[type="date"] {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    border: 0;
+    cursor: pointer;
+    font-size: 16px;
+}
+
+#notebook-dashboard .nb-status {
+    min-height: 18px;
+    margin: 0 0 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    font-size: 12px;
+    text-align: center;
+    color: var(--ukis-text-secondary);
+}
+
+#notebook-dashboard .nb-status.nb-ok {
+    color: var(--ukis-color-success);
+}
+
+#notebook-dashboard .nb-status.nb-error {
+    color: var(--ukis-color-danger);
+    cursor: pointer;
+}
+
+/* ---------- Kartka ---------- */
+#notebook-dashboard .nb-sheet {
+    --nb-scale: 1;
+    position: relative;
+    min-height: 216px;
+    padding: 54px 12px calc(18px + var(--nb-kb, 0px)) 0;
+    border: 1px solid rgba(255,255,255,.18);
+    border-radius: 18px;
+    /* Prawie nieprzezroczysta (płótno: 0,82 bardzo ciemnej szarości): tapeta prześwituje tylko dookoła kartki. */
+    background-color: rgba(0,0,0,.84);
+    background-image:
+        linear-gradient(rgba(255,255,255,.07) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,.07) 1px, transparent 1px);
+    background-size: 18px 18px;
+    font-size: 17px;
+    box-sizing: border-box;
+}
+
+#notebook-dashboard .nb-sheet[data-font="large"] { --nb-scale: 1.2; }
+#notebook-dashboard .nb-sheet[data-font="xlarge"] { --nb-scale: 1.4; }
+
+/* Margines: pionowa linia 2 px w kolorze motywu z poświatą. */
+#notebook-dashboard .nb-sheet::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 44px;
+    width: 2px;
+    background-color: var(--ukis-color-primary);
+    box-shadow: 0 0 10px var(--ukis-primary-soft);
+    pointer-events: none;
+}
+
+#notebook-dashboard .nb-row {
+    display: flex;
+    align-items: center;
+    min-height: 36px;
+}
+
+#notebook-dashboard .nb-margin {
+    flex: 0 0 44px;
+    width: 44px;
+    text-align: center;
+    color: var(--ukis-color-accent);
+    font-size: calc(17px * var(--nb-scale));
+    font-weight: 700;
+}
+
+#notebook-dashboard .nb-margin-head {
+    align-self: stretch;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    padding-bottom: 12px;
+    box-sizing: border-box;
+}
+
+#notebook-dashboard .nb-series-label {
+    font-size: calc(12px * var(--nb-scale));
+    font-weight: 600;
+    line-height: 1;
+    letter-spacing: 0.02em;
+}
+
+#notebook-dashboard .nb-body {
+    flex: 1;
+    min-width: 0;
+    padding-left: 12px;
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+/* Nazwa ćwiczenia: przycisk (stuknięcie = zmiana nazwy), Barlow kursywa jak nagłówki. */
+#notebook-dashboard .nb-ex-name {
+    min-width: var(--ukis-touch);
+    min-height: var(--ukis-touch);
+    padding: 6px 0;
+    border: 0;
+    background: none;
+    color: var(--ukis-text);
+    font-family: var(--ukis-font-display);
+    font-style: italic;
+    font-weight: 700;
+    font-size: calc(19px * var(--nb-scale));
+    line-height: 1.2;
+    text-align: left;
+    white-space: normal;
+    overflow-wrap: anywhere;
+    cursor: pointer;
+}
+
+/* ---------- Wiersz serii: numer, „powtórzenia × kg”, kosz ---------- */
+#notebook-dashboard .nb-set {
+    flex-wrap: wrap;
+}
+
+#notebook-dashboard .nb-set:focus-within {
+    background: var(--ukis-primary-tint);
+}
+
+#notebook-dashboard .nb-num {
+    display: inline-block;
+    flex: 0 0 auto;
+    width: calc(56px * var(--nb-scale));
+    padding: 6px 8px;
+    font-size: calc(17px * var(--nb-scale));
+    text-align: right;
+}
+
+#notebook-dashboard .nb-num[data-field="weight"] {
+    width: calc(72px * var(--nb-scale));
+}
+
+#notebook-dashboard .nb-num:focus {
+    outline: none;
+    border-color: var(--ukis-color-primary);
+}
+
+#notebook-dashboard .nb-num.nb-invalid {
+    border-color: var(--ukis-color-danger);
+    box-shadow: 0 0 0 1px var(--ukis-color-danger);
+}
+
+#notebook-dashboard .nb-x,
+#notebook-dashboard .nb-unit {
+    color: var(--ukis-text-secondary);
+    font-size: calc(17px * var(--nb-scale));
+}
+
+/* Kosz serii: pierwsze stuknięcie uzbraja („Usunąć?”), drugie usuwa. */
+#notebook-dashboard .nb-del {
+    margin-left: auto;
+    min-width: var(--ukis-touch);
+    min-height: var(--ukis-touch);
+    padding: 0 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 2px;
+    border: 0;
+    border-radius: var(--ukis-radius-sm);
+    background: none;
+    color: var(--ukis-text-muted);
+    cursor: pointer;
+    opacity: 0.55;
+}
+
+#notebook-dashboard .nb-set:focus-within .nb-del {
+    opacity: 1;
+    color: var(--ukis-color-danger);
+}
+
+#notebook-dashboard .nb-del.nb-armed {
+    opacity: 1;
+    background: var(--ukis-danger-ghost-bg);
+    color: var(--ukis-color-danger);
+    font: inherit;
+    font-size: calc(13px * var(--nb-scale));
+    font-weight: 700;
+}
+
+/* ---------- Edycja nazwy: pole, „Usuń”, podpowiedzi ---------- */
+#notebook-dashboard .nb-name {
+    flex: 1;
+    width: auto;
+    min-width: 0;
+    padding: 6px 10px;
+    border-color: var(--ukis-color-primary);
+    font-size: calc(17px * var(--nb-scale));
+}
+
+#notebook-dashboard .nb-del-ex {
+    padding: 6px 12px;
+    font-size: calc(14px * var(--nb-scale));
+}
+
+#notebook-dashboard .nb-suggestions {
+    flex-basis: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+#notebook-dashboard .nb-suggestions:empty {
+    display: none;
+}
+
+#notebook-dashboard .nb-suggestion {
+    min-height: var(--ukis-touch);
+    padding: 8px 12px;
+    border: 1px solid var(--ukis-ghost-border);
+    border-radius: var(--ukis-radius-sm);
+    background: var(--ukis-sheet-bg);
+    color: var(--ukis-text);
+    font-family: var(--ukis-font);
+    font-size: calc(15px * var(--nb-scale));
+    text-align: left;
+    white-space: normal;
+    overflow-wrap: anywhere;
+    cursor: pointer;
+}
+
+#notebook-dashboard .nb-empty {
+    padding: 6px 0 6px 12px;
+    color: var(--ukis-text-secondary);
+    font-size: calc(17px * var(--nb-scale));
+}
+
+/* ---------- „+ seria” (z-btn) i „+ ćwiczenie” (z-ghost) ---------- */
+#notebook-dashboard .nb-actions {
+    gap: 10px;
+    padding-top: 12px;
+}
+
+#notebook-dashboard .nb-btn {
+    gap: 4px;
+    padding: 9px 14px;
+    font-size: calc(15px * var(--nb-scale));
+    font-weight: 600;
+}
+
+/* z-btn/z-ghost mają display: inline-flex, który zakryłby atrybut hidden. */
+#notebook-dashboard .nb-btn[hidden] {
+    display: none;
+}
+
+/* ---------- Koło zębate (otwiera arkusz ustawień) ---------- */
+#notebook-dashboard .nb-gear {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    z-index: 2;
+    border: 1px solid rgba(255,255,255,.2);
+    background: var(--ukis-ghost-bg);
+}
+
+#notebook-dashboard .nb-gear[aria-expanded="true"] {
+    border-color: var(--ukis-color-accent);
+    background: var(--ukis-primary-tint);
+    color: var(--ukis-color-accent);
+}
+
+/* ---------- Arkusz „Ustawienia Zeszytu” (z-sheet, spec 8.3, plansza ZeszytUstawienia) ----------
+   Zasłona i arkusz z components.css (.z-sheet-scrim, .z-sheet); tu tylko układ treści.
+   NotebookUI.js przenosi zasłonę do <body> (nad paskiem dolnym i przyciskiem Edwarda), stąd selektory bez #notebook-dashboard. */
+.nb-settings-scrim[hidden] {
+    display: none;
+}
+
+.nb-settings-scrim .nb-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    font-size: 15px;
+    line-height: 1.3;
+    text-align: left;
+}
+
+.nb-settings-scrim .nb-panel .z-sheet-grip {
+    margin-bottom: 4px;
+}
+
+.nb-settings-scrim .nb-panel .z-sheet-head {
+    margin-bottom: 4px;
+}
+
+.nb-settings-scrim .nb-panel .z-sheet-head .z-hd {
+    flex: 1 1 auto;
+    min-width: 0;
+}
+
+.nb-settings-scrim .nb-panel-title {
+    font-weight: 600;
+    font-size: 15px;
+}
+
+/* Wiersz pola wyboru: tekst po lewej, pole po prawej, cały wiersz to cel dotyku (z-check). */
+.nb-settings-scrim .nb-opt {
+    justify-content: space-between;
+    font-size: 15px;
+}
+
+.nb-settings-scrim .nb-opt input {
+    flex: 0 0 auto;
+    cursor: pointer;
+}
+
+.nb-settings-scrim .nb-panel .z-sep {
+    margin: 4px 0;
+}
+
+/* Podgląd wiersza serii w wybranej wielkości pisma (×1 / ×1,2 / ×1,4 z 17 px, jak na kartce). */
+.nb-settings-scrim .nb-preview {
+    --nb-scale: 1;
+    padding: 12px 14px;
+    font-size: calc(17px * var(--nb-scale));
+    line-height: 1.3;
+}
+
+.nb-settings-scrim .nb-preview[data-font="large"] { --nb-scale: 1.2; }
+.nb-settings-scrim .nb-preview[data-font="xlarge"] { --nb-scale: 1.4; }
+
+.nb-settings-scrim .nb-preview-no {
+    margin-right: 6px;
+    font-weight: 700;
+}
+
+/* ---------- Telefon: kartka od nagłówka do pływającego paska dolnego ----------
+   Zakładka rośnie jak min-height (dłuższa lista po prostu ją wydłuża). base.css zostawia pod treścią
+   16 px zapasu ponad pigułką; kartka ma własne miejsce na końcu listy (90 px dopełnienia), więc zakładka
+   wchodzi w ten zapas: jest o 16 px wyższa (pusta kartka) i ma −16 px marginesu (koniec przewijania). */
 @media (max-width: 768px) {
-    body.zar .app-content > .tab-content-wrapper:has(> #notebook-dashboard.active-tab) {
-        padding-bottom: calc(56px + 14px + env(safe-area-inset-bottom, 0px) + var(--ukis-banner-space, 0px)) !important;
+    #notebook-dashboard.tab-content.active-tab {
+        display: flex !important;
+        flex-direction: column;
+        min-height: calc(100% + 16px) !important;
+        margin-bottom: -16px;
+        padding-bottom: 0 !important;
+    }
+
+    #notebook-dashboard .nb {
+        flex: 1 0 auto;
+        display: flex;
+        flex-direction: column;
+        width: 100%;
+        padding-bottom: 0;
+    }
+
+    /* 90 px u dołu (5 kratek): koniec listy da się przewinąć nad pływający przycisk Edwarda. */
+    #notebook-dashboard .nb-sheet {
+        flex: 1 0 auto;
+        padding-bottom: calc(90px + var(--nb-kb, 0px));
     }
 }

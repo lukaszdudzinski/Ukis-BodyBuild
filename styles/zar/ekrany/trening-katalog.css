@@ -1,1 +1,146 @@
 /* wyglad: zar */
+/* Katalog ćwiczeń (spec 8.3, plansza TreningKatalog; TrainingUI.injectCatalogModalHTML / openCatalogModal).
+   Okno na pełnym ekranie nad sesją: przezroczyste, więc widać tło aplikacji (poświata albo tapeta).
+   Dopóki jest otwarte, body ma klasę z-katalog-otwarty, a treść aplikacji, pasek dolny i Edward są ukryte. */
+
+/* ---------- Okno pełnoekranowe (wspólne z oknem szablonów, trening-szablony.css) ---------- */
+.z-okno {
+    position: fixed;
+    inset: 0;
+    z-index: 10000;
+    display: flex;
+    justify-content: center;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
+    background: transparent;
+    color: var(--ukis-text);
+    font-family: var(--ukis-font);
+}
+
+.z-okno[hidden] {
+    display: none;
+}
+
+.z-okno-w {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    width: 100%;
+    max-width: 560px;
+    padding: 0 16px calc(24px + env(safe-area-inset-bottom, 0px));
+    box-sizing: border-box;
+}
+
+.z-okno-w > .z-head-center {
+    padding-left: 0;
+    padding-right: 0;
+    padding-bottom: 0;
+}
+
+body.z-katalog-otwarty .app-wrapper,
+body.z-katalog-otwarty #edward-chat-toggle,
+body.z-katalog-otwarty #edward-chat-window,
+body.z-katalog-otwarty #edward-chat-widget,
+body.z-katalog-otwarty #edward-contextual-bubble {
+    visibility: hidden;
+}
+
+/* ---------- Wyszukiwarka-pigułka ---------- */
+.z-katalog-szukaj.z-card {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 0 16px;
+    border-radius: var(--ukis-radius-full);
+}
+
+.z-katalog-szukaj svg {
+    flex: 0 0 auto;
+    color: var(--ukis-text-muted);
+}
+
+#catalog-search {
+    flex: 1 1 auto;
+    min-width: 0;
+    min-height: var(--ukis-touch);
+    padding: 10px 0;
+    border: 0;
+    background: none;
+    color: var(--ukis-text);
+    font-family: var(--ukis-font);
+    font-size: 16px; /* iOS nie powiększa strony przy wpisywaniu */
+    outline: none;
+    -webkit-appearance: none;
+    appearance: none;
+}
+
+#catalog-search::placeholder {
+    color: var(--ukis-text-muted);
+}
+
+#catalog-search::-webkit-search-decoration {
+    -webkit-appearance: none;
+}
+
+/* Fokus pola widać na całej pigułce. */
+.z-katalog-szukaj:focus-within {
+    border-color: var(--ukis-color-accent);
+}
+
+/* ---------- Żetony partii (zawijany rząd) ---------- */
+.z-katalog-partie {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+/* ---------- Lista ćwiczeń ---------- */
+.z-katalog-cw.z-li {
+    justify-content: space-between;
+}
+
+.z-katalog-nazwa {
+    flex: 1 1 auto;
+    min-width: 0;
+    font-size: 14px;
+    line-height: 1.35;
+    overflow-wrap: anywhere;
+}
+
+.z-katalog-partia {
+    flex: 0 0 auto;
+    max-width: 40%;
+    text-align: right;
+}
+
+.z-katalog-pusto {
+    margin: 0;
+    padding: 14px 16px;
+    font-size: 14px;
+    line-height: 1.45;
+    color: var(--ukis-text-secondary);
+}
+
+/* ---------- Własne ćwiczenie ---------- */
+.z-katalog-wlasne.z-card {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 14px;
+}
+
+.z-katalog-wlasne-rzad {
+    display: flex;
+    gap: 8px;
+}
+
+.z-katalog-wlasne-rzad .z-in {
+    flex: 1 1 auto;
+    min-width: 0;
+}
+
+.z-katalog-wlasne-rzad .z-btn {
+    flex: 0 0 auto;
+    padding: 12px 16px;
+}

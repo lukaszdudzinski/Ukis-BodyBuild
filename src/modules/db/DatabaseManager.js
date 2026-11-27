@@ -512,6 +512,8 @@ export const DatabaseManager = {
             birthYear: localStorage.getItem(BIRTH_YEAR_KEY) || "",
             dietWorkerUrl: localStorage.getItem("dietWorkerUrl") || "",
             schedules: localStorage.getItem("uki_workout_schedules") || "[]",
+            // Wyjątki harmonogramu: pominięte, przełożone i przełożone na dzień (R17).
+            scheduleExceptions: localStorage.getItem("uki_schedule_exceptions") || "[]",
             customWallpaper: localStorage.getItem("uki-custom-wallpaper") || ""
         };
 
@@ -641,6 +643,8 @@ export const DatabaseManager = {
                 if (data.settings.birthYear) saveBirthYear(data.settings.birthYear); // błędny rok jest pomijany
                 if (data.settings.dietWorkerUrl) localStorage.setItem("dietWorkerUrl", data.settings.dietWorkerUrl);
                 if (data.settings.schedules) localStorage.setItem("uki_workout_schedules", typeof data.settings.schedules === 'string' ? data.settings.schedules : JSON.stringify(data.settings.schedules));
+                // Stara kopia bez tego pola nie rusza wyjątków z telefonu.
+                if (data.settings.scheduleExceptions) localStorage.setItem("uki_schedule_exceptions", typeof data.settings.scheduleExceptions === 'string' ? data.settings.scheduleExceptions : JSON.stringify(data.settings.scheduleExceptions));
                 if (data.settings.customWallpaper) localStorage.setItem("uki-custom-wallpaper", data.settings.customWallpaper);
             }
 

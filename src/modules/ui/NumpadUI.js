@@ -1,60 +1,80 @@
+// wyglad: zar
+import { ikona } from '../wyglad/ikony.js';
+
 export const NumpadUI = {
     targetInput: null,
     targetSetIndex: null,
     targetExerciseIndex: null,
     isFirstClick: true,
+    restoreType: null,
+    restoreFocus: null,
 
     init: () => {
         // Zbuduj HTML numpada jeśli jeszcze go nie ma
         if (document.getElementById('uki-custom-numpad')) return;
 
         const numpadHtml = `
-            <div id="uki-custom-numpad" style="display: none; position: fixed; bottom: 0; left: 0; width: 100%; max-width: 100vw; margin: 0; box-sizing: border-box; background: #121212; border-top: 2px solid #FF9800; z-index: 9999; padding: 15px 10px 30px 10px; box-shadow: 0 -5px 15px rgba(0,0,0,0.5); font-family: -apple-system, sans-serif;">
-                
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px; padding: 0 5px;">
-                    <span id="numpad-target-label" style="color: #FF9800; font-size: 0.9em; font-weight: bold;">Podaj Wartość</span>
-                    <button onclick="window.NumpadUI.close()" style="background: none; border: none; color: #ff4444; font-size: 1.2em; font-weight: bold; cursor: pointer; padding: 5px;">Zamknij ✖</button>
+            <div id="uki-custom-numpad" class="z-numpad" role="dialog" aria-label="Klawiatura liczbowa" style="display: none;">
+                <div class="z-numpad-head">
+                    <span id="numpad-target-label" class="z-numpad-label">Podaj wartość</span>
+                    <button type="button" class="z-ghost z-numpad-close" aria-label="Zamknij" onclick="window.NumpadUI.close()">${ikona('x', 18)}<span>Zamknij</span></button>
                 </div>
-                
-                <div style="background: #000; border: 1px solid #333; border-radius: 8px; margin-bottom: 15px; padding: 15px; text-align: right; box-shadow: inset 0 2px 10px rgba(0,0,0,0.8); box-sizing: border-box; width: 100%; overflow: hidden;">
-                    <span id="numpad-display-screen" style="color: #00BFFF; font-size: 2.5em; font-weight: bold; font-family: monospace;">0</span>
+                <div class="z-numpad-screen"><span id="numpad-display-screen" aria-live="polite">0</span></div>
+                <div class="z-numpad-grid">
+                    <button type="button" class="z-numpad-key" aria-label="1" onclick="window.NumpadUI.type('1')">1</button>
+                    <button type="button" class="z-numpad-key" aria-label="2" onclick="window.NumpadUI.type('2')">2</button>
+                    <button type="button" class="z-numpad-key" aria-label="3" onclick="window.NumpadUI.type('3')">3</button>
+                    <button type="button" class="z-numpad-key" aria-label="4" onclick="window.NumpadUI.type('4')">4</button>
+                    <button type="button" class="z-numpad-key" aria-label="5" onclick="window.NumpadUI.type('5')">5</button>
+                    <button type="button" class="z-numpad-key" aria-label="6" onclick="window.NumpadUI.type('6')">6</button>
+                    <button type="button" class="z-numpad-key" aria-label="7" onclick="window.NumpadUI.type('7')">7</button>
+                    <button type="button" class="z-numpad-key" aria-label="8" onclick="window.NumpadUI.type('8')">8</button>
+                    <button type="button" class="z-numpad-key" aria-label="9" onclick="window.NumpadUI.type('9')">9</button>
+                    <button type="button" class="z-numpad-key z-numpad-key-alt" aria-label="," onclick="window.NumpadUI.type('.')">,</button>
+                    <button type="button" class="z-numpad-key" aria-label="0" onclick="window.NumpadUI.type('0')">0</button>
+                    <button type="button" class="z-numpad-key z-numpad-key-alt" aria-label="Usuń znak" onclick="window.NumpadUI.backspace()">${ikona('delete', 24)}</button>
                 </div>
-
-                <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px;">
-                    <button class="np-btn" onclick="window.NumpadUI.type('1')" style="background: #222; border: 1px solid #444; color: #fff; font-size: 1.5em; padding: 15px 0; border-radius: 8px;">1</button>
-                    <button class="np-btn" onclick="window.NumpadUI.type('2')" style="background: #222; border: 1px solid #444; color: #fff; font-size: 1.5em; padding: 15px 0; border-radius: 8px;">2</button>
-                    <button class="np-btn" onclick="window.NumpadUI.type('3')" style="background: #222; border: 1px solid #444; color: #fff; font-size: 1.5em; padding: 15px 0; border-radius: 8px;">3</button>
-                    
-                    <button class="np-btn" onclick="window.NumpadUI.type('4')" style="background: #222; border: 1px solid #444; color: #fff; font-size: 1.5em; padding: 15px 0; border-radius: 8px;">4</button>
-                    <button class="np-btn" onclick="window.NumpadUI.type('5')" style="background: #222; border: 1px solid #444; color: #fff; font-size: 1.5em; padding: 15px 0; border-radius: 8px;">5</button>
-                    <button class="np-btn" onclick="window.NumpadUI.type('6')" style="background: #222; border: 1px solid #444; color: #fff; font-size: 1.5em; padding: 15px 0; border-radius: 8px;">6</button>
-                    
-                    <button class="np-btn" onclick="window.NumpadUI.type('7')" style="background: #222; border: 1px solid #444; color: #fff; font-size: 1.5em; padding: 15px 0; border-radius: 8px;">7</button>
-                    <button class="np-btn" onclick="window.NumpadUI.type('8')" style="background: #222; border: 1px solid #444; color: #fff; font-size: 1.5em; padding: 15px 0; border-radius: 8px;">8</button>
-                    <button class="np-btn" onclick="window.NumpadUI.type('9')" style="background: #222; border: 1px solid #444; color: #fff; font-size: 1.5em; padding: 15px 0; border-radius: 8px;">9</button>
-                    
-                    <button class="np-btn" onclick="window.NumpadUI.type('.')" style="background: #333; border: 1px solid #555; color: #00BFFF; font-size: 1.5em; padding: 15px 0; border-radius: 8px;">.</button>
-                    <button class="np-btn" onclick="window.NumpadUI.type('0')" style="background: #222; border: 1px solid #444; color: #fff; font-size: 1.5em; padding: 15px 0; border-radius: 8px;">0</button>
-                    <button class="np-btn" onclick="window.NumpadUI.backspace()" style="background: #333; border: 1px solid #555; color: #ff4444; font-size: 1.5em; padding: 15px 0; border-radius: 8px;">⌫</button>
+                <div class="z-numpad-actions">
+                    <button type="button" class="z-ghost z-numpad-minus" aria-label="Minus" onclick="window.NumpadUI.type('-')">${ikona('minus', 18)}<span>Minus (-)</span></button>
+                    <button type="button" class="z-btn z-numpad-enter" aria-label="Zatwierdź" onclick="window.NumpadUI.confirm()">${ikona('check', 20)}<span>Zatwierdź</span></button>
                 </div>
-                
-                <div style="margin-top: 15px; display: flex; gap: 10px;">
-                     <button onclick="window.NumpadUI.type('-')" style="flex: 1; background: #333; border: 1px solid #555; color: #FF9800; font-size: 1.2em; padding: 12px 0; border-radius: 8px; font-weight: bold;">Minus (-)</button>
-                     <button onclick="window.NumpadUI.confirm()" style="flex: 2; background: #FF9800; border: none; color: #000; font-size: 1.2em; padding: 12px 0; border-radius: 8px; font-weight: bold;">Zatwierdź ✔</button>
-                </div>
-
             </div>
         `;
         document.body.insertAdjacentHTML('beforeend', numpadHtml);
     },
 
+    // Wyświetlacz po polsku: przecinek dziesiętny (82,5); pole i zapis dostają kropkę.
     updateDisplay: () => {
         if (NumpadUI.targetInput) {
-            document.getElementById('numpad-display-screen').textContent = NumpadUI.targetInput.value || "0";
+            document.getElementById('numpad-display-screen').textContent = (NumpadUI.targetInput.value || "0").replace('.', ',');
         }
     },
 
+    // Oddaje pole po klawiaturze: bez wyróżnienia, z pierwotnym typem i wartością, którą da się zapisać.
+    oddajPole: () => {
+        const pole = NumpadUI.targetInput;
+        if (!pole) return;
+        pole.classList.remove('z-numpad-target');
+        if (NumpadUI.restoreType) {
+            // Niedokończony wpis („82.” albo samo „-”) nie jest liczbą: zostaje to, co da się zapisać.
+            pole.value = pole.value.replace(/^-$/, '').replace(/\.$/, '');
+            pole.type = NumpadUI.restoreType;
+            NumpadUI.restoreType = null;
+        }
+        pole.dispatchEvent(new Event('change'));
+        NumpadUI.targetInput = null;
+    },
+
     open: (inputEl, exIndex, setIndex, label) => {
+        // Klawiatura otwarta na innym polu: najpierw oddaj poprzednie (typ, wyróżnienie, wartość).
+        if (NumpadUI.targetInput && NumpadUI.targetInput !== inputEl) NumpadUI.oddajPole();
+        // Fokus sprzed otwarcia wraca po zamknięciu (tylko przy pierwszym otwarciu, nie przy zmianie pola).
+        const numpad = document.getElementById('uki-custom-numpad');
+        if (!numpad || numpad.style.display === 'none') {
+            const aktywny = document.activeElement;
+            // Bez samego pola docelowego: fokus na polu liczbowym otworzyłby systemową klawiaturę telefonu.
+            NumpadUI.restoreFocus = aktywny && aktywny !== document.body && aktywny !== inputEl && !(numpad && numpad.contains(aktywny)) ? aktywny : null;
+        }
         NumpadUI.targetInput = inputEl;
         NumpadUI.targetExerciseIndex = exIndex;
         NumpadUI.targetSetIndex = setIndex;
@@ -64,8 +84,13 @@ export const NumpadUI = {
         NumpadUI.updateDisplay();
         
         // Zaznacz pole wizualnie
-        inputEl.style.border = "2px solid #FF9800";
-        inputEl.style.backgroundColor = "rgba(255, 152, 0, 0.2)";
+        inputEl.classList.add('z-numpad-target');
+        // Pole type=number odrzuca wartość „82.” w trakcie wpisywania (przecinek kasował liczbę), więc na czas
+        // klawiatury pole jest tekstowe (inputmode zostaje); close() przywraca typ.
+        if (inputEl.type === 'number') {
+            NumpadUI.restoreType = 'number';
+            inputEl.type = 'text';
+        }
         
         document.getElementById('uki-custom-numpad').style.display = 'block';
         
@@ -74,15 +99,12 @@ export const NumpadUI = {
 
     close: () => {
         document.getElementById('uki-custom-numpad').style.display = 'none';
-        if (NumpadUI.targetInput) {
-            NumpadUI.targetInput.style.border = "1px solid #333";
-            NumpadUI.targetInput.style.backgroundColor = "#2a2a2a";
-            
-            // Trigger change event just in case
-            const event = new Event('change');
-            NumpadUI.targetInput.dispatchEvent(event);
+        NumpadUI.oddajPole();
+        const fokus = NumpadUI.restoreFocus;
+        NumpadUI.restoreFocus = null;
+        if (fokus && fokus.isConnected && typeof fokus.focus === 'function') {
+            try { fokus.focus({ preventScroll: true }); } catch (e) { /* element nie przyjmuje fokusu */ }
         }
-        NumpadUI.targetInput = null;
     },
 
     type: (char) => {

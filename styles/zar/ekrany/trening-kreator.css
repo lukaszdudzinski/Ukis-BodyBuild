@@ -1,1 +1,222 @@
 /* wyglad: zar */
+/* ============================================================
+   KREATOR SZABLONÓW (#template-builder-dashboard), spec rozdz. 8.3
+   Komponenty z-* z components.css; tu tylko układ ekranu. Kolory wyłącznie przez tokeny.
+   ============================================================ */
+
+/* Spec 8.1 (R15): Kreator bez paska dolnego i przycisku Edwarda. body.z-kreator ustawia switchTab (AppUI.js),
+   gdy aktywna jest karta #template-builder-dashboard. Treść kończy się 16 px nad dolną krawędzią
+   (i nad paskiem aktualizacji UKIS, gdy jest widoczny). */
+body.zar.z-kreator .bottom-nav-bar,
+body.z-kreator #edward-chat-toggle,
+body.z-kreator #edward-contextual-bubble {
+    display: none !important;
+}
+
+body.zar.z-kreator .app-content > .tab-content-wrapper {
+    padding-bottom: calc(16px + env(safe-area-inset-bottom, 0px) + var(--ukis-banner-space, 0px)) !important;
+    scroll-padding-bottom: calc(16px + env(safe-area-inset-bottom, 0px) + var(--ukis-banner-space, 0px));
+}
+
+/* Tytuł w jednej linii (ucina się wielokropkiem), „Zapisz” w normalnym rozmiarze. */
+#template-builder-dashboard .z-head-center .z-hd {
+    min-width: 0;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    font-size: 22px;
+}
+
+#template-builder-dashboard .z-head-center {
+    gap: 8px;
+}
+
+.zk-podpowiedz {
+    margin-top: 6px;
+    min-height: 16px;
+}
+
+.zk-tresc-ekranu {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    padding: 4px 16px 16px;
+}
+
+/* Nazwa planu: Barlow kursywa 700, 20 px. */
+.zk-nazwa {
+    font-family: var(--ukis-font-display);
+    font-style: italic;
+    font-weight: 700;
+    font-size: 20px;
+}
+
+.zk-zetony {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+.zk-masowo {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.zk-tytul {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--ukis-text);
+}
+
+.zk-pola {
+    display: grid;
+    grid-template-columns: 1fr 1.4fr 1fr;
+    gap: 6px;
+}
+
+.zk-pola .z-in {
+    padding: 10px;
+}
+
+.zk-lista-glowa {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+/* ---------- Lista ćwiczeń ---------- */
+.zk-wiersz {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 8px 4px 14px;
+    border-bottom: 1px solid var(--ukis-divider);
+}
+
+.zk-wiersz:last-child {
+    border-bottom: 0;
+}
+
+.zk-wybor {
+    flex: 1 1 auto;
+    min-width: 0;
+    padding: 6px 0;
+    align-items: flex-start;
+}
+
+.zk-wybor input[type="checkbox"] {
+    flex: 0 0 auto;
+    margin-top: 10px;
+}
+
+.zk-tresc {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+    padding-top: 8px;
+    font-size: 14px;
+}
+
+.zk-nazwa-cw {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-weight: 600;
+    overflow-wrap: anywhere;
+}
+
+.zk-nr {
+    flex: 0 0 auto;
+    white-space: nowrap;
+}
+
+.zk-nazwa-tekst {
+    min-width: 0;
+}
+
+.zk-typ {
+    flex: 0 0 auto;
+    display: inline-flex;
+    color: var(--ukis-color-accent);
+}
+
+.zk-opis {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 12px;
+}
+
+.zk-ok {
+    color: var(--ukis-success-text);
+}
+
+/* Tekst ostrzeżenia na połysku karty nie dawał 4,5 : 1 w kolorze błędu, więc kolor niesie tylko ikona. */
+.zk-brak {
+    color: var(--ukis-text-secondary);
+}
+
+.zk-brak svg {
+    color: var(--ukis-color-danger);
+}
+
+.zk-akcje {
+    display: flex;
+    flex: 0 0 auto;
+}
+
+.zk-usun {
+    color: var(--ukis-color-danger);
+}
+
+.zk-pusto {
+    padding: 20px 16px;
+    text-align: center;
+    font-size: 13px;
+}
+
+/* ---------- Okno bazy ćwiczeń ---------- */
+.zk-baza {
+    display: flex;
+    flex-direction: column;
+    max-height: 90vh;
+}
+
+.zk-odstep {
+    margin-top: 16px;
+}
+
+.zk-wlasne {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.zk-wlasne .z-in {
+    flex: 1 1 100%;
+}
+
+.zk-wlasne .z-ghost {
+    flex: 1 1 auto;
+}
+
+.zk-katalog {
+    display: flex;
+    flex-direction: column;
+    margin-top: 16px;
+    overflow-y: auto;
+    min-height: 120px;
+}
+
+.zk-katalog .z-li {
+    justify-content: space-between;
+    padding-left: 4px;
+    padding-right: 4px;
+}
+
+.zk-katalog .z-li svg {
+    color: var(--ukis-color-accent);
+}

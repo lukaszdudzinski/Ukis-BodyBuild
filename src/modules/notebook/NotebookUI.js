@@ -1,3 +1,4 @@
+// wyglad: zar
 // Zeszyt: zakładka z kartką dnia. Stan, zdarzenia i zapis do bazy (HTML w components/NotebookComponent.js).
 import { NotebookComponent, NotebookIcons } from '../../components/NotebookComponent.js';
 import { DatabaseManager } from '../db/DatabaseManager.js';
@@ -165,26 +166,54 @@ function onViewportChange() {
     if (kb) keepVisible();
 }
 
-// ---------- okienko „Nowa seria” (koło zębate; poza .nb-list, więc rysowanie listy go nie niszczy) ----------
+// ---------- arkusz „Ustawienia Zeszytu” (koło zębate; poza .nb-list, więc rysowanie listy go nie niszczy) ----------
+// Arkusz dolny z-sheet (role="dialog", aria-modal): fokus w środku, Tab nie wychodzi, Escape / „Zamknij” /
+// stuknięcie w zasłonę zamykają, a fokus wraca na koło zębate.
+// Zasłona z arkuszem trafia przy starcie do <body>: przycisk Edwarda i pasek dolny leżą poza kontenerem zakładki
+// (.app-wrapper ma własny kontekst warstw), więc tylko z <body> zasłona przykrywa je wszystkie.
 
-const settingsPanel = () => q('[data-testid="nb-settings-panel"]');
-const settingsOpen = () => { const p = settingsPanel(); return !!p && !p.hidden; };
+let scrimEl = null;
+const settingsScrim = () => scrimEl;
+const sq = (sel) => (scrimEl ? scrimEl.querySelector(sel) : null);
+const settingsPanel = () => sq('[data-testid="nb-settings-panel"]');
+const settingsOpen = () => { const s = settingsScrim(); return !!s && !s.hidden; };
+const FOCUSABLE = 'button:not([disabled]), input:not([disabled]), [tabindex]:not([tabindex="-1"])';
 
-function setSettingsOpen(open) {
-    const panel = settingsPanel();
+// returnFocus: zamknięcie przez użytkownika (Escape, „Zamknij”, zasłona) oddaje fokus kołu zębatemu, także w Safari,
+// gdzie kliknięty przycisk nie dostaje fokusu.
+function setSettingsOpen(open, returnFocus = false) {
+    const scrim = settingsScrim();
     const gear = q('[data-testid="nb-settings"]');
-    if (!panel || !gear) return;
-    if (!open && panel.contains(document.activeElement)) gear.focus(); // fokus nie ginie razem z okienkiem
-    panel.hidden = !open;
+    if (!scrim || !gear) return;
+    if (!open && !scrim.hidden && (returnFocus || scrim.contains(document.activeElement))) gear.focus(); // fokus nie ginie razem z arkuszem
+    scrim.hidden = !open;
     gear.setAttribute('aria-expanded', String(open));
+    if (open) sq('[data-testid="nb-settings-close"]').focus();
+}
+
+// Tab i Shift+Tab krążą po elementach arkusza. Kolejność liczymy sami: Safari domyślnie pomija przyciski
+// przy Tab, więc fokus uciekałby z arkusza.
+function trapFocus(e) {
+    const items = [...settingsPanel().querySelectorAll(FOCUSABLE)].filter((el) => el.getClientRects().length);
+    if (!items.length) return;
+    e.preventDefault();
+    const i = items.indexOf(document.activeElement);
+    const next = i < 0 ? (e.shiftKey ? items.length - 1 : 0) : (i + (e.shiftKey ? -1 : 1) + items.length) % items.length;
+    items[next].focus();
 }
 
 function renderSettings() {
-    root().querySelectorAll('[data-option]').forEach((box) => { box.checked = !!state.settings[box.dataset.option]; });
+    scrimEl.querySelectorAll('[data-option]').forEach((box) => { box.checked = !!state.settings[box.dataset.option]; });
     const size = state.settings.fontSize;
     const sheet = q('.nb-sheet');
     if (sheet) sheet.dataset.font = size;
-    root().querySelectorAll('[data-font-size]').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.fontSize === size)));
+    const preview = sq('[data-testid="nb-font-preview"]');
+    if (preview) preview.dataset.font = size;
+    scrimEl.querySelectorAll('[data-font-size]').forEach((b) => {
+        const on = b.dataset.fontSize === size;
+        b.setAttribute('aria-pressed', String(on));
+        b.classList.toggle('z-on', on);
+    });
 }
 
 function onSettingChange(box) {
@@ -484,10 +513,16 @@ function onDeleteExercise(btn) {
 
 function onClick(e) {
     const t = e.target.closest('[data-testid]');
-    if (!t || !root().contains(t)) return;
+    if (!t || !(root().contains(t) || (scrimEl && scrimEl.contains(t)))) return;
     const id = t.dataset.testid;
     if (id === 'nb-settings') {
         setSettingsOpen(!settingsOpen());
+    } else if (id === 'nb-settings-close') {
+        setSettingsOpen(false, true);
+    } else if (id === 'nb-settings-scrim') {
+        if (e.target === t) setSettingsOpen(false, true); // zasłona, nie sam arkusz
+    } else if (id === 'nb-settings-panel') {
+        return; // stuknięcie w puste miejsce arkusza
     } else if (t.dataset.fontSize) {
         state.settings = { ...state.settings, fontSize: t.dataset.fontSize };
         saveSettings(state.settings);
@@ -547,6 +582,11 @@ export const NotebookUI = {
         const el = root();
         if (!el) return;
         el.innerHTML = NotebookComponent.render();
+        if (scrimEl) scrimEl.remove(); // ponowne init (testy): bez drugiej zasłony w <body>
+        scrimEl = el.querySelector('[data-testid="nb-settings-scrim"]');
+        document.body.appendChild(scrimEl);
+        scrimEl.addEventListener('click', onClick);
+        scrimEl.addEventListener('change', (e) => { if (e.target.dataset.option) onSettingChange(e.target); });
         state.settings = loadSettings();
         renderSettings();
 
@@ -590,17 +630,15 @@ export const NotebookUI = {
             commitName(e.target.value);
         });
 
-        // Okienko zamyka stuknięcie poza nim (i poza kołem, które samo je przełącza) oraz Escape.
-        document.addEventListener('pointerdown', (e) => {
-            if (!settingsOpen()) return;
-            const t = e.target;
-            if (t instanceof Node && (settingsPanel().contains(t) || q('[data-testid="nb-settings"]').contains(t))) return;
-            setSettingsOpen(false);
-        }, true);
+        // Arkusz ustawień: Escape zamyka tylko arkusz (nie anuluje np. wpisywanej nazwy ćwiczenia), Tab zostaje w środku.
         document.addEventListener('keydown', (e) => {
-            if (e.key !== 'Escape' || !settingsOpen()) return;
-            setSettingsOpen(false);
-            e.stopPropagation(); // Escape zamyka tylko okienko (nie anuluje np. wpisywanej nazwy ćwiczenia)
+            if (!settingsOpen()) return;
+            if (e.key === 'Escape') {
+                setSettingsOpen(false, true);
+                e.stopPropagation();
+            } else if (e.key === 'Tab') {
+                trapFocus(e);
+            }
         }, true);
 
         document.addEventListener('tabChanged', (e) => {

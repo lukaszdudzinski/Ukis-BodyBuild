@@ -1,1 +1,421 @@
 /* wyglad: zar */
+/* ============================================================
+   TRENING — KALENDARZ I KARTA DNIA (spec 8.3, plansza TreningKalendarz)
+   Znaczniki: src/components/TrainingComponent.js (#training-calendar-view),
+   src/modules/ui/TrainingUI.js (renderCalendar, handleDayClick).
+   Zastępuje styles/components/calendar.css i stare reguły .calendar-* z layout.css
+   (te zostają dla nieużywanego CalendarUI.js, więc tu wszystko jest w #training-calendar-view).
+   ============================================================ */
+
+/* ---------- Miejsce na przycisk Edwarda pod kartą dnia ----------
+   base.css zostawia pod treścią miejsce na pasek dolny (56 + 14 + 16 px). Przycisk Edwarda (.z-ic.z-fab:
+   84 px od dołu + 52 px) jest wyżej, więc kalendarz dokłada różnicę z 12 px odstępu: po przewinięciu
+   do końca żaden przycisk karty dnia („Skopiuj”, „Pomiń dzień”, „Usuń”) nie leży pod nim. Pasek aktualizacji
+   i bezpieczny obszar podnoszą oba tak samo. W sesji kalendarz jest ukryty, więc odstęp też. */
+#training-calendar-view::after {
+    content: '';
+    display: block;
+    height: calc((84px + 52px + 12px) - (56px + 14px + 16px));
+}
+
+/* ---------- Karta kalendarza ---------- */
+#training-calendar-view .z-kal {
+    margin: 0 0 14px;
+    padding: 14px 10px;
+}
+
+#training-calendar-view .z-kal-nav {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin: 0 0 8px;
+}
+
+#training-calendar-view .z-kal-miesiac {
+    font-size: 20px;
+    text-align: center;
+}
+
+#training-calendar-view .z-kal-siatka {
+    display: grid;
+    grid-template-columns: repeat(7, minmax(0, 1fr));
+    gap: 2px;
+    width: 100%;
+    margin: 0;
+    text-align: center;
+}
+
+#training-calendar-view .calendar-day-header {
+    padding: 0 0 4px;
+    font-size: 11px;
+    font-weight: 400;
+    color: var(--ukis-text-muted);
+}
+
+/* Komórka dnia: przycisk 44 px wysokości (płótno 34; cel dotyku, spec 9.2). */
+#training-calendar-view .calendar-day {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 0;
+    height: var(--ukis-touch);
+    min-height: var(--ukis-touch);
+    margin: 0;
+    padding: 0;
+    border: 0;
+    border-radius: 10px;
+    background: transparent;
+    box-shadow: none;
+    color: var(--ukis-text);
+    font-family: var(--ukis-font);
+    font-size: 13px;
+    font-weight: 400;
+    font-variant-numeric: tabular-nums;
+    line-height: 1;
+    cursor: pointer;
+    box-sizing: border-box;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    transform: none;
+    -webkit-tap-highlight-color: transparent;
+}
+
+#training-calendar-view .calendar-day.empty {
+    opacity: 1;
+    cursor: default;
+    pointer-events: none;
+}
+
+#training-calendar-view .calendar-day:focus-visible {
+    outline: 2px solid var(--ukis-color-accent);
+    outline-offset: 1px;
+}
+
+/* Wybrany dzień (karta dnia pod spodem pokazuje jego opcje). */
+#training-calendar-view .calendar-day.z-wybrany {
+    background: rgba(255, 255, 255, 0.14);
+    font-weight: 600;
+}
+
+/* Wykonany: tło akcentu z kryciem ,85. */
+#training-calendar-view .calendar-day.z-wykonany {
+    background: var(--ukis-primary-strong);
+    color: var(--ukis-on-primary);
+    font-weight: 600;
+}
+
+/* Zaplanowany: ramka 1,5 px. */
+#training-calendar-view .calendar-day.z-zaplanowany {
+    border: 1.5px solid rgba(255, 255, 255, 0.7);
+}
+
+/* Pominięty: kolor wyłączony, przekreślony. */
+#training-calendar-view .calendar-day.z-pominiety {
+    color: var(--ukis-text-disabled);
+    text-decoration: line-through;
+    /* Ciemne tło komórki: kolor wyłączony na połysku szklanej karty miał 3,6 : 1, z tłem ma co najmniej 4,5 : 1. */
+    background: rgba(0, 0, 0, 0.55);
+}
+
+/* Dziś: ramka 2 px w kolorze wyróżnienia z poświatą (nad stanem „zaplanowany”). */
+#training-calendar-view .calendar-day.z-dzis {
+    border: 2px solid var(--ukis-color-accent);
+    box-shadow: 0 0 12px var(--ukis-primary-soft);
+    font-weight: 600;
+}
+
+/* ---------- Legenda ---------- */
+#training-calendar-view .z-kal-legenda {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 6px 14px;
+    margin-top: 10px;
+    font-size: 11px;
+    color: var(--ukis-text-secondary);
+}
+
+#training-calendar-view .z-kal-leg {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+}
+
+#training-calendar-view .z-kal-znak {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    box-sizing: border-box;
+}
+
+#training-calendar-view .z-kal-znak.z-wykonany {
+    background: var(--ukis-color-primary);
+}
+
+#training-calendar-view .z-kal-znak.z-zaplanowany {
+    border: 1.5px solid var(--ukis-text);
+}
+
+#training-calendar-view .z-kal-znak.z-pominiety {
+    background: var(--ukis-text-disabled);
+}
+
+/* ---------- Karta dnia ---------- */
+#training-calendar-view .z-dzien {
+    margin: 0;
+    padding: 14px;
+}
+
+/* Odstępy w stanach karty marginesem, bo TrainingUI przełącza je przez style.display. */
+#training-calendar-view .z-dzien-stan > * + * {
+    margin-top: 10px;
+}
+
+#training-calendar-view .z-dzien > .z-dzien-stan + .z-dzien-stan {
+    margin-top: 10px;
+}
+
+#training-calendar-view .z-dzien-gora {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    margin-bottom: 10px;
+}
+
+#training-calendar-view .z-dzien-data {
+    margin: 0;
+    font-family: var(--ukis-font);
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--ukis-text);
+    text-align: left;
+}
+
+#training-calendar-view .z-dzien-gora .z-pill[hidden] {
+    display: none;
+}
+
+#training-calendar-view .z-dzien-opis {
+    margin: 0;
+}
+
+#training-calendar-view .z-dzien .z-sep {
+    margin: 2px 0 0;
+}
+
+#training-calendar-view .z-dzien-rzad {
+    display: flex;
+    gap: 8px;
+}
+
+#training-calendar-view .z-dzien-rzad > button {
+    flex: 1 1 0;
+    min-width: 0;
+    padding-left: 8px;
+    padding-right: 8px;
+    white-space: nowrap;
+}
+
+#training-calendar-view .z-dzien-rzad > .z-dzien-szeroki {
+    flex-grow: 2;
+}
+
+#training-calendar-view .z-dzien-akcje > button {
+    font-size: 13px;
+}
+
+#training-calendar-view .z-dzien-start {
+    width: 100%;
+}
+
+#training-calendar-view .z-dzien .z-ghost svg,
+#training-calendar-view .z-dzien .z-btn svg {
+    flex: 0 0 auto;
+}
+
+/* Trening w tym dniu. */
+#training-calendar-view .z-dzien-trening > * + * {
+    margin-top: 6px;
+}
+
+#training-calendar-view .z-dzien-trening + .z-dzien-trening {
+    padding-top: 10px;
+    border-top: 1px solid var(--ukis-divider);
+}
+
+#training-calendar-view .z-dzien-nazwa {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--ukis-text);
+    overflow-wrap: anywhere;
+}
+
+#training-calendar-view .z-dzien-trening .z-dzien-rzad {
+    margin-top: 4px;
+}
+
+/* Lista do kopiowania (rozwijana przyciskiem „Skopiuj”). */
+#training-calendar-view .z-dzien-lista-tytul,
+#training-calendar-view .z-dzien-pusto {
+    margin: 0;
+}
+
+#training-calendar-view .z-dzien-pusto {
+    font-style: italic;
+}
+
+#training-calendar-view .z-dzien-kopia {
+    border: 1px solid var(--ukis-divider);
+    border-radius: var(--ukis-radius-sm);
+    background: rgba(0, 0, 0, 0.2);
+}
+
+#training-calendar-view .z-dzien-kopia-gora {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    min-height: var(--ukis-touch);
+    padding: 10px 12px;
+    border: 0;
+    background: transparent;
+    color: var(--ukis-text);
+    font-family: var(--ukis-font);
+    text-align: left;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+}
+
+#training-calendar-view .z-dzien-kopia-gora:focus-visible {
+    outline: 2px solid var(--ukis-color-accent);
+    outline-offset: -2px;
+    border-radius: var(--ukis-radius-sm);
+}
+
+#training-calendar-view .z-dzien-kopia-txt {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    flex: 1 1 auto;
+    min-width: 0;
+}
+
+#training-calendar-view .z-dzien-kopia-txt .z-dzien-nazwa {
+    display: block;
+    font-size: 14px;
+}
+
+#training-calendar-view .z-dzien-chevron {
+    display: inline-flex;
+    color: var(--ukis-text-secondary);
+    transition: transform 0.2s ease;
+}
+
+#training-calendar-view .z-dzien-chevron.z-otwarte {
+    transform: rotate(180deg);
+}
+
+#training-calendar-view .z-dzien-podglad {
+    padding: 0 12px 12px;
+    border-top: 1px solid var(--ukis-divider);
+    font-size: 13px;
+    color: var(--ukis-text);
+}
+
+#training-calendar-view .z-dzien-podglad > p {
+    margin: 10px 0 6px;
+}
+
+#training-calendar-view .z-dzien-cw {
+    margin-bottom: 8px;
+}
+
+#training-calendar-view .z-dzien-superseria {
+    margin-bottom: 8px;
+    padding-left: 10px;
+    border-left: 2px dashed var(--ukis-accent-line);
+}
+
+#training-calendar-view .z-dzien-serie {
+    margin: 3px 0 0;
+    padding-left: 20px;
+    color: var(--ukis-text-secondary);
+}
+
+#training-calendar-view .z-dzien-podglad .z-dzien-start {
+    margin-top: 4px;
+}
+
+/* ---------- Podgląd zapisanego treningu (TrainingUI.viewTraining, z-dialog) ---------- */
+#view-modal-overlay.z-podglad-scrim {
+    z-index: 10000;
+}
+
+.z-podglad {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    max-width: 480px;
+    max-height: 85vh;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
+    font-family: var(--ukis-font);
+    font-size: 14px;
+    line-height: 1.45;
+}
+
+.z-podglad-gora {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.z-podglad-gora .z-hd {
+    font-size: 22px;
+}
+
+.z-podglad .z-lab {
+    margin: 4px 0 0;
+}
+
+.z-podglad-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.z-podglad-tytul,
+.z-podglad-nazwa {
+    font-weight: 600;
+    overflow-wrap: anywhere;
+}
+
+.z-podglad-cw {
+    padding: 10px 12px;
+    border: 1px solid var(--ukis-divider);
+    border-radius: var(--ukis-radius-sm);
+    background: var(--ukis-ghost-bg);
+}
+
+.z-podglad-serie {
+    margin-top: 4px;
+    padding-left: 10px;
+    border-left: 2px solid var(--ukis-accent-line);
+    color: var(--ukis-text-secondary);
+    font-variant-numeric: tabular-nums;
+}
+
+.z-podglad-superseria .z-podglad-nazwa + .z-podglad-nazwa,
+.z-podglad-superseria .z-podglad-serie + .z-podglad-nazwa {
+    margin-top: 8px;
+}
+
+.z-podglad .z-dialog-actions {
+    margin-top: 6px;
+}

@@ -1,3 +1,4 @@
+// wyglad: zar
 // Wczytanie planu od trenera u klienta (spec 11.2, decyzje 5, 17, 19, 20, 21, 22; rozstrzygnięcia C17, R9, R10).
 // Plik to obce dane. Całe DOM tego okna powstaje przez createElement/textContent, bez innerHTML z danymi.
 // Teksty pliku przychodzą już oczyszczone z parsePlanFile (sanitizeText), a stary format szablonu
@@ -7,23 +8,18 @@
 import { parsePlanFile, PLAN_FILE_MESSAGES, PLAN_FILE_MAX_CHARS, sanitizeText } from '../trainer/trainerPlanFile.js';
 import { toTemplates, mergeImport, findPlanTemplates, defaultImportStart, planKey } from '../trainer/trainerPlanImport.js';
 import { DAYS, mondayOf, parseDate, toIso } from '../trainer/trainerPlan.js';
+import { bezSzablonow } from '../wyglad/harmonogram.js';
 import { goalLabel, plural } from '../trainer/trainerModel.js';
 
 const TEMPLATES_KEY = 'uki_workout_templates';
 const SCHEDULES_KEY = 'uki_workout_schedules';
+const EXCEPTIONS_KEY = 'uki_schedule_exceptions';
 const OVERLAY_ID = 'plan-import-overlay';
 const TOAST_ID = 'plan-import-toast';
 // Bajty na znak w UTF-8 to najwyżej 4: większy plik na pewno przekracza PLAN_FILE_MAX_CHARS.
 const MAX_FILE_BYTES = PLAN_FILE_MAX_CHARS * 4;
 
 let ui = null;
-
-const C = {
-    orange: '#FF9800',
-    text: '#eee',
-    muted: '#aaa',
-    green: '#2ECC71',
-};
 
 // ---------- DOM ----------
 
@@ -44,21 +40,14 @@ function el(tag, props = {}, ...children) {
     return node;
 }
 
-const BTN = 'padding: 12px; border-radius: 12px; font-weight: bold; font-size: 0.95em; cursor: pointer; width: 100%;';
-const primaryBtn = (text, onclick) => el('button', {
-    type: 'button', text, onclick,
-    style: `${BTN} background: rgba(46, 204, 113, 0.2); border: 1px solid rgba(46, 204, 113, 0.5); color: ${C.green};`,
-});
-const plainBtn = (text, onclick) => el('button', {
-    type: 'button', text, onclick,
-    style: `${BTN} background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.2); color: #fff;`,
-});
+const primaryBtn = (text, onclick) => el('button', { type: 'button', text, onclick, className: 'z-btn z-import-btn' });
+const plainBtn = (text, onclick) => el('button', { type: 'button', text, onclick, className: 'z-ghost z-import-btn' });
 
 function closeOverlay() {
     document.getElementById(OVERLAY_ID)?.remove();
 }
 
-// Nakładka w stylu okna szablonów, nad nim (z-index 10000 → 10001).
+// Okno z komponentów z-dialog, nad oknem szablonów (z-index 10001 w import-planu.css).
 function openOverlay(card, { labelledBy, role = 'dialog' } = {}) {
     closeOverlay();
     card.setAttribute('role', role);
@@ -66,13 +55,10 @@ function openOverlay(card, { labelledBy, role = 'dialog' } = {}) {
         card.setAttribute('aria-modal', 'true');
         if (labelledBy) card.setAttribute('aria-labelledby', labelledBy);
     }
-    card.style.cssText = 'background: rgba(30, 30, 30, 0.95); border: 1px solid rgba(255, 152, 0, 0.4); border-radius: 20px; '
-        + 'width: 100%; max-width: 480px; max-height: 85vh; overflow-y: auto; -webkit-overflow-scrolling: touch; padding: 20px; '
-        + `box-sizing: border-box; color: ${C.text}; box-shadow: 0 15px 50px rgba(0,0,0,0.7); display: flex; flex-direction: column; gap: 12px;`;
+    card.classList.add('z-dialog', 'z-import');
     const overlay = el('div', {
         id: OVERLAY_ID,
-        style: 'position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 10001; display: flex; justify-content: center; '
-            + 'align-items: center; padding: 16px; box-sizing: border-box;',
+        className: 'z-dialog-scrim z-import-scrim',
         onclick: (e) => { if (e.target === overlay) closeOverlay(); },
         onkeydown: (e) => { if (e.key === 'Escape') closeOverlay(); },
     }, card);
@@ -83,12 +69,7 @@ function openOverlay(card, { labelledBy, role = 'dialog' } = {}) {
 
 function showToast(text) {
     document.getElementById(TOAST_ID)?.remove();
-    const toast = el('div', {
-        id: TOAST_ID, role: 'status', text,
-        style: 'position: fixed; left: 50%; transform: translateX(-50%); bottom: 96px; z-index: 10002; max-width: 90vw; '
-            + 'background: rgba(20, 20, 20, 0.95); border: 1px solid rgba(46, 204, 113, 0.6); color: #fff; padding: 12px 16px; '
-            + 'border-radius: 12px; font-weight: bold; box-shadow: 0 8px 24px rgba(0,0,0,0.5);',
-    });
+    const toast = el('div', { id: TOAST_ID, role: 'status', text, className: 'z-toast z-import-toast' });
     document.body.append(toast);
     setTimeout(() => toast.remove(), 4000);
 }
@@ -196,6 +177,14 @@ function addPlan(file, { how, mode, startDate }) {
         PlanImportUI.showError('Nie udało się zapisać planu w pamięci telefonu.');
         return;
     }
+    // „Zastąp” (po udanym zapisie planu): przełożone/pominięte dni szablonów, które zniknęły, też znikają.
+    const zostaja = new Set(merged.templates.map((t) => String(t?.id)));
+    const usuniete = current.templates.map((t) => t?.id).filter((id) => id != null && !zostaja.has(String(id)));
+    if (usuniete.length > 0) {
+        try {
+            localStorage.setItem(EXCEPTIONS_KEY, JSON.stringify(bezSzablonow(readList(EXCEPTIONS_KEY), usuniete)));
+        } catch { /* wyjątki to dodatek; zapis planu idzie dalej */ }
+    }
     closeOverlay();
     showToast(`Plan dodany: ${file.plan.name}`);
     refresh();
@@ -212,46 +201,50 @@ function renderPreview(file, how) {
     const templatesOnly = copy || !hasDays;
 
     const goal = goalLabel(plan.goal);
-    const workouts = plan.workouts.map((w) => el('div', {
-        style: 'background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 10px 12px;',
-    },
-    el('div', { style: 'display: flex; justify-content: space-between; gap: 8px;' },
-        el('strong', { text: w.name, style: 'color: #00BFFF;' }),
-        w.days?.length ? el('span', { text: dayLabels(w.days), style: `color: ${C.orange}; font-weight: bold; white-space: nowrap;` }) : null),
-    el('ul', { style: `margin: 6px 0 0 0; padding-left: 18px; color: ${C.text}; font-size: 0.9em; line-height: 1.5;` },
-        w.exercises.map((ex) => el('li', { text: ex.name })))));
+    const allDays = DAYS.filter((d) => plan.workouts.some((w) => (w.days || []).includes(d.id))).map((d) => d.label).join(', ');
+    const workouts = plan.workouts.map((w) => el('div', { className: 'z-import-workout' },
+        el('div', { className: 'z-import-workout-head' },
+            el('strong', { text: w.name, className: 'z-import-workout-name' }),
+            w.days?.length ? el('span', { text: dayLabels(w.days), className: 'z-import-days' }) : null),
+        el('ul', { className: 'z-import-ex' }, w.exercises.map((ex) => el('li', { text: ex.name })))));
 
     const radioCal = el('input', { type: 'radio', name: 'plan-import-mode', id: 'plan-import-mode-cal', value: 'kalendarz', checked: !templatesOnly, disabled: templatesOnly });
     const radioTpl = el('input', { type: 'radio', name: 'plan-import-mode', id: 'plan-import-mode-tpl', value: 'szablony', checked: templatesOnly });
     const dateInput = el('input', {
-        type: 'date', id: 'plan-import-start', value: defaultStart,
-        style: 'background: rgba(255,255,255,0.08); color: #fff; border: 1px solid rgba(255,255,255,0.25); border-radius: 8px; padding: 8px; font-size: 1em;',
+        type: 'date', id: 'plan-import-start', value: defaultStart, className: 'z-in',
         // R12b: poniedziałek dopiero po wyjściu z pola; „change” przychodzi już w trakcie wybierania daty (iOS).
         // Zapis i tak bierze mondayOf.
         onblur: () => { if (parseDate(dateInput.value)) dateInput.value = mondayOf(dateInput.value); },
     });
-    const radioRow = (input, label) => el('label', {
-        for: input.id, style: `display: flex; align-items: center; gap: 8px; padding: 4px 0; color: ${input.disabled ? '#777' : C.text};`,
-    }, input, label);
+    const radioRow = (input, label, hint) => el('label', {
+        for: input.id, className: `z-import-opt${input.disabled ? ' z-import-opt-off' : ''}`,
+    }, input, el('span', { className: 'z-import-opt-txt' },
+        el('span', { text: label, className: 'z-import-opt-label' }),
+        el('span', { text: hint, className: 'z-import-opt-hint' })));
 
     const card = el('div', {},
-        el('p', { text: `Od trenera: ${file.trainer?.name || 'Trener'}`, style: `margin: 0; color: ${C.muted};` }),
-        el('h3', { id: 'plan-import-title', text: plan.name, style: `margin: 0; color: ${C.orange}; font-size: 1.2em;` }),
-        goal ? el('p', { text: `Cel: ${goal}`, style: 'margin: 0;' }) : null,
-        el('p', {
-            text: `${plural(plan.weeks, 'tydzień', 'tygodnie', 'tygodni')} · ${plural(plan.workouts.length, 'trening', 'treningi', 'treningów')}`,
-            style: 'margin: 0;',
-        }),
-        workouts,
-        el('fieldset', { style: 'border: 1px solid rgba(255,255,255,0.15); border-radius: 12px; padding: 8px 12px; margin: 0;' },
-            el('legend', { text: 'Jak dodać?', style: `color: ${C.orange}; font-weight: bold; padding: 0 4px;` }),
-            radioRow(radioCal, 'Szablony + kalendarz'),
-            radioRow(radioTpl, 'Tylko szablony'),
-            !hasDays ? el('p', { text: 'W pliku nie ma dni treningów, więc plan trafi tylko do szablonów.', style: `margin: 4px 0 0 0; color: ${C.muted}; font-size: 0.85em;` }) : null),
-        el('label', { for: 'plan-import-start', style: 'display: flex; flex-direction: column; gap: 4px;' },
-            el('span', { text: 'Start planu', style: `color: ${C.orange}; font-weight: bold;` }),
+        el('div', { text: 'Plan od trenera', className: 'z-import-head' }),
+        el('section', { className: 'z-card z-hero z-import-hero' },
+            el('p', { text: `Od trenera: ${file.trainer?.name || 'Trener'}`, className: 'z-import-from' }),
+            el('h3', { id: 'plan-import-title', text: plan.name, className: 'z-import-title' }),
+            goal ? el('p', { text: `Cel: ${goal}`, className: 'z-import-meta' }) : null,
+            el('p', {
+                text: `${plural(plan.weeks, 'tydzień', 'tygodnie', 'tygodni')} · ${plural(plan.workouts.length, 'trening', 'treningi', 'treningów')}${allDays ? ` · ${allDays}` : ''}`,
+                className: 'z-import-meta',
+            })),
+        el('div', { className: 'z-card z-list z-import-workouts' }, workouts),
+        el('fieldset', { className: 'z-import-fieldset' },
+            el('legend', { text: 'Jak dodać?', className: 'z-import-legend' }),
+            el('div', { className: 'z-card z-list' },
+                radioRow(radioCal, 'Szablony + kalendarz', 'zaplanuje treningi na czas trwania planu'),
+                radioRow(radioTpl, 'Tylko szablony', 'sam zdecydujesz, kiedy trenować')),
+            !hasDays ? el('p', { text: 'W pliku nie ma dni treningów, więc plan trafi tylko do szablonów.', className: 'z-import-note' }) : null),
+        el('label', { for: 'plan-import-start', className: 'z-import-start' },
+            el('span', { text: 'Start planu', className: 'z-import-legend' }),
             dateInput),
-        el('p', { text: 'Tydzień planu zaczyna się w poniedziałek.', style: `margin: 0; color: ${C.muted}; font-size: 0.85em;` }),
+        el('p', { text: how === 'zastap'
+            ? 'Tydzień planu zaczyna się w poniedziałek. Zastąpione zostaną tylko szablony tego planu; historia treningów zostaje bez zmian.'
+            : 'Tydzień planu zaczyna się w poniedziałek. Twoje dotychczasowe szablony i historia zostają bez zmian.', className: 'z-import-note' }),
         primaryBtn('Dodaj plan', () => addPlan(file, {
             how,
             mode: !templatesOnly && radioCal.checked ? 'kalendarz' : 'szablony',
@@ -264,10 +257,10 @@ function renderPreview(file, how) {
 // Rozstrzygnięcie R10a/b: przed „Zastąp” lista szablonów do usunięcia; kopia bez nowych dni w kalendarzu.
 function renderQuestion(file, existing) {
     const card = el('div', {},
-        el('h3', { id: 'plan-import-title', text: 'Ten plan już jest w Twoich szablonach.', style: `margin: 0; color: ${C.orange}; font-size: 1.1em;` }),
-        el('p', { text: '„Zastąp” usunie te szablony i ich dni w kalendarzu:', style: 'margin: 0;' }),
-        el('ul', { style: 'margin: 0; padding-left: 18px; line-height: 1.5;' }, existing.map((t) => el('li', { text: String(t?.name ?? '') }))),
-        el('p', { text: 'Kopia trafi tylko do szablonów, bez dni w kalendarzu.', style: `margin: 0; color: ${C.muted};` }),
+        el('h3', { id: 'plan-import-title', text: 'Ten plan już jest w Twoich szablonach.', className: 'z-import-title' }),
+        el('p', { text: '„Zastąp” usunie te szablony i ich dni w kalendarzu:', className: 'z-import-lead' }),
+        el('ul', { className: 'z-import-ex z-import-existing' }, existing.map((t) => el('li', { text: String(t?.name ?? '') }))),
+        el('p', { text: 'Kopia trafi tylko do szablonów, bez dni w kalendarzu.', className: 'z-import-note' }),
         primaryBtn('Zastąp', () => renderPreview(file, 'zastap')),
         plainBtn('Dodaj jako kopię', () => renderPreview(file, 'kopia')),
         plainBtn('Anuluj', closeOverlay));
@@ -320,9 +313,9 @@ export const PlanImportUI = {
 
     showError(message) {
         const card = el('div', {},
-            el('div', { role: 'alert', style: 'display: flex; flex-direction: column; gap: 8px;' },
-                el('strong', { text: 'Nie można wczytać pliku', style: `color: ${C.orange}; font-size: 1.05em;` }),
-                el('p', { text: message, style: 'margin: 0; line-height: 1.5;' })),
+            el('div', { role: 'alert', className: 'z-import-alert' },
+                el('strong', { text: 'Nie można wczytać pliku', className: 'z-import-title' }),
+                el('p', { text: message, className: 'z-import-lead' })),
             plainBtn('Zamknij', closeOverlay));
         openOverlay(card, { role: 'dialog' });
         card.setAttribute('aria-label', 'Błąd pliku');

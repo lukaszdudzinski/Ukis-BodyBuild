@@ -1,11 +1,15 @@
+// wyglad: zar
 import { DatabaseManager } from '../db/DatabaseManager.js';
 import { MediaManager } from '../db/MediaManager.js';
 import { TrainingComponent } from '../../components/TrainingComponent.js';
-import { ExerciseCatalog, ExerciseCategories, isCatalogExercise } from '../../data/ExerciseCatalog.js';
+import { ExerciseCatalog, ExerciseCategories, isCatalogExercise, canonicalExerciseName, exerciseSearchTexts } from '../../data/ExerciseCatalog.js';
 import { recordCheck } from '../../data/exerciseTraits.js';
 import { PlanImportUI } from './PlanImportUI.js';
-import { parseDate, toIso } from '../trainer/trainerPlan.js';
-import { isScheduleActive, weekIndexFor, applyPlanWeek } from '../trainer/trainerPlanImport.js';
+import { addDays, parseDate, toIso } from '../trainer/trainerPlan.js';
+import { weekIndexFor, applyPlanWeek } from '../trainer/trainerPlanImport.js';
+import { ikona } from '../wyglad/ikony.js';
+import { dataMenu, cwiczenia } from '../wyglad/menuTrening.js';
+import { planyDnia, stanDnia, pominDzien, konfliktJutra, przelozNaJutro, przywrocDzien, zapiszWyjatek, komunikatPrzelozenia, bezSzablonow } from '../wyglad/harmonogram.js';
 
 // Encje HTML dla tekstów wstawianych do szablonów HTML (innerHTML) w tym pliku: nazwy szablonów,
 // planów i ćwiczeń mogą pochodzić z obcego pliku (Global Constraints wydania 2).
@@ -19,6 +23,148 @@ const esc = (s) => String(s ?? '')
 // bo przeglądarka najpierw dekoduje encje atrybutu, a dopiero potem czyta kod JS.
 // Typ wartości zostaje (liczba zostaje liczbą), więc porównania === w harmonogramie działają.
 const jsArg = (v) => esc(JSON.stringify(v ?? null));
+
+// Harmonogram i wyjątki z localStorage (zawsze tablica).
+const WYJATKI = 'uki_schedule_exceptions';
+const czytajListe = (klucz) => {
+    try {
+        const v = JSON.parse(localStorage.getItem(klucz) || '[]');
+        return Array.isArray(v) ? v : [];
+    } catch (e) {
+        return [];
+    }
+};
+const czytajHarmonogram = () => czytajListe('uki_workout_schedules');
+const czytajWyjatki = () => czytajListe(WYJATKI);
+const zapiszWyjatki = (lista) => localStorage.setItem(WYJATKI, JSON.stringify(lista));
+
+// Komunikat nowego wyglądu (z-toast), jak na ekranie Wygląd; zastępuje alert() w Treningu i Kreatorze.
+// Zwykły: role=status, 4 s. Pilny (błąd zapisu, możliwa utrata danych): role=alert, 10 s.
+// Tekst przez textContent, więc nazwy z danych nie wymagają esc().
+let zegarKomunikatu = null;
+function komunikat(tekst, { pilny = false } = {}) {
+    let t = document.getElementById('trening-komunikat');
+    if (!t) {
+        t = document.createElement('div');
+        t.id = 'trening-komunikat';
+        t.className = 'z-toast';
+        document.body.append(t);
+    }
+    t.setAttribute('role', pilny ? 'alert' : 'status');
+    t.setAttribute('aria-live', pilny ? 'assertive' : 'polite');
+    t.textContent = tekst;
+    t.hidden = false;
+    clearTimeout(zegarKomunikatu);
+    zegarKomunikatu = setTimeout(() => { t.hidden = true; }, pilny ? 10000 : 4000);
+}
+
+// Okno z-dialog „Jutro masz już trening” (R17): 'oba' | 'tylko' | null (Anuluj, Escape, klik w tło).
+function zapytajOKonflikt(nazwy, jutroIso) {
+    return new Promise((resolve) => {
+        const poprzedni = document.activeElement;
+        const scrim = document.createElement('div');
+        scrim.className = 'z-dialog-scrim';
+        const okno = document.createElement('div');
+        okno.className = 'z-dialog';
+        okno.setAttribute('role', 'dialog');
+        okno.setAttribute('aria-modal', 'true');
+        okno.setAttribute('aria-labelledby', 'przeloz-tytul');
+        okno.setAttribute('aria-describedby', 'przeloz-opis');
+        const tytul = document.createElement('h2');
+        tytul.id = 'przeloz-tytul';
+        tytul.className = 'z-hd';
+        tytul.textContent = 'Jutro masz już trening';
+        const opis = document.createElement('p');
+        opis.id = 'przeloz-opis';
+        opis.className = 'z-sub';
+        const dzien = (dataMenu(jutroIso) || jutroIso).toLowerCase();
+        opis.textContent = `Na ${dzien} zaplanowano: ${nazwy.map((n) => `„${n}”`).join(', ')}. Który trening zostawić?`;
+        const akcje = document.createElement('div');
+        akcje.className = 'z-dialog-actions';
+        const koniec = (wynik) => {
+            document.removeEventListener('keydown', klawisz, true);
+            scrim.remove();
+            if (poprzedni && typeof poprzedni.focus === 'function' && document.contains(poprzedni)) poprzedni.focus();
+            resolve(wynik);
+        };
+        const klawisz = (e) => { if (e.key === 'Escape') { e.preventDefault(); koniec(null); } };
+        const przycisk = (tekst, klasa, wynik) => {
+            const b = document.createElement('button');
+            b.type = 'button';
+            b.className = klasa;
+            b.textContent = tekst;
+            b.addEventListener('click', () => koniec(wynik));
+            akcje.append(b);
+            return b;
+        };
+        const pierwszy = przycisk('Zostaw oba', 'z-ghost', 'oba');
+        przycisk('Tylko przełożony', 'z-ghost', 'tylko');
+        przycisk('Anuluj', 'z-ghost', null);
+        okno.append(tytul, opis, akcje);
+        scrim.append(okno);
+        scrim.addEventListener('click', (e) => { if (e.target === scrim) koniec(null); });
+        document.addEventListener('keydown', klawisz, true);
+        document.body.append(scrim);
+        pierwszy.focus();
+    });
+}
+
+// Jedno przekładanie naraz (podwójne stuknięcie, okno konfliktu otwarte).
+let przekladanie = false;
+
+// Katalog ćwiczeń: ćwiczenie, któremu wpisujemy nazwę, wybrana partia i element, do którego wraca fokus.
+const katalog = { cwiczenie: null, partia: null, powrot: null };
+const WLASNE = 'Własne';
+// Dawna nazwa z katalogu zapisana kiedyś jako własna nie dubluje katalogu (zapis zostaje bez zmian).
+const wlasneCwiczenia = () => czytajListe('uki_custom_exercises').filter((n) => typeof n === 'string' && n.trim() && !isCatalogExercise(n));
+
+// Okno szablonów: element, do którego wraca fokus po „Wróć”.
+let szablonyPowrot = null;
+const DNI_TYGODNIA = [
+    { num: 1, name: 'Pn' }, { num: 2, name: 'Wt' }, { num: 3, name: 'Śr' }, { num: 4, name: 'Cz' },
+    { num: 5, name: 'Pt' }, { num: 6, name: 'So' }, { num: 0, name: 'Nd' },
+];
+// „1 ćwiczenie”, „2 ćwiczenia”, „5 ćwiczeń”.
+const cwiczeniaSlowo = (n) => {
+    if (n === 1) return 'ćwiczenie';
+    const d = n % 10;
+    const s = n % 100;
+    return d >= 2 && d <= 4 && (s < 12 || s > 14) ? 'ćwiczenia' : 'ćwiczeń';
+};
+// Żeton rodzaju szablonu (sesja zapisuje 'class', stare szablony mogą mieć 'classes').
+const rodzajSzablonu = (typ) => (typ === 'cardio' ? 'Cardio' : typ === 'class' || typ === 'classes' ? 'Zajęcia' : 'Siłowy');
+// „6 ćwiczeń · 18 serii · ok. 60 min” (serie z superserii liczone; czas tylko, gdy szablon go ma).
+const metaSzablonu = (t) => {
+    const lista = Array.isArray(t.exercises) ? t.exercises : [];
+    let serie = 0;
+    const policz = (ex) => { if (ex && Array.isArray(ex.sets)) serie += ex.sets.length; };
+    lista.forEach((ex) => {
+        if (ex && ex.type === 'superset' && Array.isArray(ex.exercises)) ex.exercises.forEach(policz);
+        else policz(ex);
+    });
+    const czesci = [`${lista.length} ${cwiczeniaSlowo(lista.length)}`];
+    if (serie > 0) czesci.push(`${serie} ${serieSlowo(serie)}`);
+    if (t.duration_seconds > 0) czesci.push(`ok. ${Math.max(1, Math.round(t.duration_seconds / 60))} min`);
+    return czesci.join(' · ');
+};
+// Okno szablonów usuwa też kod spoza tego pliku (PlanImportUI.refresh); wtedy klasa body schodzi sama,
+// żeby aplikacja nie została ukryta.
+let obserwatorSzablonow = null;
+function pilnujOknaSzablonow() {
+    if (obserwatorSzablonow || typeof MutationObserver === 'undefined') return;
+    obserwatorSzablonow = new MutationObserver(() => {
+        if (!document.getElementById('templates-modal-overlay')) document.body.classList.remove('z-szablony-otwarte');
+    });
+    obserwatorSzablonow.observe(document.body, { childList: true });
+}
+
+// „1 seria”, „2 serie”, „5 serii”, „0 serii”.
+const serieSlowo = (n) => {
+    if (n === 1) return 'seria';
+    const d = n % 10;
+    const s = n % 100;
+    return d >= 2 && d <= 4 && (s < 12 || s > 14) ? 'serie' : 'serii';
+};
 
 let currentTraining = {
     date: null,
@@ -36,7 +182,6 @@ let currentMonth = new Date().getMonth();
 let currentYear = new Date().getFullYear();
 let trainingDates = new Set(); // Stores dates in YYYY-MM-DD format
 let allTrainingsCache = [];
-const NOTEBOOK_ICON_SVG = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 6h4"/><path d="M2 10h4"/><path d="M2 14h4"/><path d="M2 18h4"/><rect width="16" height="20" x="4" y="2" rx="2"/><path d="M16 2v20"/></svg>';
 // Data lokalna, nie UTC (rozstrzygnięcie C13).
 let selectedDate = toIso(new Date());
 
@@ -142,7 +287,10 @@ export const TrainingUI = {
         });
 
         document.addEventListener('tabChanged', (e) => {
+            // Pasek dolny chowa się tylko na karcie Treningu z widoczną sesją (body.z-sesja).
+            TrainingUI.odswiezTrybSesji();
             if(e.detail && e.detail.tab === 'training-dashboard') {
+                TrainingUI.dopasujNazwy();
                 TrainingUI.loadHistoryAndCalendar();
             }
         });
@@ -162,26 +310,58 @@ export const TrainingUI = {
         }, 500);
     },
 
+    // Katalog ćwiczeń (spec 8.3, plansza TreningKatalog): pełny ekran nad sesją, bez paska dolnego (body.z-katalog-otwarty).
+    // Dane katalogu i dopasowanie nazw bez zmian (ExerciseCatalog.js); okno tylko je pokazuje.
     injectCatalogModalHTML: () => {
         if (document.getElementById('catalog-modal-overlay')) return;
         const html = `
-            <div id="catalog-modal-overlay" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.85); z-index: 10000; justify-content: center; align-items: center; padding: 20px;">
-                <div style="background: #1e1e1e; width: 100%; max-width: 500px; border-radius: 12px; border: 1px solid rgba(0, 191, 255, 0.3); display: flex; flex-direction: column; max-height: 85vh;">
-                    <div style="padding: 15px 20px; border-bottom: 1px solid rgba(255, 255, 255, 0.1); display: flex; justify-content: space-between; align-items: center;">
-                        <h3 id="catalog-modal-title" style="margin: 0; color: #00BFFF; font-size: 1.3em;">Wybierz partię</h3>
-                        <button onclick="document.getElementById('catalog-modal-overlay').style.display='none';" style="background: none; border: none; color: #aaa; font-size: 1.8rem; cursor: pointer; padding: 0; line-height: 1;">&times;</button>
+            <div id="catalog-modal-overlay" class="z-okno z-katalog" role="dialog" aria-modal="true" aria-labelledby="catalog-modal-title" hidden>
+                <div class="z-okno-w">
+                    <div class="z-head-center">
+                        <button type="button" class="z-ic z-card" aria-label="Zamknij" onclick="window.TrainingUI.zamknijKatalog()">${ikona('x', 20)}</button>
+                        <h2 id="catalog-modal-title" class="z-hd">Katalog ćwiczeń</h2>
+                        <span class="z-head-spacer" aria-hidden="true"></span>
                     </div>
-                    <div id="catalog-modal-content" style="padding: 15px; overflow-y: auto; flex: 1; display: flex; flex-direction: column; gap: 10px;">
+                    <div class="z-card z-katalog-szukaj">
+                        ${ikona('search', 18)}
+                        <label class="z-sr" for="catalog-search">Szukaj</label>
+                        <input id="catalog-search" type="search" placeholder="Szukaj ćwiczenia…" autocomplete="off" autocapitalize="off" spellcheck="false" enterkeyhint="search">
+                    </div>
+                    <div class="z-katalog-partie" role="group" aria-label="Partie ciała"></div>
+                    <div id="catalog-modal-content" class="z-card z-list z-katalog-lista"></div>
+                    <div class="z-card z-katalog-wlasne">
+                        <label class="z-lab" for="catalog-own-input">Lub dodaj własne ćwiczenie</label>
+                        <div class="z-katalog-wlasne-rzad">
+                            <input id="catalog-own-input" class="z-in" type="text" placeholder="Własna nazwa…" autocomplete="off" enterkeyhint="done">
+                            <button type="button" id="catalog-own-add" class="z-btn">Dodaj</button>
+                        </div>
                     </div>
                 </div>
             </div>
         `;
         document.body.insertAdjacentHTML('beforeend', html);
+        const okno = document.getElementById('catalog-modal-overlay');
+        okno.querySelector('#catalog-search').addEventListener('input', (e) => TrainingUI.szukajWKatalogu(e.target.value));
+        okno.querySelector('.z-katalog-partie').addEventListener('click', (e) => {
+            const b = e.target.closest('[data-partia]');
+            if (b) TrainingUI.selectCategory(b.dataset.partia);
+        });
+        okno.querySelector('#catalog-modal-content').addEventListener('click', (e) => {
+            const b = e.target.closest('.z-katalog-cw');
+            if (b) TrainingUI.wybierzZKatalogu(b.dataset.nazwa);
+        });
+        okno.querySelector('#catalog-own-add').addEventListener('click', () => TrainingUI.dodajWlasneZKatalogu());
+        okno.querySelector('#catalog-own-input').addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') { e.preventDefault(); TrainingUI.dodajWlasneZKatalogu(); }
+        });
+        okno.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') { e.preventDefault(); TrainingUI.zamknijKatalog(); }
+        });
     },
 
-    
     toggleExerciseType: (exId) => {
-        const ex = currentTraining.exercises.find(e => e.id === exId);
+        // Porównanie tekstowe (getExerciseById): id liczbowe ze starych danych i ćwiczenia w superserii też działają.
+        const ex = TrainingUI.getExerciseById(exId);
         if (ex) {
             if (ex.type === 'strength') ex.type = 'cardio';
             else if (ex.type === 'cardio') ex.type = 'classes';
@@ -195,48 +375,126 @@ export const TrainingUI = {
     },
 
     openCatalogModal: (exerciseId) => {
-        const overlay = document.getElementById('catalog-modal-overlay');
-        const content = document.getElementById('catalog-modal-content');
-        const title = document.getElementById('catalog-modal-title');
-        
-        title.innerText = "Wybierz partię";
-        content.innerHTML = '';
-        
-        Object.keys(ExerciseCategories).forEach(cat => {
-            const btn = document.createElement('button');
-            btn.innerText = cat;
-            btn.style.cssText = 'background: #333; color: #fff; padding: 15px; border-radius: 8px; border: 1px solid #444; font-size: 1.1em; cursor: pointer; text-align: left; font-weight: bold; margin-bottom: 5px;';
-            btn.onclick = () => TrainingUI.selectCategory(cat, exerciseId);
-            content.appendChild(btn);
-        });
-        
-        overlay.style.display = 'flex';
+        TrainingUI.injectCatalogModalHTML();
+        const okno = document.getElementById('catalog-modal-overlay');
+        katalog.cwiczenie = exerciseId;
+        katalog.powrot = document.activeElement;
+        document.getElementById('catalog-search').value = '';
+        document.getElementById('catalog-own-input').value = '';
+        // Partie z ExerciseCategories (pełne nazwy) i „Własne”, gdy są własne ćwiczenia.
+        const partie = Object.keys(ExerciseCategories);
+        if (wlasneCwiczenia().length > 0) partie.push(WLASNE);
+        okno.querySelector('.z-katalog-partie').innerHTML = partie
+            .map((p) => `<button type="button" class="z-chip" data-partia="${esc(p)}" aria-pressed="false">${esc(p)}</button>`)
+            .join('');
+        TrainingUI.selectCategory(partie[0], exerciseId);
+        okno.hidden = false;
+        document.body.classList.add('z-katalog-otwarty');
+        okno.scrollTop = 0;
+        // Fokus na „Zamknij”, nie na wyszukiwarce: na telefonie nie wysuwa klawiatury.
+        okno.querySelector('.z-head-center .z-ic').focus();
     },
 
+    // Wybór partii: żeton z-on, lista ćwiczeń partii, wyszukiwarka pusta.
     selectCategory: (category, exerciseId) => {
-        const content = document.getElementById('catalog-modal-content');
-        const title = document.getElementById('catalog-modal-title');
-        
-        title.innerText = category;
-        content.innerHTML = '';
-        
-        const backBtn = document.createElement('button');
-        backBtn.innerText = '⬅ Powrót do partii';
-        backBtn.style.cssText = 'background: rgba(0,191,255,0.1); color: #00BFFF; padding: 10px; border-radius: 8px; border: 1px solid rgba(0,191,255,0.3); font-size: 1em; cursor: pointer; margin-bottom: 10px; font-weight: bold;';
-        backBtn.onclick = () => TrainingUI.openCatalogModal(exerciseId);
-        content.appendChild(backBtn);
-        
-        ExerciseCategories[category].forEach(exName => {
-            const btn = document.createElement('button');
-            btn.innerText = exName;
-            btn.style.cssText = 'background: #222; color: #ccc; padding: 12px 15px; border-radius: 6px; border: 1px solid #333; font-size: 0.95em; cursor: pointer; text-align: left; transition: all 0.2s; margin-bottom: 5px;';
-            btn.onclick = () => {
-                TrainingUI.updateExerciseField(exerciseId, 'name', exName);
-                document.getElementById('catalog-modal-overlay').style.display = 'none';
-                TrainingUI.renderCurrentExercises();
-            };
-            content.appendChild(btn);
+        if (exerciseId !== undefined) katalog.cwiczenie = exerciseId;
+        katalog.partia = category;
+        const szukaj = document.getElementById('catalog-search');
+        if (szukaj) szukaj.value = '';
+        TrainingUI.pokazZetonyPartii(category);
+        const nazwy = category === WLASNE ? wlasneCwiczenia() : (ExerciseCategories[category] || []);
+        TrainingUI.pokazListeKatalogu(nazwy.map((nazwa) => ({ nazwa })), '');
+    },
+
+    pokazZetonyPartii: (aktywna) => {
+        document.querySelectorAll('#catalog-modal-overlay .z-katalog-partie [data-partia]').forEach((b) => {
+            const on = b.dataset.partia === aktywna;
+            b.classList.toggle('z-on', on);
+            b.setAttribute('aria-pressed', String(on));
         });
+    },
+
+    // Wyszukiwanie w całym katalogu (z własnymi ćwiczeniami); wiersz pokazuje partię. Puste pole wraca do partii.
+    szukajWKatalogu: (tekst) => {
+        const q = String(tekst || '').trim().toLocaleLowerCase('pl');
+        if (!q) {
+            TrainingUI.selectCategory(katalog.partia);
+            return;
+        }
+        TrainingUI.pokazZetonyPartii(null);
+        const wyniki = [];
+        Object.entries(ExerciseCategories).forEach(([partia, nazwy]) => {
+            // Szukanie także po angielskiej i dawnej nazwie; na liście tylko nazwa główna.
+            nazwy.forEach((nazwa) => {
+                if (exerciseSearchTexts(nazwa).some((t) => t.toLocaleLowerCase('pl').includes(q))) wyniki.push({ nazwa, partia });
+            });
+        });
+        wlasneCwiczenia().forEach((nazwa) => { if (nazwa.toLocaleLowerCase('pl').includes(q)) wyniki.push({ nazwa, partia: WLASNE }); });
+        TrainingUI.pokazListeKatalogu(wyniki, String(tekst).trim());
+    },
+
+    pokazListeKatalogu: (pozycje, szukane) => {
+        const lista = document.getElementById('catalog-modal-content');
+        if (!lista) return;
+        if (pozycje.length === 0) {
+            lista.innerHTML = `<p class="z-katalog-pusto">${szukane ? `Brak ćwiczeń dla „${esc(szukane)}”.` : 'Brak ćwiczeń w tej partii.'} Możesz dodać własne poniżej.</p>`;
+            return;
+        }
+        lista.innerHTML = pozycje.map(({ nazwa, partia }) => `
+            <button type="button" class="z-li z-katalog-cw" data-nazwa="${esc(nazwa)}">
+                <span class="z-katalog-nazwa">${esc(nazwa)}</span>${partia ? `<span class="z-mut z-katalog-partia">${esc(partia)}</span>` : ''}
+            </button>`).join('');
+    },
+
+    wybierzZKatalogu: (nazwa) => {
+        TrainingUI.updateExerciseField(katalog.cwiczenie, 'name', nazwa);
+        TrainingUI.zamknijKatalog({ wybrano: true });
+        TrainingUI.renderCurrentExercises();
+        TrainingUI.saveDraft();
+    },
+
+    // „Dodaj”: nazwa trafia do sesji i do prywatnego katalogu uki_custom_exercises (ten sam zapis co przy zapisie treningu:
+    // lista nazw bez duplikatów i bez nazw z katalogu).
+    dodajWlasneZKatalogu: () => {
+        const pole = document.getElementById('catalog-own-input');
+        const nazwa = pole ? pole.value.trim() : '';
+        if (!nazwa) {
+            if (pole) pole.focus();
+            return;
+        }
+        // Nazwa z katalogu (także dawna) → nazwa główna, bez zapisu jako własne.
+        if (isCatalogExercise(nazwa)) {
+            TrainingUI.wybierzZKatalogu(canonicalExerciseName(nazwa));
+            return;
+        }
+        // Zapis do pełnej listy (z ewentualnymi dawnymi nazwami), żeby niczego z niej nie zgubić.
+        const wlasne = czytajListe('uki_custom_exercises');
+        if (!wlasne.includes(nazwa)) {
+            wlasne.push(nazwa);
+            localStorage.setItem('uki_custom_exercises', JSON.stringify(wlasne));
+            const podpowiedzi = document.getElementById('exercise-catalog-list');
+            if (podpowiedzi) {
+                const opcja = document.createElement('option');
+                opcja.value = nazwa;
+                podpowiedzi.appendChild(opcja);
+            }
+        }
+        TrainingUI.wybierzZKatalogu(nazwa);
+    },
+
+    zamknijKatalog: ({ wybrano = false } = {}) => {
+        const okno = document.getElementById('catalog-modal-overlay');
+        if (okno) okno.hidden = true;
+        document.body.classList.remove('z-katalog-otwarty');
+        // Fokus wraca do przycisku „Katalog” (po wyborze karta rysuje się na nowo, więc szukamy go po id ćwiczenia).
+        let cel = katalog.powrot;
+        if (wybrano || !cel || !document.contains(cel) || cel === document.body) {
+            const id = JSON.stringify(String(katalog.cwiczenie));
+            cel = [...document.querySelectorAll('#current-exercises-list button[onclick*="openExerciseSelector"]')]
+                .find((b) => (b.getAttribute('onclick') || '').includes(id)) || null;
+        }
+        if (cel && typeof cel.focus === 'function') cel.focus();
+        katalog.powrot = null;
     },
 
     getTemplates: () => {
@@ -252,7 +510,7 @@ export const TrainingUI = {
     saveAsTemplate: () => {
         if (!currentTraining || !currentTraining.exercises || currentTraining.exercises.length === 0) {
             if (window.ChatUI) window.ChatUI.showContextualBubble("Hej, nie masz żadnych ćwiczeń żeby zapisać szablon! Dodaj coś najpierw. 😅");
-            else alert("Dodaj ćwiczenia przed zapisaniem szablonu.");
+            else komunikat("Dodaj ćwiczenia przed zapisaniem planu.");
             return;
         }
 
@@ -275,8 +533,8 @@ export const TrainingUI = {
         templates.push(template);
         localStorage.setItem('uki_workout_templates', JSON.stringify(templates));
         
-        if (window.ChatUI) window.ChatUI.showContextualBubble(`Elegancko! Plan Treningowy "${template.name}" zapisany. 💪 Możesz go załadować przy kolejnym treningu.`);
-        else alert(`Plan Treningowy "${template.name}" został zapisany.`);
+        if (window.ChatUI) window.ChatUI.showContextualBubble(`Elegancko! Plan Treningowy "${esc(template.name)}" zapisany. 💪 Możesz go załadować przy kolejnym treningu.`);
+        else komunikat(`Plan treningowy „${template.name}” zapisany.`);
     },
 
     
@@ -290,7 +548,9 @@ export const TrainingUI = {
         
         const dlAnchorElem = document.createElement('a');
         dlAnchorElem.setAttribute("href", url);
-        dlAnchorElem.setAttribute("download", "UkiPlan_" + t.name.replace(/\s+/g, '_') + ".json");
+        // Szablon bez nazwy (stare dane, import) też da się wyeksportować: nazwa pliku z „szablon”.
+        const nazwa = String(t.name ?? '').trim() || 'szablon';
+        dlAnchorElem.setAttribute("download", "UkiPlan_" + nazwa.replace(/\s+/g, '_') + ".json");
         document.body.appendChild(dlAnchorElem);
         dlAnchorElem.click();
         document.body.removeChild(dlAnchorElem);
@@ -314,47 +574,19 @@ export const TrainingUI = {
         input.click();
     },
 
+    // Szablony planów (spec 8.3, plansza TreningSzablony): pełny ekran nad kalendarzem (body.z-szablony-otwarte,
+    // wygląd w trening-szablony.css). Okno powstaje i znika jako #templates-modal-overlay (PlanImportUI.refresh na tym stoi).
     loadTemplatesDialog: () => {
         // Decyzja 22: okno otwiera się także bez szablonów, żeby nowy klient mógł wczytać plan od trenera.
         const templates = TrainingUI.getTemplates();
         const todayIso = toIso(new Date());
+        const schedules = czytajHarmonogram();
+        const istniejace = document.getElementById('templates-modal-overlay');
+        // Ponowne narysowanie (import, usunięcie) zostawia pierwotny punkt powrotu fokusu.
+        if (!istniejace) szablonyPowrot = document.activeElement;
 
-        let html = `
-            <div id="templates-modal-overlay" onclick="if(event.target.id === 'templates-modal-overlay') { this.remove(); window.TrainingUI.renderCalendar(); }" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 10000; display: flex; justify-content: center; align-items: center; padding: 16px; box-sizing: border-box;">
-                <div style="background: rgba(30, 30, 30, 0.6); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border: 1px solid rgba(255, 152, 0, 0.4); border-radius: 20px; width: 100%; max-width: 480px; max-height: 85vh; display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 15px 50px rgba(0,0,0,0.7); box-sizing: border-box;">
-                    
-                    <!-- Fixed Header with Title and Close X -->
-                    <div style="padding: 16px 20px; border-bottom: 1px solid rgba(255,152,0,0.3); display: flex; justify-content: space-between; align-items: center; background: rgba(0, 0, 0, 0.3); flex-shrink: 0;">
-                        <div>
-                            <h3 style="color: #FF9800; margin: 0; font-size: 1.15em;">Szablony Planów Treningowych</h3>
-                            <p style="color: #888; font-size: 0.8em; margin: 3px 0 0 0;">Wybierz zapisany plan by rozpocząć sesję:</p>
-<button onclick="window.TrainingUI.importTemplate()" style="margin-top: 8px; background: rgba(76, 175, 80, 0.2); border: 1px solid rgba(76, 175, 80, 0.4); color: #81c784; padding: 6px 12px; border-radius: 8px; font-size: 0.85em; font-weight: bold; cursor: pointer;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 4px; vertical-align: middle;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></svg>Wczytaj plan z pliku</button>
-                        </div>
-                        <button onclick="document.getElementById('templates-modal-overlay').remove(); window.TrainingUI.renderCalendar();" style="background: rgba(255,255,255,0.1); border: none; color: #fff; width: 34px; height: 34px; border-radius: 50%; font-size: 1.4em; cursor: pointer; display: flex; align-items: center; justify-content: center; line-height: 1;">&times;</button>
-                    </div>
-
-                    <!-- Scrollable Cards Container -->
-                    <div style="padding: 16px; overflow-y: auto; flex: 1; -webkit-overflow-scrolling: touch; display: flex; flex-direction: column; gap: 12px;">
-        `;
-
-        let schedules = [];
-        try {
-            schedules = JSON.parse(localStorage.getItem('uki_workout_schedules') || '[]');
-        } catch(e) {}
-        if (!Array.isArray(schedules)) schedules = [];
-
-        if (templates.length === 0) {
-            html += `<p style="color: #bbb; text-align: center; line-height: 1.5; margin: 8px 0;">Nie masz jeszcze szablonów. Wczytaj plan od trenera albo zapisz trening jako szablon.</p>`;
-        }
-
-        templates.forEach(t => {
-            let typeLabel = 'Trening Siłowy';
-            if (t.type === 'cardio') typeLabel = 'Cardio';
-            else if (t.type === 'classes') typeLabel = 'Zajęcia zorganizowane';
-            
-            let durationInfo = t.duration_seconds ? `<br>Przewidywany czas: ${esc(TrainingUI.formatTime(t.duration_seconds))}` : '';
-            
-            const mySchedule = schedules.find(s => String(s.templateId) === String(t.id)) || { daysOfWeek: [] };
+        const karty = templates.map((t) => {
+            const mySchedule = schedules.find(s => s && String(s.templateId) === String(t.id)) || { daysOfWeek: [] };
             const src = t.source && t.source.kind === 'trainer-plan' ? t.source : null;
             // Wiersz źródła (R12c): przed startem „od DD.MM”, po końcu „zakończony”, w trakcie tydzień dla dziś.
             let sourceHtml = '';
@@ -368,74 +600,98 @@ export const TrainingUI = {
                 } else {
                     when = `tydz. ${weekIndexFor(src.startDate, src.weeks, todayIso) + 1} z ${src.weeks}`;
                 }
-                sourceHtml = `<div class="template-source" style="font-size: 0.85em; color: #FF9800; margin-top: 4px;">${esc(`Od trenera${src.trainer ? ` ${src.trainer}` : ''} · ${when}`)}</div>`;
+                sourceHtml = `<div class="template-source">${esc(`Od trenera${src.trainer ? ` ${src.trainer}` : ''} · ${when}`)}</div>`;
             }
-            const days = [
-                { num: 1, name: 'Pn' }, { num: 2, name: 'Wt' }, { num: 3, name: 'Śr' }, 
-                { num: 4, name: 'Czw' }, { num: 5, name: 'Pt' }, { num: 6, name: 'Sb' }, { num: 0, name: 'Nd' }
-            ];
-
-            let daysHtml = `<div style="display: flex; gap: 4px; justify-content: center; flex-wrap: wrap; margin-top: 5px; padding-top: 10px; border-top: 1px dashed #444;">
-                <div style="width: 100%; text-align: center; font-size: 0.85em; color: #888; margin-bottom: 4px;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 4px; vertical-align: middle;"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" x2="16" y1="2" y2="6"/><line x1="8" x2="8" y1="2" y2="6"/><line x1="3" x2="21" y1="10" y2="10"/></svg>Automatyczny Harmonogram w Kalendarzu:</div>`;
-            days.forEach(d => {
-                const isSelected = Array.isArray(mySchedule.daysOfWeek) && mySchedule.daysOfWeek.includes(d.num);
-                const bg = isSelected ? '#FF9800' : 'rgba(255,255,255,0.05)';
-                const col = isSelected ? '#000' : '#888';
-                const border = isSelected ? '#FF9800' : '#444';
-                daysHtml += `<button onclick="window.TrainingUI.toggleScheduleDay(${jsArg(t.id)}, ${d.num})" style="background: ${bg}; color: ${col}; border: 1px solid ${border}; border-radius: 12px; padding: 4px 10px; font-size: 0.85em; font-weight: bold; cursor: pointer; transition: all 0.2s;">${d.name}</button>`;
-            });
-            daysHtml += `</div>`;
-
-            html += `
-                <div class="template-card" style="background: rgba(255, 255, 255, 0.05); padding: 16px; border-radius: 16px; border: 1px solid rgba(255, 255, 255, 0.1); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); display: flex; flex-direction: column; gap: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.3);">
-                    <div style="text-align: center; border-bottom: 1px solid #444; padding-bottom: 8px;">
-                        <strong style="color: var(--ukis-text); font-size: 1.1em;">${esc(t.name)}</strong>
-<button onclick="window.TrainingUI.exportTemplate(${jsArg(t.id)})" style="background: rgba(0, 191, 255, 0.1); border: 1px solid #00BFFF; color: #00BFFF; border-radius: 6px; padding: 3px 8px; font-size: 0.8em; margin-left: 10px; cursor: pointer;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 4px; vertical-align: middle;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" x2="12" y1="3" y2="15"/></svg>Eksport</button>
-                        ${sourceHtml}
-                    </div>
-                    <div style="font-size: 0.9em; color: #bbb; text-align: center; line-height: 1.5;">
-                        Typ: ${typeLabel}<br>
-                        Ilość ćwiczeń w treningu: ${Array.isArray(t.exercises) ? t.exercises.length : 0}
-                        ${durationInfo}
-                    </div>
-                    <div style="display: flex; flex-direction: column; gap: 8px; width: 100%; margin-top: 8px; box-sizing: border-box;">
-                        <button onclick="window.TrainingUI.startFromTemplate(${jsArg(t.id)})" class="action-button" style="width: 100%; background: rgba(46, 204, 113, 0.2); border: 1px solid rgba(46, 204, 113, 0.5); color: #2ECC71; padding: 12px 10px; font-weight: bold; border-radius: 12px; font-size: 0.95em; cursor: pointer; backdrop-filter: blur(5px);"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 6px; vertical-align: middle;"><polygon points="5 3 19 12 5 21 5 3"/></svg>Wybierz</button>
-                        <div style="display: flex; gap: 8px; width: 100%;">
-                            <button onclick="window.TemplateBuilderUI.editTemplate(${jsArg(t.id)}); document.getElementById('templates-modal-overlay').remove();" class="action-button" style="flex: 1; background: rgba(0, 191, 255, 0.15); border: 1px solid rgba(0, 191, 255, 0.4); color: #00BFFF; padding: 10px; font-weight: bold; border-radius: 8px; font-size: 0.9em; cursor: pointer;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 4px; vertical-align: middle;"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>Edytuj</button>
-                            <button onclick="window.TrainingUI.deleteTemplate(${jsArg(t.id)})" class="action-button" style="flex: 1; background: rgba(231, 76, 60, 0.15); border: 1px solid rgba(231, 76, 60, 0.4); color: #E74C3C; padding: 10px; font-weight: bold; border-radius: 8px; font-size: 0.9em; cursor: pointer;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 4px; vertical-align: middle;"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/></svg>Usuń</button>
+            const dniHtml = DNI_TYGODNIA.map((d) => {
+                const on = Array.isArray(mySchedule.daysOfWeek) && mySchedule.daysOfWeek.includes(d.num);
+                return `<button type="button" class="z-szablon-dzien${on ? ' z-on' : ''}" data-dzien="${d.num}" aria-pressed="${on}" onclick="window.TrainingUI.toggleScheduleDay(${jsArg(t.id)}, ${d.num})">${d.name}</button>`;
+            }).join('');
+            return `
+                <div class="z-card template-card" data-szablon="${esc(String(t.id))}">
+                    <div class="z-szablon-gora">
+                        <div class="z-szablon-txt">
+                            <div class="z-szablon-nazwa">${esc(t.name)}</div>
+                            <div class="z-mut z-szablon-meta">${esc(metaSzablonu(t))}</div>
+                            ${sourceHtml}
                         </div>
+                        <span class="z-pill">${rodzajSzablonu(t.type)}</span>
                     </div>
-                    ${daysHtml}
-                </div>
-            `;
-        });
+                    <div class="z-szablon-dni" role="group" aria-label="${esc(`Dni w kalendarzu: ${t.name || ''}`)}">${dniHtml}</div>
+                    <div class="z-szablon-akcje">
+                        <button type="button" class="z-btn z-szablon-wybierz" onclick="window.TrainingUI.startFromTemplate(${jsArg(t.id)})">Wybierz</button>
+                        <button type="button" class="z-ghost" onclick="window.TrainingUI.edytujSzablon(${jsArg(t.id)})">Edytuj</button>
+                        <button type="button" class="z-ghost z-szablon-ikona" aria-label="Eksportuj szablon" onclick="window.TrainingUI.exportTemplate(${jsArg(t.id)})">${ikona('upload', 18)}</button>
+                        <button type="button" class="z-ghost z-danger z-szablon-ikona" aria-label="Usuń szablon" onclick="window.TrainingUI.deleteTemplate(${jsArg(t.id)})">${ikona('trash', 18)}</button>
+                    </div>
+                </div>`;
+        }).join('');
 
-        html += `
-                    </div>
+        const pusto = templates.length === 0 ? `
+                    <div class="z-card z-szablony-pusto">
+                        <p>Nie masz jeszcze szablonów. Wczytaj plan od trenera albo zapisz trening jako szablon.</p>
+                        <button type="button" class="z-btn" onclick="window.TrainingUI.importTemplate()">${ikona('download', 18)}Wczytaj plan z pliku</button>
+                    </div>` : '';
 
-                    <!-- Fixed Footer with Close Button -->
-                    <div style="padding: 12px 16px; border-top: 1px solid #333; background: rgba(0, 0, 0, 0.3); flex-shrink: 0;">
-                        <button onclick="document.getElementById('templates-modal-overlay').remove(); window.TrainingUI.renderCalendar();" class="action-button" style="width: 100%; background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.2); color: #fff; padding: 12px; border-radius: 12px; font-weight: bold; font-size: 0.95em; cursor: pointer; backdrop-filter: blur(5px);">Zamknij</button>
+        const html = `
+            <div id="templates-modal-overlay" class="z-okno z-szablony" role="dialog" aria-modal="true" aria-labelledby="templates-modal-title">
+                <div class="z-okno-w">
+                    <div class="z-head-center">
+                        <button type="button" class="z-ic z-card" aria-label="Wróć" onclick="window.TrainingUI.zamknijSzablony()">${ikona('chevron-left', 20)}</button>
+                        <h2 id="templates-modal-title" class="z-hd">Szablony planów</h2>
+                        <button type="button" class="z-ic z-card" aria-label="Wczytaj plan z pliku (np. od trenera)" onclick="window.TrainingUI.importTemplate()">${ikona('download', 20)}</button>
                     </div>
+                    <p class="z-sub z-szablony-opis">Wybierz zapisany plan, aby rozpocząć sesję. Zaznacz dni, aby zaplanować.</p>
+                    ${pusto}${karty}
+                    <button type="button" class="z-ghost z-szablony-nowy" onclick="window.TrainingUI.nowySzablonWKreatorze()">+ Nowy szablon w kreatorze</button>
                 </div>
             </div>
         `;
 
-        const existingModal = document.getElementById('templates-modal-overlay');
-        if (existingModal) existingModal.remove();
+        if (istniejace) istniejace.remove();
         document.body.insertAdjacentHTML('beforeend', html);
+        const okno = document.getElementById('templates-modal-overlay');
+        okno.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') { e.preventDefault(); TrainingUI.zamknijSzablony(); }
+        });
+        document.body.classList.add('z-szablony-otwarte');
+        pilnujOknaSzablonow();
+        if (!istniejace) okno.querySelector('.z-head-center .z-ic').focus();
+    },
+
+    // „Wróć” / Escape: okno znika, kalendarz wraca z paskiem dolnym, fokus na przycisk, który okno otworzył.
+    zamknijSzablony: () => {
+        const okno = document.getElementById('templates-modal-overlay');
+        if (okno) okno.remove();
+        // Klasę zdejmujemy od razu (nie czekamy na obserwatora): fokus nie trafi w ukrytą treść.
+        document.body.classList.remove('z-szablony-otwarte');
+        TrainingUI.renderCalendar();
+        const cel = szablonyPowrot && document.contains(szablonyPowrot) && szablonyPowrot !== document.body
+            ? szablonyPowrot
+            : document.getElementById('load-template-session-btn');
+        szablonyPowrot = null;
+        if (cel && typeof cel.focus === 'function') cel.focus();
+    },
+
+    edytujSzablon: (id) => {
+        document.getElementById('templates-modal-overlay')?.remove();
+        document.body.classList.remove('z-szablony-otwarte');
+        if (window.TemplateBuilderUI) window.TemplateBuilderUI.editTemplate(id);
+    },
+
+    // Wejście do kreatora (dawniej przycisk „Kreator szablonów” na karcie dnia; plansza TreningSzablony).
+    nowySzablonWKreatorze: () => {
+        document.getElementById('templates-modal-overlay')?.remove();
+        document.body.classList.remove('z-szablony-otwarte');
+        if (window.TemplateBuilderUI) window.TemplateBuilderUI.openBuilder();
     },
 
     toggleScheduleDay: (templateId, dayNum) => {
-        let schedules = [];
-        try { schedules = JSON.parse(localStorage.getItem("uki_workout_schedules") || "[]"); } catch(e) {}
-        
-        if (!Array.isArray(schedules)) schedules = [];
+        let schedules = czytajHarmonogram();
 
         // Rozstrzygnięcie C18 (decyzja 19): wpis dostaje id szablonu w jego własnym typie (kalendarz porównuje ===),
         // a szablon planu od trenera także daty planu, żeby wyłączenie i ponowne włączenie dnia ich nie gubiło.
         const template = TrainingUI.getTemplates().find(t => String(t.id) === String(templateId));
-        let sched = schedules.find(s => String(s.templateId) === String(templateId));
+        let sched = schedules.find(s => s && String(s.templateId) === String(templateId));
         if (!sched) {
             sched = { templateId: template ? template.id : templateId, daysOfWeek: [] };
             const src = template && template.source && template.source.kind === 'trainer-plan' ? template.source : null;
@@ -444,50 +700,85 @@ export const TrainingUI = {
             schedules.push(sched);
         }
         if (!Array.isArray(sched.daysOfWeek)) sched.daysOfWeek = [];
-        
+
         const idx = sched.daysOfWeek.indexOf(dayNum);
         if (idx > -1) {
             sched.daysOfWeek.splice(idx, 1);
         } else {
             sched.daysOfWeek.push(dayNum);
         }
-        
-        // Remove empty schedules
-        schedules = schedules.filter(s => Array.isArray(s.daysOfWeek) && s.daysOfWeek.length > 0);
-        
+
+        // Puste harmonogramy znikają.
+        schedules = schedules.filter(s => s && Array.isArray(s.daysOfWeek) && s.daysOfWeek.length > 0);
         localStorage.setItem("uki_workout_schedules", JSON.stringify(schedules));
-        TrainingUI.loadTemplatesDialog(); // Re-render modal to show updated colors
-        
-        // Refresh calendar if its open (CalendarUI removed — use TrainingUI.renderCalendar)
-        const calendarEl = document.getElementById("calendar-grid");
-        if (calendarEl) {
+
+        // Okno zostaje na miejscu (fokus i przewinięcie): zmieniamy tylko przyciski dni tej karty.
+        const karta = [...document.querySelectorAll('#templates-modal-overlay .template-card')]
+            .find((k) => k.dataset.szablon === String(templateId));
+        if (karta) {
+            const wlaczone = new Set(sched.daysOfWeek);
+            karta.querySelectorAll('.z-szablon-dzien').forEach((b) => {
+                const on = wlaczone.has(Number(b.dataset.dzien));
+                b.classList.toggle('z-on', on);
+                b.setAttribute('aria-pressed', String(on));
+            });
+        }
+
+        if (document.getElementById("training-calendar-grid") || document.getElementById("calendar-grid")) {
             TrainingUI.renderCalendar();
         }
     },
 
+    // „Przywróć trening”: cofa pominięcie albo przełożenie dnia; trening przełożony z tego dnia znika z jutra (R17).
     restorePlannedTraining: (dateStr) => {
-        let exceptions = [];
-        try { exceptions = JSON.parse(localStorage.getItem("uki_schedule_exceptions") || "[]"); } catch(e) {}
-        
-        exceptions = exceptions.filter(e => e.date !== dateStr);
-        
-        localStorage.setItem("uki_schedule_exceptions", JSON.stringify(exceptions));
+        zapiszWyjatki(przywrocDzien(czytajWyjatki(), dateStr));
         TrainingUI.renderCalendar();
         TrainingUI.handleDayClick(dateStr);
     },
 
+    // „Pomiń dzień”: każdy plan dnia dostaje 'skipped'; z templateId tylko ten szablon. Bez duplikatów (R17).
     skipPlannedTraining: (dateStr, templateId) => {
-        let exceptions = [];
-        try { exceptions = JSON.parse(localStorage.getItem("uki_schedule_exceptions") || "[]"); } catch(e) {}
-        
-        exceptions.push({
-            date: dateStr,
-            templateId: templateId,
-            status: "skipped"
-        });
-        
-        localStorage.setItem("uki_schedule_exceptions", JSON.stringify(exceptions));
+        const harmonogram = czytajHarmonogram();
+        const wyjatki = czytajWyjatki();
+        let lista;
+        if (templateId === undefined) {
+            lista = pominDzien(harmonogram, wyjatki, dateStr);
+        } else {
+            const plan = planyDnia(harmonogram, wyjatki, dateStr).find((p) => String(p.templateId) === String(templateId));
+            lista = zapiszWyjatek(wyjatki, { date: dateStr, templateId, status: 'skipped', from: plan ? plan.from : undefined });
+        }
+        zapiszWyjatki(lista);
         TrainingUI.renderCalendar();
+    },
+
+    // „Przełóż na jutro” (R17): plany dnia na jutro; inny trening jutro → okno z wyborem. Zwraca true po przełożeniu.
+    postponePlannedTraining: async (dateStr) => {
+        if (przekladanie) return false;
+        przekladanie = true;
+        try {
+            const harmonogram = czytajHarmonogram();
+            const wyjatki = czytajWyjatki();
+            if (planyDnia(harmonogram, wyjatki, dateStr).length === 0) return false;
+            const jutro = addDays(dateStr, 1);
+            const konflikt = konfliktJutra(harmonogram, wyjatki, dateStr);
+            let tylkoPrzelozony = false;
+            if (konflikt.length > 0) {
+                const szablony = czytajListe('uki_workout_templates');
+                const nazwy = konflikt.map((p) => {
+                    const t = szablony.find((x) => x && String(x.id) === String(p.templateId));
+                    return t && t.name ? String(t.name) : 'Nieznany szablon';
+                });
+                const wybor = await zapytajOKonflikt(nazwy, jutro);
+                if (!wybor) return false;
+                tylkoPrzelozony = wybor === 'tylko';
+            }
+            // Dane czytane na nowo: okno mogło być otwarte długo.
+            zapiszWyjatki(przelozNaJutro(czytajHarmonogram(), czytajWyjatki(), dateStr, { tylkoPrzelozony }));
+            komunikat(komunikatPrzelozenia(jutro));
+            return true;
+        } finally {
+            przekladanie = false;
+        }
     },
 
     // Szablon planu od trenera po sesji: serie na kolejne tygodnie są w planie (applyPlanWeek), więc zapisujemy
@@ -534,9 +825,11 @@ export const TrainingUI = {
             if (Array.isArray(schedules)) {
                 localStorage.setItem('uki_workout_schedules', JSON.stringify(schedules.filter(s => String(s && s.templateId) !== String(id))));
             }
-            const modal = document.getElementById('templates-modal-overlay');
-            if (modal) modal.remove();
-            TrainingUI.loadTemplatesDialog(); // Refresh
+            // …i jego przełożone/pominięte dni (wyjątki harmonogramu).
+            zapiszWyjatki(bezSzablonow(czytajWyjatki(), [id]));
+            // Okno rysuje się na nowo (punkt powrotu fokusu zostaje); fokus na „Wróć”, bo usunięty przycisk zniknął.
+            TrainingUI.loadTemplatesDialog();
+            document.querySelector('#templates-modal-overlay .z-head-center .z-ic')?.focus();
         }
     },
 
@@ -554,8 +847,7 @@ export const TrainingUI = {
         const sourceExercises = isTrainerPlan ? applyPlanWeek(template, selectedDate) : (template.exercises || []);
 
         // Initialize new session from template
-        document.getElementById('training-calendar-view').style.display = 'none';
-        document.getElementById('active-training-view').style.display = 'block';
+        TrainingUI.pokazSesje(true);
 
         currentTraining = {
             date: selectedDate, // Use selected day instead of today!
@@ -605,15 +897,11 @@ export const TrainingUI = {
         if (calInput) calInput.value = '';
         if (hrInput) hrInput.value = '';
 
-        const pauseBtn = document.getElementById('pause-training-btn');
-        if(pauseBtn) {
-            pauseBtn.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 4px;"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg> Pauza';
-            pauseBtn.style.color = '#f39c12';
-            pauseBtn.style.backgroundColor = 'transparent';
-            pauseBtn.style.borderColor = '#f39c12';
-        }
+        TrainingUI.pokazCzasReczny();
+        TrainingUI.ustawPrzyciskPauzy(false);
 
         TrainingUI.renderCurrentExercises();
+        TrainingUI.renderTrainingPhotos();
         currentTraining.timerInterval = setInterval(TrainingUI.updateTimer, 1000);
         TrainingUI.saveDraft();
         
@@ -672,8 +960,7 @@ export const TrainingUI = {
     },
 
     restoreDraft: (draft) => {
-        document.getElementById('training-calendar-view').style.display = 'none';
-        document.getElementById('active-training-view').style.display = 'block';
+        TrainingUI.pokazSesje(true);
         
         currentTraining = draft;
         
@@ -699,10 +986,9 @@ export const TrainingUI = {
         const nameInput = document.getElementById('training-name-input');
         if (nameInput) nameInput.value = currentTraining.name || '';
         
+        TrainingUI.pokazRodzaj(currentTraining.type || 'strength');
         TrainingUI.renderCurrentExercises();
-        if (currentTraining.socialPhotos && currentTraining.socialPhotos.length > 0) {
-            TrainingUI.renderTrainingPhotos();
-        }
+        TrainingUI.renderTrainingPhotos();
 
         if (currentTraining.manualTime) {
             const manualToggle = document.getElementById('manual-duration-toggle');
@@ -715,6 +1001,7 @@ export const TrainingUI = {
             const minutesInput = document.getElementById('manual-training-minutes');
             if (hoursInput && currentTraining.manualTime.hours) hoursInput.value = currentTraining.manualTime.hours;
             if (minutesInput && currentTraining.manualTime.minutes) minutesInput.value = currentTraining.manualTime.minutes;
+            TrainingUI.pokazCzasReczny();
         }
 
         if (currentTraining.smartwatch) {
@@ -728,13 +1015,8 @@ export const TrainingUI = {
         if (!currentTraining.isPaused) {
             currentTraining.isPaused = true;
             currentTraining.pauseStartTime = Date.now();
-            const pauseBtn = document.getElementById('pause-training-btn');
-            if(pauseBtn) {
-                pauseBtn.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" style="vertical-align: middle; margin-right: 4px;"><polygon points="5 3 19 12 5 21 5 3"/></svg> Wznów'; pauseBtn.style.color = '#fff'; pauseBtn.style.backgroundColor = '#2ECC71'; pauseBtn.style.borderColor = '#2ECC71';
-                pauseBtn.style.backgroundColor = '#2ECC71';
-                pauseBtn.style.borderColor = '#2ECC71';
-            }
         }
+        TrainingUI.ustawPrzyciskPauzy(currentTraining.isPaused);
         
         currentTraining.timerInterval = setInterval(TrainingUI.updateTimer, 1000);
     },
@@ -768,7 +1050,7 @@ export const TrainingUI = {
         let html = '';
         const daysOfWeek = ['Pn', 'Wt', 'Śr', 'Cz', 'Pt', 'So', 'Nd'];
         daysOfWeek.forEach(day => {
-            html += `<div class="calendar-day-header">${day}</div>`;
+            html += `<div class="calendar-day-header z-mut">${day}</div>`;
         });
 
         const firstDay = new Date(currentYear, currentMonth, 1).getDay();
@@ -776,71 +1058,40 @@ export const TrainingUI = {
         const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
 
         for (let i = 0; i < adjustedFirstDay; i++) {
-            html += `<div class="calendar-day empty"></div>`;
+            html += `<div class="calendar-day empty" aria-hidden="true"></div>`;
         }
 
         // Data lokalna, nie UTC (rozstrzygnięcie C13).
         const todayDate = toIso(new Date());
         
-        let schedules = [];
-        try { schedules = JSON.parse(localStorage.getItem('uki_workout_schedules') || '[]'); } catch(e) {}
-        if (!Array.isArray(schedules)) schedules = [];
-        let exceptions = [];
-        try { exceptions = JSON.parse(localStorage.getItem('uki_schedule_exceptions') || '[]'); } catch(e) {}
+        const schedules = czytajHarmonogram();
+        const exceptions = czytajWyjatki();
 
         for (let day = 1; day <= daysInMonth; day++) {
             const dateStr = `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-            const dateObj = new Date(currentYear, currentMonth, day);
-            const dow = dateObj.getDay();
             const hasTraining = trainingDates.has(dateStr);
             const isToday = dateStr === todayDate;
             const isSelected = dateStr === selectedDate;
             
-            // Harmonogram działa dla wybranego dnia; wpis z datami planu tylko od startDate do endDate (decyzja 19).
-            const isScheduledDay = schedules.some(s => isScheduleActive(s, dateStr) && Array.isArray(s.daysOfWeek) && s.daysOfWeek.includes(dow));
-            const isPlanned = (dateStr >= todayDate) && isScheduledDay;
-            const isException = exceptions.some(e => e.date === dateStr && e.status === 'skipped');
-            
-            let dotHtml = '';
-            if (hasTraining) {
-                dotHtml = '<div class="training-dot" style="background-color: #2ECC71; box-shadow: 0 0 5px #2ECC71;"></div>'; // Green
-            } else if (isPlanned && !isException) {
-                dotHtml = '<div class="training-dot" style="background-color: #FF9800; box-shadow: 0 0 5px #FF9800;"></div>'; // Orange (Future/Today planned)
-            } else if (isScheduledDay && isException) {
-                dotHtml = '<div class="training-dot" style="background-color: #E74C3C; box-shadow: 0 0 5px #E74C3C;"></div>'; // Red solid (Explicitly Skipped)
-            }
+            // Plan dnia z harmonogramu (decyzja 19) i wyjątków, także trening przełożony na ten dzień (R17).
+            const stanPlanu = stanDnia(schedules, exceptions, dateStr);
+            const isPlanned = (dateStr >= todayDate) && stanPlanu === 'zaplanowany';
 
+            // Stan dnia (spec 8.3): wykonany > zaplanowany > pominięty / przełożony (ten sam wygląd);
+            // „dziś” i „wybrany” dochodzą do każdego.
             let classes = 'calendar-day';
-            if (hasTraining) classes += ' has-training';
-            if (isToday) classes += ' today';
-            if (isSelected) classes += ' selected';
+            let stan = '';
+            if (hasTraining) { classes += ' has-training z-wykonany'; stan = 'wykonany'; }
+            else if (isPlanned) { classes += ' z-zaplanowany'; stan = 'zaplanowany'; }
+            else if (stanPlanu === 'przelozony') { classes += ' z-pominiety z-przelozony'; stan = 'przełożony'; }
+            else if (stanPlanu === 'pominiety') { classes += ' z-pominiety'; stan = 'pominięty'; }
+            if (isToday) classes += ' today z-dzis';
+            if (isSelected) classes += ' selected z-wybrany';
+            const opis = [`${day}`, isToday ? 'dziś' : '', stan].filter(Boolean).join(', ');
 
-            html += `
-                <div class="${classes}" onclick="window.TrainingUI.handleDayClick('${dateStr}')">
-                    ${day}
-                    ${dotHtml}
-                </div>
-            `;
+            html += `<button type="button" class="${classes}" aria-label="${opis}" aria-pressed="${isSelected}"${isToday ? ' aria-current="date"' : ''} onclick="window.TrainingUI.handleDayClick('${dateStr}')">${day}</button>`;
         }
         grid.innerHTML = html;
-
-        const container = grid.parentElement;
-        if (container && !document.getElementById('cal-legend')) {
-            const legendHtml = `
-                <div id="cal-legend" style="display: flex; justify-content: center; gap: 15px; margin-top: 15px; font-size: 0.8em; color: #aaa; flex-wrap: wrap;">
-                    <div style="display: flex; align-items: center; gap: 4px;">
-                        <div style="width: 8px; height: 8px; border-radius: 50%; background-color: #2ECC71; box-shadow: 0 0 5px #2ECC71;"></div> Wykonany
-                    </div>
-                    <div style="display: flex; align-items: center; gap: 4px;">
-                        <div style="width: 8px; height: 8px; border-radius: 50%; background-color: #FF9800; box-shadow: 0 0 5px #FF9800;"></div> Zaplanowany
-                    </div>
-                    <div style="display: flex; align-items: center; gap: 4px;">
-                        <div style="width: 8px; height: 8px; border-radius: 50%; background-color: #E74C3C; box-shadow: 0 0 5px #E74C3C;"></div> Pominięty
-                    </div>
-                </div>
-            `;
-            container.insertAdjacentHTML('beforeend', legendHtml);
-        }
     },
 
     handleDayClick: (dateStr, preventScroll = false) => {
@@ -849,6 +1100,8 @@ export const TrainingUI = {
         
         const panel = document.getElementById('day-action-panel');
         const label = document.getElementById('selected-day-label');
+        const pill = document.getElementById('day-status-pill');
+        const sep = document.getElementById('day-action-sep');
         
         const emptyState = document.getElementById('day-action-empty-state');
         const existingState = document.getElementById('day-action-existing-state');
@@ -861,117 +1114,114 @@ export const TrainingUI = {
         
         if (!panel) return;
         panel.style.display = 'block';
-        label.textContent = `Opcje dla: ${dateStr}`;
+        // „Sobota, 22 listopada” (jak data na Menu).
+        label.textContent = dataMenu(dateStr) || dateStr;
+        const ustawStan = (tekst) => {
+            if (!pill) return;
+            pill.textContent = tekst || '';
+            pill.hidden = !tekst;
+        };
+        ustawStan('');
 
         const existingTrainingsOnDay = allTrainingsCache.filter(t => t.date === dateStr);
 
         // Always show emptyState which now contains "start new session"
         if (emptyState) emptyState.style.display = 'block';
         
-        let isPlanned = false;
         if (plannedState) {
             plannedState.style.display = 'none'; // hide by default
             
-            let schedules = [];
-            try { schedules = JSON.parse(localStorage.getItem("uki_workout_schedules") || "[]"); } catch(e) {}
-            if (!Array.isArray(schedules)) schedules = [];
-            let exceptions = [];
-            try { exceptions = JSON.parse(localStorage.getItem("uki_schedule_exceptions") || "[]"); } catch(e) {}
+            // Plany dnia z harmonogramu (decyzja 19, data lokalna C13) i wyjątków, także przełożone na ten dzień (R17).
+            const schedules = czytajHarmonogram();
+            const exceptions = czytajWyjatki();
+            const plany = planyDnia(schedules, exceptions, dateStr);
+            const stanPlanu = stanDnia(schedules, exceptions, dateStr);
             
-            // Dzień tygodnia z daty lokalnej (rozstrzygnięcie C13); wpis z datami planu tylko w ich zakresie (decyzja 19).
-            const dateObj = parseDate(dateStr);
-            const dow = dateObj ? dateObj.getDay() : -1;
-            const sched = schedules.find(s => isScheduleActive(s, dateStr) && Array.isArray(s.daysOfWeek) && s.daysOfWeek.includes(dow));
-            const isException = exceptions.some(e => e.date === dateStr && e.status === "skipped");
-            
-            if (sched && existingTrainingsOnDay.length === 0) {
-                if (!isException) {
-                    isPlanned = true;
-                    plannedState.style.display = 'block';
-                    
-                    let templates = [];
-                    try { templates = JSON.parse(localStorage.getItem("uki_workout_templates") || "[]"); } catch(e) {}
+            if (existingTrainingsOnDay.length === 0 && plany.length > 0) {
+                plannedState.style.display = 'block';
+                ustawStan('Zaplanowano');
+
+                const templates = czytajListe('uki_workout_templates');
+                // „Szablon „Góra ciała” · Trening siłowy · 6 ćwiczeń” dla każdego planu dnia;
+                // trening przełożony ma dopisek, z którego dnia przyszedł.
+                const blok = (plan) => {
                     // Starsze wpisy mają templateId jako tekst (C18), więc porównujemy tekstowo.
-                    const template = Array.isArray(templates) ? templates.find(t => String(t.id) === String(sched.templateId)) : null;
+                    const template = templates.find(t => t && String(t.id) === String(plan.templateId));
                     const tName = template ? template.name : "Nieznany szablon";
-                    const typeLabel = template ? (template.type === "cardio" ? "Cardio" : (template.type === "classes" ? "Zajęcia zorganizowane" : "Trening Siłowy")) : "";
-                    
-                    if (plannedPreview) {
-                        plannedPreview.innerHTML = `
-                            <div style="background: rgba(255, 152, 0, 0.1); border: 1px solid rgba(255, 152, 0, 0.3); backdrop-filter: blur(10px); border-radius: 12px; padding: 15px; box-shadow: 0 4px 6px rgba(0,0,0,0.3);">
-                                <strong style="color: #FF9800; font-size: 1.1em;">${esc(tName)}</strong><br>
-                                <span style="font-size: 0.9em; color: #aaa;">${typeLabel} ${template && Array.isArray(template.exercises) ? `| Ćwiczeń: ${template.exercises.length}` : ""}</span>
-                                <div style="margin-top: 10px;">
-                                    <button onclick="window.TrainingUI.startFromTemplate(${jsArg(sched.templateId)})" class="action-button pulse" style="width: 100%; background-color: #FF9800; border-color: #FF9800; color: #000; font-weight: bold; padding: 10px;">▶ Rozpocznij ten plan</button>
-                                </div>
-                            </div>
-                        `;
-                    }
-                    if (postponeBtn) {
-                        postponeBtn.style.display = 'block';
-                        postponeBtn.onclick = () => {
-                            window.TrainingUI.skipPlannedTraining(dateStr, sched.templateId);
-                            alert("Trening dzisiejszy przełożony. Jutro musisz go wywołać ręcznie z kalendarza lub szablonów.");
-                            TrainingUI.handleDayClick(dateStr);
-                        };
-                    }
-                    if (cancelPlannedBtn) {
-                        cancelPlannedBtn.style.display = 'block';
-                        cancelPlannedBtn.onclick = () => {
-                            window.TrainingUI.skipPlannedTraining(dateStr, sched.templateId);
-                            TrainingUI.handleDayClick(dateStr);
-                        };
-                    }
-                } else {
-                    // Odwołany trening
-                    plannedState.style.display = 'block';
-                    if (plannedPreview) {
-                        plannedPreview.innerHTML = `
-                            <div style="background: rgba(231, 76, 60, 0.05); border: 1px dashed rgba(231, 76, 60, 0.4); backdrop-filter: blur(10px); border-radius: 12px; padding: 15px; box-shadow: 0 4px 6px rgba(0,0,0,0.3);">
-                                <strong style="color: #E74C3C; font-size: 1.1em;">Trening odwołany</strong><br>
-                                <span style="font-size: 0.9em; color: #aaa;">Ten dzień został celowo pominięty z harmonogramu.</span>
-                                <div style="margin-top: 10px;">
-                                    <button onclick="window.TrainingUI.restorePlannedTraining('${dateStr}')" class="action-button" style="width: 100%; background-color: transparent; border: 1px solid #E74C3C; color: #E74C3C; padding: 10px;">Przywróć trening na dziś</button>
-                                </div>
-                            </div>
-                        `;
-                    }
-                    if (postponeBtn) postponeBtn.style.display = 'none';
-                    if (cancelPlannedBtn) cancelPlannedBtn.style.display = 'none';
+                    const typeLabel = template ? (template.type === "cardio" ? "Cardio" : (template.type === "classes" ? "Zajęcia zorganizowane" : "Trening siłowy")) : "";
+                    const liczba = template && Array.isArray(template.exercises) ? cwiczenia(template.exercises.length) : '';
+                    const opis = [`Szablon „${esc(tName)}”`, typeLabel, liczba].filter(Boolean).join(' · ');
+                    const skad = plan.from ? `<p class="z-mut z-dzien-skad">Przełożony z dnia: ${esc(dataMenu(plan.from) || plan.from)}</p>` : '';
+                    return `
+                        <p class="z-sub z-dzien-opis">${opis}</p>${skad}
+                        <button type="button" onclick="window.TrainingUI.startFromTemplate(${jsArg(plan.templateId)})" class="z-btn z-dzien-start">${ikona('play', 18)}Rozpocznij plan</button>
+                    `;
+                };
+                if (plannedPreview) plannedPreview.innerHTML = plany.map(blok).join('');
+                if (postponeBtn) {
+                    postponeBtn.style.display = '';
+                    postponeBtn.onclick = async () => {
+                        if (await window.TrainingUI.postponePlannedTraining(dateStr)) TrainingUI.handleDayClick(dateStr);
+                    };
                 }
+                if (cancelPlannedBtn) {
+                    cancelPlannedBtn.style.display = '';
+                    cancelPlannedBtn.onclick = () => {
+                        window.TrainingUI.skipPlannedTraining(dateStr);
+                        TrainingUI.handleDayClick(dateStr);
+                    };
+                }
+            } else if (existingTrainingsOnDay.length === 0 && (stanPlanu === 'pominiety' || stanPlanu === 'przelozony')) {
+                // Odwołany albo przełożony trening
+                const przelozony = stanPlanu === 'przelozony';
+                plannedState.style.display = 'block';
+                ustawStan(przelozony ? 'Przełożono' : 'Pominięto');
+                const jutro = addDays(dateStr, 1);
+                const tekst = przelozony
+                    ? `Trening przełożono na ${esc((dataMenu(jutro) || jutro).toLowerCase())}.`
+                    : 'Ten dzień został pominięty w harmonogramie.';
+                if (plannedPreview) {
+                    plannedPreview.innerHTML = `
+                        <p class="z-sub z-dzien-opis">${tekst}</p>
+                        <button type="button" onclick="window.TrainingUI.restorePlannedTraining('${dateStr}')" class="z-ghost z-dzien-start">Przywróć trening</button>
+                    `;
+                }
+                if (postponeBtn) postponeBtn.style.display = 'none';
+                if (cancelPlannedBtn) cancelPlannedBtn.style.display = 'none';
             }
         }
 
         if (existingTrainingsOnDay.length > 0) {
             // Day has trainings
             if (existingState) existingState.style.display = 'block';
+            ustawStan('Wykonano');
             
             if (existingPreview) {
                 let html = '';
                 existingTrainingsOnDay.forEach(existingTraining => {
+                    const liczba = cwiczenia(Array.isArray(existingTraining.exercises) ? existingTraining.exercises.length : 0);
                     if (existingTraining.source === 'zeszyt') {
                         html += `
-                        <div style="background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); backdrop-filter: blur(10px); margin-bottom: 15px; border-radius: 12px; padding: 15px; text-align: left; box-shadow: 0 4px 6px rgba(0,0,0,0.3);">
-                            <strong style="color: #00BFFF; font-size: 1.1em; display: inline-flex; align-items: center; gap: 8px;">${NOTEBOOK_ICON_SVG}Zeszyt</strong><br>
-                            <span style="font-size: 0.8em; color: #888;">Liczba ćwiczeń: ${existingTraining.exercises.length}</span>
-                            <div style="margin-top: 10px; display: flex; gap: 8px;">
-                                <button data-testid="open-in-notebook" onclick="window.NotebookUI.openDay('${existingTraining.date}')" class="action-button" style="flex: 2; background: rgba(0, 191, 255, 0.15); border: 1px solid rgba(0, 191, 255, 0.4); color: #00BFFF; border-radius: 8px; font-size: 0.9em; padding: 8px; backdrop-filter: blur(5px);">Otwórz w Zeszycie</button>
-                                <button onclick="window.TrainingUI.deleteTraining(${existingTraining.id})" class="action-button" style="flex: 1; background: rgba(231, 76, 60, 0.15); border: 1px solid rgba(231, 76, 60, 0.4); color: #e74c3c; border-radius: 8px; font-size: 0.9em; padding: 8px; backdrop-filter: blur(5px);"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:4px; vertical-align:middle;"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/></svg>Usuń</button>
+                        <div class="z-dzien-trening">
+                            <div class="z-dzien-nazwa">${ikona('notebook', 16)}Zeszyt</div>
+                            <div class="z-mut">${liczba}</div>
+                            <div class="z-dzien-rzad">
+                                <button type="button" data-testid="open-in-notebook" onclick="window.NotebookUI.openDay('${existingTraining.date}')" class="z-ghost z-dzien-szeroki">Otwórz w Zeszycie</button>
+                                <button type="button" onclick="window.TrainingUI.deleteTraining(${existingTraining.id})" class="z-ghost z-danger">${ikona('trash', 16)}Usuń</button>
                             </div>
                         </div>
                         `;
                         return;
                     }
-                    const nameDisplay = existingTraining.name ? `<strong style="color: var(--ukis-text); font-size: 1.1em;">${esc(existingTraining.name)}</strong><br>` : '';
+                    const nazwa = existingTraining.name ? esc(existingTraining.name) : 'Trening';
                     html += `
-                        <div style="background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); backdrop-filter: blur(10px); margin-bottom: 15px; border-radius: 12px; padding: 15px; text-align: left; box-shadow: 0 4px 6px rgba(0,0,0,0.3);">
-                            ${nameDisplay}
-                            <span style="font-size: 0.9em;">Czas treningu: ${TrainingUI.formatTime(existingTraining.duration_seconds)}</span><br>
-                            <span style="font-size: 0.8em; color: #888;">Liczba ćwiczeń: ${existingTraining.exercises.length}</span>
-                            <div style="margin-top: 10px; display: flex; gap: 8px;">
-                                <button onclick="window.TrainingUI.viewTraining(${existingTraining.id})" class="action-button" style="flex: 1; background: rgba(52, 152, 219, 0.15); border: 1px solid rgba(52, 152, 219, 0.4); color: #3498db; border-radius: 8px; font-size: 0.9em; padding: 8px; backdrop-filter: blur(5px);"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:4px; vertical-align:middle;"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>Podgląd</button>
-                                <button onclick="window.TrainingUI.continueTraining(${existingTraining.id})" class="action-button pulse" style="flex: 1; background: rgba(46, 204, 113, 0.15); border: 1px solid rgba(46, 204, 113, 0.4); color: #2ecc71; border-radius: 8px; font-size: 0.9em; padding: 8px; backdrop-filter: blur(5px);"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:4px; vertical-align:middle;"><polygon points="5 3 19 12 5 21 5 3"/></svg>Kontynuuj</button>
-                                <button onclick="window.TrainingUI.deleteTraining(${existingTraining.id})" class="action-button" style="flex: 1; background: rgba(231, 76, 60, 0.15); border: 1px solid rgba(231, 76, 60, 0.4); color: #e74c3c; border-radius: 8px; font-size: 0.9em; padding: 8px; backdrop-filter: blur(5px);"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:4px; vertical-align:middle;"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/></svg>Usuń</button>
+                        <div class="z-dzien-trening">
+                            <div class="z-dzien-nazwa">${nazwa}</div>
+                            <div class="z-mut">Czas ${TrainingUI.formatTime(existingTraining.duration_seconds)} · ${liczba}</div>
+                            <div class="z-dzien-rzad">
+                                <button type="button" onclick="window.TrainingUI.viewTraining(${existingTraining.id})" class="z-ghost">${ikona('search', 16)}Podgląd</button>
+                                <button type="button" onclick="window.TrainingUI.continueTraining(${existingTraining.id})" class="z-ghost">${ikona('play', 16)}Kontynuuj</button>
+                                <button type="button" onclick="window.TrainingUI.deleteTraining(${existingTraining.id})" class="z-ghost z-danger">${ikona('trash', 16)}Usuń</button>
                             </div>
                         </div>
                     `;
@@ -983,8 +1233,8 @@ export const TrainingUI = {
             if (existingState) existingState.style.display = 'none';
 
             if (historyList) {
-                // Build recent history for copying
-                let historyHtml = '<h5 style="color: #ccc; margin-bottom: 10px; display: flex; align-items: center; gap: 8px;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1" ry="1"/></svg> Ostatnie treningi (wybierz, aby skopiować na dziś):</h5>';
+                // Ostatnie sesje do skopiowania (rozwijane przyciskiem „Skopiuj”).
+                let historyHtml = '<p class="z-mut z-dzien-lista-tytul">Ostatnie treningi: wybierz, aby skopiować do tego dnia</p>';
                 // Kartki Zeszytu nie nadają się do kopiowania; indeks z pełnej listy zostaje dla startTraining/toggleHistoryPreview.
                 const recentTrainings = allTrainingsCache
                     .map((rec, cacheIdx) => ({ rec, cacheIdx }))
@@ -992,67 +1242,42 @@ export const TrainingUI = {
                     .slice(0, 5); // Take last 5
                 
                 if (recentTrainings.length === 0) {
-                    historyHtml += `<p style="color: var(--ukis-text-muted); font-size: 0.9em; font-style: italic;">Brak sesji w historii do skopiowania.</p>`;
+                    historyHtml += `<p class="z-mut z-dzien-pusto">Brak sesji w historii do skopiowania.</p>`;
                 } else {
+                    const serie = (sets) => {
+                        if (!sets || sets.length === 0) return `<div class="z-mut">Brak zapisanych serii</div>`;
+                        return `<ul class="z-dzien-serie">${sets.map((s, i) => `<li>Seria ${i + 1}: <strong class="z-hi">${esc(s.weight)} kg</strong> × <strong>${esc(s.reps)} powt.</strong></li>`).join('')}</ul>`;
+                    };
+                    const cwiczenie = (ex) => `<div class="z-dzien-cw"><strong>${esc(ex.name || 'Brak nazwy')}</strong> <span class="z-mut">(${ex.type === 'cardio' ? 'Cardio' : 'Siłowe'})</span>${serie(ex.sets)}</div>`;
                     recentTrainings.forEach(({ rec, cacheIdx: idx }) => {
-                        const nameDisplay = rec.name ? `<strong style="color: var(--ukis-text); font-size: 1.1em;">${esc(rec.name)}</strong> <span style="color: #aaa; font-size: 0.9em;">(${rec.date})</span>` : `<strong style="color: var(--ukis-text); font-size: 1.1em;">${rec.date}</strong>`;
+                        const nazwa = rec.name ? `${esc(rec.name)} <span class="z-mut">(${esc(rec.date)})</span>` : esc(rec.date);
                         
                         let exercisesPreview = '';
                         if (rec.exercises && rec.exercises.length > 0) {
                             rec.exercises.forEach(ex => {
                                 if (ex.type === 'superset' && ex.exercises && ex.exercises.length > 0) {
-                                    exercisesPreview += `<div style="margin-bottom: 8px; border-left: 2px dashed #E91E63; padding-left: 10px;">
-                                        <strong style="color: #E91E63; font-size: 0.85em; text-transform: uppercase;">Blok Łączony (Superseria)</strong><br>`;
-                                    ex.exercises.forEach(nestedEx => {
-                                        exercisesPreview += `<strong>${esc(nestedEx.name || 'Brak nazwy')}</strong> <span style="font-size: 0.8em; color: #888;">(${nestedEx.type === 'cardio' ? 'Cardio' : 'Siłowe'})</span><br>`;
-                                        if (nestedEx.sets && nestedEx.sets.length > 0) {
-                                            exercisesPreview += `<ul style="margin: 3px 0 10px 0; padding-left: 20px; font-size: 0.9em; color: #ccc;">`;
-                                            nestedEx.sets.forEach((s, i) => {
-                                                exercisesPreview += `<li>Seria ${i+1}: <strong style="color: #00BFFF;">${esc(s.weight)} kg</strong> x <strong>${esc(s.reps)} powt.</strong></li>`;
-                                            });
-                                            exercisesPreview += `</ul>`;
-                                        } else {
-                                            exercisesPreview += `<div style="font-size: 0.9em; color: #888; margin-bottom: 10px;">Brak zapisanych serii</div>`;
-                                        }
-                                    });
-                                    exercisesPreview += `</div>`;
+                                    exercisesPreview += `<div class="z-dzien-superseria"><div class="z-mut z-hi">Superseria</div>${ex.exercises.map(cwiczenie).join('')}</div>`;
                                 } else {
-                                    exercisesPreview += `<div style="margin-bottom: 8px;"><strong>${esc(ex.name || 'Brak nazwy')}</strong> <span style="font-size: 0.8em; color: #888;">(${ex.type === 'cardio' ? 'Cardio' : 'Siłowe'})</span><br>`;
-                                    if (ex.sets && ex.sets.length > 0) {
-                                        exercisesPreview += `<ul style="margin: 3px 0 0 0; padding-left: 20px; font-size: 0.9em; color: #ccc;">`;
-                                        ex.sets.forEach((s, i) => {
-                                            exercisesPreview += `<li>Seria ${i+1}: <strong style="color: #00BFFF;">${esc(s.weight)} kg</strong> x <strong>${esc(s.reps)} powt.</strong></li>`;
-                                        });
-                                        exercisesPreview += `</ul>`;
-                                    } else {
-                                        exercisesPreview += `<span style="font-size: 0.9em; color: #888; padding-left: 10px;">Brak zapisanych serii</span>`;
-                                    }
-                                    exercisesPreview += `</div>`;
+                                    exercisesPreview += cwiczenie(ex);
                                 }
                             });
                         } else {
-                            exercisesPreview = `<p style="font-size: 0.9em; color: #888;">Brak zapisanych ćwiczeń.</p>`;
+                            exercisesPreview = `<p class="z-mut">Brak zapisanych ćwiczeń.</p>`;
                         }
 
                         historyHtml += `
-                            <div class="history-item-container glass-card" style="background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); margin-bottom: 10px; border-radius: 16px; padding: 15px; text-align: left; box-shadow: 0 4px 6px rgba(0,0,0,0.3);">
-                                <div style="display: flex; justify-content: space-between; align-items: center; cursor: pointer;" onclick="window.TrainingUI.toggleHistoryPreview(${idx})">
-                                    <div style="flex: 1;">
-                                        ${nameDisplay}<br>
-                                        <span style="font-size: 0.85em; color: #ccc;">Czas: ${TrainingUI.formatTime(rec.duration_seconds)} | Ćwiczeń: ${rec.exercises.length}</span>
-                                    </div>
-                                    <div style="color: #00BFFF; font-size: 1.2em; padding-left: 10px;">
-                                        <span id="preview-icon-${idx}">▼</span>
-                                    </div>
-                                </div>
-                                <div id="preview-content-${idx}" style="display: none; margin-top: 15px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 15px;">
-                                    <div style="margin-bottom: 15px;">
-                                        <h6 style="color: #ccc; margin-top: 0; margin-bottom: 10px;">Podgląd ćwiczeń:</h6>
-                                        ${exercisesPreview}
-                                    </div>
-                                    <button onclick="window.TrainingUI.startTraining(${idx})" class="action-button" style="width: 100%; background-color: #2ECC71; border-color: #2ECC71; color: #fff; font-weight: bold;">
-                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 4px; vertical-align: middle;"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1" ry="1"/></svg>Skopiuj do tego dnia
-                                    </button>
+                            <div class="history-item-container z-dzien-kopia">
+                                <button type="button" class="z-dzien-kopia-gora" aria-expanded="false" aria-controls="preview-content-${idx}" onclick="window.TrainingUI.toggleHistoryPreview(${idx})">
+                                    <span class="z-dzien-kopia-txt">
+                                        <span class="z-dzien-nazwa">${nazwa}</span>
+                                        <span class="z-mut">Czas ${TrainingUI.formatTime(rec.duration_seconds)} · ${cwiczenia(rec.exercises.length)}</span>
+                                    </span>
+                                    <span id="preview-icon-${idx}" class="z-dzien-chevron">${ikona('chevron-down', 18)}</span>
+                                </button>
+                                <div id="preview-content-${idx}" class="z-dzien-podglad" style="display: none;">
+                                    <p class="z-mut">Podgląd ćwiczeń</p>
+                                    ${exercisesPreview}
+                                    <button type="button" onclick="window.TrainingUI.startTraining(${idx})" class="z-btn z-dzien-start">${ikona('copy', 16)}Skopiuj do tego dnia</button>
                                 </div>
                             </div>
                         `;
@@ -1060,6 +1285,12 @@ export const TrainingUI = {
                 }
                 historyList.innerHTML = historyHtml;
             }
+        }
+
+        // Separator nad akcjami tylko pod planem albo treningami dnia.
+        if (sep) {
+            const nadAkcjami = (plannedState && plannedState.style.display !== 'none') || existingTrainingsOnDay.length > 0;
+            sep.style.display = nadAkcjami ? '' : 'none';
         }
         
         // Scroll to panel
@@ -1081,13 +1312,127 @@ export const TrainingUI = {
         const content = document.getElementById(`preview-content-${idx}`);
         const icon = document.getElementById(`preview-icon-${idx}`);
         if (!content || !icon) return;
-        if (content.style.display === 'none') {
-            content.style.display = 'block';
-            icon.textContent = '▲';
-        } else {
-            content.style.display = 'none';
-            icon.textContent = '▼';
-        }
+        const otworz = content.style.display === 'none';
+        content.style.display = otworz ? 'block' : 'none';
+        icon.classList.toggle('z-otwarte', otworz);
+        const przycisk = icon.closest('button');
+        if (przycisk) przycisk.setAttribute('aria-expanded', String(otworz));
+    },
+
+    // „Skopiuj” na karcie dnia rozwija i zwija listę ostatnich sesji (#history-sessions-list).
+    toggleCopyList: () => {
+        const lista = document.getElementById('history-sessions-list');
+        const przycisk = document.getElementById('copy-session-btn');
+        if (!lista) return;
+        lista.hidden = !lista.hidden;
+        if (przycisk) przycisk.setAttribute('aria-expanded', String(!lista.hidden));
+    },
+
+    // ---------- Sesja w nowym wyglądzie (spec 8.3, B2): tylko widok, stan sesji bez zmian ----------
+
+    // Widok sesji albo kalendarza na karcie Treningu.
+    pokazSesje: (widoczna) => {
+        const cal = document.getElementById('training-calendar-view');
+        const act = document.getElementById('active-training-view');
+        if (cal) cal.style.display = widoczna ? 'none' : 'block';
+        if (act) act.style.display = widoczna ? 'block' : 'none';
+        if (widoczna) TrainingUI.zamknijWiecej();
+        TrainingUI.odswiezTrybSesji();
+        if (widoczna) TrainingUI.dopasujNazwy();
+    },
+
+    // body.z-sesja (bez paska dolnego, trening-sesja.css): sesja widoczna na aktywnej karcie Treningu.
+    // Po „Wróć” albo przejściu na inny ekran pasek wraca, a sesja trwa w tle.
+    odswiezTrybSesji: () => {
+        const act = document.getElementById('active-training-view');
+        const tab = document.getElementById('training-dashboard');
+        const on = !!(act && tab && act.style.display !== 'none' && tab.classList.contains('active-tab'));
+        document.body.classList.toggle('z-sesja', on);
+    },
+
+    // „Wróć”: Menu; sesja (czas, szkic) trwa dalej i wraca po wejściu w Trening.
+    wrocZSesji: () => {
+        if (typeof window.switchTab === 'function') window.switchTab('welcome-screen');
+        else TrainingUI.odswiezTrybSesji();
+    },
+
+    // „Wpisz czas ręcznie”: przełącza #manual-duration-toggle (z niego czytają zapis i szkic).
+    przelaczCzasReczny: () => {
+        const toggle = document.getElementById('manual-duration-toggle');
+        if (!toggle) return;
+        toggle.checked = !toggle.checked;
+        TrainingUI.pokazCzasReczny();
+    },
+
+    pokazCzasReczny: () => {
+        const toggle = document.getElementById('manual-duration-toggle');
+        const pola = document.getElementById('manual-duration-inputs');
+        const btn = document.getElementById('manual-duration-btn');
+        const on = !!(toggle && toggle.checked);
+        if (pola) pola.style.display = on ? 'flex' : 'none';
+        if (btn) btn.setAttribute('aria-pressed', String(on));
+    },
+
+    ustawPrzyciskPauzy: (wstrzymana) => {
+        const btn = document.getElementById('pause-training-btn');
+        if (!btn) return;
+        btn.innerHTML = wstrzymana ? `${ikona('play', 18)}Wznów` : `${ikona('pause', 18)}Pauza`;
+        btn.setAttribute('aria-pressed', String(!!wstrzymana));
+        btn.classList.toggle('z-wznow', !!wstrzymana);
+    },
+
+    // „Więcej” w pasku akcji: zdjęcia, smartwatch, zapis jako plan, Edward (#bs-action-list).
+    przelaczWiecej: () => {
+        const list = document.getElementById('bs-action-list');
+        if (!list) return;
+        list.hidden = !list.hidden;
+        const btn = document.getElementById('bs-more-btn');
+        if (btn) btn.setAttribute('aria-expanded', String(!list.hidden));
+    },
+
+    // Komunikat z-toast dla innych ekranów Treningu (Kreator): window.TrainingUI.komunikat(tekst, { pilny }).
+    komunikat,
+
+    // „Zapytaj Edwarda” z „Więcej” (R18): ten sam przycisk czatu co poza sesją (sprawdzenie PRO, otwarcie okna).
+    otworzEdwarda: () => {
+        TrainingUI.zamknijWiecej();
+        const przycisk = document.getElementById('edward-chat-toggle');
+        if (przycisk) przycisk.click();
+    },
+
+    zamknijWiecej: () => {
+        const list = document.getElementById('bs-action-list');
+        if (list) list.hidden = true;
+        const btn = document.getElementById('bs-more-btn');
+        if (btn) btn.setAttribute('aria-expanded', 'false');
+    },
+
+    przelaczSmartwatch: () => {
+        const pola = document.getElementById('smartwatch-fields');
+        if (!pola) return;
+        pola.hidden = !pola.hidden;
+        const btn = document.getElementById('bs-smartwatch-btn');
+        if (btn) btn.setAttribute('aria-expanded', String(!pola.hidden));
+    },
+
+    // Najlepszy szacowany 1RM ćwiczenia (ten sam wzór co rekord w addSet): historia + bieżąca sesja.
+    rekord1RM: (ex) => {
+        const nazwa = (ex && ex.name ? ex.name : '').toLowerCase().trim();
+        if (!nazwa) return 0;
+        let max = 0;
+        const zSerii = (sets) => (Array.isArray(sets) ? sets : []).forEach((s) => {
+            const v = (parseFloat(s.weight) || 0) * (1 + ((parseFloat(s.reps) || 0) / 30));
+            if (v > max) max = v;
+        });
+        const sprawdz = (e) => {
+            if (e && e.name && e.name.toLowerCase().trim() === nazwa) zSerii(e.sets);
+        };
+        (allTrainingsCache || []).forEach((t) => (Array.isArray(t.exercises) ? t.exercises : []).forEach((e) => {
+            if (e && e.type === 'superset' && Array.isArray(e.exercises)) e.exercises.forEach(sprawdz);
+            else sprawdz(e);
+        }));
+        zSerii(ex.sets);
+        return Math.round(max);
     },
 
     formatTime: (seconds) => {
@@ -1144,19 +1489,12 @@ export const TrainingUI = {
             currentTraining.isPaused = false;
             currentTraining.totalPausedTime += (Date.now() - currentTraining.pauseStartTime);
             currentTraining.pauseStartTime = null;
-            pauseBtn.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 4px;"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg> Pauza';
-            pauseBtn.style.color = '#f39c12';
-            pauseBtn.style.backgroundColor = 'transparent';
-            pauseBtn.style.borderColor = '#f39c12';
         } else {
             // Zapauzuj
             currentTraining.isPaused = true;
             currentTraining.pauseStartTime = Date.now();
-            pauseBtn.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 4px;"><polygon points="5 3 19 12 5 21 5 3"/></svg> Wznów';
-            pauseBtn.style.color = '#fff';
-            pauseBtn.style.backgroundColor = '#2ECC71';
-            pauseBtn.style.borderColor = '#2ECC71';
         }
+        TrainingUI.ustawPrzyciskPauzy(currentTraining.isPaused);
     },
 
     cancelTraining: () => {
@@ -1176,8 +1514,7 @@ export const TrainingUI = {
             }
             TrainingUI.clearDraft();
             currentTraining = null;
-            document.getElementById('active-training-view').style.display = 'none';
-            document.getElementById('training-calendar-view').style.display = 'block';
+            TrainingUI.pokazSesje(false);
             TrainingUI.loadHistoryAndCalendar();
         }
     },
@@ -1188,8 +1525,7 @@ export const TrainingUI = {
             : allTrainingsCache.find(t => t.date === selectedDate);
         if (!existingTraining) return;
 
-        document.getElementById('training-calendar-view').style.display = 'none';
-        document.getElementById('active-training-view').style.display = 'block';
+        TrainingUI.pokazSesje(true);
 
         currentTraining = {
             id: existingTraining.id,
@@ -1198,81 +1534,114 @@ export const TrainingUI = {
             timerInterval: null,
             exercises: JSON.parse(JSON.stringify(existingTraining.exercises)),
             name: existingTraining.name || '',
+            // R20: rodzaj i zdjęcia tego treningu; bez nich zapis zmieniał cardio w „strength” i kasował zdjęcia.
+            // Zdjęcia jako kopia listy: usunięcie w sesji nie zmienia historii, dopóki trening nie zostanie zapisany.
+            type: existingTraining.type || 'strength',
+            socialPhotos: Array.isArray(existingTraining.socialPhotos) ? [...existingTraining.socialPhotos] : [],
             isPaused: false,
             pauseStartTime: null,
             totalPausedTime: 0
         };
+        // Stare treningi mają ćwiczenia bez id (albo z powtórzonym): bez id przyciski karty nie trafiłyby w ćwiczenie.
+        // Ta sama naprawa co w restoreDraft.
+        const seenIds = new Set();
+        const napraw = (ex) => {
+            if (!ex || typeof ex !== 'object') return;
+            if (ex.id === undefined || ex.id === null || ex.id === '' || ex.id === 'undefined' || seenIds.has(String(ex.id))) {
+                ex.id = Math.random().toString(36).substr(2, 9);
+            }
+            seenIds.add(String(ex.id));
+        };
+        (currentTraining.exercises || []).forEach((ex) => {
+            napraw(ex);
+            if (ex && ex.type === 'superset' && Array.isArray(ex.exercises)) ex.exercises.forEach(napraw);
+        });
+
+        // Pola smartwatcha z tego treningu albo puste (nie z poprzedniej sesji).
+        const sw = existingTraining.smartwatch || {};
+        const calInput = document.getElementById('smartwatch-calories');
+        const hrInput = document.getElementById('smartwatch-hr');
+        if (calInput) calInput.value = sw.calories != null ? String(sw.calories) : '';
+        if (hrInput) hrInput.value = sw.hr != null ? String(sw.hr) : '';
 
         const nameInput = document.getElementById('training-name-input');
         if (nameInput) {
             nameInput.value = currentTraining.name;
         }
 
+        TrainingUI.pokazRodzaj(currentTraining.type);
+        TrainingUI.ustawPrzyciskPauzy(false);
         TrainingUI.renderCurrentExercises();
+        TrainingUI.renderTrainingPhotos();
         currentTraining.timerInterval = setInterval(TrainingUI.updateTimer, 1000);
     },
 
+    // Podgląd zapisanego treningu z karty dnia (z-dialog; wygląd w trening-kalendarz.css). Nazwy z danych przez esc().
     viewTraining: (trainingId) => {
         const rec = allTrainingsCache.find(t => t.id === trainingId);
         if (!rec) return;
-        
-        let html = `
-            <div id="view-modal-overlay" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 10000; display: flex; justify-content: center; align-items: center; padding: 20px; box-sizing: border-box;">
-                <div style="background: #222; border: 1px solid #3498db; border-radius: 12px; width: 100%; max-width: 500px; max-height: 80vh; overflow-y: auto; padding: 20px; color: #fff;">
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 10px;">
-                        <h3 style="color: #3498db; margin: 0;">Podgląd Treningu</h3>
-                        <button onclick="document.getElementById('view-modal-overlay').remove()" style="background: transparent; border: none; color: #fff; font-size: 1.5em; cursor: pointer;">&times;</button>
-                    </div>
-                    <div style="margin-bottom: 15px;">
-                        <strong style="color: #00BFFF; font-size: 1.2em;">${rec.date} ${rec.name ? ' - ' + rec.name : ''}</strong><br>
-                        <span style="color: #aaa; font-size: 0.9em;">Czas trwania: ${TrainingUI.formatTime(rec.duration_seconds)}</span><br>
-                        <span style="color: #aaa; font-size: 0.9em;">Ćwiczeń: ${rec.exercises.length}</span>
-                    </div>
-                    <h4 style="color: #00BFFF; margin-bottom: 10px;">Zapisane ćwiczenia:</h4>
-        `;
-        
-        rec.exercises.forEach((ex, i) => {
-            if (ex.type === 'superset' && ex.exercises && ex.exercises.length > 0) {
-                html += `
-                    <div style="margin-bottom: 10px; padding: 10px; background: rgba(233, 30, 99, 0.05); border-radius: 5px; border-left: 2px solid #E91E63;">
-                        <div style="color: #E91E63; font-weight: bold; margin-bottom: 5px; text-transform: uppercase;">${i+1}. Blok Łączony (Superseria)</div>
-                `;
-                ex.exercises.forEach((nestedEx, nIdx) => {
-                    html += `
-                        <div style="margin-bottom: 5px; margin-top: 10px; color: #fff; font-weight: bold;">${i+1}.${nIdx+1}. ${nestedEx.name || 'Nieznane ćwiczenie'}</div>
-                        <div style="padding-left: 10px; border-left: 2px solid #E91E63;">
-                            ${(!nestedEx.sets || nestedEx.sets.length === 0) ? '<em style="color: #777;">Brak serii</em>' : ''}
-                            ${(nestedEx.sets || []).map((set, sIdx) => `<div>Seria ${sIdx + 1}: ${set.weight} kg x ${set.reps} powt.</div>`).join('')}
-                        </div>
-                    `;
-                });
-                html += `</div>`;
-            } else {
-                html += `
-                    <div style="margin-bottom: 10px; padding: 10px; background: rgba(255,255,255,0.05); border-radius: 5px;">
-                        <div style="color: #fff; font-weight: bold; margin-bottom: 5px;">${i+1}. ${ex.name || 'Nieznane ćwiczenie'}</div>
-                        <div style="padding-left: 10px; border-left: 2px solid #00BFFF;">
-                            ${(!ex.sets || ex.sets.length === 0) ? '<em style="color: #777;">Brak serii</em>' : ''}
-                            ${(ex.sets || []).map((set, sIdx) => `<div>Seria ${sIdx + 1}: ${set.weight} kg x ${set.reps} powt.</div>`).join('')}
-                        </div>
-                    </div>
-                `;
-            }
-        });
+        const cwiczeniaRec = Array.isArray(rec.exercises) ? rec.exercises : [];
+        const serie = (sets) => (!Array.isArray(sets) || sets.length === 0)
+            ? '<div class="z-mut">Brak serii</div>'
+            : sets.map((set, sIdx) => `<div>Seria ${sIdx + 1}: ${esc(set.weight)} kg × ${esc(set.reps)} powt.</div>`).join('');
 
-        html += `
-                    <button onclick="document.getElementById('view-modal-overlay').remove()" class="action-button" style="width: 100%; margin-top: 20px; background: #555; border-color: #555; color: #fff;">Zamknij</button>
+        const lista = cwiczeniaRec.map((ex, i) => {
+            if (ex && ex.type === 'superset' && Array.isArray(ex.exercises) && ex.exercises.length > 0) {
+                return `
+                    <div class="z-podglad-cw z-podglad-superseria">
+                        <div class="z-podglad-nazwa">${i + 1}. Superseria</div>
+                        ${ex.exercises.map((nestedEx, nIdx) => `
+                            <div class="z-podglad-nazwa">${i + 1}.${nIdx + 1}. ${esc(nestedEx.name || 'Nieznane ćwiczenie')}</div>
+                            <div class="z-podglad-serie">${serie(nestedEx.sets)}</div>
+                        `).join('')}
+                    </div>`;
+            }
+            return `
+                <div class="z-podglad-cw">
+                    <div class="z-podglad-nazwa">${i + 1}. ${esc((ex && ex.name) || 'Nieznane ćwiczenie')}</div>
+                    <div class="z-podglad-serie">${serie(ex && ex.sets)}</div>
+                </div>`;
+        }).join('');
+
+        const html = `
+            <div id="view-modal-overlay" class="z-dialog-scrim z-podglad-scrim">
+                <div class="z-dialog z-podglad" role="dialog" aria-modal="true" aria-labelledby="view-modal-title">
+                    <div class="z-podglad-gora">
+                        <h2 id="view-modal-title" class="z-hd">Podgląd treningu</h2>
+                        <button type="button" class="z-ic" aria-label="Zamknij" data-zamknij>${ikona('x', 20)}</button>
+                    </div>
+                    <div class="z-podglad-info">
+                        <div class="z-podglad-tytul">${esc(rec.date)}${rec.name ? ` · ${esc(rec.name)}` : ''}</div>
+                        <div class="z-mut">Czas trwania: ${esc(TrainingUI.formatTime(rec.duration_seconds))}</div>
+                        <div class="z-mut">Ćwiczeń: ${cwiczeniaRec.length}</div>
+                    </div>
+                    <h3 class="z-lab">Zapisane ćwiczenia</h3>
+                    ${lista}
+                    <div class="z-dialog-actions">
+                        <button type="button" class="z-ghost" data-zamknij>Zamknij</button>
+                    </div>
                 </div>
             </div>
         `;
-        const existingModal = document.getElementById('view-modal-overlay');
-        if (existingModal) existingModal.remove();
+        document.getElementById('view-modal-overlay')?.remove();
         document.body.insertAdjacentHTML('beforeend', html);
+        const okno = document.getElementById('view-modal-overlay');
+        const powrot = document.activeElement;
+        const zamknij = () => {
+            okno.remove();
+            if (powrot && document.contains(powrot) && typeof powrot.focus === 'function') powrot.focus();
+        };
+        okno.addEventListener('click', (e) => {
+            if (e.target === okno || e.target.closest('[data-zamknij]')) zamknij();
+        });
+        okno.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') { e.preventDefault(); zamknij(); }
+        });
+        okno.querySelector('.z-podglad-gora .z-ic').focus();
     },
 
     startTraining: (copyFromIndex = null) => {
-        document.getElementById('training-calendar-view').style.display = 'none';
-        document.getElementById('active-training-view').style.display = 'block';
+        TrainingUI.pokazSesje(true);
         
         currentTraining = {
             date: selectedDate,
@@ -1332,6 +1701,9 @@ export const TrainingUI = {
             }
         }
         
+        TrainingUI.ustawPrzyciskPauzy(false);
+        TrainingUI.renderTrainingPhotos();
+
         // If empty, start with one empty exercise block
         if (currentTraining.exercises.length === 0) {
             TrainingUI.addExercise();
@@ -1572,7 +1944,7 @@ export const TrainingUI = {
             }
         } catch (error) {
             console.error("Error in addSet:", error);
-            alert("Błąd podczas dodawania serii: " + error.message);
+            komunikat("Nie udało się dodać serii: " + error.message, { pilny: true });
         }
     },
 
@@ -1626,154 +1998,144 @@ export const TrainingUI = {
 
         let html = '';
 
-        // Helper to render a single flat exercise block
+        // Karta ćwiczenia (spec 8.3): nazwa, planInfo, „N serie · rekord 1RM”, narzędzia, wiersze serii, przyciski.
         const renderExBlock = (ex, isInsideSuperset = false) => {
-            const setsCount = (ex.sets || []).filter(s => s.type !== 'dropset').length;
-            
+            // Id jako tekst: liczbowe i brakujące id ze starych danych trafiają w getExerciseById (porównanie tekstowe).
+            const a = jsArg(String(ex.id));
+            const sets = Array.isArray(ex.sets) ? ex.sets : [];
+            const setsCount = sets.filter(s => s.type !== 'dropset').length;
+            const isCardio = ex.type === 'cardio';
+            const puste = !isCardio && sets.length === 0;
+            const rekord = isCardio ? 0 : TrainingUI.rekord1RM(ex);
+            const meta = `${setsCount} ${serieSlowo(setsCount)}${rekord > 0 ? ` · rekord 1RM ok. ${rekord} kg` : ''}`;
+            const typ = ex.type === 'classes' ? 'Zajęcia' : (isCardio ? 'Cardio' : 'Siłowy');
+            const nameId = `exname-${String(ex.id).replace(/[^\w-]/g, '_')}`;
+
             html += `
-                <div style="margin-bottom: ${isInsideSuperset ? '0' : '30px'};">
-                    <div style="margin-bottom: 10px;">
-                        <textarea class="exercise-name-input" placeholder="Wpisz nazwę..." onchange="window.TrainingUI.updateExerciseField('${ex.id}', 'name', this.value); window.TrainingUI.renderCurrentExercises();" style="width: 100%; background: transparent; border: none; color: #FFF; font-size: 26px; font-weight: 800; letter-spacing: -0.5px; outline: none; padding: 0; margin-bottom: 5px; resize: none; text-align: center; overflow: hidden; line-height: 1.2;" rows="2">${esc(ex.name)}</textarea>
-                        ${ex.planInfo ? `<div class="plan-info" style="color: #bbb; font-size: 13px; line-height: 1.4; margin-bottom: 6px;">${esc(ex.planInfo)}</div>` : ''}
-                        <div style="color: #888; font-size: 14px; margin-bottom: 12px;">${setsCount} serie</div>
-                        
-                        <div style="display: flex; gap: 8px; margin-bottom: 15px; width: 100%;">
-                            <!-- Katalog -->
-                            <button onclick="window.TrainingUI.openExerciseSelector('${ex.id}')" style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; color: #FFF; padding: 8px 12px; font-size: 13px; font-weight: 500; display: flex; align-items: center; justify-content: center; flex: 1; gap: 6px; cursor: pointer;">
-                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20"/></svg>
-                                Katalog
-                            </button>
-                            
-                            <!-- Typ treningu -->
-                            <button onclick="window.TrainingUI.toggleExerciseType('${ex.id}')" style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; color: #FFF; padding: 8px 12px; font-size: 13px; font-weight: 500; display: flex; align-items: center; justify-content: center; flex: 1; gap: 6px; cursor: pointer;">
-                                ${ex.type === 'classes' ? '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5a2 2 0 1 0 0-4 2 2 0 0 0 0 4z"/><path d="M5 19l4-6V8l-4 3"/><path d="M19 19l-4-6V8l4 3"/><path d="M15 22H9"/></svg> Zajęcia' : (ex.type === 'cardio' ? '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5a2 2 0 1 0 0-4 2 2 0 0 0 0 4z"/><path d="M16 11l-3 4-2-2-4 5"/><path d="M4 17l3-4"/></svg> Cardio' : '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 9v6"/><path d="M9 7v10"/><path d="M15 7v10"/><path d="M19 9v6"/><path d="M9 12h6"/></svg> Siłowy')}
-                            </button>
-                            
-                            <!-- Aparat -->
-                            <label style="cursor: pointer; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; color: #FFF; padding: 8px 12px; display: flex; align-items: center; justify-content: center; flex: 1;">
-                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3"/></svg>
-                                <input type="file" accept="image/*" style="display: none;" onchange="window.TrainingUI.handleTrainingPhoto(event)">
-                            </label>
-                            
-                            <!-- Kosz -->
-                            <button onclick="window.TrainingUI.removeExercise('${ex.id}')" style="background: rgba(255,69,58,0.1); border: 1px solid rgba(255,69,58,0.3); border-radius: 8px; color: #FF453A; padding: 8px 12px; display: flex; align-items: center; justify-content: center; flex: 1; cursor: pointer;">
-                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/></svg>
-                            </button>
-                        </div>
+                <div class="z-cw${isInsideSuperset ? ' z-cw-w-serii' : ' z-card'}${puste ? ' z-cw-puste' : ''}">
+                    <label class="z-sr" for="${esc(nameId)}">Nazwa ćwiczenia</label>
+                    <textarea id="${esc(nameId)}" class="exercise-name-input z-cw-nazwa" placeholder="Wpisz nazwę ćwiczenia…" rows="1" oninput="window.TrainingUI.dopasujNazwe(this)" onchange="window.TrainingUI.updateExerciseField(${a}, 'name', this.value); window.TrainingUI.renderCurrentExercises();">${esc(ex.name)}</textarea>
+                    ${ex.planInfo ? `<div class="plan-info z-mut z-cw-plan">${esc(ex.planInfo)}</div>` : ''}
+                    <div class="z-mut z-cw-meta">${meta}</div>
+                    <div class="z-cw-narzedzia">
+                        <button type="button" class="z-ghost" onclick="window.TrainingUI.openExerciseSelector(${a})">Katalog</button>
+                        <button type="button" class="z-ghost" onclick="window.TrainingUI.toggleExerciseType(${a})">${typ}</button>
+                        <button type="button" class="z-ghost z-cw-foto" aria-label="Zdjęcie" onclick="this.nextElementSibling.click()">${ikona('camera', 18)}</button><input type="file" accept="image/*" hidden onchange="window.TrainingUI.handleTrainingPhoto(event)">
+                        <button type="button" class="z-ghost z-cw-usun" aria-label="Usuń ćwiczenie" onclick="window.TrainingUI.removeExercise(${a})">${ikona('trash', 18)}</button>
                     </div>`;
 
-            if (ex.type === 'cardio') {
+            if (isCardio) {
                 const cTime = ex.cardioSeconds || (ex.duration_minutes ? ex.duration_minutes * 60 : 0);
+                const minId = `cardio-manual-min-${ex.id}`;
                 html += `
-                    <div style="background: #1C1C1E; border-radius: 16px; padding: 20px; text-align: center;">
-                        <div style="color: #888; font-size: 13px; margin-bottom: 10px;">Czas trwania (Stoper lub wpisz ręcznie)</div>
-                        <div style="font-size: 36px; color: #00D26A; font-family: monospace; font-weight: 700; display: ${ex.cardioInterval ? 'block' : 'none'};" id="cardio-display-${ex.id}">${window.TrainingUI.formatTime(cTime)}</div>
-                        <div style="display: ${ex.cardioInterval ? 'none' : 'flex'}; align-items: center; justify-content: center; gap: 5px;">
-                            <input type="number" id="cardio-manual-min-${ex.id}" value="${Math.floor(cTime/60)}" onchange="window.TrainingUI.updateCardioManual('${ex.id}', this.value)" style="width: 80px; padding: 10px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1); background: #2C2C2E; color: #FFF; font-size: 24px; text-align: center; font-weight: 700;" inputmode="numeric">
-                            <span style="color: #888; font-size: 16px;">min</span>
+                    <div class="z-cw-cardio">
+                        <div class="z-mut">Czas trwania (stoper albo wpisz ręcznie)</div>
+                        <div class="z-cw-cardio-czas" id="cardio-display-${esc(ex.id)}"${ex.cardioInterval ? '' : ' hidden'}>${window.TrainingUI.formatTime(cTime)}</div>
+                        <div class="z-cw-cardio-reczny"${ex.cardioInterval ? ' hidden' : ''}>
+                            <label class="z-sr" for="${esc(minId)}">Czas cardio w minutach</label>
+                            <input type="number" id="${esc(minId)}" class="z-in" value="${Math.floor(cTime / 60)}" onchange="window.TrainingUI.updateCardioManual(${a}, this.value)" inputmode="numeric">
+                            <span class="z-mut">min</span>
                         </div>
-                        <div style="display: flex; gap: 10px; justify-content: center; margin-top: 20px;">
-                            <button id="cardio-btn-start-${ex.id}" onclick="window.TrainingUI.startCardio('${ex.id}')" style="background: #00D26A; color: #000; border: none; padding: 12px 24px; border-radius: 8px; font-weight: 700; cursor: pointer; ${ex.cardioInterval ? 'opacity: 0.5;' : ''}">Start</button>
-                            <button id="cardio-btn-stop-${ex.id}" onclick="window.TrainingUI.stopCardio('${ex.id}')" style="background: rgba(231,76,60,0.1); color: #E74C3C; border: none; padding: 12px 24px; border-radius: 8px; font-weight: 700; cursor: pointer; ${!ex.cardioInterval ? 'opacity: 0.5;' : ''}">Stop</button>
+                        <div class="z-cw-rzad">
+                            ${ex.cardioInterval
+                                ? `<button type="button" id="cardio-btn-start-${esc(ex.id)}" class="z-ghost z-cw-stoper" disabled>${ikona('clock', 16)}Stoper działa</button>
+                            <button type="button" id="cardio-btn-stop-${esc(ex.id)}" class="z-btn" onclick="window.TrainingUI.stopCardio(${a})">${ikona('pause', 16)}Stop</button>`
+                                : `<button type="button" id="cardio-btn-start-${esc(ex.id)}" class="z-btn" onclick="window.TrainingUI.startCardio(${a})">${ikona('play', 16)}Start</button>
+                            <button type="button" id="cardio-btn-stop-${esc(ex.id)}" class="z-ghost" disabled>${ikona('pause', 16)}Stop</button>`}
                         </div>
                     </div>`;
             } else {
-                // Wrapper for Sets exactly like the mockup: A single dark #1C1C1E card
-                html += `<div style="background: #1C1C1E; border-radius: 16px; display: flex; flex-direction: column; overflow: hidden; margin-bottom: 15px;">`;
-                let seriesCount = 0;
-                (ex.sets || []).forEach((set, i) => {
+                // Bieżąca seria: pierwsza nieodhaczona.
+                const biezaca = sets.findIndex(s => !s.isCompleted);
+                if (sets.length > 0) html += `<div class="z-cw-serie">`;
+                // Numer serii bez dropsetów (jak „N serie”): 1, D, 2. Dropset w nazwie dostępnej: „Seria 1, dropset 1”.
+                let nrSerii = 0;
+                let nrDropsetu = 0;
+                sets.forEach((set, i) => {
                     const isDropset = set.type === 'dropset';
-                    if (!isDropset) seriesCount++;
-                    const rowStyle = isDropset ? 'padding-left: 20px;' : '';
-                    
-                    const borderBottom = i < (ex.sets.length - 1) ? 'border-bottom: 1px solid rgba(255,255,255,0.05);' : '';
-
+                    const done = !!set.isCompleted;
+                    if (isDropset) nrDropsetu++;
+                    else { nrSerii++; nrDropsetu = 0; }
+                    const n = isDropset
+                        ? (nrSerii > 0 ? `${nrSerii}, dropset ${nrDropsetu}` : `0, dropset ${nrDropsetu}`)
+                        : String(nrSerii);
+                    const klasy = ['z-seria', done ? 'z-zrobiona' : '', i === biezaca ? 'z-biezaca' : '', isDropset ? 'z-dropset' : ''].filter(Boolean).join(' ');
                     html += `
-                        <div style="display: flex; align-items: center; justify-content: space-between; padding: 15px; ${borderBottom} ${rowStyle} ${set.isCompleted ? 'background: rgba(0, 210, 106, 0.05); box-shadow: inset 2px 0 0 #00D26A;' : ''}">
-                            <div style="display: flex; align-items: center; gap: 15px; flex: 1;">
-                                <!-- Checkbox circle -->
-                                <div onclick="window.TrainingUI.toggleSetCompletion('${ex.id}', ${i}, ${!set.isCompleted})" style="width: 24px; height: 24px; border-radius: 50%; border: 1px solid #555; display: flex; align-items: center; justify-content: center; cursor: pointer; background: ${set.isCompleted ? '#00D26A' : 'transparent'}; border-color: ${set.isCompleted ? '#00D26A' : '#555'}; color: #000; font-weight: bold; font-size: 14px;; flex-shrink: 0;"></div>
-                                
-                                <div style="display: flex; align-items: center; gap: 10px; flex: 1; justify-content: flex-start;">
-                                    <div style="display: flex; flex-direction: column; align-items: center;">
-                                        <div style="background: #2C2C2E; border-radius: 8px; padding: 8px 16px; display: flex; align-items: center; min-width: 90px; justify-content: center;">
-                                            <input type="number" value="${set.weight || ''}" placeholder="Ciężar (kg)" onchange="window.TrainingUI.updateSetInline('${ex.id}', ${i}, 'weight', this.value)" style="width: 100%; background: transparent; border: none; color: ${isDropset ? '#FF9800' : '#888'}; font-size: 16px; font-weight: 500; text-align: center; padding: 0; outline: none;" inputmode="decimal">
-                                        </div>
-                                        <span style="color: #666; font-size: 11px; margin-top: 4px;">(Max: ~33 kg)</span>
-                                    </div>
-                                    <span style="color: #666; font-size: 16px; font-weight: 300; margin-bottom: 15px;">×</span>
-                                    <div style="display: flex; flex-direction: column; align-items: center;">
-                                        <div style="background: #2C2C2E; border-radius: 8px; padding: 8px 16px; display: flex; align-items: center; min-width: 90px; justify-content: center;">
-                                            <input type="number" value="${set.reps || ''}" placeholder="Powtórzenia" onchange="window.TrainingUI.updateSetInline('${ex.id}', ${i}, 'reps', this.value)" style="width: 100%; background: transparent; border: none; color: #888; font-size: 16px; font-weight: 500; text-align: center; padding: 0; outline: none;" inputmode="numeric">
-                                        </div>
-                                        <span style="visibility: hidden; font-size: 11px; margin-top: 4px;">Spacer</span>
-                                    </div>
-                                </div>
-                            </div>
-                            <button onclick="window.TrainingUI.removeSet('${ex.id}', ${i})" style="background: transparent; border: none; color: #555; font-size: 20px; cursor: pointer; padding: 5px 10px; margin-bottom: 15px;"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/></svg></button>
+                        <div class="${klasy}">
+                            <button type="button" class="z-seria-znak" aria-pressed="${done}" aria-label="Seria ${n} wykonana" onclick="window.TrainingUI.toggleSetCompletion(${a}, ${i}, ${!done})"><span class="z-seria-kolo">${done ? ikona('check', 14) : ''}</span></button>
+                            <span class="z-mut z-seria-nr"${isDropset ? ' title="Dropset"' : ''}>${isDropset ? 'D' : nrSerii}</span>
+                            <input type="number" class="z-in z-seria-kg" value="${esc(set.weight || '')}" placeholder="kg" aria-label="Ciężar, seria ${n}" onchange="window.TrainingUI.updateSetInline(${a}, ${i}, 'weight', this.value)" inputmode="decimal" step="any">
+                            <span class="z-mut z-seria-x">kg ×</span>
+                            <input type="number" class="z-in z-seria-powt" value="${esc(set.reps || '')}" placeholder="" aria-label="Powtórzenia, seria ${n}" onchange="window.TrainingUI.updateSetInline(${a}, ${i}, 'reps', this.value)" inputmode="numeric">
+                            ${set.isPR ? '<span class="z-mut z-seria-rekord">rekord</span>' : ''}
+                            <button type="button" class="z-ic z-seria-usun" aria-label="Usuń serię ${n}" onclick="window.TrainingUI.removeSet(${a}, ${i})">${ikona('x', 16)}</button>
                         </div>`;
                 });
-                html += `</div>`; // End sets dark card wrapper
+                if (sets.length > 0) html += `</div>`;
 
-                // Buttons OUTSIDE the card
                 html += `
-                    <div style="display: flex; gap: 6px; flex-wrap: nowrap; overflow-x: auto; padding-bottom: 5px;">
-                        <button onclick="window.TrainingUI.addSet('${ex.id}', false)" style="background: #FFF; color: #000; border: none; border-radius: 8px; padding: 8px 12px; font-size: 13px; white-space: nowrap; flex: 1; justify-content: center; font-weight: 700; cursor: pointer;">[ + Seria ]</button>
-                        <button onclick="window.TrainingUI.addSet('${ex.id}', true)" style="background: #1C1C1E; color: #FFF; border: none; border-radius: 8px; padding: 8px 12px; font-size: 13px; white-space: nowrap; flex: 1; justify-content: center; font-weight: 500; cursor: pointer; display: flex; align-items: center; gap: 6px;">
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/></svg> Dropset
-                        </button>
-                        ${!isInsideSuperset ? `
-                            <button onclick="window.TrainingUI.addSuperset('${ex.id}')" style="background: #1C1C1E; color: #FFF; border: none; border-radius: 8px; padding: 8px 12px; font-size: 13px; white-space: nowrap; flex: 1; justify-content: center; font-weight: 500; cursor: pointer; display: flex; align-items: center; gap: 6px;">
-                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg> Superseria
-                            </button>
-                        ` : ''}
+                    <div class="z-cw-rzad">
+                        <button type="button" class="z-btn" onclick="window.TrainingUI.addSet(${a}, false)">+ Seria</button>
+                        <button type="button" class="z-ghost" onclick="window.TrainingUI.addSet(${a}, true)">Dropset</button>
+                        ${!isInsideSuperset ? `<button type="button" class="z-ghost" onclick="window.TrainingUI.addSuperset(${a})">Superseria</button>` : ''}
                     </div>`;
-                
-                // Minimalist auto-copy
-                html += `
-                    <div style="margin-top: 15px; display: flex; align-items: center; gap: 8px;">
-                        <input type="checkbox" onchange="window.TrainingUI.handleCopyCheckbox('${ex.id}', this.checked)" ${ex.autoCopy ? 'checked' : ''} style="accent-color: #FFF; width: 16px; height: 16px;">
-                        <span style="color: #666; font-size: 12px;">Auto-kopiuj z poprzedniej serii</span>
-                    </div>`;
+
+                // Autokopia ostatniej serii (zwinięte ćwiczenie bez serii jej nie pokazuje).
+                if (!puste) {
+                    html += `
+                    <label class="z-check z-cw-kopiuj"><input type="checkbox" onchange="window.TrainingUI.handleCopyCheckbox(${a}, this.checked)" ${ex.autoCopy ? 'checked' : ''}>Kopiuj z poprzedniej serii</label>`;
+                }
             }
 
-            html += `</div>`; // End exercise block
-        }; // end renderExBlock
+            html += `</div>`; // koniec karty ćwiczenia
+        };
 
-        // MAIN LOOP — handles flat exercises AND nested superset objects
+        // Ćwiczenia zwykłe i superserie (jedna karta z ćwiczeniami w środku).
         currentTraining.exercises.forEach((ex) => {
             if (ex.type === 'superset' && Array.isArray(ex.exercises)) {
-                // Superset group: render a pink bordered card wrapping all exercises inside
                 html += `
-                    <div style="margin-bottom: 24px; position: relative; border: 2px solid #E91E63; border-radius: 16px; padding: 36px 16px 16px 16px; background: rgba(233,30,99,0.05);">
-                        <div style="position: absolute; top: -13px; left: 16px; background: #E91E63; color: #FFF; padding: 4px 14px; font-size: 11px; font-weight: 800; border-radius: 20px; text-transform: uppercase; letter-spacing: 1px; z-index: 10; display: flex; align-items: center; gap: 4px;">
-                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg> Superseria
-                        </div>
-                        <button onclick="window.TrainingUI.removeExercise('${ex.id}')" style="position: absolute; top: 10px; right: 14px; background: transparent; border: none; color: #666; cursor: pointer;">
-                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/></svg>
-                        </button>`;
+                    <div class="z-card z-superseria">
+                        <div class="z-superseria-gora">
+                            <span class="z-pill">Superseria</span>
+                            <button type="button" class="z-ic z-superseria-usun" aria-label="Usuń superserię" onclick="window.TrainingUI.removeExercise(${jsArg(String(ex.id))})">${ikona('trash', 18)}</button>
+                        </div>`;
                 ex.exercises.forEach((subEx, subIdx) => {
-                    if (subIdx > 0) {
-                        html += `<div style="height: 2px; background: rgba(233,30,99,0.3); margin: 16px 0; border-radius: 2px;"></div>`;
-                    }
+                    if (subIdx > 0) html += `<div class="z-sep"></div>`;
                     renderExBlock(subEx, true);
                 });
-                html += `</div>`; // end superset pink card
+                html += `</div>`;
             } else {
-                // Normal flat exercise
                 renderExBlock(ex, false);
             }
         });
 
         list.innerHTML = html;
+        TrainingUI.dopasujNazwy();
+    },
+
+    // Wysokość pola nazwy ćwiczenia według treści. field-sizing: content (CSS) nie działa w Safari na iOS,
+    // a <textarea rows="1"> obcinałby tam długą nazwę do jednej linii. Ukryte pole (scrollHeight 0) zostaje bez zmian.
+    dopasujNazwe: (el) => {
+        if (!el || !el.isConnected) return;
+        el.style.height = 'auto';
+        const h = el.scrollHeight;
+        if (h > 0) el.style.height = `${h}px`;
+        else el.style.height = '';
+    },
+
+    dopasujNazwy: () => {
+        document.querySelectorAll('#current-exercises-list .z-cw-nazwa').forEach((el) => TrainingUI.dopasujNazwe(el));
     },
 
     handleTrainingPhoto: async (event) => {
-        const file = event.target.files[0];
+        const input = event.target;
+        const file = input.files[0];
+        // Pole czyszczone po każdym wyborze: to samo zdjęcie da się wybrać drugi raz.
+        try { input.value = ''; } catch (e) { /* stare przeglądarki */ }
         if (!file) return;
         if (!currentTraining.socialPhotos) currentTraining.socialPhotos = [];
         if (currentTraining.socialPhotos.length >= 3) {
-            alert("Możesz dodać maksymalnie 3 zdjęcia z treningu!");
+            komunikat("Możesz dodać najwyżej 3 zdjęcia z treningu.");
             return;
         }
 
@@ -1782,8 +2144,9 @@ export const TrainingUI = {
                 const id = await MediaManager.saveMedia(compressedDataUrl);
                 currentTraining.socialPhotos.push(id);
                 TrainingUI.renderTrainingPhotos();
+                komunikat('Zdjęcie dodane');
             } catch(e) {
-                alert("Błąd zapisu zdjęcia: " + e.message);
+                komunikat("Nie udało się zapisać zdjęcia: " + e.message, { pilny: true });
             }
         });
     },
@@ -1799,45 +2162,48 @@ export const TrainingUI = {
         const list = document.getElementById('training-social-photos-list');
         if (!list) return;
         list.innerHTML = '';
-        if (currentTraining.socialPhotos && currentTraining.socialPhotos.length > 0) {
-            currentTraining.socialPhotos.forEach((photoId, index) => {
-                const imgWrap = document.createElement('div');
-                imgWrap.style.position = 'relative';
-                
-                const img = document.createElement('img');
-                img.style.width = '60px';
-                img.style.height = '60px';
-                img.style.objectFit = 'cover';
-                img.style.borderRadius = '8px';
-                
-                MediaManager.getMediaUrl(photoId).then(url => {
-                    if (url) img.src = url;
-                });
+        const photos = currentTraining && Array.isArray(currentTraining.socialPhotos) ? currentTraining.socialPhotos : [];
+        photos.forEach((photoId, index) => {
+            const imgWrap = document.createElement('div');
+            imgWrap.className = 'z-sesja-zdjecie';
 
-                const delBtn = document.createElement('button');
-                delBtn.innerText = 'X';
-                delBtn.style.position = 'absolute';
-                delBtn.style.top = '-5px';
-                delBtn.style.right = '-5px';
-                delBtn.style.background = 'red';
-                delBtn.style.color = 'white';
-                delBtn.style.border = 'none';
-                delBtn.style.borderRadius = '50%';
-                delBtn.style.width = '20px';
-                delBtn.style.height = '20px';
-                delBtn.style.fontSize = '10px';
-                delBtn.onclick = () => window.TrainingUI.removeTrainingPhoto(index);
-
-                imgWrap.appendChild(img);
-                imgWrap.appendChild(delBtn);
-                list.appendChild(imgWrap);
+            const img = document.createElement('img');
+            img.alt = `Zdjęcie ${index + 1}`;
+            MediaManager.getMediaUrl(photoId).then(url => {
+                if (url) img.src = url;
             });
-        }
+
+            const delBtn = document.createElement('button');
+            delBtn.type = 'button';
+            delBtn.className = 'z-ic z-sesja-zdjecie-usun';
+            delBtn.setAttribute('aria-label', `Usuń zdjęcie ${index + 1}`);
+            delBtn.innerHTML = ikona('x', 16);
+            delBtn.onclick = () => window.TrainingUI.removeTrainingPhoto(index);
+
+            imgWrap.appendChild(img);
+            imgWrap.appendChild(delBtn);
+            list.appendChild(imgWrap);
+        });
     },
 
     handleTypeChange: (type) => {
         if (!currentTraining) return;
         currentTraining.type = type;
+        TrainingUI.pokazRodzaj(type);
+    },
+
+    // Widok rodzaju sesji: #training-type-select (źródło prawdy), żetony i sekcje. Stan ustawia handleTypeChange.
+    // Stare treningi mogą mieć rodzaj 'classes' (dawny Kreator, klasyczny wygląd): widok pokazuje go jako „Zajęcia”,
+    // a zapisany rodzaj zostaje bez zmian (currentTraining.type zmienia tylko handleTypeChange).
+    pokazRodzaj: (rodzaj) => {
+        const type = rodzaj === 'classes' ? 'class' : rodzaj;
+        const select = document.getElementById('training-type-select');
+        if (select && select.value !== type) select.value = type;
+        document.querySelectorAll('#active-training-view .z-sesja-rodzaje [data-rodzaj]').forEach((b) => {
+            const on = b.dataset.rodzaj === type;
+            b.classList.toggle('z-on', on);
+            b.setAttribute('aria-pressed', String(on));
+        });
         const exercisesContainer = document.getElementById('exercises-container-section');
         const classContainer = document.getElementById('class-type-container');
         
@@ -2030,11 +2396,15 @@ export const TrainingUI = {
                 }
                 
                 TrainingUI.clearDraft(); // Czyścimy brudnopis po sukcesie
-                alert("Trening zapisany pomyślnie!");
+                // Pola smartwatcha należą do tej sesji: następna (także „Kontynuuj”) zaczyna od pustych.
+                ['smartwatch-calories', 'smartwatch-hr'].forEach((id) => {
+                    const el = document.getElementById(id);
+                    if (el) el.value = '';
+                });
+                komunikat("Trening zapisany.");
                 
                 // Hide active view and show calendar
-                document.getElementById('active-training-view').style.display = 'none';
-                document.getElementById('training-calendar-view').style.display = 'block';
+                TrainingUI.pokazSesje(false);
                 TrainingUI.loadHistoryAndCalendar();
 
                 // Trener Edward AI - Gratulacje
@@ -2056,7 +2426,6 @@ export const TrainingUI = {
 
             } catch (err) {
                 console.error("Error saving training:", err);
-                alert("Wystąpił błąd podczas zapisu treningu! (Prawdopodobnie limit miejsca - disk I/O). Trening został zachowany w pamięci jako szkic.");
                 
                 // Awaryjne zrzucenie treningu do logów i pliku lokalnego
                 try {
@@ -2074,12 +2443,12 @@ export const TrainingUI = {
                     console.error("KRYTYCZNY Błąd:", err);
                 }
                 
-                alert("Wystąpił błąd podczas zapisywania treningu! Bez obaw - twoje dane zostały zrzucone jako kopia zapasowa do pamięci i będziesz mógł je przywrócić po odświeżeniu aplikacji.");
+                // Jeden pilny komunikat (wcześniej dwa alert() po sobie); sesja zostaje na ekranie.
+                komunikat("Nie udało się zapisać treningu (prawdopodobnie brak miejsca w pamięci). Dane są zachowane jako szkic i wrócą po ponownym uruchomieniu aplikacji.", { pilny: true });
                 return; // Przerwij żeby nie znikał ekran (nie przełączaj widoków)
             }
 
-            document.getElementById('active-training-view').style.display = 'none';
-            document.getElementById('training-calendar-view').style.display = 'block';
+            TrainingUI.pokazSesje(false);
             TrainingUI.loadHistoryAndCalendar();
         }
     },

@@ -2,7 +2,7 @@ import { PremiumUI } from "./PremiumUI.js";
 import { menuTrening, dataMenu, pozdrowienie } from "../wyglad/menuTrening.js";
 import { toIso } from "../trainer/trainerPlan.js";
 
-export const APP_VERSION = 'v2026.11.27.01'; // Faza 6.2: Katalog z podziałem na partie i Fixy UI
+export const APP_VERSION = 'v2026.11.27.02'; // Faza 6.2: Katalog z podziałem na partie i Fixy UI
 
 // Obsługa błędów globalnych — zdefiniowana w main.js (klucz: uki_error_logs)
 
@@ -279,6 +279,9 @@ export const AppUI = {
                     }
                 }
             });
+
+            // Kreator szablonów: bez paska dolnego i przycisku Edwarda (spec 8.1, trening-kreator.css).
+            document.body.classList.toggle('z-kreator', tabId === 'template-builder-dashboard');
 
             document.dispatchEvent(new CustomEvent('tabChanged', { detail: { tab: tabId } }));
 

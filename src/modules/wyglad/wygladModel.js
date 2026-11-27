@@ -17,7 +17,8 @@ export const KLUCZE = {
     przyciemnienieMin: P + 'przyciemnienie-min',
     rozmycie: P + 'rozmycie',
     zKlasycznego: P + 'z-klasycznego',
-    komunikatKlasyczny: P + 'komunikat-klasyczny'
+    komunikatKlasyczny: P + 'komunikat-klasyczny',
+    korektaTlaR16: P + 'korekta-tla-r16'
 };
 export const KLUCZ_TAPETY_ZDJECIE = 'uki-bodybuild-wallpaper';
 export const KLUCZ_MOTYWU_STREFY = 'ukis.bodybuild.trener.motyw';
@@ -127,10 +128,21 @@ export function migruj(storage) {
         if (motywPoprawny(strefa) && zapiszMotyw(storage, strefa)) wykonane.push('motyw-strefy');
     }
     if (odczyt(storage, KLUCZ_TAPETY_ZDJECIE) && odczyt(storage, KLUCZE.tapeta) === null) {
+        // R16: zdjęcie z Profilu zostaje jako „Własne zdjęcie”, ale tłem jest poświata motywu (tapeta tylko z wyboru).
         // przyciemnienie-min zostaje puste: granicę policzy ekran po wczytaniu zdjęcia
         zapis(storage, KLUCZE.tapeta, 'wlasna');
-        zapis(storage, KLUCZE.tlo, 'tapeta');
+        zapis(storage, KLUCZE.tlo, 'poswiata');
         wykonane.push('tapeta-profilu');
+    }
+    // R16, raz: v2026.11.26.04 przełączała tło na zdjęcie z Profilu. Tylko „wlasna” + tapeta wraca do poświaty
+    // (zdjęcie zostaje, jeden dotyk w Wyglądzie je przywraca); tapety wbudowane to zawsze wybór użytkownika.
+    // Flaga zapisuje się przy pierwszym starcie także u nowych osób, więc późniejszy wybór zdjęcia już zostaje.
+    if (odczyt(storage, KLUCZE.korektaTlaR16) === null) {
+        if (odczyt(storage, KLUCZE.tapeta) === 'wlasna' && odczyt(storage, KLUCZE.tlo) === 'tapeta') {
+            zapis(storage, KLUCZE.tlo, 'poswiata');
+            wykonane.push('korekta-tla-r16');
+        }
+        zapis(storage, KLUCZE.korektaTlaR16, '1');
     }
     return wykonane;
 }
