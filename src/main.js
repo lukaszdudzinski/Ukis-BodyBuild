@@ -20,6 +20,11 @@ import { initSexConfirm } from './modules/body/sexConfirm.js';
 import { NotebookUI } from './modules/notebook/NotebookUI.js';
 import { TrainerUI } from './modules/trainer/ui/TrainerUI.js';
 import { applyDefaultAvatar } from './modules/ui/defaultAvatar.js';
+import { zastosujWyglad } from './modules/wyglad/tlo.js';
+import { WygladUI } from './modules/wyglad/WygladUI.js';
+
+// Motyw i kolor paska systemu przed budową interfejsu (migracja motywu Strefy w środku, spec rozdz. 10).
+zastosujWyglad();
 
 window.ukiLogError = (msg, stack) => {
     let logs = [];
@@ -66,6 +71,9 @@ const initApp = () => {
     DatabaseManager.migrateExercises();
     ChangelogUI.init();
     AppUI.init();
+
+    // Ekran „Wygląd” (wejście z Profilu).
+    WygladUI.init();
     
     // Domyślna sylwetka SVG (odświeżana po zmianie nicku); własne zdjęcie poniżej ma pierwszeństwo.
     applyDefaultAvatar();

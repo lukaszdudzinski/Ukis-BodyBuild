@@ -1,0 +1,851 @@
+/* wyglad: zar */
+/* ============================================================
+   NOWY WYGLĄD „CZERWONY ŻAR” — KOMPONENTY z-* (spec rozdz. 6.2, cele dotyku rozdz. 9.2)
+   Kolory wyłącznie przez var(--ukis-…); dozwolone tylko nakładki rgba(0,0,0,…) i rgba(255,255,255,…).
+   Każdy element klikalny ma co najmniej var(--ukis-touch) wysokości.
+   ============================================================ */
+
+/* ---------- Fokus klawiatury (rozdz. 9.3) ---------- */
+.z-btn:focus-visible,
+.z-ghost:focus-visible,
+.z-ic:focus-visible,
+.z-chip:focus-visible,
+.z-tab:focus-visible,
+.z-in:focus-visible,
+.z-switch:focus-visible,
+.z-range:focus-visible,
+.z-li:focus-visible,
+.z-nav button:focus-visible,
+.z-nav a:focus-visible {
+    outline: 2px solid var(--ukis-color-accent);
+    outline-offset: 2px;
+}
+
+/* ---------- Karta ---------- */
+.z-card {
+    background-color: var(--ukis-glass-bg);
+    background-image: var(--ukis-glass-sheen);
+    border: 1px solid var(--ukis-glass-border);
+    border-radius: var(--ukis-radius-md);
+    backdrop-filter: blur(var(--ukis-glass-blur));
+    -webkit-backdrop-filter: blur(var(--ukis-glass-blur));
+    box-shadow: 0 10px 30px rgba(0,0,0,.25);
+    padding: 16px;
+    color: var(--ukis-text);
+}
+
+.z-card.z-list {
+    padding: 4px 0;
+}
+
+.z-card.z-hero {
+    background-image: linear-gradient(110deg, var(--ukis-hero-from), var(--ukis-hero-to));
+}
+
+.z-card.z-alert {
+    border-color: var(--ukis-accent-line);
+}
+
+/* „Efekt szkła” wyłączony w ustawieniach (SettingsUI.js dodaje body.glass-off). */
+body.glass-off .z-card {
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    background-color: var(--ukis-glass-bg-solid);
+}
+
+/* ---------- Przyciski ---------- */
+.z-btn,
+.z-ghost {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    min-height: var(--ukis-touch);
+    min-width: var(--ukis-touch);
+    padding: 12px 18px;
+    border-radius: var(--ukis-radius-full);
+    font-family: var(--ukis-font);
+    line-height: 1.2;
+    text-decoration: none;
+    cursor: pointer;
+    box-sizing: border-box;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.z-btn {
+    border: 0;
+    background: var(--ukis-color-primary);
+    color: var(--ukis-on-primary);
+    font-weight: 600;
+    font-size: 15px;
+    box-shadow: 0 6px 18px var(--ukis-primary-soft);
+}
+
+/* Biały przycisk na karcie hero („ROZPOCZNIJ”). */
+.z-btn.z-btn-light {
+    background: var(--ukis-light);
+    color: var(--ukis-hero-cta-text);
+    box-shadow: none;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.z-ghost {
+    border: 1px solid var(--ukis-ghost-border);
+    background: var(--ukis-ghost-bg);
+    color: var(--ukis-text);
+    font-weight: 500;
+    font-size: 14px;
+}
+
+.z-ghost.z-danger {
+    color: var(--ukis-color-danger);
+    border-color: var(--ukis-danger-line);
+    /* Jasne tło z-ghost na połysku karty dawało kolorowi ostrzegawczemu poniżej 4,5 : 1. */
+    background: var(--ukis-danger-ghost-bg);
+}
+
+.z-btn:disabled,
+.z-ghost:disabled {
+    opacity: 0.5;
+    cursor: default;
+}
+
+/* Przycisk ikony: koło 44 × 44. Z .z-card dostaje szkło (nagłówki: „Wróć”, „Profil”). */
+.z-ic {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 auto;
+    width: var(--ukis-touch);
+    height: var(--ukis-touch);
+    min-height: var(--ukis-touch);
+    padding: 0;
+    border: 0;
+    border-radius: 50%;
+    background: transparent;
+    color: var(--ukis-text);
+    cursor: pointer;
+    box-sizing: border-box;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.z-ic.z-card {
+    padding: 0;
+    border: 1px solid var(--ukis-glass-border);
+    border-radius: 50%;
+    /* .z-ic zeruje tło skrótem `background`; przycisk-karta (np. „Wróć”) wraca do szkła z spec 6.2. */
+    background-color: var(--ukis-glass-bg);
+    background-image: var(--ukis-glass-sheen);
+}
+
+.z-ic.z-ic-acc {
+    background: var(--ukis-color-primary);
+    color: var(--ukis-on-primary);
+    box-shadow: 0 6px 18px var(--ukis-primary-soft);
+}
+
+.z-ic svg {
+    width: 22px;
+    height: 22px;
+}
+
+/* Pływający przycisk (czat Edwarda, #edward-chat-toggle): koło 52 px nad paskiem dolnym.
+   ChatUI.js przy przeciąganiu wpisuje własne bottom/right w style="…", więc tu są tylko wartości startowe. */
+.z-ic.z-fab {
+    position: fixed;
+    z-index: 1000;
+    right: 18px;
+    bottom: calc(84px + env(safe-area-inset-bottom, 0px));
+    width: 52px;
+    height: 52px;
+}
+
+.z-ic.z-fab svg {
+    width: 24px;
+    height: 24px;
+}
+
+/* ---------- Żetony i pigułki ---------- */
+.z-chip {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    min-height: var(--ukis-touch);
+    padding: 0 16px;
+    border: 1px solid rgba(255,255,255,.2);
+    border-radius: var(--ukis-radius-full);
+    background: var(--ukis-ghost-bg);
+    color: var(--ukis-text);
+    font-family: var(--ukis-font);
+    font-size: 13px;
+    cursor: pointer;
+    box-sizing: border-box;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.z-chip.z-on {
+    background: var(--ukis-color-primary);
+    border-color: var(--ukis-color-primary);
+    color: var(--ukis-on-primary);
+}
+
+/* Żeton niebędący przyciskiem (np. „Zaplanowano”): bez wymogu 44 px. */
+.z-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 10px;
+    border: 1px solid rgba(255,255,255,.2);
+    border-radius: var(--ukis-radius-full);
+    background: var(--ukis-ghost-bg);
+    color: var(--ukis-text-secondary);
+    font-size: 12px;
+    line-height: 1.3;
+}
+
+/* ---------- Zakładki (role="tablist" / role="tab" / aria-selected) ---------- */
+.z-tabs {
+    display: flex;
+    gap: 4px;
+    padding: 4px;
+    border: 1px solid rgba(255,255,255,.15);
+    border-radius: var(--ukis-radius-full);
+    background: rgba(0,0,0,.35);
+}
+
+.z-tab {
+    flex: 1 1 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: var(--ukis-touch);
+    padding: 0 12px;
+    border: 0;
+    border-radius: var(--ukis-radius-full);
+    background: transparent;
+    color: var(--ukis-text-secondary);
+    font-family: var(--ukis-font);
+    font-weight: 500;
+    font-size: 13px;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.z-tab.z-on,
+.z-tab[aria-selected="true"] {
+    background: var(--ukis-color-primary);
+    color: var(--ukis-on-primary);
+}
+
+/* ---------- Pole ---------- */
+.z-in {
+    display: block;
+    width: 100%;
+    min-height: var(--ukis-touch);
+    padding: 12px;
+    border: 1px solid var(--ukis-input-border);
+    border-radius: var(--ukis-radius-sm);
+    background-color: var(--ukis-input-bg);
+    color: var(--ukis-text);
+    font-family: var(--ukis-font);
+    font-size: 16px; /* iOS nie powiększa strony przy wpisywaniu */
+    box-sizing: border-box;
+}
+
+.z-in::placeholder {
+    color: var(--ukis-text-muted);
+    opacity: 1;
+}
+
+.z-in:focus {
+    border-color: var(--ukis-color-primary);
+}
+
+select.z-in {
+    -webkit-appearance: none;
+    appearance: none;
+    padding-right: 40px;
+    background-image: var(--ukis-select-arrow);
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    background-size: 20px 20px;
+}
+
+/* Pole wyboru w wierszu <label> (rozdz. 6.2): cały wiersz min. 44 px. */
+.z-check {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-height: var(--ukis-touch);
+    cursor: pointer;
+}
+
+.z-check input[type="checkbox"],
+.z-check input[type="radio"] {
+    width: 22px;
+    height: 22px;
+    margin: 0;
+    accent-color: var(--ukis-color-primary);
+}
+
+/* ---------- Przełącznik (role="switch", aria-checked) ----------
+   Cały wiersz to jeden przycisk: etykieta po lewej, tor .z-switch-tor po prawej. */
+.z-switch {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    width: 100%;
+    min-height: var(--ukis-touch);
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: var(--ukis-text);
+    font-family: var(--ukis-font);
+    font-size: 15px;
+    text-align: left;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.z-switch-tor {
+    position: relative;
+    flex: 0 0 auto;
+    width: 46px;
+    height: 28px;
+    border-radius: var(--ukis-radius-full);
+    background: var(--ukis-track);
+    transition: background-color 0.2s ease;
+}
+
+.z-switch-tor::after {
+    content: '';
+    position: absolute;
+    top: 3px;
+    left: 3px;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: var(--ukis-light);
+    box-shadow: 0 1px 4px rgba(0,0,0,.35);
+    transition: transform 0.2s ease;
+}
+
+.z-switch[aria-checked="true"] .z-switch-tor {
+    background: var(--ukis-color-primary);
+}
+
+.z-switch[aria-checked="true"] .z-switch-tor::after {
+    transform: translateX(18px);
+}
+
+/* ---------- Suwak (natywne input[type=range]); wypełnienie z --z-val (np. style="--z-val: 60%") ---------- */
+.z-range {
+    -webkit-appearance: none;
+    appearance: none;
+    display: block;
+    width: 100%;
+    height: var(--ukis-touch);
+    margin: 0;
+    background: transparent;
+    cursor: pointer;
+}
+
+.z-range::-webkit-slider-runnable-track {
+    height: 6px;
+    border-radius: 3px;
+    background: linear-gradient(to right, var(--ukis-color-primary) 0 var(--z-val, 0%), var(--ukis-track) var(--z-val, 0%) 100%);
+}
+
+.z-range::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 22px;
+    height: 22px;
+    margin-top: -8px;
+    border: 0;
+    border-radius: 50%;
+    background: var(--ukis-light);
+    box-shadow: 0 2px 6px rgba(0,0,0,.4);
+}
+
+.z-range::-moz-range-track {
+    height: 6px;
+    border-radius: 3px;
+    background: var(--ukis-track);
+}
+
+.z-range::-moz-range-progress {
+    height: 6px;
+    border-radius: 3px;
+    background: var(--ukis-color-primary);
+}
+
+.z-range::-moz-range-thumb {
+    width: 22px;
+    height: 22px;
+    border: 0;
+    border-radius: 50%;
+    background: var(--ukis-light);
+    box-shadow: 0 2px 6px rgba(0,0,0,.4);
+}
+
+/* ---------- Wiersz listy (klikalny to <button> albo <a>) ---------- */
+.z-li {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    width: 100%;
+    min-height: var(--ukis-touch);
+    padding: 12px 16px;
+    border: 0;
+    border-bottom: 1px solid var(--ukis-divider);
+    background: transparent;
+    color: var(--ukis-text);
+    font-family: var(--ukis-font);
+    font-size: 14px;
+    text-align: left;
+    text-decoration: none;
+    box-sizing: border-box;
+}
+
+.z-li:last-child {
+    border-bottom: 0;
+}
+
+button.z-li,
+a.z-li {
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+}
+
+/* Wartość po prawej i ikona „chevron-right”. */
+.z-li .z-li-val {
+    margin-left: auto;
+    color: var(--ukis-text-muted);
+    font-size: 12px;
+}
+
+.z-li > svg:last-child {
+    flex: 0 0 auto;
+    width: 18px;
+    height: 18px;
+    color: var(--ukis-text-muted);
+}
+
+.z-sep {
+    height: 1px;
+    margin: 12px 0;
+    border: 0;
+    background: var(--ukis-separator);
+}
+
+/* ---------- Nagłówek ekranu (rozdz. 8.2) ---------- */
+.z-head-main,
+.z-head-back,
+.z-head-center {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: calc(12px + env(safe-area-inset-top, 0px)) 16px 12px;
+    color: var(--ukis-text);
+}
+
+.z-head-main .z-hd {
+    font-size: 30px;
+}
+
+.z-head-back .z-hd {
+    font-size: 26px;
+}
+
+.z-head-back .z-sub {
+    font-size: 12px;
+}
+
+.z-head-center {
+    justify-content: space-between;
+}
+
+.z-head-center .z-hd {
+    flex: 1 1 auto;
+    text-align: center;
+}
+
+/* Tekst nagłówka zajmuje środek, akcja (opcjonalna) idzie na prawo. */
+.z-head-txt {
+    flex: 1 1 auto;
+    min-width: 0;
+}
+
+/* „PRO” przy tytule: akcent 14 px na ciemnej pigułce (czytelny także na jasnej tapecie). */
+.z-head-back .z-pro {
+    display: inline-block;
+    margin-left: 6px;
+    padding: 2px 8px;
+    border-radius: var(--ukis-radius-full);
+    background: rgba(0, 0, 0, 0.45);
+    color: var(--ukis-color-accent);
+    font-family: var(--ukis-font);
+    font-style: normal;
+    font-size: 14px;
+    font-weight: 600;
+    letter-spacing: 0.6px;
+    vertical-align: middle;
+}
+
+/* Akcja po prawej (np. „Importuj”) nie kurczy się i nie łamie podpisu. */
+.z-head-main > .z-ghost,
+.z-head-back > .z-ghost {
+    flex: 0 0 auto;
+    white-space: nowrap;
+}
+
+/* Podtytuł pod tytułem bez własnego marginesu przeglądarki. */
+.z-head-txt .z-sub {
+    margin: 2px 0 0;
+}
+
+/* Odstęp 44 px po prawej, gdy wyśrodkowany nagłówek nie ma akcji. */
+.z-head-spacer {
+    flex: 0 0 var(--ukis-touch);
+    width: var(--ukis-touch);
+    height: var(--ukis-touch);
+}
+
+/* ---------- Pasek dolny (.bottom-nav-bar zostaje: pwa-updater.js, trainerSections.js, testy) ----------
+   Pływająca pigułka nad treścią; treść sięga pod nią (miejsce na końcu: .tab-content-wrapper w base.css).
+   Strefa trenera zwęża ją przez .tz-pasek-wezszy (trainer.css), pasek aktualizacji UKIS mierzy jej górę. */
+.bottom-nav-bar.z-nav {
+    position: fixed;
+    z-index: 1000;
+    left: 14px;
+    right: 14px;
+    bottom: calc(14px + env(safe-area-inset-bottom, 0px));
+    max-width: 480px;
+    height: 56px;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+    padding: 0 6px;
+    border: 1px solid rgba(255,255,255,.22);
+    border-radius: var(--ukis-radius-full);
+    background: var(--ukis-nav-bg);
+    backdrop-filter: blur(var(--ukis-glass-blur));
+    -webkit-backdrop-filter: blur(var(--ukis-glass-blur));
+    box-sizing: border-box;
+}
+
+.z-nav button,
+.z-nav a {
+    display: inline-flex;
+    flex: 0 0 48px;
+    align-items: center;
+    justify-content: center;
+    width: 48px;
+    margin: 0;
+    height: var(--ukis-touch);
+    min-height: var(--ukis-touch);
+    padding: 0;
+    border: 0;
+    border-radius: var(--ukis-radius-full);
+    background: transparent;
+    color: var(--ukis-text);
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.z-nav svg {
+    flex: 0 0 auto;
+    width: 22px;
+    height: 22px;
+    stroke-width: 1.8;
+}
+
+.z-nav [aria-current="page"],
+.z-nav .z-on {
+    background: var(--ukis-color-primary);
+    color: var(--ukis-on-primary);
+    box-shadow: 0 4px 14px var(--ukis-primary-soft);
+}
+
+/* ---------- Arkusz dolny (role="dialog", aria-modal) ---------- */
+.z-sheet-scrim {
+    position: fixed;
+    inset: 0;
+    z-index: 2000;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    background: rgba(0,0,0,.5);
+}
+
+.z-sheet {
+    width: 100%;
+    max-width: 560px;
+    max-height: 92vh;
+    overflow-y: auto;
+    padding: 18px 18px calc(30px + env(safe-area-inset-bottom, 0px));
+    border-radius: var(--ukis-radius-lg) var(--ukis-radius-lg) 0 0;
+    background: var(--ukis-sheet-bg);
+    color: var(--ukis-text);
+    box-sizing: border-box;
+}
+
+.z-sheet-grip {
+    width: 44px;
+    height: 5px;
+    margin: 0 auto 12px;
+    border-radius: var(--ukis-radius-full);
+    background: rgba(255,255,255,.3);
+}
+
+.z-sheet-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 12px;
+}
+
+/* ---------- Okno dialogowe ---------- */
+.z-dialog-scrim {
+    position: fixed;
+    inset: 0;
+    z-index: 2000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+    background: rgba(0,0,0,.55);
+}
+
+.z-dialog {
+    width: 100%;
+    max-width: 420px;
+    padding: 20px;
+    border-radius: var(--ukis-radius-md);
+    background: var(--ukis-sheet-bg);
+    color: var(--ukis-text);
+    box-sizing: border-box;
+}
+
+.z-dialog-actions {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 8px;
+    margin-top: 16px;
+}
+
+/* ---------- Komunikat (jak .tz-toast w Strefie), nad paskiem dolnym ----------
+   Gdy widać pasek aktualizacji UKIS, komunikat wędruje nad niego o --ukis-banner-space (inaczej zasłaniał przyciski paska). */
+.z-toast {
+    position: fixed;
+    left: 50%;
+    bottom: calc(84px + env(safe-area-inset-bottom, 0px) + var(--ukis-banner-space, 0px));
+    transform: translateX(-50%);
+    z-index: 2100;
+    max-width: calc(100% - 32px);
+    padding: 12px 18px;
+    border: 1px solid rgba(255,255,255,.18);
+    border-radius: var(--ukis-radius-full);
+    background: var(--ukis-sheet-bg);
+    color: var(--ukis-text);
+    font-family: var(--ukis-font);
+    font-weight: 500;
+    font-size: 14px;
+    box-sizing: border-box;
+}
+
+/* ---------- Statystyka i plakietka ---------- */
+.z-stat {
+    padding: 12px;
+}
+
+.z-stat .z-mut {
+    font-size: 11px;
+}
+
+.z-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 3px 9px;
+    border-radius: var(--ukis-radius-full);
+    font-size: 11px;
+    font-weight: 600;
+    line-height: 1.3;
+    background: rgba(255,255,255,.1);
+    color: var(--ukis-text-secondary);
+}
+
+.z-badge.ok {
+    background: var(--ukis-success-tint);
+    color: var(--ukis-success-text);
+}
+
+.z-badge.due {
+    background: var(--ukis-primary-tint);
+    color: var(--ukis-color-accent);
+}
+
+.z-badge.neutral {
+    background: rgba(255,255,255,.1);
+    color: var(--ukis-text-secondary);
+}
+
+/* ---------- Wykresy (opis dla czytnika: role="img" + aria-label na .z-chart) ---------- */
+.z-chart {
+    color: var(--ukis-text);
+}
+
+/* Słupki: seria 1 gradientem, seria 2 i 3 kolorem pełnym (.z-s2, .z-s3). Wysokość słupka w style="height: …". */
+.z-chart-bars {
+    display: flex;
+    align-items: flex-end;
+    gap: 6px;
+}
+
+.z-chart-bar {
+    flex: 1 1 0;
+    min-height: 2px;
+    border-radius: 6px 6px 2px 2px;
+    background: linear-gradient(180deg, var(--ukis-chart-1), var(--ukis-chart-1-end));
+}
+
+.z-chart-bar.z-s2 {
+    background: var(--ukis-chart-2);
+}
+
+.z-chart-bar.z-s3 {
+    background: var(--ukis-chart-3);
+}
+
+/* Legenda: kwadraty 8 px z podpisem 11 px. */
+.z-chart-legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    font-size: 11px;
+    color: var(--ukis-text-secondary);
+}
+
+.z-chart-key {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.z-chart-key::before {
+    content: '';
+    width: 8px;
+    height: 8px;
+    border-radius: 2px;
+    background: var(--ukis-chart-1);
+}
+
+.z-chart-key.z-s2::before {
+    background: var(--ukis-chart-2);
+}
+
+.z-chart-key.z-s3::before {
+    background: var(--ukis-chart-3);
+}
+
+/* Pasek postępu: wypełnienie szerokością w style="width: …". */
+.z-chart-progress {
+    height: 6px;
+    border-radius: 3px;
+    background: var(--ukis-track);
+    overflow: hidden;
+}
+
+.z-chart-fill {
+    height: 100%;
+    border-radius: 3px;
+    background: var(--ukis-chart-1);
+}
+
+.z-chart-fill.z-s2 {
+    background: var(--ukis-chart-2);
+}
+
+.z-chart-fill.z-s3 {
+    background: var(--ukis-chart-3);
+}
+
+/* Wykres kołowy (Dieta): procent w --z-val (np. style="--z-val: 62%"). */
+.z-chart-donut {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 104px;
+    height: 104px;
+    border-radius: 50%;
+    background: conic-gradient(var(--ukis-color-primary) 0 var(--z-val, 0%), rgba(255,255,255,.1) 0);
+}
+
+.z-chart-donut-in {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 82px;
+    height: 82px;
+    border-radius: 50%;
+    background: var(--ukis-surface-2);
+}
+
+/* Linia (SVG): kreska 2 px akcentem, pole pod linią z gradientu <linearGradient class="z-chart-area">. */
+.z-chart-line {
+    fill: none;
+    stroke: var(--ukis-color-primary);
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+.z-chart-area stop:first-child {
+    stop-color: var(--ukis-primary-soft);
+}
+
+.z-chart-area stop:last-child {
+    stop-color: transparent;
+}
+
+.z-chart-axis {
+    fill: var(--ukis-text-muted);
+    color: var(--ukis-text-muted);
+    font-size: 11px;
+}
+
+/* Mini-słupki 30 dni (Dieta): dziś akcentem (.z-today). */
+.z-chart-mini {
+    display: flex;
+    align-items: flex-end;
+    gap: 2px;
+    height: 40px;
+}
+
+.z-chart-mini > span {
+    flex: 1 1 0;
+    min-height: 2px;
+    border-radius: 2px 2px 0 0;
+    background: rgba(255,255,255,.28);
+}
+
+.z-chart-mini > .z-today {
+    background: var(--ukis-color-primary);
+}
+
+/* ---------- Ruch ograniczony ---------- */
+@media (prefers-reduced-motion: reduce) {
+    .z-switch-tor,
+    .z-switch-tor::after {
+        transition: none;
+    }
+}

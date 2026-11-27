@@ -33,14 +33,8 @@ export const HistoryUI = {
         
         if (records.length === 0) {
             container.innerHTML = `
-                <div style="text-align: right; margin-bottom: 15px; padding: 0 15px;">
-                    <label style="background: rgba(46,204,113,0.15); border: 1px solid rgba(46,204,113,0.3); color: #2ECC71; padding: 12px 16px; border-radius: 12px; cursor: pointer; font-size: 0.9em; font-weight: bold; display: inline-flex; align-items: center; gap: 8px;">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-                        Importuj trening
-                        <input type="file" accept=".json" style="display: none;" onchange="window.HistoryUI.importTraining(event)">
-                    </label>
-                </div>
-                <p style="color: #8E8E93; text-align: center; font-style: italic;">Brak zarejestrowanych treningów.</p>
+                <!-- Import: przycisk „Importuj” w nagłówku Historii (index.html). -->
+                <p style="color: var(--ukis-text-muted); text-align: center; font-style: italic;">Brak zarejestrowanych treningów.</p>
             `;
             return;
         }
@@ -56,15 +50,7 @@ export const HistoryUI = {
             grouped[monthYear].push(rec);
         });
 
-        let html = `
-            <div style="text-align: right; margin-bottom: 20px; padding: 0 15px;">
-                <label style="background: rgba(46,204,113,0.15); border: 1px solid rgba(46,204,113,0.3); color: #2ECC71; padding: 12px 16px; border-radius: 12px; cursor: pointer; font-size: 0.9em; font-weight: bold; display: inline-flex; align-items: center; gap: 8px; backdrop-filter: blur(5px);">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-                    Importuj trening
-                    <input type="file" accept=".json" style="display: none;" onchange="window.HistoryUI.importTraining(event)">
-                </label>
-            </div>
-        `;
+        let html = ''; // Import: przycisk „Importuj” w nagłówku Historii (index.html).
         for (const [monthYear, monthRecords] of Object.entries(grouped)) {
             let templates = [];
             try {
@@ -325,8 +311,8 @@ export const HistoryUI = {
                 }
                 
                 const rec = importedData.data;
-                // Generate new ID to avoid conflicts
-                rec.id = Date.now(); 
+                // Nowy wpis dostaje własny identyfikator z bazy (addTraining), więc stary id z pliku nie koliduje.
+                delete rec.id;
                 
                 // Prompt user to confirm
                 if (confirm(`Czy na pewno chcesz zaimportować trening "${rec.name}" z dnia ${rec.date}?`)) {

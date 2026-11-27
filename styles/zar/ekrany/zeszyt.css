@@ -1,0 +1,9 @@
+/* wyglad: zar */
+
+/* Pływający pasek dolny (A7): na telefonie pusta kartka sięga do górnej krawędzi pigułki. Kartka ma własne
+   miejsce na końcu listy (padding w NotebookComponent.js), więc bez 16 px zapasu z base.css. */
+@media (max-width: 768px) {
+    body.zar .app-content > .tab-content-wrapper:has(> #notebook-dashboard.active-tab) {
+        padding-bottom: calc(56px + 14px + env(safe-area-inset-bottom, 0px) + var(--ukis-banner-space, 0px)) !important;
+    }
+}

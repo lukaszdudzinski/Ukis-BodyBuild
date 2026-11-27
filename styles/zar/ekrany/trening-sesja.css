@@ -1,0 +1,8 @@
+/* wyglad: zar */
+
+/* Pływający pasek dolny (A7): przyklejony arkusz akcji sesji (#unified-bottom-sheet, sticky bottom: 0)
+   stoi na górnej krawędzi pigułki, jak wcześniej na pełnym pasku — bez 16 px zapasu z base.css,
+   przez który pod arkuszem przewijałaby się treść. Wygląd arkusza nad pigułką zmienia etap B (B2). */
+body.zar .app-content > .tab-content-wrapper:has(> #training-dashboard.active-tab) {
+    padding-bottom: calc(56px + 14px + env(safe-area-inset-bottom, 0px) + var(--ukis-banner-space, 0px)) !important;
+}

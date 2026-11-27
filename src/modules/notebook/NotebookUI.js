@@ -117,6 +117,17 @@ function scrollParent(el) {
     return document.scrollingElement || document.documentElement;
 }
 
+// Górna krawędź pływającego paska dolnego (pigułka z nowego wyglądu leży nad treścią), gdy jest widoczny na dole ekranu.
+function navTop() {
+    const nav = document.querySelector('.bottom-nav-bar');
+    if (!nav) return Infinity;
+    const cs = getComputedStyle(nav);
+    if (cs.display === 'none' || cs.visibility === 'hidden') return Infinity;
+    const r = nav.getBoundingClientRect();
+    if (!r.height || r.top < window.innerHeight / 2) return Infinity;
+    return r.top;
+}
+
 function keepVisible(input) {
     const el = input && input.isConnected ? input : document.activeElement;
     if (!el || !root() || !root().contains(el) || !/^(INPUT|TEXTAREA)$/.test(el.tagName)) return;
@@ -127,6 +138,8 @@ function keepVisible(input) {
     if (scroller !== document.scrollingElement && scroller !== document.documentElement) {
         bottom = Math.min(bottom, scroller.getBoundingClientRect().bottom);
     }
+    // Bez klawiatury dół użytecznej części to górna krawędź paska dolnego (z klawiaturą pasek jest pod nią).
+    if (!keyboardHeight()) bottom = Math.min(bottom, navTop());
     const limit = bottom - KB_MARGIN;
     const topEdge = scroller.getBoundingClientRect ? Math.max(0, scroller.getBoundingClientRect().top) : 0;
     const inputRect = el.getBoundingClientRect();

@@ -19,7 +19,7 @@
 .lecture-card:hover {
     transform: translateY(-4px);
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
-    border-color: rgba(0, 191, 255, 0.12);
+    border-color: var(--ukis-primary-tint);
 }
 
 .lecture-card .lecture-thumb {
@@ -32,7 +32,7 @@
 
 .lecture-card h4 {
     margin: 0;
-    color: #00BFFF;
+    color: var(--ukis-color-accent);
     font-size: 1.05em;
 }
 
@@ -71,13 +71,13 @@
 
 .dashboard-card:hover {
     transform: translateY(-3px);
-    background-color: rgba(0, 191, 255, 0.1);
-    border-color: rgba(0, 191, 255, 1);
+    background-color: var(--ukis-primary-tint);
+    border-color: var(--ukis-accent-line);
     box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
 }
 
 .dashboard-card h4 {
-    color: rgba(0, 191, 255, 1);
+    color: var(--ukis-color-accent);
     margin: 0 0 8px 0;
     font-size: 1.3em;
 }

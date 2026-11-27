@@ -21,12 +21,13 @@
 
 .input-group input,
 .input-group select {
-    background-color: #333;
-    border: 1px solid #4a4a4a;
-    color: #e0e0e0;
+    background-color: var(--ukis-input-bg);
+    border: 1px solid var(--ukis-input-border);
+    color: var(--ukis-text);
     padding: 12px 10px;
-    border-radius: 8px;
-    font-size: 1.2em;
+    min-height: 44px;
+    border-radius: var(--ukis-radius-sm);
+    font-size: max(16px, 1.2em);
     font-weight: bold;
     text-align: center;
     width: 100%;
@@ -39,20 +40,57 @@
 .input-group input:focus,
 .input-group select:focus {
     outline: none;
-    border-color: #00BFFF;
-    box-shadow: 0 0 5px rgba(0, 191, 255, 0.5);
+    border-color: var(--ukis-color-accent);
+    box-shadow: 0 0 5px var(--ukis-accent-line);
+}
+
+.input-group input:focus-visible,
+.input-group select:focus-visible,
+.input-group textarea:focus-visible {
+    outline: 2px solid var(--ukis-color-accent);
+    outline-offset: 2px;
+}
+
+/* Pola poza .input-group w starych ekranach: tokeny motywu, bez dotykania Strefy trenera ani komponentów z-*
+   (zerowa specyficzność przez :where, więc każda własna reguła pola wygrywa). */
+:where(body.zar .app-content) :where(input:not([type=checkbox]):not([type=radio]):not([type=range]):not([type=file]):not([type=color]):not([type=hidden]):not([type=button]):not([type=submit]), select):not(.in):not([class*="z-"]) {
+    background-color: var(--ukis-input-bg);
+    border: 1px solid var(--ukis-input-border);
+    color: var(--ukis-text);
+    border-radius: var(--ukis-radius-sm);
+    min-height: 44px;
+    box-sizing: border-box;
 }
 
 .input-group input:disabled {
     opacity: 0.5;
-    background-color: #444;
+    background-color: var(--ukis-input-bg);
     cursor: not-allowed;
+}
+
+/* Pola poza .input-group (textarea, .input-field): te same tokeny motywu, 16 px (bez przybliżania w iOS), min. 44 px. */
+textarea,
+.input-field {
+    background-color: var(--ukis-input-bg);
+    border: 1px solid var(--ukis-input-border);
+    color: var(--ukis-text);
+    border-radius: var(--ukis-radius-sm);
+    font-size: max(16px, 1em);
+    box-sizing: border-box;
+}
+
+textarea {
+    min-height: 44px;
+}
+
+.input-field {
+    min-height: 44px;
 }
 
 /* Buttons */
 .app-content button[type="submit"] {
-    background-color: #00BFFF;
-    color: #1e1e1e;
+    background-color: var(--ukis-color-primary);
+    color: var(--ukis-on-primary);
     font-weight: bold;
     padding: 12px 20px;
     font-size: 1.1em;
@@ -65,21 +103,21 @@
 }
 
 .app-content button[type="submit"]:hover {
-    background-color: #00c4a7;
+    background-color: var(--ukis-color-primary);
     transform: translateY(-2px);
-    box-shadow: 0 4px 15px rgba(0, 191, 255, 0.4);
+    box-shadow: 0 4px 15px var(--ukis-accent-line);
 }
 
 .app-content button[type="submit"]:active {
     transform: translateY(0);
-    box-shadow: 0 2px 5px rgba(0, 191, 255, 0.2);
+    box-shadow: 0 2px 5px var(--ukis-primary-tint);
 }
 
 .pulse-button {
     background-color: transparent;
-    color: #00BFFF;
+    color: var(--ukis-color-accent);
     font-weight: bold;
-    border: 1px solid #00BFFF;
+    border: 1px solid var(--ukis-color-accent);
     padding: 12px 24px;
     font-size: 1.1em;
     border-radius: 6px;
@@ -87,19 +125,19 @@
     transition: all 0.3s ease;
     text-transform: uppercase;
     letter-spacing: 0.5px;
-    box-shadow: 0 0 10px rgba(0, 191, 255, 0.1);
+    box-shadow: 0 0 10px var(--ukis-primary-tint);
 }
 
 .pulse-button:hover {
-    background-color: #00BFFF;
-    color: #1e1e1e;
-    box-shadow: 0 0 20px rgba(0, 191, 255, 0.4);
+    background-color: var(--ukis-color-primary);
+    color: var(--ukis-on-primary);
+    box-shadow: 0 0 20px var(--ukis-accent-line);
 }
 
 .back-to-dashboard {
     background: none;
-    border: 1px solid #00BFFF;
-    color: #00BFFF;
+    border: 1px solid var(--ukis-color-accent);
+    color: var(--ukis-color-accent);
     padding: 6px 15px;
     border-radius: 20px;
     cursor: pointer;
@@ -110,8 +148,8 @@
 }
 
 .back-to-dashboard:hover {
-    color: #1e1e1e;
-    background-color: #00BFFF;
+    color: var(--ukis-on-primary);
+    background-color: var(--ukis-color-primary);
 }
 
 /* Form Layouts */
@@ -153,7 +191,7 @@
 
 .checklist-group h4 {
     font-size: 1.2em;
-    color: #00BFFF;
+    color: var(--ukis-color-accent);
     border-bottom-color: rgba(255, 255, 255, 0.3);
 }
 
@@ -168,8 +206,8 @@
 }
 
 .checklist-item input[type="checkbox"]:checked {
-    background-color: #00BFFF;
-    border-color: #00BFFF;
+    background-color: var(--ukis-color-primary);
+    border-color: var(--ukis-color-accent);
 }
 
 .checklist-item input[type="checkbox"]:checked+label {
@@ -186,12 +224,12 @@
     margin-bottom: 15px;
     text-align: center;
     animation: pulse-glow-dark 3s infinite ease-in-out;
-    border: 1px solid rgba(0, 191, 255, 0.1);
+    border: 1px solid var(--ukis-primary-tint);
 }
 
 #global-checklist-reset-btn {
-    background-color: #00BFFF;
-    color: #1e1e1e;
+    background-color: var(--ukis-color-primary);
+    color: var(--ukis-on-primary);
     font-weight: bold;
     border: none;
     padding: 12px 24px;
@@ -206,10 +244,10 @@
 }
 
 #global-checklist-reset-btn:hover {
-    background-color: #00c4a7;
-    color: #fff;
+    background-color: var(--ukis-color-primary);
+    color: var(--ukis-on-primary);
     transform: translateY(-2px);
-    box-shadow: 0 6px 12px rgba(0, 191, 255, 0.4);
+    box-shadow: 0 6px 12px var(--ukis-accent-line);
 }
 
 #global-checklist-reset-btn:active {
@@ -235,15 +273,16 @@
     }
 }
 
-/* Shared Action Button (like Zapisz wynik) */
+/* Shared Action Button (like Zapisz wynik): pigułka w akcencie motywu, min. 44 px. */
 .action-button {
-    background-color: #00BFFF;
-    color: #1e1e1e;
+    background-color: var(--ukis-color-primary);
+    color: var(--ukis-on-primary);
     font-weight: bold;
     padding: 12px 20px;
+    min-height: 44px;
     font-size: 1.1em;
     border: none;
-    border-radius: 8px;
+    border-radius: var(--ukis-radius-full);
     cursor: pointer;
     width: 100%;
     margin-top: 10px;
@@ -252,12 +291,13 @@
 }
 
 .action-button:hover {
-    background-color: #00c4a7;
+    background-color: var(--ukis-color-primary);
+    filter: brightness(1.12);
     transform: translateY(-2px);
-    box-shadow: 0 4px 15px rgba(0, 191, 255, 0.4);
+    box-shadow: 0 4px 15px var(--ukis-primary-soft);
 }
 
 .action-button:active {
     transform: translateY(0);
-    box-shadow: 0 2px 5px rgba(0, 191, 255, 0.2);
+    box-shadow: 0 2px 5px var(--ukis-primary-tint);
 }

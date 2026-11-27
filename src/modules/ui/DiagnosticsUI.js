@@ -1,5 +1,6 @@
 import { DatabaseManager } from '../db/DatabaseManager.js';
 import { ExerciseCategories } from '../../data/ExerciseCatalog.js';
+import { naglowek } from '../wyglad/naglowek.js';
 
 export const DiagnosticsUI = {
     init: () => {
@@ -14,6 +15,7 @@ export const DiagnosticsUI = {
         if (!wrapper) return;
 
         wrapper.innerHTML = `
+            ${naglowek({ wariant: 'main', tytul: 'Serwis', podtytul: 'Kopia, naprawa i porządki' })}
             <div style="background: rgba(255, 152, 0, 0.05); padding: 20px; border-radius: 16px; border: 1px solid rgba(255,152,0,0.3); margin-bottom: 25px; backdrop-filter: blur(10px);">
                 <h3 style="color: #FF9800; margin-top: 0; display: flex; align-items: center; gap: 8px; font-weight: 600;">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>

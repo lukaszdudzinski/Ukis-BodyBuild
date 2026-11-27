@@ -48,7 +48,7 @@
     color: #e0e0e0;
     font-size: 0.9em;
     text-align: center;
-    background-color: rgba(30, 30, 30, 0.8);
+    background-color: var(--ukis-sheet-bg);
     backdrop-filter: blur(30px);
     -webkit-backdrop-filter: blur(30px);
     border: 1px solid rgba(255, 255, 255, 0.1);
@@ -60,7 +60,7 @@
 
 #global-tooltip.tooltip-content h4 {
     margin: 0 0 10px 0;
-    color: #00BFFF;
+    color: var(--ukis-color-accent);
 }
 
 #global-tooltip.tooltip-content p {
@@ -88,7 +88,7 @@
 }
 
 #tooltip-close-btn:hover {
-    color: #00BFFF;
+    color: var(--ukis-color-accent);
 }
 
 .tooltip-trigger {

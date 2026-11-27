@@ -1,6 +1,6 @@
 /**
  * Uki's BodyBuild - UI Version Switcher (Okres Przejściowy)
- * Obsługa przełączania pomiędzy nowym wyglądem (Liquid Glass) a klasycznym (Retro).
+ * Obsługa przełączania pomiędzy nowym wyglądem (Czerwony żar) a klasycznym (Retro).
  */
 (function () {
     const STORAGE_KEY = 'uki-ui-version';
@@ -119,28 +119,16 @@
             card.style.cssText = 'margin-top: 20px; margin-bottom: 25px; padding: 18px; border-radius: 16px; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 152, 0, 0.35); text-align: left; box-shadow: 0 4px 15px rgba(0,0,0,0.25);';
 
             card.innerHTML = `
-                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px;">
-                    <div style="display: flex; align-items: center; gap: 10px;">
-                        <span style="font-size: 1.4em;">🎨</span>
-                        <div>
-                            <h4 style="margin: 0; color: #fff; font-size: 1.05em; font-weight: 700;">Styl i Wygląd Aplikacji</h4>
-                            <span style="color: #FF9800; font-size: 0.75em; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">Okres przejściowy (4 tyg.)</span>
-                        </div>
-                    </div>
-                </div>
-                <p style="margin: 0 0 14px 0; color: #bbb; font-size: 0.85em; line-height: 1.4;">
-                    Wprowadziliśmy nowy interfejs w stylu <strong>Liquid Glass</strong>. Przez najbliższe tygodnie możesz swobodnie testować oba widoki i wybrać ten, w którym czujesz się najlepiej!
-                </p>
+                <h4 style="margin: 0 0 10px 0; color: #fff; font-size: 1.05em; font-weight: 700;">Styl i Wygląd Aplikacji</h4>
+                <p style="margin: 0 0 14px 0; color: #bbb; font-size: 0.85em; line-height: 1.4;">Wybierz wygląd aplikacji.</p>
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
                     <button id="btn-switch-ui-new" style="padding: 12px 10px; border-radius: 12px; font-weight: 700; font-size: 0.85em; cursor: pointer; transition: all 0.2s ease; display: flex; flex-direction: column; align-items: center; gap: 4px; border: ${!isClassic ? '2px solid #00D26A' : '1px solid rgba(255,255,255,0.15)'}; background: ${!isClassic ? 'rgba(0, 210, 106, 0.2)' : 'rgba(255,255,255,0.05)'}; color: ${!isClassic ? '#00D26A' : '#aaa'};">
-                        <span style="font-size: 1.2em;">💎</span>
-                        <span>Nowy (Liquid Glass)</span>
-                        ${!isClassic ? '<span style="font-size: 0.7em; opacity: 0.8;">● Aktywny</span>' : ''}
+                        <span>Nowy (Czerwony żar)</span>
+                        ${!isClassic ? '<span style="font-size: 0.7em; opacity: 0.8;">Aktywny</span>' : ''}
                     </button>
                     <button id="btn-switch-ui-classic" style="padding: 12px 10px; border-radius: 12px; font-weight: 700; font-size: 0.85em; cursor: pointer; transition: all 0.2s ease; display: flex; flex-direction: column; align-items: center; gap: 4px; border: ${isClassic ? '2px solid #FF9800' : '1px solid rgba(255,255,255,0.15)'}; background: ${isClassic ? 'rgba(255, 152, 0, 0.2)' : 'rgba(255,255,255,0.05)'}; color: ${isClassic ? '#FF9800' : '#aaa'};">
-                        <span style="font-size: 1.2em;">📜</span>
                         <span>Klasyczny (Retro)</span>
-                        ${isClassic ? '<span style="font-size: 0.7em; opacity: 0.8;">● Aktywny</span>' : ''}
+                        ${isClassic ? '<span style="font-size: 0.7em; opacity: 0.8;">Aktywny</span>' : ''}
                     </button>
                 </div>
             `;
@@ -149,14 +137,11 @@
                 // Na classic.html zostaje przycisk powrotu do nowego wyglądu, inaczej trener nie miałby wyjścia.
                 const onClassicPage = this.isClassicPage();
                 card.innerHTML = `
-                    <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
-                        <span style="font-size: 1.4em;">🎨</span>
-                        <h4 style="margin: 0; color: #fff; font-size: 1.05em; font-weight: 700;">Styl i Wygląd Aplikacji</h4>
-                    </div>
+                    <h4 style="margin: 0 0 10px 0; color: #fff; font-size: 1.05em; font-weight: 700;">Styl i Wygląd Aplikacji</h4>
                     <p style="margin: 0; color: #bbb; font-size: 0.85em; line-height: 1.4;">Strefa trenera działa tylko w nowym wyglądzie.</p>
                     ${onClassicPage ? `
                     <button id="btn-switch-ui-new" style="margin-top: 14px; width: 100%; padding: 12px 10px; border-radius: 12px; font-weight: 700; font-size: 0.85em; cursor: pointer; border: 2px solid #00D26A; background: rgba(0, 210, 106, 0.2); color: #00D26A;">
-                        Nowy (Liquid Glass)
+                        Nowy (Czerwony żar)
                     </button>` : ''}
                 `;
                 container.appendChild(card);
@@ -201,22 +186,22 @@
 
             modal.innerHTML = `
                 <div style="background: rgba(24, 24, 28, 0.95); border: 1px solid rgba(255, 152, 0, 0.45); border-radius: 20px; padding: 24px; max-width: 420px; width: 100%; color: #fff; text-align: center; box-shadow: 0 10px 40px rgba(0,0,0,0.6); position: relative;">
-                    <div style="width: 60px; height: 60px; margin: 0 auto 14px auto; border-radius: 50%; background: rgba(255, 152, 0, 0.15); border: 1px solid rgba(255, 152, 0, 0.4); display: flex; align-items: center; justify-content: center; font-size: 1.8em;">
-                        ✨
+                    <div style="width: 60px; height: 60px; margin: 0 auto 14px auto; border-radius: 50%; background: rgba(255, 152, 0, 0.15); border: 1px solid rgba(255, 152, 0, 0.4); display: flex; align-items: center; justify-content: center; color: #FF9800;">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z"/><path d="M20 3v4"/><path d="M22 5h-4"/><path d="M4 17v2"/><path d="M5 18H3"/></svg>
                     </div>
                     <h3 style="margin: 0 0 8px 0; font-size: 1.35em; color: #fff; font-weight: 700;">Witaj w Nowym Wyglądzie!</h3>
                     <p style="margin: 0 0 18px 0; color: #FF9800; font-size: 0.85em; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">
-                        Uki's BodyBuild • Liquid Glass Edition
+                        Uki's BodyBuild • Nowy wygląd aplikacji
                     </p>
                     <p style="margin: 0 0 16px 0; color: #ccc; font-size: 0.92em; line-height: 1.5; text-align: left;">
-                        Odświeżyliśmy interfejs aplikacji: zyskał nowoczesny styl <strong>iOS Glassmorphism</strong>, powiększone wektorowe ikony SVG oraz zunifikowaną siatkę kafelków.
+                        Odświeżyliśmy wygląd aplikacji: nowe kolory, czytelniejsze ekrany i większe przyciski.
                     </p>
                     <div data-welcome-classic-hint style="background: rgba(255, 255, 255, 0.05); border-left: 3px solid #FF9800; padding: 10px 14px; border-radius: 8px; margin-bottom: 22px; text-align: left; font-size: 0.85em; color: #bbb;">
-                        💡 <strong>Możesz wrócić w każdej chwili:</strong> Jeżeli wolisz klasyczny, ciemny widok, przełączysz go jednym kliknięciem w zakładce <strong>Profil → Ustawienia</strong>.
+                        <strong>Możesz wrócić w każdej chwili:</strong> Jeżeli wolisz klasyczny, ciemny widok, przełączysz go jednym kliknięciem w zakładce <strong>Profil → Ustawienia</strong>.
                     </div>
                     <div style="display: flex; flex-direction: column; gap: 10px;">
                         <button id="btn-welcome-explore" style="width: 100%; padding: 14px; border-radius: 12px; border: none; background: #00D26A; color: #000; font-weight: 800; font-size: 1em; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 4px 15px rgba(0, 210, 106, 0.35);">
-                            Odkryj nowy wygląd 🚀
+                            Odkryj nowy wygląd
                         </button>
                         <button id="btn-welcome-to-classic" style="width: 100%; padding: 10px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.15); background: transparent; color: #888; font-size: 0.85em; cursor: pointer;">
                             Wróć do klasycznego wyglądu

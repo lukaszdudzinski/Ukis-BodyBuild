@@ -1,76 +1,30 @@
 /* ============================================================
    STREFA TRENERA — powłoka, motywy i klasy z płótna („Czerwony żar”)
-   Kolory motywów wyłącznie przez zmienne na .tz[data-motyw] (spec rozdz. 12).
-   Czcionki lokalne (libs/fonts, licencja OFL), bo Strefa działa bez sieci.
+   Kolory motywów wyłącznie przez zmienne --tz-*, aliasy tokenów --ukis-* (spec rozdz. 5.4 projektu wyglądu).
+   Czcionki lokalne (libs/fonts, licencja OFL) w styles/zar/fonts.css, bo Strefa działa bez sieci.
    ============================================================ */
 
-@font-face { font-family: 'Barlow'; font-style: normal; font-weight: 500; font-display: swap; src: url(../libs/fonts/barlow-latin-ext-500-normal.woff2) format('woff2'); unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF; }
-@font-face { font-family: 'Barlow'; font-style: normal; font-weight: 500; font-display: swap; src: url(../libs/fonts/barlow-latin-500-normal.woff2) format('woff2'); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD; }
-@font-face { font-family: 'Barlow'; font-style: italic; font-weight: 600; font-display: swap; src: url(../libs/fonts/barlow-latin-ext-600-italic.woff2) format('woff2'); unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF; }
-@font-face { font-family: 'Barlow'; font-style: italic; font-weight: 600; font-display: swap; src: url(../libs/fonts/barlow-latin-600-italic.woff2) format('woff2'); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD; }
-@font-face { font-family: 'Barlow'; font-style: italic; font-weight: 700; font-display: swap; src: url(../libs/fonts/barlow-latin-ext-700-italic.woff2) format('woff2'); unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF; }
-@font-face { font-family: 'Barlow'; font-style: italic; font-weight: 700; font-display: swap; src: url(../libs/fonts/barlow-latin-700-italic.woff2) format('woff2'); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD; }
-@font-face { font-family: 'Inter'; font-style: normal; font-weight: 400; font-display: swap; src: url(../libs/fonts/inter-latin-ext-400-normal.woff2) format('woff2'); unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF; }
-@font-face { font-family: 'Inter'; font-style: normal; font-weight: 400; font-display: swap; src: url(../libs/fonts/inter-latin-400-normal.woff2) format('woff2'); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD; }
-@font-face { font-family: 'Inter'; font-style: normal; font-weight: 500; font-display: swap; src: url(../libs/fonts/inter-latin-ext-500-normal.woff2) format('woff2'); unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF; }
-@font-face { font-family: 'Inter'; font-style: normal; font-weight: 500; font-display: swap; src: url(../libs/fonts/inter-latin-500-normal.woff2) format('woff2'); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD; }
-@font-face { font-family: 'Inter'; font-style: normal; font-weight: 600; font-display: swap; src: url(../libs/fonts/inter-latin-ext-600-normal.woff2) format('woff2'); unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF; }
-@font-face { font-family: 'Inter'; font-style: normal; font-weight: 600; font-display: swap; src: url(../libs/fonts/inter-latin-600-normal.woff2) format('woff2'); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD; }
-
 /* ---------- Motywy ---------- */
-.tz {
-    --tz-text: #ffffff;
+/* Kolory motywów pochodzą z tokenów aplikacji (styles/zar/tokens.css, spec rozdz. 5.4).
+   .tz i kafelki .tz-swatch mają własne data-motyw, więc tokeny liczą się dla ich motywu. */
+.tz,
+.tz-swatch {
+    --tz-text: var(--ukis-text);
+    --tz-bg: var(--ukis-surface);
+    --tz-acc: var(--ukis-color-primary);
+    --tz-on-acc: var(--ukis-on-primary);
+    --tz-hi: var(--ukis-color-accent);
+    --tz-sub: var(--ukis-text-secondary);
+    --tz-mut: var(--ukis-text-muted);
+    --tz-acc-soft: var(--ukis-primary-soft);
+    --tz-ok: var(--ukis-color-success);
+    --tz-card-tint: var(--ukis-glass-bg);
+    --tz-glow-1: var(--ukis-glow-1);
+    --tz-glow-2: var(--ukis-glow-2);
+    --tz-glow-3: var(--ukis-glow-3);
     /* Wiersze na karcie (np. lista nagrań): przyciemnienie i linia wspólne dla trzech motywów. */
     --tz-inset-bg: rgba(0, 0, 0, 0.25);
-    --tz-inset-line: rgba(255, 255, 255, 0.12);
-}
-
-.tz[data-motyw="zar"],
-.tz-swatch[data-motyw="zar"] {
-    --tz-bg: #070707;
-    --tz-acc: #e10600;
-    --tz-on-acc: #ffffff;
-    --tz-hi: #ff6b64;
-    --tz-sub: #c9c1bf;
-    --tz-mut: #a8a09e;
-    --tz-acc-soft: rgba(225, 6, 0, 0.35);
-    --tz-ok: #4ade80;
-    --tz-card-tint: rgba(7, 7, 7, 0.6);
-    --tz-glow-1: radial-gradient(55% 35% at 15% 8%, rgba(255, 30, 30, 0.40), transparent 70%);
-    --tz-glow-2: radial-gradient(50% 35% at 90% 55%, rgba(179, 0, 0, 0.33), transparent 70%);
-    --tz-glow-3: radial-gradient(55% 40% at 30% 100%, rgba(255, 74, 26, 0.27), transparent 70%);
-}
-
-.tz[data-motyw="granat"],
-.tz-swatch[data-motyw="granat"] {
-    --tz-bg: #0b1220;
-    --tz-acc: #3563d9;
-    --tz-on-acc: #ffffff;
-    --tz-hi: #8fb3ff;
-    --tz-sub: #c3cad6;
-    --tz-mut: #a9b2c1;
-    --tz-acc-soft: rgba(53, 99, 217, 0.35);
-    --tz-ok: #4ade80;
-    --tz-card-tint: rgba(11, 18, 32, 0.6);
-    --tz-glow-1: radial-gradient(55% 35% at 15% 8%, rgba(53, 99, 217, 0.42), transparent 70%);
-    --tz-glow-2: radial-gradient(50% 35% at 90% 55%, rgba(120, 134, 160, 0.26), transparent 70%);
-    --tz-glow-3: radial-gradient(55% 40% at 30% 100%, rgba(30, 58, 138, 0.40), transparent 70%);
-}
-
-.tz[data-motyw="pomarancz"],
-.tz-swatch[data-motyw="pomarancz"] {
-    --tz-bg: #0a0908;
-    --tz-acc: #ff8a1f;
-    --tz-on-acc: #140a00;
-    --tz-hi: #ffa24d;
-    --tz-sub: #cfc7bd;
-    --tz-mut: #b0a89d;
-    --tz-acc-soft: rgba(255, 138, 31, 0.30);
-    --tz-ok: #4ade80;
-    --tz-card-tint: rgba(10, 9, 8, 0.6);
-    --tz-glow-1: radial-gradient(55% 35% at 15% 8%, rgba(255, 138, 31, 0.34), transparent 70%);
-    --tz-glow-2: radial-gradient(50% 35% at 90% 55%, rgba(150, 60, 0, 0.30), transparent 70%);
-    --tz-glow-3: radial-gradient(55% 40% at 30% 100%, rgba(255, 170, 60, 0.20), transparent 70%);
+    --tz-inset-line: var(--ukis-separator);
 }
 
 /* ---------- Powłoka ---------- */
@@ -98,17 +52,12 @@ body.tz-tylko .bottom-nav-bar {
     display: none !important;
 }
 
-/* Mniej przycisków na pasku → węższy, wyśrodkowany pasek (pełny pasek ma 5 przycisków po 20%).
-   !important, bo widok telefonu (glassmorphism.css) wymusza width: 100% !important. */
-.bottom-nav-bar.tz-pasek-wezszy {
-    left: 0 !important;
-    right: 0;
+/* Mniej przycisków na pasku → węższa pigułka (64 px na przycisk + 12 px odstępu wewnątrz),
+   wyśrodkowana przez left/right i margin: auto z .bottom-nav-bar.z-nav (components.css, ładowany później,
+   stąd trzy klasy w selektorze). */
+.bottom-nav-bar.z-nav.tz-pasek-wezszy {
+    max-width: calc(var(--tz-pasek-n, 5) * 64px + 12px);
     margin: 0 auto;
-    width: calc(var(--tz-pasek-n, 5) * 20%) !important;
-    min-width: 240px;
-    border-radius: 22px 22px 0 0;
-    border-left: 1px solid rgba(255, 255, 255, 0.25);
-    border-right: 1px solid rgba(255, 255, 255, 0.25);
 }
 
 /* Powrót z Profilu i Serwisu do Strefy (tylko w trybie „Tylko Strefa trenera”). */

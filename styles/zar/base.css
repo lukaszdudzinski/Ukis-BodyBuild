@@ -1,0 +1,131 @@
+/* wyglad: zar */
+/* ============================================================
+   NOWY WYGLĄD „CZERWONY ŻAR” — PODSTAWA: czcionka strony, tło i typografia (spec rozdz. 6.1, 7.2)
+   ============================================================ */
+
+body {
+    font-family: var(--ukis-font);
+}
+
+/* Tło: poświata motywu (domyślnie, także zanim tlo.js ustawi klasę) albo tapeta (body.z-tlo-tapeta). */
+body.zar {
+    background-color: var(--ukis-surface);
+    background-image: var(--ukis-glow-1), var(--ukis-glow-2), var(--ukis-glow-3);
+    background-size: 100% 100%;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+}
+
+body.zar.z-tlo-tapeta {
+    background-image: none;
+}
+
+/* Stare tło Liquid Glass (plamy i zaciemnienie) nie istnieje w nowym wyglądzie. */
+body.zar .blob-1,
+body.zar .blob-2,
+body.zar .blob-3,
+body.zar > .overlay {
+    display: none;
+}
+
+/* Warstwa tapety: stała, pod całą treścią, nie łapie dotyku. Widoczna tylko przy tapecie. */
+#z-tlo {
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    overflow: hidden;
+    pointer-events: none;
+    display: none;
+}
+
+body.z-tlo-tapeta #z-tlo {
+    display: block;
+}
+
+/* Zdjęcie: rozmyte i lekko powiększone, żeby rozmycie nie zostawiło jasnych krawędzi. */
+#z-tlo .z-tapeta {
+    position: absolute;
+    inset: 0;
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    filter: blur(var(--ukis-wallpaper-blur));
+    transform: scale(1.05);
+}
+
+/* Przyciemnienie: nie mniejsze niż granica policzona ze zdjęcia (tlo.js ustawia --ukis-scrim). */
+#z-tlo .z-scrim {
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, var(--ukis-scrim));
+}
+
+/* Nagłówek: Barlow kursywa 700. Rozmiar domyślny 24 px (tytuł wyśrodkowany); warianty nagłówka ekranu w components.css. */
+.z-hd {
+    margin: 0;
+    font-family: var(--ukis-font-display);
+    font-style: italic;
+    font-weight: 700;
+    font-size: 24px;
+    line-height: 1.15;
+    letter-spacing: 0.2px;
+    color: var(--ukis-text);
+}
+
+/* Tekst drugorzędny: podtytuły, żetony, zakładki. */
+.z-sub {
+    font-size: 13px;
+    color: var(--ukis-text-secondary);
+}
+
+/* Tekst wyciszony: metadane. */
+.z-mut {
+    font-size: 12px;
+    color: var(--ukis-text-muted);
+}
+
+/* Etykieta pola. */
+.z-lab {
+    display: block;
+    margin-bottom: 4px;
+    font-size: 12px;
+    color: var(--ukis-text-secondary);
+}
+
+/* Liczba: statystyki, rekordy, kalorie, licznik czasu. */
+.z-big {
+    font-family: var(--ukis-font-display);
+    font-style: italic;
+    font-weight: 700;
+    font-size: 26px;
+    line-height: 1.1;
+    font-variant-numeric: tabular-nums;
+    color: var(--ukis-text);
+}
+
+/* Wyróżnienie tekstu (.red na płótnie). */
+.z-hi {
+    color: var(--ukis-color-accent);
+}
+
+/* Tekst tylko dla czytnika ekranu (np. podpisy pod ikonami paska dolnego). */
+.z-sr {
+    position: absolute !important;
+    width: 1px !important;
+    height: 1px !important;
+    padding: 0 !important;
+    margin: -1px !important;
+    overflow: hidden !important;
+    clip: rect(0, 0, 0, 0) !important;
+    white-space: nowrap !important;
+    border: 0 !important;
+}
+
+/* Miejsce na pływający pasek dolny (components.css, .bottom-nav-bar.z-nav): treść sięga pod pigułkę,
+   a jej koniec da się przewinąć 16 px ponad nią (56 px paska + 14 px odstępu od dołu + 16 px).
+   Gdy widać pasek aktualizacji UKIS, pwa-updater.js podaje jego wysokość w --ukis-banner-space;
+   reguła jest mocniejsza od `html.ukis-pasek-aktualizacji .tab-content-wrapper` z pwa-updater.js
+   i od `padding: 0 !important` z glassmorphism.css, więc oba miejsca się sumują. */
+body.zar .app-content > .tab-content-wrapper {
+    padding-bottom: calc(56px + 14px + 16px + env(safe-area-inset-bottom, 0px) + var(--ukis-banner-space, 0px)) !important;
+}

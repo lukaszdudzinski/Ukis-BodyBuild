@@ -3,6 +3,7 @@ export const MediaManager = {
     storeName: 'media_store',
     db: null,
     urlCache: new Map(), // To prevent recreating object URLs repeatedly
+    urlPending: new Map(), // Odczyt w toku: równoczesne wywołania dostają ten sam adres (jeden obiekt URL)
 
     init: () => {
         return new Promise((resolve, reject) => {
@@ -39,13 +40,25 @@ export const MediaManager = {
             blob = await (await fetch(dataDataUrlOrBlob)).blob();
         }
 
-        return new Promise((resolve, reject) => {
-            const tx = MediaManager.db.transaction(MediaManager.storeName, 'readwrite');
-            const store = tx.objectStore(MediaManager.storeName);
-            const req = store.put({ id, blob });
-            req.onsuccess = () => resolve(id);
-            req.onerror = () => reject(req.error);
+        const put = (record) => new Promise((resolve, reject) => {
+            try {
+                const tx = MediaManager.db.transaction(MediaManager.storeName, 'readwrite');
+                const store = tx.objectStore(MediaManager.storeName);
+                const req = store.put(record);
+                req.onsuccess = () => resolve(id);
+                req.onerror = () => reject(req.error);
+            } catch (e) {
+                reject(e);
+            }
         });
+
+        try {
+            return await put({ id, blob });
+        } catch (e) {
+            // Safari w oknie prywatnym (i WebKit w testach) nie zapisuje Blob w IndexedDB: zapis jako bajty.
+            if (!(blob instanceof Blob)) throw e;
+            return put({ id, bytes: await blob.arrayBuffer(), type: blob.type });
+        }
     },
 
     getMediaBlob: async (id) => {
@@ -55,7 +68,9 @@ export const MediaManager = {
             const store = tx.objectStore(MediaManager.storeName);
             const req = store.get(id);
             req.onsuccess = () => {
-                if (req.result) resolve(req.result.blob);
+                const r = req.result;
+                if (r && r.blob) resolve(r.blob);
+                else if (r && r.bytes) resolve(new Blob([r.bytes], { type: r.type || '' }));
                 else resolve(null);
             };
             req.onerror = () => reject(req.error);
@@ -69,14 +84,21 @@ export const MediaManager = {
         if (MediaManager.urlCache.has(idOrBase64)) {
             return MediaManager.urlCache.get(idOrBase64);
         }
+        if (MediaManager.urlPending.has(idOrBase64)) {
+            return MediaManager.urlPending.get(idOrBase64);
+        }
 
-        const blob = await MediaManager.getMediaBlob(idOrBase64);
-        if (blob) {
+        const pending = MediaManager.getMediaBlob(idOrBase64).then((blob) => {
+            // Plik usunięty w trakcie odczytu (deleteMedia zdjął wpis): bez adresu.
+            if (!blob || MediaManager.urlPending.get(idOrBase64) !== pending) return null;
             const url = URL.createObjectURL(blob);
             MediaManager.urlCache.set(idOrBase64, url);
             return url;
-        }
-        return null;
+        }).finally(() => {
+            if (MediaManager.urlPending.get(idOrBase64) === pending) MediaManager.urlPending.delete(idOrBase64);
+        });
+        MediaManager.urlPending.set(idOrBase64, pending);
+        return pending;
     },
 
     getBase64: async (idOrBase64) => {
@@ -102,6 +124,7 @@ export const MediaManager = {
             const store = tx.objectStore(MediaManager.storeName);
             const req = store.delete(id);
             req.onsuccess = () => {
+                MediaManager.urlPending.delete(id);
                 if (MediaManager.urlCache.has(id)) {
                     URL.revokeObjectURL(MediaManager.urlCache.get(id));
                     MediaManager.urlCache.delete(id);

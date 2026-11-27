@@ -5,70 +5,25 @@
 
 /* Global Body/App Wrappers */
 body {
-    font-family: 'Outfit', sans-serif !important;
-    background-color: #000; /* Fallback */
+    background-color: var(--ukis-surface); /* Fallback */
 }
 
 .blob-1 { display: none; }
 .blob-2 { display: none; }
 .blob-3 { display: none; }
 
-/* Bottom Navigation */
-.bottom-nav-bar {
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    width: 100%;
-    height: 70px;
-    background: rgba(30, 30, 30, 0.65);
-    backdrop-filter: blur(24px) saturate(180%);
-    -webkit-backdrop-filter: blur(24px) saturate(180%);
-    border-top: 1px solid rgba(255, 255, 255, 0.25);
-    display: flex;
-    justify-content: space-around;
-    align-items: center;
-    padding: 8px 0 12px 0;
-    z-index: 1000;
-    box-shadow: 0 -10px 40px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255, 255, 255, 0.15);
-    box-sizing: border-box;
-}
-
-.nav-btn {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 4px;
-    cursor: pointer;
-    opacity: 0.5;
-    transition: opacity 0.3s;
-    -webkit-tap-highlight-color: transparent;
-    user-select: none;
-}
-
-.nav-btn.active, .nav-btn:hover {
-    opacity: 1;
-}
-
-.nav-btn .nav-icon {
-    font-size: 24px;
-}
-
-.nav-btn span {
-    font-size: 0.6rem;
-    font-weight: 700;
-    color: #fff;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-}
+/* Pasek dolny: .bottom-nav-bar.z-nav w styles/zar/components.css (nowy wygląd „Czerwony żar”). */
 
 /* Base Glass Classes */
 .glass-card {
-    background: rgba(30, 30, 30, 0.55);
+    /* Tokeny motywu (styles/zar/tokens.css); przejściowy most dla starych ekranów do końca etapu C. */
+    background-color: var(--ukis-glass-bg);
+    background-image: var(--ukis-glass-sheen);
     backdrop-filter: blur(20px) saturate(180%);
     -webkit-backdrop-filter: blur(20px) saturate(180%);
-    border: 1px solid rgba(255, 255, 255, 0.25);
+    border: 1px solid var(--ukis-glass-border);
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5), inset 0 1px 1px rgba(255, 255, 255, 0.15);
-    border-radius: 24px;
+    border-radius: var(--ukis-radius-md);
 }
 
 /* ============================================================
@@ -169,7 +124,7 @@ body {
     right: -40px;
     width: 160px;
     height: 160px;
-    background: rgba(0, 191, 255, 0.2);
+    background: var(--ukis-primary-tint);
     filter: blur(40px);
     border-radius: 50%;
     pointer-events: none;
@@ -184,7 +139,7 @@ body {
 }
 
 .cta-subtitle {
-    color: #00BFFF;
+    color: var(--ukis-color-accent);
     font-size: 0.65rem;
     font-weight: 700;
     text-transform: uppercase;
@@ -211,12 +166,12 @@ body {
     width: 48px;
     height: 48px;
     border-radius: 50%;
-    background: linear-gradient(to right, #00BFFF, #0077ff);
+    background: var(--ukis-color-primary);
     display: flex;
     align-items: center;
     justify-content: center;
     color: #fff;
-    box-shadow: 0 0 20px rgba(0, 191, 255, 0.5);
+    box-shadow: 0 0 20px var(--ukis-accent-line);
 }
 
 .cta-footer span {
@@ -334,7 +289,7 @@ body {
     height: 100px;
     border-radius: 50%;
     border: 3px solid #fff;
-    box-shadow: 0 0 15px #00BFFF, 0 0 30px rgba(0, 191, 255, 0.6);
+    box-shadow: 0 0 15px var(--ukis-color-accent), 0 0 30px var(--ukis-accent-line);
     margin: 10px auto 15px auto;
     animation: pulse-scale 3s infinite ease-in-out;
     object-fit: contain;
@@ -343,9 +298,9 @@ body {
 }
 
 @keyframes pulse-scale {
-    0% { transform: scale(1); box-shadow: 0 0 15px #00BFFF, 0 0 30px rgba(0, 191, 255, 0.6); }
-    50% { transform: scale(1.05); box-shadow: 0 0 25px #00BFFF, 0 0 50px rgba(0, 191, 255, 0.8); }
-    100% { transform: scale(1); box-shadow: 0 0 15px #00BFFF, 0 0 30px rgba(0, 191, 255, 0.6); }
+    0% { transform: scale(1); box-shadow: 0 0 15px var(--ukis-color-accent), 0 0 30px var(--ukis-accent-line); }
+    50% { transform: scale(1.05); box-shadow: 0 0 25px var(--ukis-color-accent), 0 0 50px var(--ukis-accent-line); }
+    100% { transform: scale(1); box-shadow: 0 0 15px var(--ukis-color-accent), 0 0 30px var(--ukis-accent-line); }
 }
 
 /* ============================================================
@@ -383,7 +338,7 @@ body {
         top: 0 !important;
         left: 0 !important;
         right: 0 !important;
-        bottom: 70px !important; /* miejsce na bottom-nav-bar */
+        bottom: 0 !important; /* treść sięga pod pływający pasek dolny; miejsce na niego: padding w styles/zar/base.css */
         height: auto !important;
         overflow-y: auto !important;
         overflow-x: hidden !important;
@@ -412,14 +367,5 @@ body {
         padding-bottom: 20px !important;
         box-sizing: border-box !important;
         min-height: 100% !important;
-    }
-
-    /* Bottom nav - always fixed at bottom */
-    .bottom-nav-bar {
-        position: fixed !important;
-        bottom: 0 !important;
-        left: 0 !important;
-        width: 100% !important;
-        z-index: 1000 !important;
     }
 }

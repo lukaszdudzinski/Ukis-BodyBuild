@@ -17,8 +17,8 @@ export const SECTIONS = [
 
 export const MODES = ['pelna', 'tylko-trener', 'wybrane'];
 
-// Karty, które zostają w trybie „Tylko Strefa trenera”.
-export const TRAINER_ONLY_TABS = ['trainer-zone', 'settings-panel', 'diagnostics-dashboard'];
+// Karty, które zostają w trybie „Tylko Strefa trenera” (Wygląd otwiera się z Profilu).
+export const TRAINER_ONLY_TABS = ['trainer-zone', 'settings-panel', 'wyglad-panel', 'diagnostics-dashboard'];
 
 const allSections = (value) => Object.fromEntries(SECTIONS.map((s) => [s.id, value]));
 
@@ -68,7 +68,7 @@ export function isTrainerOnly({ sections, trainerEnabled, hasLicense }) {
 // Chowa elementy wyłączonych sekcji. Pływający czat AI powstaje dynamicznie, więc chowa go CSS po klasie
 // tz-bez-ai na <body>. Pasek aplikacji dostaje liczbę widocznych przycisków (--tz-pasek-n) i zwęża się.
 // Aktywna karta z ukrytej sekcji przełącza się na Menu, a w trybie „Tylko Strefa trenera” każda karta
-// poza Strefą, Profilem i Serwisem otwiera Strefę.
+// poza Strefą, Profilem (z ekranem „Wygląd”) i Serwisem otwiera Strefę.
 export function applySections(doc, visible, {
     trainerOnly = false,
     openZone = () => {},

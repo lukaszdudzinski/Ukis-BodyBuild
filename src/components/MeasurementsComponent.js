@@ -1,10 +1,9 @@
+import { naglowek } from '../modules/wyglad/naglowek.js';
+
 export const MeasurementsComponent = {
     render: () => {
         return `
-            <div class="view-header" style="padding: 10px 15px; margin-bottom: 10px;">
-                <h2 style="margin: 0; font-size: 1.8em; font-weight: 700; color: #fff;">Pomiary Ciała</h2>
-                <p style="margin: 5px 0 0 0; color: #8E8E93; font-size: 0.9em;">Śledź wagę i obwody</p>
-            </div>
+            ${naglowek({ wariant: 'back', tytul: 'Pomiary ciała', podtytul: 'Waga i obwody', wroc: 'welcome-screen' })}
 
             <form id="measurementsForm" style="padding: 0 15px; margin-bottom: 30px;">
                 <div style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 24px; padding: 25px 20px; backdrop-filter: blur(10px); margin-bottom: 20px;">

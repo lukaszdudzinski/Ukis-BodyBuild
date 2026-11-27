@@ -88,7 +88,7 @@
     height: 45px;
     border-radius: 50%;
     object-fit: cover;
-    border: 2px solid rgba(0, 191, 255, 0.6);
+    border: 2px solid var(--ukis-accent-line);
     animation: azure-pulse-glow 2.5s infinite ease-in-out;
     flex-shrink: 0;
     margin-bottom: 0;
@@ -147,8 +147,8 @@
 }
 
 .sidebar-nav li a.active {
-    background-color: #00BFFF;
-    color: #1e1e1e !important;
+    background-color: var(--ukis-color-primary);
+    color: var(--ukis-on-primary) !important;
     font-weight: bold;
     text-shadow: none;
 }
@@ -156,21 +156,21 @@
 /* PRO Menu Item */
 .sidebar-nav li.pro-menu-item a {
     font-weight: bold;
-    border-color: rgba(0, 191, 255, 0.3);
+    border-color: var(--ukis-primary-tint);
     animation: pulse-border-cyan 2s infinite ease-in-out;
     margin-bottom: 8px;
 }
 
 .sidebar-nav li.pro-menu-item a:hover {
-    background-color: rgba(0, 191, 255, 0.1);
-    box-shadow: 0 0 10px rgba(0, 191, 255, 0.3);
+    background-color: var(--ukis-primary-tint);
+    box-shadow: 0 0 10px var(--ukis-primary-tint);
 }
 
 .sidebar-nav li.pro-menu-item a.active {
-    background-color: #00BFFF;
-    color: #1e1e1e !important;
+    background-color: var(--ukis-color-primary);
+    color: var(--ukis-on-primary) !important;
     animation: none;
-    box-shadow: 0 0 15px rgba(0, 191, 255, 0.5);
+    box-shadow: 0 0 15px var(--ukis-accent-line);
 }
 
 /* --- Sidebar Footer & Buttons (RESTORED) --- */
@@ -191,7 +191,7 @@
     text-align: center;
     animation: pulse-glow-dark 3s infinite ease-in-out;
     flex-shrink: 0;
-    border: 1px solid rgba(0, 191, 255, 0.1);
+    border: 1px solid var(--ukis-primary-tint);
 }
 
 .donation-wrapper a {
@@ -203,7 +203,7 @@
 }
 
 .donation-wrapper a strong {
-    color: #00BFFF;
+    color: var(--ukis-color-accent);
     font-size: 1.0em;
     display: block;
     margin-top: 1px;
@@ -215,7 +215,7 @@
     content: '☕';
     font-size: 1.2em;
     margin-right: 6px;
-    color: #00BFFF;
+    color: var(--ukis-color-accent);
     vertical-align: middle;
 }
 
@@ -337,7 +337,7 @@
     height: 35px;
     border-radius: 50%;
     margin: 0;
-    border: 1px solid rgba(0, 191, 255, 0.6);
+    border: 1px solid var(--ukis-accent-line);
     animation: azure-pulse-glow 2.5s infinite ease-in-out;
 }
 
@@ -504,7 +504,7 @@
     width: 100%;
     max-width: 400px;
     padding: 15px 30px;
-    background: linear-gradient(135deg, #00BFFF 0%, #AD1457 100%);
+    background: linear-gradient(135deg, var(--ukis-color-primary) 0%, #AD1457 100%);
     color: #fff;
     font-size: 1.1em;
     font-weight: bold;
@@ -514,14 +514,14 @@
     border-radius: 50px;
     cursor: pointer;
     transition: transform 0.2s, box-shadow 0.2s;
-    box-shadow: 0 4px 15px rgba(0, 191, 255, 0.4);
+    box-shadow: 0 4px 15px var(--ukis-accent-line);
     text-align: center;
     margin: 20px auto;
 }
 
 .quiz-start-btn-elegant:hover {
     transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(0, 191, 255, 0.6);
+    box-shadow: 0 6px 20px var(--ukis-accent-line);
 }
 
 /* --- VIEW MODE: INTELLIGENT SWITCHING (Desktop vs Mobile) --- */
@@ -603,7 +603,7 @@ body.view-mode-tiles .app-wrapper {
         height: 100px;
         border-radius: 50%;
         border: 3px solid #fff;
-        box-shadow: 0 0 15px #00BFFF, 0 0 30px rgba(0, 191, 255, 0.6);
+        box-shadow: 0 0 15px var(--ukis-color-accent), 0 0 30px var(--ukis-accent-line);
         margin-bottom: 15px;
         animation: pulse-scale 3s infinite ease-in-out;
     }
@@ -613,7 +613,7 @@ body.view-mode-tiles .app-wrapper {
         font-size: 2.2rem;
         color: #fff;
         margin: 0;
-        text-shadow: 0 0 10px #00BFFF, 0 0 20px rgba(0, 191, 255, 0.8);
+        text-shadow: 0 0 10px var(--ukis-color-accent), 0 0 20px var(--ukis-accent-line);
         font-weight: 800;
         letter-spacing: 1px;
     }
@@ -714,8 +714,8 @@ body.view-mode-tiles .app-wrapper {
     transform: translateX(-50%) scale(1.05);
     /* Maintain center + scale */
     background-color: rgba(60, 60, 60, 0.95);
-    border-color: rgba(0, 191, 255, 0.5);
-    box-shadow: 0 8px 25px rgba(0, 191, 255, 0.3);
+    border-color: var(--ukis-accent-line);
+    box-shadow: 0 8px 25px var(--ukis-primary-tint);
     color: #fff;
 }
 
@@ -769,7 +769,6 @@ body.view-mode-tiles .app-wrapper {
 .calendar-day-header {
     text-align: center;
     font-weight: bold;
-    color: #00BFFF;
     padding: 8px 0;
     font-size: 0.85em;
     overflow: hidden;
@@ -814,8 +813,8 @@ body.view-mode-tiles .app-wrapper {
 }
 
 .calendar-day.today {
-    border-color: #00BFFF;
-    box-shadow: 0 0 10px rgba(0, 191, 255, 0.2) inset;
+    border-color: var(--ukis-color-accent);
+    box-shadow: 0 0 10px var(--ukis-primary-tint) inset;
 }
 
 .calendar-day.has-event {
@@ -876,8 +875,8 @@ body.view-mode-tiles .app-wrapper {
 }
 
 .calendar-modal {
-    background: #1a1a2e;
-    border: 1px solid #00BFFF;
+    background: var(--ukis-sheet-bg);
+    border: 1px solid var(--ukis-color-accent);
     border-radius: 12px;
     padding: 20px;
     width: 90%;
@@ -894,7 +893,7 @@ body.view-mode-tiles .app-wrapper {
 .payment-details {
     display: none;
     background: rgba(0, 0, 0, 0.4);
-    border: 1px solid rgba(0, 191, 255, 0.3);
+    border: 1px solid var(--ukis-primary-tint);
     border-radius: 8px;
     padding: 15px;
     margin-top: 15px;
@@ -923,9 +922,9 @@ body.view-mode-tiles .app-wrapper {
 }
 
 .copy-btn {
-    background: rgba(0, 191, 255, 0.2);
-    border: 1px solid #00BFFF;
-    color: #00BFFF;
+    background: var(--ukis-primary-tint);
+    border: 1px solid var(--ukis-color-accent);
+    color: var(--ukis-color-accent);
     border-radius: 4px;
     padding: 4px 8px;
     cursor: pointer;
@@ -934,8 +933,8 @@ body.view-mode-tiles .app-wrapper {
 }
 
 .copy-btn:hover {
-    background: #00BFFF;
-    color: #111;
+    background: var(--ukis-color-primary);
+    color: var(--ukis-on-primary);
 }
 
 .calendar-modal-overlay.active .calendar-modal {
@@ -954,15 +953,88 @@ body.view-mode-tiles .app-wrapper {
     line-height: 1;
 }
 
-/* Custom Wallpaper Support */
-body.has-custom-wallpaper .app-content,
-body.has-custom-wallpaper .sidebar-nav {
-    backdrop-filter: none !important;
-    -webkit-backdrop-filter: none !important;
-    background-color: rgba(18, 18, 18, 0.45) !important;
+/* Nowy wygląd: treść nie ma własnego tła ani rozmycia, żeby widać było poświatę motywu albo tapetę (spec 7.2).
+   Czytelność tekstu zapewnia przyciemnienie tapety (--ukis-scrim) i karty szklane, nie tło kontenera. */
+body.zar .app-content {
+    background-color: transparent;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    transition: none;
 }
 
-body.has-custom-wallpaper.glass-off .app-content,
-body.has-custom-wallpaper.glass-off .sidebar-nav {
-    background-color: rgba(18, 18, 18, 0.75) !important;
+/* Na poświacie (bez tapety) treść dostaje bardzo lekkie ściemnienie: najjaśniejsze miejsca poświaty pod szarym
+   tekstem dawały kontrast tuż poniżej 4,5 (np. „domyślny” w Wyglądzie, motyw pomarańczowy: 4,45). Tapetę ścisza
+   przyciemnienie (--ukis-scrim), więc przy niej kontener zostaje w pełni przezroczysty. */
+body.zar.z-tlo-poswiata .app-content {
+    background-color: rgba(0, 0, 0, 0.12);
+}
+
+/* ---------- Most dla kolorów wpisanych w style="…" starych ekranów ----------
+   Na przezroczystym .app-content (poświata, tapeta) szarości i czerwienie z kodu JS starych ekranów miały kontrast
+   poniżej 4,5 : 1. Tu zamieniamy je na tokeny motywu. !important jest konieczne, bo nadpisujemy atrybut style.
+   Selektory łapią „color:” tylko na początku deklaracji (po spacji, średniku albo na starcie), więc nie ruszają
+   background-color ani border-color. Etapy B i C usuwają te reguły w miarę przebudowy ekranów. */
+
+/* Szare podpisy, etykiety i puste stany. */
+body.zar .app-content :is(
+    [style^="color: #8e8e93" i], [style^="color:#8e8e93" i], [style*=" color: #8e8e93" i], [style*=" color:#8e8e93" i], [style*=";color: #8e8e93" i], [style*=";color:#8e8e93" i],
+    [style^="color: #888" i], [style^="color:#888" i], [style*=" color: #888" i], [style*=" color:#888" i], [style*=";color: #888" i], [style*=";color:#888" i],
+    [style^="color: #777" i], [style^="color:#777" i], [style*=" color: #777" i], [style*=" color:#777" i], [style*=";color: #777" i], [style*=";color:#777" i],
+    [style^="color: #666" i], [style^="color:#666" i], [style*=" color: #666" i], [style*=" color:#666" i], [style*=";color: #666" i], [style*=";color:#666" i],
+    [style^="color: #555" i], [style^="color:#555" i], [style*=" color: #555" i], [style*=" color:#555" i], [style*=";color: #555" i], [style*=";color:#555" i],
+    [style^="color: #999" i], [style^="color:#999" i], [style*=" color: #999" i], [style*=" color:#999" i], [style*=";color: #999" i], [style*=";color:#999" i],
+    [style^="color: #aaa" i], [style^="color:#aaa" i], [style*=" color: #aaa" i], [style*=" color:#aaa" i], [style*=";color: #aaa" i], [style*=";color:#aaa" i],
+    [style^="color: rgb(142, 142, 147)"], [style*=" color: rgb(142, 142, 147)"],
+    [style^="color: rgb(136, 136, 136)"], [style*=" color: rgb(136, 136, 136)"]
+) {
+    color: var(--ukis-text-secondary) !important;
+}
+
+/* Czerwone przyciski i ostrzeżenia. */
+body.zar .app-content :is(
+    [style^="color: #e74c3c" i], [style^="color:#e74c3c" i], [style*=" color: #e74c3c" i], [style*=" color:#e74c3c" i], [style*=";color: #e74c3c" i], [style*=";color:#e74c3c" i],
+    [style^="color: #ff4444" i], [style^="color:#ff4444" i], [style*=" color: #ff4444" i], [style*=" color:#ff4444" i], [style*=";color: #ff4444" i], [style*=";color:#ff4444" i],
+    [style^="color: #ff3b30" i], [style^="color:#ff3b30" i], [style*=" color: #ff3b30" i], [style*=" color:#ff3b30" i], [style*=";color: #ff3b30" i], [style*=";color:#ff3b30" i],
+    [style^="color: #e53935" i], [style^="color:#e53935" i], [style*=" color: #e53935" i], [style*=" color:#e53935" i], [style*=";color: #e53935" i], [style*=";color:#e53935" i],
+    [style^="color: #ff453a" i], [style^="color:#ff453a" i], [style*=" color: #ff453a" i], [style*=" color:#ff453a" i], [style*=";color: #ff453a" i], [style*=";color:#ff453a" i]
+) {
+    color: var(--ukis-color-danger) !important;
+}
+
+/* Ciemne barwy (niebieskie, fiolet, róż), które na ciemnym tle nie dają 4,5 : 1 w żadnym motywie. */
+body.zar .app-content :is(
+    [style^="color: #2196f3" i], [style^="color:#2196f3" i], [style*=" color: #2196f3" i], [style*=" color:#2196f3" i], [style*=";color: #2196f3" i], [style*=";color:#2196f3" i],
+    [style^="color: #3498db" i], [style^="color:#3498db" i], [style*=" color: #3498db" i], [style*=" color:#3498db" i], [style*=";color: #3498db" i], [style*=";color:#3498db" i],
+    [style^="color: #9b59b6" i], [style^="color:#9b59b6" i], [style*=" color: #9b59b6" i], [style*=" color:#9b59b6" i], [style*=";color: #9b59b6" i], [style*=";color:#9b59b6" i],
+    [style^="color: #e91e63" i], [style^="color:#e91e63" i], [style*=" color: #e91e63" i], [style*=" color:#e91e63" i], [style*=";color: #e91e63" i], [style*=";color:#e91e63" i]
+) {
+    color: var(--ukis-text) !important;
+}
+
+/* Barwne przyciski z półprzezroczystym tłem w kolorze tekstu: ciemne tło jak .z-ghost.z-danger, barwa zostaje w ramce i tekście. */
+body.zar .app-content :is(
+    [style*="background: rgba(231, 76, 60, 0." i], [style*="background: rgba(231,76,60,0." i], [style*="background:rgba(231,76,60,0." i],
+    [style*="background: rgba(255, 69, 58, 0." i], [style*="background: rgba(255,69,58,0." i], [style*="background:rgba(255,69,58,0." i],
+    [style*="background: rgba(255, 152, 0, 0." i], [style*="background: rgba(255,152,0,0." i], [style*="background:rgba(255,152,0,0." i],
+    [style*="background: rgba(0, 191, 255, 0." i], [style*="background: rgba(0,191,255,0." i], [style*="background:rgba(0,191,255,0." i],
+    [style*="background: rgba(33, 150, 243, 0." i], [style*="background: rgba(33,150,243,0." i], [style*="background:rgba(33,150,243,0." i],
+    [style*="background: rgba(52, 152, 219, 0." i], [style*="background: rgba(52,152,219,0." i], [style*="background:rgba(52,152,219,0." i],
+    [style*="background: rgba(46, 204, 113, 0." i], [style*="background: rgba(46,204,113,0." i], [style*="background:rgba(46,204,113,0." i],
+    [style*="background: rgba(155, 89, 182, 0." i], [style*="background: rgba(155,89,182,0." i], [style*="background:rgba(155,89,182,0." i],
+    [style*="background: rgba(0, 210, 106, 0." i], [style*="background: rgba(0,210,106,0." i], [style*="background:rgba(0,210,106,0." i]
+) {
+    background: var(--ukis-danger-ghost-bg) !important;
+}
+
+/* Pomarańczowe przyciski główne (Zapisz Pomiary, Analizuj z AI): kolor akcentu motywu i tekst na akcencie. */
+body.zar .app-content :is(
+    [style*="background: #ff9800" i], [style*="background:#ff9800" i]
+) {
+    background: var(--ukis-color-primary) !important;
+    color: var(--ukis-on-primary) !important;
+}
+
+/* Nagłówki ekranów: czcionka wyświetlna motywu. */
+.view-header h2 {
+    font-family: var(--ukis-font-display);
 }

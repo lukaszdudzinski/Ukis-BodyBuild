@@ -1,10 +1,9 @@
+import { naglowek } from '../modules/wyglad/naglowek.js';
+
 export const TrainingComponent = {
     render: () => {
         return `
-            <div class="view-header">
-                <h2>Trening</h2>
-                <p style="color: #b0b0b0;">Zaplanuj i wykonuj treningi</p>
-            </div>
+            ${naglowek({ wariant: 'main', tytul: 'Trening', podtytul: 'Zaplanuj i wykonuj treningi' })}
             
             <!-- Calendar View -->
             <div id="training-calendar-view">

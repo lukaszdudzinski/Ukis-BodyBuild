@@ -19,14 +19,16 @@ import { loadSections, effectiveSections, isTrainerOnly, applySections } from '.
 import { createVault } from '../trainerVault.js';
 import { createAutoLock } from '../trainerLock.js';
 import { DatabaseManager } from '../../db/DatabaseManager.js';
+import { KLUCZE } from '../../wyglad/wygladModel.js';
+import { Wyglad, ZDARZENIE as WYGLAD_ZMIENIONY } from '../../wyglad/tlo.js';
 
-export const MOTYW_KEY = 'ukis.bodybuild.trener.motyw';
+// Motyw Strefy to motyw całej aplikacji (spec rozdz. 5.4); dawny klucz Strefy czyta tylko migracja.
+export const MOTYW_KEY = KLUCZE.motyw;
 export const MOTYWY = [
     { id: 'zar', label: 'Czerwony żar' },
     { id: 'granat', label: 'Grafit i granat' },
     { id: 'pomarancz', label: 'Czerń i pomarańcz' },
 ];
-const DEFAULT_MOTYW = 'zar';
 const TAB_ID = 'trainer-zone';
 
 // Pasek wydania 1. Terminy i Finanse dojdą w wydaniu 3.
@@ -45,6 +47,9 @@ let accessReady = Promise.resolve();
 const openDialogs = new Set();
 // Hak bieżącego ekranu z formularzem: { root, saveDraft } (zapis szkicu przed opuszczeniem ekranu).
 let leaveHook = null;
+// Bieżący ekran: jego nasłuchy (np. „wygladZmieniony” w karcie motywu) odpinają się, gdy ekran znika.
+let viewAbort = null;
+const viewSignals = new WeakMap();
 // Zapisy szkiców w toku (blokada na nie czeka, zanim zabierze klucz).
 let saving = Promise.resolve();
 // Zmiany ekranu czekające na zapis szkicu idą po kolei; blokada unieważnia te sprzed niej.
@@ -61,9 +66,7 @@ const SLOW_SAVE_TIMEOUT_MS = 8000;
 const slowSaves = new Set();
 
 function readMotyw() {
-    let id = null;
-    try { id = localStorage.getItem(MOTYW_KEY); } catch (e) { /* prywatne okno */ }
-    return MOTYWY.some((m) => m.id === id) ? id : DEFAULT_MOTYW;
+    return Wyglad.getWyglad().motyw;
 }
 
 function iconButton(name, label, onClick) {
@@ -171,9 +174,25 @@ function navigate(apply) {
     return run;
 }
 
+// Ekran znika (inna trasa, błąd otwarcia, ponowne wejście do Strefy): odpinamy jego nasłuchy.
+function leaveView() {
+    if (viewAbort) viewAbort.abort();
+    viewAbort = null;
+}
+
+// Sygnał ekranu, w którym leży `node`: do addEventListener(…, { signal }) na document/window.
+// null, gdy `node` nie leży w ekranie routera (wtedy nasłuchu nie ma czym odpiąć).
+function viewSignal(node) {
+    const view = node && node.closest ? node.closest('.tz-view') : null;
+    return (view && viewSignals.get(view)) || null;
+}
+
 function render() {
     const { route, params } = stack[stack.length - 1];
     const view = h('div', { class: 'tz-view' });
+    leaveView();
+    viewAbort = new AbortController();
+    viewSignals.set(view, viewAbort.signal);
     els.main.replaceChildren(view);
     els.main.scrollTop = 0;
     updateChrome(route);
@@ -240,7 +259,7 @@ function sectionsInput() {
 }
 
 // Okrojenie zwykłej części aplikacji (spec rozdz. 10). W trybie „Tylko Strefa trenera” każda inna karta
-// niż Strefa, Profil i Serwis otwiera Strefę, a nagłówek Strefy nie ma ikony wyjścia.
+// niż Strefa, Profil (z ekranem „Wygląd”) i Serwis otwiera Strefę, a nagłówek Strefy nie ma ikony wyjścia.
 export function applyAppSections() {
     const input = sectionsInput();
     const trainerOnly = isTrainerOnly(input);
@@ -284,6 +303,7 @@ export async function refreshAccess() {
 // Otwarty formularz zapisuje się najpierw jako szkic. Błąd (np. zajęta baza) daje kartę „Spróbuj ponownie”.
 export async function open() {
     const pending = flushLeave();
+    leaveView();
     if (els) els.main.replaceChildren();
     if (window.switchTab) window.switchTab(TAB_ID);
     try {
@@ -301,6 +321,7 @@ function renderOpenError() {
     // Bez render(): tryb sesji autoblokady (włączony np. przez powrót na kartę ze stosem „session”) trzeba wyłączyć tu,
     // także gdy widoku już nie ma.
     ctx.lock?.setSessionActive?.(false);
+    leaveView();
     if (!els) return;
     stack = [];
     const retry = h('button', { type: 'button', class: 'btn', onclick: () => { open(); } }, 'Spróbuj ponownie');
@@ -363,7 +384,7 @@ export function registerOverlay(close, el = null) {
 
 export function setMotyw(id) {
     if (!MOTYWY.some((m) => m.id === id)) return false;
-    try { localStorage.setItem(MOTYW_KEY, id); } catch (e) { /* prywatne okno: motyw tylko do przeładowania */ }
+    if (!Wyglad.setMotyw(id)) return false;
     if (els) els.root.dataset.motyw = id;
     return true;
 }
@@ -457,7 +478,7 @@ function renderProbe(root) {
 }
 
 export const ctx = {
-    vault: null, lock: null, access, show, toast, confirm, registerOverlay, refreshAccess, resolve: resolveRoute, onLeave, holdLock,
+    vault: null, lock: null, access, show, toast, confirm, registerOverlay, refreshAccess, resolve: resolveRoute, onLeave, viewSignal, holdLock,
     theme: { list: MOTYWY, get: readMotyw, set: setMotyw },
     applySections: applyAppSections,
 };
@@ -516,6 +537,11 @@ export function init() {
     const container = document.getElementById(TAB_ID);
     if (!container || els) return;
     els = buildShell(container);
+    // Zmiana motywu w ekranie „Wygląd” (albo gdziekolwiek przez window.Wyglad) przechodzi na Strefę.
+    document.addEventListener(WYGLAD_ZMIENIONY, (e) => {
+        const id = e.detail && e.detail.motyw;
+        if (els && MOTYWY.some((m) => m.id === id)) els.root.dataset.motyw = id;
+    });
     ctx.vault = createVault({ exec });
     ctx.lock = createAutoLock({ onLock });
     ctx.lock.beforeLock(saveBeforeLock);

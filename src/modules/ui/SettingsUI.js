@@ -3,6 +3,8 @@ import { MediaManager } from '../db/MediaManager.js';
 import { ShareUtils } from '../../utils/ShareUtils.js';
 import { isTrainerEnabled, setTrainerEnabled, getTrainerLicense } from '../trainer/trainerAccess.js';
 import { applyDefaultAvatar, loadAvatarChoice, saveAvatarChoice } from './defaultAvatar.js';
+import { Wyglad, ZDARZENIE as WYGLAD_ZMIENIONY } from '../wyglad/tlo.js';
+import { nazwaMotywu } from '../wyglad/WygladUI.js';
 
 export const SettingsUI = {
     init: () => {
@@ -28,7 +30,7 @@ export const SettingsUI = {
             } else {
                 settingsPanel.appendChild(dataSection);
             }
-            // Przełącznik wyglądu (okres przejściowy - patrz ui-switch.js)
+            // Przełącznik wyglądu (okres przejściowy - patrz ui-switch.js); droga do klasycznego do etapu D (R10).
             if (window.UkiUiSwitch) window.UkiUiSwitch.mountSettingsCard(dataSection);
         }
 
@@ -50,6 +52,7 @@ export const SettingsUI = {
         // SettingsUI logic cleaned up
 
         SettingsUI.initTrainerCard();
+        SettingsUI.initWygladRow();
         SettingsUI.initTheme();
         SettingsUI.initLaboratory();
         SettingsUI.initProfile();
@@ -238,20 +241,21 @@ export const SettingsUI = {
         });
     },
 
-    initTheme: () => {
-        const themeToggle = document.getElementById('theme-toggle');
-        const glassToggle = document.getElementById('glass-toggle');
+    // Wiersz „Wygląd: motyw i tapeta” w Profilu: nazwa bieżącego motywu, odświeżana po każdej zmianie wyglądu.
+    initWygladRow: () => {
+        const val = document.getElementById('profile-wyglad-motyw');
+        if (!val) return;
+        const paint = (motyw) => { val.textContent = nazwaMotywu(motyw); };
+        paint(Wyglad.getWyglad().motyw);
+        document.addEventListener(WYGLAD_ZMIENIONY, (e) => paint((e.detail || Wyglad.getWyglad()).motyw));
+    },
 
-        const savedTheme = localStorage.getItem('uki-bodybuild-theme');
+    // Nowy wygląd jest tylko ciemny (spec, decyzja 2): body.dark-theme zawsze, bez przełącznika.
+    initTheme: () => {
+        const glassToggle = document.getElementById('glass-toggle');
         const savedGlass = localStorage.getItem('uki-bodybuild-glass');
 
-        if (savedTheme === 'light') {
-            document.body.classList.remove('dark-theme');
-            if (themeToggle) themeToggle.checked = true;
-        } else {
-            document.body.classList.add('dark-theme');
-            if (themeToggle) themeToggle.checked = false;
-        }
+        document.body.classList.add('dark-theme');
 
         // Glass is ON by default. If 'off', we add .glass-off
         if (savedGlass === 'off') {
@@ -260,18 +264,6 @@ export const SettingsUI = {
         } else {
             document.body.classList.remove('glass-off');
             if (glassToggle) glassToggle.checked = true;
-        }
-
-        if (themeToggle) {
-            themeToggle.addEventListener('change', (e) => {
-                if (e.target.checked) {
-                    document.body.classList.remove('dark-theme');
-                    localStorage.setItem('uki-bodybuild-theme', 'light');
-                } else {
-                    document.body.classList.add('dark-theme');
-                    localStorage.setItem('uki-bodybuild-theme', 'dark');
-                }
-            });
         }
 
         if (glassToggle) {
@@ -291,8 +283,6 @@ export const SettingsUI = {
         const nickInput = document.getElementById('profile-nick-input');
         const avatarUpload = document.getElementById('profile-avatar-upload');
         const avatarPreview = document.getElementById('profile-avatar-preview');
-        const wallpaperUpload = document.getElementById('profile-wallpaper-upload');
-        const wallpaperRemove = document.getElementById('profile-wallpaper-remove');
         const reminderSelect = document.getElementById('profile-reminder-select');
 
         // Load saved values
@@ -313,8 +303,6 @@ export const SettingsUI = {
             });
             SettingsUI.applyProfileAvatar(savedAvatar);
         }
-
-        SettingsUI.applyWallpaper();
 
         if (reminderSelect) {
             const savedReminder = localStorage.getItem('uki-bodybuild-reminder') || '30';
@@ -372,44 +360,6 @@ export const SettingsUI = {
                     }
                 }
             });
-        }
-
-        if (wallpaperUpload) {
-            wallpaperUpload.addEventListener('change', async (e) => {
-                const file = e.target.files[0];
-                if (file) {
-                    const saveWallpaper = async (blobOrBase64) => {
-                        try {
-                            const id = await MediaManager.saveMedia(blobOrBase64);
-                            localStorage.setItem('uki-bodybuild-wallpaper', id);
-                            SettingsUI.applyWallpaper();
-                            if (wallpaperRemove) wallpaperRemove.style.display = 'block';
-                        } catch(err) {
-                            if (window.ukiLogError) window.ukiLogError('Wallpaper save error', err.toString());
-                            alert('Błąd zapisu tapety. Zdjęcie jest zbyt duże dla bazy.');
-                        }
-                    };
-
-                    if (window.TrainingUI && window.TrainingUI.compressImage) {
-                        window.TrainingUI.compressImage(file, saveWallpaper);
-                    } else {
-                        saveWallpaper(file);
-                    }
-                }
-            });
-
-        
-            }
-
-            if (wallpaperRemove) {
-            wallpaperRemove.addEventListener('click', () => {
-                localStorage.removeItem('uki-bodybuild-wallpaper');
-                SettingsUI.applyWallpaper();
-                wallpaperRemove.style.display = 'none';
-            });
-            if (localStorage.getItem('uki-bodybuild-wallpaper')) {
-                wallpaperRemove.style.display = 'block';
-            }
         }
     },
 
@@ -486,26 +436,6 @@ export const SettingsUI = {
                 avatarEl.style.display = 'none';
             }
         }    },
-
-    applyWallpaper: async () => {
-        const savedId = localStorage.getItem('uki-bodybuild-wallpaper');
-        if (savedId) {
-            const url = await MediaManager.getMediaUrl(savedId);
-            if (url) {
-                document.body.style.backgroundImage = `url(${url})`;
-                document.body.style.backgroundSize = 'cover';
-                document.body.style.backgroundAttachment = 'fixed';
-                document.body.style.backgroundPosition = 'center';
-                document.body.classList.add('has-custom-wallpaper');
-            }
-        } else {
-            document.body.style.backgroundImage = '';
-            document.body.style.backgroundSize = '';
-            document.body.style.backgroundAttachment = '';
-            document.body.style.backgroundPosition = '';
-            document.body.classList.remove('has-custom-wallpaper');
-        }
-    },
 
     handleExport: async () => {
         try {

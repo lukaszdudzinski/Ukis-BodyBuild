@@ -33,7 +33,7 @@
 
     // Arkusz bazowy (packages/ui/src/dom.ts) + arkusz paska (update-banner.ts). Shadow DOM: style aplikacji go nie ruszają.
     const BAR_CSS = `
-:host { all: initial; display: block; font-family: 'Outfit', system-ui, -apple-system, sans-serif; }
+:host { all: initial; display: block; font-family: var(--ukis-font, 'Inter', system-ui, sans-serif); }
 :host([hidden]) { display: none; }
 *, *::before, *::after { box-sizing: border-box; }
 .ico { display: inline-flex; width: 20px; height: 20px; flex: none; }

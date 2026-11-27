@@ -10,7 +10,7 @@ const ICONS = {
 const icon = (name) => `<span class="ukis-cl-ico"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">${ICONS[name]}</svg></span>`;
 
 const CSS = `
-#changelog-modal-overlay { position: fixed; inset: 0; z-index: 9999; justify-content: center; align-items: center; padding: 16px; box-sizing: border-box; background: rgba(0,0,0,.55); font-family: 'Outfit', system-ui, -apple-system, sans-serif; text-shadow: none; letter-spacing: normal; }
+#changelog-modal-overlay { position: fixed; inset: 0; z-index: 9999; justify-content: center; align-items: center; padding: 16px; box-sizing: border-box; background: rgba(0,0,0,.55); font-family: var(--ukis-font, 'Inter', system-ui, sans-serif); text-shadow: none; letter-spacing: normal; }
 #changelog-modal-overlay * { text-shadow: none; }
 #changelog-modal-overlay *, #changelog-modal-overlay *::before, #changelog-modal-overlay *::after { box-sizing: border-box; }
 #changelog-modal-overlay .ukis-cl-panel { width: min(480px, 100%); max-height: 85vh; overflow: auto; padding: 20px; background: #FF9800; color: #000; border: none; border-radius: 14px; box-shadow: 0 20px 50px rgba(0,0,0,.45); text-align: left; }

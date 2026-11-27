@@ -5,6 +5,8 @@
     <meta charset="UTF-8">
     <!-- ui-version-guard: okres przejściowy nowego wyglądu (usuń po decyzji, patrz ui-switch.js) -->
     <script id="ui-version-guard">try { if (localStorage.getItem('uki-ui-version') === 'classic') window.location.replace('classic.html'); } catch (e) {}</script>
+    <!-- wyglad-start: motyw „Czerwony żar” na <html> przed malowaniem (bez modułów; resztę robi src/modules/wyglad/tlo.js). Synchronizuj z wygladModel.js (klucze i lista motywów). -->
+    <script id="wyglad-start">(function () { var m = 'zar'; try { m = localStorage.getItem('ukis.bodybuild.wyglad.motyw') || localStorage.getItem('ukis.bodybuild.trener.motyw') || 'zar'; if (['zar', 'granat', 'pomarancz'].indexOf(m) < 0) m = 'zar'; } catch (e) { m = 'zar'; } document.documentElement.dataset.motyw = m; })();</script>
     <script src="ui-switch.js"></script>
     <!-- Karta przeglądarki (nie zainstalowana aplikacja): od pierwszej chwili strona instalacji, bez mignięcia aplikacji -->
     <script>try { if (window.UkiUiSwitch && !window.UkiUiSwitch.isAppMode()) document.documentElement.classList.add('ukis-przegladarka'); } catch (e) {}</script>
@@ -15,8 +17,9 @@
     </style>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="description" content="Aplikacja dla dzików, by uki. Dźwigaj i rośnij!">
-    <meta name="theme-color" content="#FF9800" />
-    <meta name="app-version" content="v2026.11.26.03">
+    <!-- Jeden theme-color: tlo.js ustawia go na --ukis-surface bieżącego motywu -->
+    <meta name="theme-color" content="#070707">
+    <meta name="app-version" content="v2026.11.26.04">
     <title>Uki's BodyBuild</title>
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="styles/glassmorphism.css">
@@ -25,17 +28,43 @@
     <link rel="stylesheet" href="styles/lightbox.css">
     <link rel="stylesheet" href="styles/components/calendar.css">
     <link rel="stylesheet" href="styles/trainer.css">
+    <!-- Nowy wygląd „Czerwony żar”: po starych arkuszach, więc wygrywa przy tej samej specyficzności -->
+    <link rel="stylesheet" href="styles/zar/tokens.css">
+    <link rel="stylesheet" href="styles/zar/fonts.css">
+    <link rel="stylesheet" href="styles/zar/base.css">
+    <link rel="stylesheet" href="styles/zar/components.css">
+    <link rel="stylesheet" href="styles/zar/ekrany/menu.css">
+    <link rel="stylesheet" href="styles/zar/ekrany/wyglad.css">
+    <link rel="stylesheet" href="styles/zar/ekrany/trening-kalendarz.css">
+    <link rel="stylesheet" href="styles/zar/ekrany/trening-sesja.css">
+    <link rel="stylesheet" href="styles/zar/ekrany/trening-numpad.css">
+    <link rel="stylesheet" href="styles/zar/ekrany/trening-katalog.css">
+    <link rel="stylesheet" href="styles/zar/ekrany/trening-szablony.css">
+    <link rel="stylesheet" href="styles/zar/ekrany/trening-kreator.css">
+    <link rel="stylesheet" href="styles/zar/ekrany/import-planu.css">
+    <link rel="stylesheet" href="styles/zar/ekrany/zeszyt.css">
+    <link rel="stylesheet" href="styles/zar/ekrany/historia.css">
+    <link rel="stylesheet" href="styles/zar/ekrany/pomiary.css">
+    <link rel="stylesheet" href="styles/zar/ekrany/dieta.css">
+    <link rel="stylesheet" href="styles/zar/ekrany/analiza.css">
+    <link rel="stylesheet" href="styles/zar/ekrany/ai.css">
+    <link rel="stylesheet" href="styles/zar/ekrany/edward.css">
+    <link rel="stylesheet" href="styles/zar/ekrany/pro.css">
+    <link rel="stylesheet" href="styles/zar/ekrany/profil.css">
+    <link rel="stylesheet" href="styles/zar/ekrany/serwis.css">
+    <link rel="stylesheet" href="styles/zar/ekrany/powitanie.css">
+    <link rel="stylesheet" href="styles/zar/ekrany/komunikat.css">
     <link rel="icon" type="image/png" href="img/logo.png">
     <link rel="apple-touch-icon" href="img/logo.png">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="UkiBodyBuild">
-    <meta name="theme-color" content="#00BFFF">
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700;800&display=swap" rel="stylesheet">
 </head>
 
-<body class="dark-theme">
+<body class="dark-theme zar">
+    <!-- Tło nowego wyglądu: tapeta i przyciemnienie (tlo.js); poświata jest tłem body -->
+    <div id="z-tlo" aria-hidden="true"><div class="z-tapeta"></div><div class="z-scrim"></div></div>
 
     <!-- STRONA WIZYTÓWKOWA (LANDING PAGE) -->
     <style id="landing-styles">
@@ -308,108 +337,61 @@
 
                 
                 
-                                <div id="welcome-screen" class="tab-content active-tab glass-dashboard" style="padding-bottom: 20px;">
-                    <!-- Floating chat hide -->
-                    <style>
-                        #welcome-screen ~ #chat-widget-btn, #chat-widget-btn { display: none !important; }
-                        .active-tab#welcome-screen ~ #chat-widget-btn { display: none !important; }
-                        /* We will hide the global chat button when welcome screen is active by doing it in JS or just via specific CSS, but for now let's just make sure the inline styles match the mockup */
-                        .icon-box {
-                            background: rgba(255,255,255,0.05);
-                            border-radius: 50%;
-                            width: 56px; height: 56px;
-                            display: flex; justify-content: center; align-items: center;
-                            margin: 0 auto 10px auto;
-                            color: #888;
-                        }
-                    </style>
+                <!-- wyglad: zar: #welcome-screen -->
+                <div id="welcome-screen" class="tab-content active-tab z-menu">
+                    <div class="z-menu-w">
+                        <!-- Nagłówek: awatar (Profil), logo, odstęp 44 px w miejscu dzwonka (spec 2.3, decyzja 7) -->
+                        <div class="z-menu-head">
+                            <button type="button" class="z-ic z-card z-menu-awatar" onclick="switchTab('settings-panel')" aria-label="Profil">
+                                <img id="user-avatar-img" alt="">
+                            </button>
+                            <img class="z-menu-logo" src="img/logo.png" alt="Logo Uki's BodyBuild" width="64" height="64">
+                            <span class="z-head-spacer" aria-hidden="true"></span>
+                        </div>
 
-                    <!-- Top Header -->
-                    <div class="glass-header" style="margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; border: none; background: transparent; box-shadow: none;">
-                        <div class="avatar-circle" onclick="switchTab('settings-panel')" style="width: 40px; height: 40px;">
-                            <img id="user-avatar-img" alt="Awatar" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">
+                        <div class="z-menu-witaj">
+                            <div class="z-sub z-menu-data"></div>
+                            <h2 class="z-hd z-menu-czesc">Cześć!</h2>
                         </div>
-                        
-                        <div style="display: flex; justify-content: center; align-items: center; flex: 1;">
-                            <img src="img/logo.png" alt="Logo" style="height: 75px; width: 75px; object-fit: contain; border-radius: 50%; border: 2px solid rgba(0, 191, 255, 0.4); background: rgba(0,0,0,0.5); box-shadow: 0 0 15px rgba(0, 191, 255, 0.6); animation: pulseGlowBlue 2s infinite alternate ease-in-out;"/>
-                        </div>
-                        
-                        <div style="width: 40px; height: 40px; visibility: hidden;"><!-- Spacer for flex --></div>
-                    </div>
 
-                    <!-- Main CTA -->
-                    <div class="glass-card main-cta" data-sekcja="trening" onclick="switchTab('training-dashboard')" style="flex-shrink: 0; border: 1px solid rgba(255,255,255,0.05); border-radius: 16px; padding: 20px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center;">
-                        <div class="cta-content" style="text-align: left;">
-                            <h2 class="cta-title" style="color: #FFF; font-size: 20px; font-weight: 700; margin: 0;">Twój Trening</h2>
-                            
-                        </div>
-                        <div style="background: #00D26A; color: #000; padding: 10px 16px; border-radius: 8px; font-weight: 700; font-size: 15px; display: flex; align-items: center; gap: 6px; cursor: pointer;">
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M5 3l14 9-14 9V3z"/></svg>
-                            Rozpocznij
-                        </div>
-                    </div>
+                        <!-- Karta „Twój trening”: plan dnia z harmonogramu (AppUI.renderMenuTrening, menuTrening.js) -->
+                        <section class="z-card z-hero z-menu-trening" data-sekcja="trening" aria-labelledby="z-menu-trening-tytul">
+                            <div class="z-menu-trening-gora">
+                                <div class="z-menu-trening-plan">
+                                    <div class="z-menu-trening-lab">Twój trening</div>
+                                    <div class="z-hd z-menu-trening-tytul" id="z-menu-trening-tytul">Wolne od planu</div>
+                                    <div class="z-menu-trening-opis">Zacznij pustą sesję albo wybierz szablon</div>
+                                </div>
+                                <div class="z-menu-trening-tydz">
+                                    <div class="z-hd z-menu-trening-licznik">0</div>
+                                    <div class="z-menu-trening-tydz-lab">w tym tygodniu</div>
+                                </div>
+                            </div>
+                            <button type="button" class="z-btn z-btn-light z-menu-start"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M7 4v16l13-8z"/></svg>ROZPOCZNIJ</button>
+                        </section>
 
-                    <!-- Grid -->
-                    <div class="glass-grid" style="flex-shrink: 0; display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px;">
-                        <div class="glass-card grid-item uniform-tool" data-sekcja="analiza" onclick="switchTab('analytics-dashboard')" style="border: 1px solid rgba(255,255,255,0.05); border-radius: 16px; padding: 25px 15px; text-align: center;">
-                            <div class="icon-box">
-                                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="m19 9-5 5-4-4-3 3"/></svg>
-                            </div>
-                            <h3 style="color: #FFF; margin: 0 0 4px 0; font-size: 16px; font-weight: 600;">Analiza</h3>
-                            
+                        <!-- Kafle 3 × 2: onclick i data-sekcja zostają (Strefa trenera chowa wyłączone sekcje) -->
+                        <div class="z-menu-kafle">
+                            <button type="button" class="z-card z-menu-kafel" data-sekcja="analiza" onclick="switchTab('analytics-dashboard')"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 3v18h18M7 15l4-4 3 3 5-6"/></svg>Analiza</button>
+                            <button type="button" class="z-card z-menu-kafel" data-sekcja="historia" onclick="switchTab('history-dashboard')"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M16 3v4M8 3v4M3 10h18"/></svg>Historia</button>
+                            <button type="button" class="z-card z-menu-kafel" data-sekcja="pomiary" onclick="switchTab('measurements-dashboard')"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 17 17 3l4 4L7 21zM7 13l2 2M10 10l2 2M13 7l2 2"/></svg>Pomiary</button>
+                            <button type="button" class="z-card z-menu-kafel" data-sekcja="dieta" onclick="switchTab('diet-dashboard')"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 3v8a3 3 0 0 0 6 0V3M7 3v18M17 21V3c-2 1-3 4-3 7h3"/></svg>Dieta</button>
+                            <button type="button" class="z-card z-menu-kafel" data-sekcja="ai" onclick="switchTab('ai-analytics-dashboard')"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l1.8 4.7L18 9.5l-4.2 1.8L12 16l-1.8-4.7L6 9.5l4.2-1.8zM19 15l.8 2 2 .8-2 .8-.8 2-.8-2-2-.8 2-.8z"/></svg><span>Analizy AI <span class="z-hi z-menu-pro">PRO</span></span></button>
+                            <button type="button" class="z-card z-menu-kafel" data-sekcja="kawa" onclick="window.open('https://suppi.pl/ukidives', '_blank')"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 8h13v6a5 5 0 0 1-5 5H9a5 5 0 0 1-5-5zM17 10h1a3 3 0 0 1 0 6h-1M8 2v3M12 2v3"/></svg>Postaw kawę</button>
                         </div>
-                        <div class="glass-card grid-item uniform-tool" data-sekcja="historia" onclick="switchTab('history-dashboard')" style="border: 1px solid rgba(255,255,255,0.05); border-radius: 16px; padding: 25px 15px; text-align: center;">
-                            <div class="icon-box">
-                                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="4" rx="2" ry="2"/><line x1="16" x2="16" y1="2" y2="6"/><line x1="8" x2="8" y1="2" y2="6"/><line x1="3" x2="21" y1="10" y2="10"/><path d="M8 14h.01"/><path d="M12 14h.01"/><path d="M16 14h.01"/><path d="M8 18h.01"/><path d="M12 18h.01"/><path d="M16 18h.01"/></svg>
-                            </div>
-                            <h3 style="color: #FFF; margin: 0 0 4px 0; font-size: 16px; font-weight: 600;">Historia</h3>
-                            
-                        </div>
-                        <div class="glass-card grid-item uniform-tool" data-sekcja="pomiary" onclick="switchTab('measurements-dashboard')" style="border: 1px solid rgba(255,255,255,0.05); border-radius: 16px; padding: 25px 15px; text-align: center;">
-                            <div class="icon-box">
-                                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="12" rx="2"/><path d="M6 12h.01M10 12h.01M14 12h.01M18 12h.01"/></svg>
-                            </div>
-                            <h3 style="color: #FFF; margin: 0 0 4px 0; font-size: 16px; font-weight: 600;">Pomiary</h3>
-                            
-                        </div>
-                        <div class="glass-card grid-item uniform-tool" data-sekcja="dieta" onclick="switchTab('diet-dashboard')" style="border: 1px solid rgba(255,255,255,0.05); border-radius: 16px; padding: 25px 15px; text-align: center;">
-                            <div class="icon-box">
-                                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2"/><path d="M7 2v20"/><path d="M21 15V2v0a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3Zm0 0v7"/></svg>
-                            </div>
-                            <h3 style="color: #FFF; margin: 0 0 4px 0; font-size: 16px; font-weight: 600;">Dieta</h3>
-                        </div>
-                        
-                        <div class="glass-card grid-item uniform-tool" data-sekcja="ai" onclick="switchTab('ai-analytics-dashboard')" style="border: 1px solid rgba(255,152,0,0.5); border-radius: 16px; padding: 25px 15px; text-align: center; cursor: pointer;">
-                            <div class="icon-box" style="background: rgba(255,152,0,0.1); color: #FF9800; width: 56px; height: 56px; border-radius: 50%; display: flex; justify-content: center; align-items: center; margin: 0 auto 10px auto;">
-                                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 8V4H8"/><rect width="16" height="12" x="4" y="8" rx="2"/><path d="M2 14h2"/><path d="M20 14h2"/><path d="M15 13v2"/><path d="M9 13v2"/></svg>
-                            </div>
-                            <h3 style="color: #FFF; margin: 0 0 4px 0; font-size: 16px; font-weight: 600;">Analizy AI <span style="color: #FF9800; font-size: 11px;">PRO</span></h3>
-                        </div>
-                        
-                        <div class="glass-card grid-item uniform-tool" data-sekcja="kawa" onclick="window.open('https://suppi.pl/ukidives', '_blank')" style="border: 1px solid rgba(255,193,7,0.5); border-radius: 16px; padding: 25px 15px; text-align: center; cursor: pointer;">
-                            <div class="icon-box" style="background: rgba(255,193,7,0.1); color: #FFC107; width: 56px; height: 56px; border-radius: 50%; display: flex; justify-content: center; align-items: center; margin: 0 auto 10px auto;">
-                                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 8h1a4 4 0 1 1 0 8h-1"/><path d="M3 8h14v9a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4Z"/><line x1="6" x2="6" y1="2" y2="4"/><line x1="10" x2="10" y1="2" y2="4"/><line x1="14" x2="14" y1="2" y2="4"/></svg>
-                            </div>
-                            <h3 style="color: #FFF; margin: 0 0 4px 0; font-size: 16px; font-weight: 600;">Postaw Kawę</h3>
-                        </div>
-                    </div>
-                    
-                    <!-- Strefa trenera: widoczna tylko po włączeniu „Jestem trenerem” w Profilu -->
-                    <div id="trainer-menu-tile" hidden>
-                        <div class="glass-card" role="button" tabindex="0" onclick="TrainerUI.open()" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();TrainerUI.open();}" style="border: 1px solid rgba(255,255,255,0.05); border-radius: 16px; padding: 18px 20px; margin-bottom: 20px; cursor: pointer; display: flex; align-items: center; gap: 14px;">
-                            <div class="icon-box" style="margin: 0; width: 48px; height: 48px; flex-shrink: 0;">
-                                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-                            </div>
-                            <h3 style="color: #FFF; margin: 0; font-size: 16px; font-weight: 600;">Strefa trenera</h3>
-                        </div>
-                    </div>
 
-                    <!-- Moved Version Info to be right below Postaw Kawę -->
-                    <div style="text-align: center; font-size: 0.75em; color: #555; margin-top: 15px; margin-bottom: 20px;">
-                        <span id="dashboard-version">v2026.9.X</span> · <span id="premium-status">Wersja Light</span>
+                        <!-- Strefa trenera: widoczna tylko po włączeniu „Jestem trenerem” w Profilu (TrainerUI.refreshEntryPoints) -->
+                        <div id="trainer-menu-tile" hidden>
+                            <button type="button" class="z-card z-menu-strefa" onclick="TrainerUI.open()">
+                                <span class="z-menu-strefa-txt"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="8" r="3.5"/><path d="M2 20a7 7 0 0 1 14 0M16 4.5a3.5 3.5 0 0 1 0 7M18 13.5a6 6 0 0 1 4 6.5"/></svg>Strefa trenera</span>
+                                <svg class="z-hi" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>
+                            </button>
+                        </div>
+
+                        <div class="z-menu-wersja"><span id="dashboard-version">v2026.9.X</span> · <span id="premium-status">Wersja Light</span></div>
                     </div>
-                    
                 </div>
+                <!-- /wyglad -->
         <div id="measurements-dashboard" class="tab-content" data-sekcja="pomiary" style="display: none;">
                 </div>
                 
@@ -424,40 +406,65 @@
                 </div>
 
                 <div id="history-dashboard" class="tab-content" data-sekcja="historia" style="display: none;">
-                    <div class="view-header">
-                        <h2>Historia Treningów</h2>
-                        <p style="color: #00BFFF;">Rozwiń, by zobaczyć szczegóły</p>
-                    </div>
+                    <!-- wyglad: zar: #history-dashboard -->
+                    <header class="z-head-main">
+                        <div class="z-head-txt">
+                            <h2 class="z-hd">Historia</h2>
+                            <p class="z-sub">Rozwiń, by zobaczyć szczegóły</p>
+                        </div>
+                        <!-- Przycisk (nie <label>), żeby import był osiągalny z klawiatury; plik wybiera ukryte pole obok. -->
+                        <button type="button" class="z-ghost" onclick="document.getElementById('history-import-input').click()">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></svg>
+                            Importuj
+                        </button>
+                        <input type="file" id="history-import-input" accept=".json" hidden onchange="window.HistoryUI.importTraining(event)">
+                    </header>
+                    <!-- /wyglad -->
                     <div id="history-grouped-list" style="margin-top: 20px;">
                         <!-- Populated by JS -->
                     </div>
                 </div>
 
                 <div id="analytics-dashboard" class="tab-content" data-sekcja="analiza" style="display: none;">
-                    <div class="view-header">
-                        <h2>Analiza Progresu</h2>
-                        <p style="color: #b0b0b0;">Wykresy i statystyki</p>
-                    </div>
+                    <!-- wyglad: zar: #analytics-dashboard -->
+                    <header class="z-head-back">
+                        <button type="button" class="z-ic z-card" aria-label="Wróć" onclick="switchTab('welcome-screen')"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="m15 18-6-6 6-6"/></svg></button>
+                        <div class="z-head-txt">
+                            <h2 class="z-hd">Analiza progresu</h2>
+                            <p class="z-sub">Wykresy i statystyki</p>
+                        </div>
+                    </header>
+                    <!-- /wyglad -->
                     <div id="analytics-content" style="margin-top: 20px;">
                         <!-- Populated by AnalyticsUI.js -->
                     </div>
                 </div>
 
                 <div id="ai-analytics-dashboard" class="tab-content" data-sekcja="ai" style="display: none;">
-                    <div class="view-header">
-                        <h2 style="color: #FF9800;">🤖 Analizy AI</h2>
-                        <p style="color: #aaa;">Trener Edward analizuje Twoje dane</p>
-                    </div>
+                    <!-- wyglad: zar: #ai-analytics-dashboard -->
+                    <header class="z-head-back">
+                        <button type="button" class="z-ic z-card" aria-label="Wróć" onclick="switchTab('welcome-screen')"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="m15 18-6-6 6-6"/></svg></button>
+                        <div class="z-head-txt">
+                            <h2 class="z-hd">Analizy AI <span class="z-pro">PRO</span></h2>
+                            <p class="z-sub">Trener Edward analizuje Twoje dane</p>
+                        </div>
+                    </header>
+                    <!-- /wyglad -->
                     <div id="ai-analytics-content" style="margin-top: 20px;">
                         <!-- Populated by AiAnalyticsUI.js -->
                     </div>
                 </div>
 
                 <div id="diet-dashboard" class="tab-content" data-sekcja="dieta" style="display: none; padding-bottom: 90px;">
-                    <div style="margin-bottom: 20px;">
-                        <h2 style="color: #FFF; font-size: 28px; font-weight: 700; margin: 0 0 5px 0;">Dieta i Kalorie</h2>
-                        <p style="color: #888; margin: 0; font-size: 14px;">Dzisiaj</p>
-                    </div>
+                    <!-- wyglad: zar: #diet-dashboard -->
+                    <header class="z-head-back">
+                        <button type="button" class="z-ic z-card" aria-label="Wróć" onclick="switchTab('welcome-screen')"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="m15 18-6-6 6-6"/></svg></button>
+                        <div class="z-head-txt">
+                            <h2 class="z-hd">Dieta</h2>
+                            <p class="z-sub">Dzisiaj</p>
+                        </div>
+                    </header>
+                    <!-- /wyglad -->
 
                     <!-- Daily Goal Card -->
                     <div style="background: #1C1C1E; border: 1px solid #333; border-radius: 20px; padding: 25px; margin-bottom: 20px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.5);">
@@ -630,14 +637,34 @@
                     <div id="diagnostics-content-wrapper"></div>
                 </div>
 
+                <!-- wyglad: zar: #wyglad-panel -->
+                <div id="wyglad-panel" class="tab-content" style="display: none;">
+                    <div id="wyglad-tresc"></div>
+                    <input type="file" accept="image/*" id="wyglad-plik" hidden>
+                </div>
+                <!-- /wyglad -->
+
                 <div id="settings-panel" class="tab-content">
                     <div class="settings-container">
-                    <h3>Ustawienia i Profil</h3>
+                    <!-- wyglad: zar: #settings-panel -->
+                    <header class="z-head-main">
+                        <div class="z-head-txt">
+                            <h2 class="z-hd">Profil</h2>
+                        </div>
+                    </header>
+                    <!-- /wyglad -->
                     <div id="premium-status-banner" style="margin-bottom: 20px; text-align: center;"></div>
                     
                     <!-- Profile Section -->
                     <div class="profile-section" style="background: rgba(0,0,0,0.4); padding: 15px; border-radius: 8px; border: 1px solid #00BFFF; margin-bottom: 20px;">
                         <h4 style="margin-top: 0; color: #00BFFF;">Twój Profil</h4>
+                        <!-- wyglad: zar: #profile-wyglad -->
+                        <button type="button" id="profile-wyglad" class="z-li" onclick="switchTab('wyglad-panel')" style="margin-bottom: 15px;">
+                            <span>Wygląd: motyw i tapeta</span>
+                            <span class="z-li-val" id="profile-wyglad-motyw">Czerwony żar</span>
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg>
+                        </button>
+                        <!-- /wyglad -->
                         
                         <div style="display: flex; gap: 15px; align-items: center; margin-bottom: 15px;">
                             <div id="profile-avatar-preview" style="width: 80px; height: 80px; border-radius: 50%; background: #333; border: 2px solid #00BFFF; overflow: hidden; display: flex; justify-content: center; align-items: center; background-size: cover; background-position: center;">
@@ -689,16 +716,6 @@
                         </div>
 
 
-                        <div style="margin-bottom: 15px;">
-                            <label style="display: block; margin-bottom: 5px; color: #ccc;">Tapeta Aplikacji:</label>
-                            <label class="action-button" style="display: flex; justify-content: center; align-items: center; background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.2); cursor: pointer; padding: 12px; border-radius: 12px; box-sizing: border-box; color: #fff; text-shadow: 0 1px 3px rgba(0,0,0,0.8); backdrop-filter: blur(5px);">
-                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 6px;"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg> Wybierz tapetę
-                                <input type="file" id="profile-wallpaper-upload" accept="image/*" style="display: none;">
-                            </label>
-                            <button id="profile-wallpaper-remove" class="action-button" style="display: none; justify-content: center; align-items: center; width: 100%; margin-top: 10px; padding: 12px; background: rgba(255, 68, 68, 0.15); border: 1px solid rgba(255, 68, 68, 0.4); border-radius: 12px; color: #ff4444; backdrop-filter: blur(5px); cursor: pointer;">
-                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 6px;"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg> Usuń tapetę
-                            </button>
-                        </div>
 
                         <div style="margin-bottom: 15px;">
                             <label style="display: block; margin-bottom: 5px; color: #ccc;">Przypominaj o pomiarach ciała co:</label>
@@ -737,10 +754,6 @@
                     <div class="settings-toggle-row"><label for="glass-toggle">Efekt Szklany (Liquid
                             Glass)</label><label class="theme-switch" for="glass-toggle"><input type="checkbox"
                                 id="glass-toggle" /><span class="slider round"></span></label></div>
-
-                    <div class="settings-toggle-row"><label for="theme-toggle">Tryb Ciemny</label><label
-                            class="theme-switch" for="theme-toggle"><input type="checkbox" id="theme-toggle" /><span
-                                class="slider round"></span></label></div>
 
                     <!-- Laboratorium -->
                     <div style="background: rgba(255, 152, 0, 0.1); border: 1px solid #FF9800; border-radius: 8px; padding: 15px; margin: 20px 0;">
@@ -865,28 +878,15 @@
         
         <!-- Bottom Navigation -->
         
-        <div class="bottom-nav-bar">
-            <div class="nav-btn active" onclick="switchTab('welcome-screen')">
-                <div class="nav-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></div>
-                <span>Menu</span>
-            </div>
-            <div class="nav-btn" data-sekcja="trening" onclick="switchTab('training-dashboard')">
-                <div class="nav-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6.5 6.5 11 11"/><path d="m21 21-1-1"/><path d="m3 3 1 1"/><path d="m18 22 4-4"/><path d="m2 6 4-4"/><path d="m3 10 7-7"/><path d="m14 21 7-7"/></svg></div>
-                <span>Trening</span>
-            </div>
-            <div class="nav-btn" data-sekcja="zeszyt" onclick="switchTab('notebook-dashboard')">
-                <div class="nav-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 6h4"/><path d="M2 10h4"/><path d="M2 14h4"/><path d="M2 18h4"/><rect width="16" height="20" x="4" y="2" rx="2"/><path d="M16 2v20"/></svg></div>
-                <span>Zeszyt</span>
-            </div>
-            <div class="nav-btn" onclick="switchTab('settings-panel')">
-                <div class="nav-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></div>
-                <span>Profil</span>
-            </div>
-            <div class="nav-btn" onclick="switchTab('diagnostics-dashboard')">
-                <div class="nav-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg></div>
-                <span>Serwis</span>
-            </div>
-        </div>
+        <!-- wyglad: zar: .bottom-nav-bar -->
+        <nav class="bottom-nav-bar z-nav" aria-label="Menu główne">
+            <button type="button" class="nav-btn active" aria-current="page" onclick="switchTab('welcome-screen')"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 10.5 12 3l9 7.5V20a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/></svg><span class="z-sr">Menu</span></button>
+            <button type="button" class="nav-btn" data-sekcja="trening" onclick="switchTab('training-dashboard')"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 5v14M18 5v14M3 9v6M21 9v6M6 12h12"/></svg><span class="z-sr">Trening</span></button>
+            <button type="button" class="nav-btn" data-sekcja="zeszyt" onclick="switchTab('notebook-dashboard')"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M9 3v18M3 8h3M3 12h3M3 16h3"/></svg><span class="z-sr">Zeszyt</span></button>
+            <button type="button" class="nav-btn" onclick="switchTab('settings-panel')"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg><span class="z-sr">Profil</span></button>
+            <button type="button" class="nav-btn" onclick="switchTab('diagnostics-dashboard')"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14.7 6.3a4 4 0 0 0-5.4 5.4L3 18l3 3 6.3-6.3a4 4 0 0 0 5.4-5.4l-2.6 2.6-2.4-.6-.6-2.4z"/></svg><span class="z-sr">Serwis</span></button>
+        </nav>
+        <!-- /wyglad -->
     </div>
     <!-- Global Tooltip / Modal Structure -->
     

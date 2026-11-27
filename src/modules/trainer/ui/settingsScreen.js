@@ -10,6 +10,7 @@ import { SECTIONS, loadSections, saveSections } from '../trainerSections.js';
 import { lastBackupAt, backupLabel } from '../trainerBackup.js';
 import { ownerKeyEntry, issueCard } from './issueScreen.js';
 import { planSettings, SESSION_MINUTES } from '../trainerPlan.js';
+import { ZDARZENIE as WYGLAD_ZMIENIONY } from '../../wyglad/tlo.js';
 
 const SAVE_FAILED = 'Nie udało się zapisać. Spróbuj jeszcze raz.';
 const LABEL_MAX = 40;
@@ -200,7 +201,7 @@ function planCard(ctx) {
         minutes);
 }
 
-function themeCard(ctx) {
+function themeCard(ctx, root) {
     const tiles = ctx.theme.list.map((m) => h('button', {
         type: 'button', class: 'tz-theme', dataset: { motyw: m.id }, 'aria-pressed': 'false',
         onclick: () => { ctx.theme.set(m.id); paint(); },
@@ -210,7 +211,14 @@ function themeCard(ctx) {
         tiles.forEach((t) => t.setAttribute('aria-pressed', String(t.dataset.motyw === current)));
     };
     paint();
-    return card('motyw', 'Motyw Strefy', h('div', { class: 'tz-themes' }, tiles));
+    // Motyw zmieniony gdzie indziej (ekran „Wygląd”, window.Wyglad): odśwież zaznaczenie.
+    // Nasłuch żyje tyle co ekran Ustawień: router odpina go przy zmianie ekranu (ctx.viewSignal).
+    const signal = ctx.viewSignal ? ctx.viewSignal(root) : null;
+    if (signal) document.addEventListener(WYGLAD_ZMIENIONY, paint, { signal });
+    else console.warn('[Strefa trenera] karta motywu poza ekranem routera: bez odświeżania po zmianie motywu');
+    return card('motyw', 'Motyw aplikacji',
+        h('p', { class: 'mut' }, 'Zmienia kolory całej aplikacji.'),
+        h('div', { class: 'tz-themes' }, tiles));
 }
 
 function sectionsCard(ctx) {
@@ -403,7 +411,7 @@ async function renderSettings(root, params, ctx) {
         planCard(ctx),
         sectionsCard(ctx),
         fieldsCard(ctx),
-        themeCard(ctx),
+        themeCard(ctx, root),
         backupCard(ctx),
         issueCard(ctx),
         wipeCard(ctx),

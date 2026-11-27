@@ -1,6 +1,7 @@
 import { DatabaseManager } from '../db/DatabaseManager.js';
 import { DietAIEngine } from '../diet/DietAIEngine.js';
 import { MediaManager } from '../db/MediaManager.js';
+import { naglowek } from '../wyglad/naglowek.js';
 import { computeTdee, readBodyProfile, ageFromBirthYear, saveBirthYear, profileHint, BIRTH_YEAR_ERROR, NO_DATA_HINT, resolveKcalGoal, loadKcalGoal, saveKcalGoal, useComputedKcalGoal, parseKcalInput, isPlausibleKcal, reportKcalIncident, setKcalSourceIcon, KCAL_MIN, KCAL_MAX } from '../diet/kcalGoal.js';
 
 export const DietUI = {
@@ -23,10 +24,7 @@ export const DietUI = {
 
     renderUI: (container) => {
         container.innerHTML = `
-            <div class="view-header" style="padding: 10px 15px; margin-bottom: 10px;">
-                <h2 style="margin: 0; font-size: 1.8em; font-weight: 700; color: #fff;">Dieta i Kalorie</h2>
-                <p style="margin: 5px 0 0 0; color: #8E8E93; font-size: 0.9em;" id="diet-date-display">Dzisiaj</p>
-            </div>
+            ${naglowek({ wariant: 'back', tytul: 'Dieta', podtytul: 'Dzisiaj', wroc: 'welcome-screen' })}
 
             <!-- TDEE & Progress Rings -->
             <div class="diet-summary-card" style="margin: 0 15px 20px 15px; background: rgba(255,255,255,0.05); border-radius: 24px; padding: 25px 20px; border: 1px solid rgba(255,255,255,0.1); backdrop-filter: blur(10px); text-align: center;">

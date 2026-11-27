@@ -32,7 +32,18 @@
         'dietActivity',
         'trainingExperience',
         'dietWorkerUrl',
-        'errorTelemetryUrl'
+        'errorTelemetryUrl',
+        // Wygląd „Czerwony żar” (spec rozdz. 10): reset przywraca wygląd domyślny. Dawny motyw Strefy też,
+        // bo skrypt #wyglad-start czyta go, gdy nie ma nowego klucza. Plik tapety w bazie mediów zostaje.
+        'ukis.bodybuild.trener.motyw',
+        'ukis.bodybuild.wyglad.komunikat-klasyczny',
+        'ukis.bodybuild.wyglad.motyw',
+        'ukis.bodybuild.wyglad.przyciemnienie',
+        'ukis.bodybuild.wyglad.przyciemnienie-min',
+        'ukis.bodybuild.wyglad.rozmycie',
+        'ukis.bodybuild.wyglad.tapeta',
+        'ukis.bodybuild.wyglad.tlo',
+        'ukis.bodybuild.wyglad.z-klasycznego'
     ];
 
     // Klucze, których nigdy nie usuwamy: uprawnienia (data instalacji, token PRO, ostatni paywall),

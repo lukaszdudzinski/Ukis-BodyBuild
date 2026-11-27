@@ -5,26 +5,8 @@ export const ChatUI = {
         // Inject chat HTML into body if not present
         if (!document.getElementById('edward-chat-widget')) {
             const chatHtml = `
-                <!-- Chat Toggle Button -->
-                <button id="edward-chat-toggle" style="
-                    position: fixed;
-                    bottom: 90px;
-                    right: 20px;
-                    width: 60px;
-                    height: 60px;
-                    border-radius: 50%;
-                    background: linear-gradient(145deg, #00BFFF, #005fcc);
-                    color: white;
-                    border: none;
-                    box-shadow: 0 4px 15px rgba(0, 191, 255, 0.4);
-                    font-size: 28px;
-                    cursor: pointer;
-                    z-index: 1000;
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                    transition: transform 0.3s;
-                ">🤖</button>
+                <!-- Przycisk czatu: koło akcentu motywu nad paskiem dolnym (spec 6.2, .z-fab w components.css) -->
+                <button type="button" id="edward-chat-toggle" class="z-ic z-ic-acc z-fab" aria-label="Czat z Edwardem"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="7" width="16" height="12" rx="3"/><path d="M12 7V4M9 13h.01M15 13h.01"/></svg></button>
 
                 <!-- Chat Window -->
                 <div id="edward-chat-window" style="

@@ -387,7 +387,7 @@ export const TrainingUI = {
             html += `
                 <div class="template-card" style="background: rgba(255, 255, 255, 0.05); padding: 16px; border-radius: 16px; border: 1px solid rgba(255, 255, 255, 0.1); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); display: flex; flex-direction: column; gap: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.3);">
                     <div style="text-align: center; border-bottom: 1px solid #444; padding-bottom: 8px;">
-                        <strong style="color: #00BFFF; font-size: 1.1em;">${esc(t.name)}</strong>
+                        <strong style="color: var(--ukis-text); font-size: 1.1em;">${esc(t.name)}</strong>
 <button onclick="window.TrainingUI.exportTemplate(${jsArg(t.id)})" style="background: rgba(0, 191, 255, 0.1); border: 1px solid #00BFFF; color: #00BFFF; border-radius: 6px; padding: 3px 8px; font-size: 0.8em; margin-left: 10px; cursor: pointer;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 4px; vertical-align: middle;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" x2="12" y1="3" y2="15"/></svg>Eksport</button>
                         ${sourceHtml}
                     </div>
@@ -960,7 +960,7 @@ export const TrainingUI = {
                         `;
                         return;
                     }
-                    const nameDisplay = existingTraining.name ? `<strong style="color: #00BFFF; font-size: 1.1em;">${esc(existingTraining.name)}</strong><br>` : '';
+                    const nameDisplay = existingTraining.name ? `<strong style="color: var(--ukis-text); font-size: 1.1em;">${esc(existingTraining.name)}</strong><br>` : '';
                     html += `
                         <div style="background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); backdrop-filter: blur(10px); margin-bottom: 15px; border-radius: 12px; padding: 15px; text-align: left; box-shadow: 0 4px 6px rgba(0,0,0,0.3);">
                             ${nameDisplay}
@@ -990,10 +990,10 @@ export const TrainingUI = {
                     .slice(0, 5); // Take last 5
                 
                 if (recentTrainings.length === 0) {
-                    historyHtml += `<p style="color: #888; font-size: 0.9em; font-style: italic;">Brak sesji w historii do skopiowania.</p>`;
+                    historyHtml += `<p style="color: var(--ukis-text-muted); font-size: 0.9em; font-style: italic;">Brak sesji w historii do skopiowania.</p>`;
                 } else {
                     recentTrainings.forEach(({ rec, cacheIdx: idx }) => {
-                        const nameDisplay = rec.name ? `<strong style="color: #00BFFF; font-size: 1.1em;">${esc(rec.name)}</strong> <span style="color: #aaa; font-size: 0.9em;">(${rec.date})</span>` : `<strong style="color: #00BFFF; font-size: 1.1em;">${rec.date}</strong>`;
+                        const nameDisplay = rec.name ? `<strong style="color: var(--ukis-text); font-size: 1.1em;">${esc(rec.name)}</strong> <span style="color: #aaa; font-size: 0.9em;">(${rec.date})</span>` : `<strong style="color: var(--ukis-text); font-size: 1.1em;">${rec.date}</strong>`;
                         
                         let exercisesPreview = '';
                         if (rec.exercises && rec.exercises.length > 0) {

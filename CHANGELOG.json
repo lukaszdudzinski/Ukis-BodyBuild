@@ -1,5 +1,14 @@
 [
   {
+    "version": "v2026.11.26.04",
+    "date": "2026-11-26",
+    "changes": [
+      "🎨 Nowy wygląd „Czerwony żar”: nowe Menu i menu dolne. W Profil → Wygląd wybierzesz jeden z trzech motywów kolorów albo własną tapetę, a tekst zawsze zostanie czytelny.",
+      "🏋️ Karta „Twój trening” na Menu pokazuje plan na dziś i postęp tygodnia.",
+      "🖼️ Cztery wbudowane tapety do wyboru w Profil → Wygląd."
+    ]
+  },
+  {
     "version": "v2026.11.26.03",
     "date": "2026-11-26",
     "changes": [

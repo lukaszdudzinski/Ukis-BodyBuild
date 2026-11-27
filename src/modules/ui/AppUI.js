@@ -1,6 +1,8 @@
 import { PremiumUI } from "./PremiumUI.js";
+import { menuTrening, dataMenu, pozdrowienie } from "../wyglad/menuTrening.js";
+import { toIso } from "../trainer/trainerPlan.js";
 
-export const APP_VERSION = 'v2026.11.26.03'; // Faza 6.2: Katalog z podziałem na partie i Fixy UI
+export const APP_VERSION = 'v2026.11.26.04'; // Faza 6.2: Katalog z podziałem na partie i Fixy UI
 
 // Obsługa błędów globalnych — zdefiniowana w main.js (klucz: uki_error_logs)
 
@@ -97,9 +99,75 @@ export const AppUI = {
             }
         }
 
-        // Setup Nickname Welcome
+        // Menu: data, pozdrowienie i karta „Twój trening” (spec 8.3) na starcie i przy każdym powrocie do Menu.
         AppUI.updateWelcomeMessage();
         document.addEventListener('nickUpdated', AppUI.updateWelcomeMessage);
+        const startBtn = document.querySelector('#welcome-screen .z-menu-start');
+        if (startBtn) startBtn.addEventListener('click', AppUI.startMenuTrening);
+        AppUI.renderMenuTrening();
+        document.addEventListener('tabChanged', (e) => {
+            if (e.detail && e.detail.tab === 'welcome-screen') {
+                AppUI.updateWelcomeMessage();
+                AppUI.renderMenuTrening();
+            }
+        });
+    },
+
+    // Karta „Twój trening”: plan dnia z harmonogramu i licznik tygodnia (menuTrening.js).
+    // Najpierw bez treningów z bazy (plan widać od razu), potem z nimi (licznik i czas trwania).
+    // Teksty z danych użytkownika idą przez textContent.
+    renderMenuTrening: async () => {
+        const card = document.querySelector('#welcome-screen .z-menu-trening');
+        if (!card) return;
+        const read = (key) => {
+            try {
+                const v = JSON.parse(localStorage.getItem(key) || '[]');
+                return Array.isArray(v) ? v : [];
+            } catch (e) {
+                return [];
+            }
+        };
+        const today = toIso(new Date());
+        const base = {
+            templates: read('uki_workout_templates'),
+            schedules: read('uki_workout_schedules'),
+            exceptions: read('uki_schedule_exceptions'),
+            today,
+        };
+        const run = ++AppUI._menuRun;
+        const paint = (trainings) => {
+            if (run !== AppUI._menuRun) return;
+            const r = menuTrening({ ...base, trainings });
+            card.querySelector('.z-menu-trening-tytul').textContent = r.tytul;
+            card.querySelector('.z-menu-trening-opis').textContent = r.opis;
+            card.querySelector('.z-menu-trening-licznik').textContent = r.zaplanowane === null ? String(r.wykonane) : `${r.wykonane}/${r.zaplanowane}`;
+            const btn = card.querySelector('.z-menu-start');
+            if (r.templateId === null) delete btn.dataset.templateId;
+            else btn.dataset.templateId = String(r.templateId);
+        };
+        paint([]);
+        try {
+            const db = window.DatabaseManager;
+            if (db && typeof db.getTrainings === 'function') paint(await db.getTrainings());
+        } catch (e) {
+            console.warn('[Menu] treningi:', e);
+        }
+    },
+    _menuRun: 0,
+
+    // „ROZPOCZNIJ”: z planem sesja z szablonu dnia (data: dziś), bez planu kalendarz Treningu.
+    // Trwającej sesji nie nadpisujemy, tylko do niej wracamy.
+    startMenuTrening: (e) => {
+        const id = e && e.currentTarget ? e.currentTarget.dataset.templateId : undefined;
+        if (window.switchTab) window.switchTab('training-dashboard');
+        const ui = window.TrainingUI;
+        if (!id || !ui || typeof ui.startFromTemplate !== 'function') return;
+        const active = document.getElementById('active-training-view');
+        // Trwająca sesja: nie nadpisujemy jej (utrata danych). Sprawdzamy stan wyliczony, nie samo style.display.
+        if (active && getComputedStyle(active).display !== 'none') return;
+        // Szablon planu od trenera bierze serie z tygodnia wybranego dnia, więc wybieramy dziś.
+        if (typeof ui.handleDayClick === 'function') ui.handleDayClick(toIso(new Date()), true);
+        ui.startFromTemplate(id);
     },
 
     // Okna startowe pokazują się kolejno, nigdy naraz: powitanie nowego wyglądu (ui-switch.js)
@@ -115,12 +183,14 @@ export const AppUI = {
         }
     },
 
+    // Data dnia („Czwartek, 26 listopada”) i „Cześć, <nick>” / „Cześć!” na Menu.
     updateWelcomeMessage: () => {
-        const nick = localStorage.getItem('userNick');
-        const headerTitle = document.querySelector('.home-header h2');
-        if (headerTitle) {
-            headerTitle.textContent = nick ? `Cześć, ${nick}! 🚀` : "Uki's BodyBuild";
-        }
+        let nick = '';
+        try { nick = localStorage.getItem('userNick') || ''; } catch (e) { /* prywatne okno */ }
+        const hello = document.querySelector('#welcome-screen .z-menu-czesc');
+        if (hello) hello.textContent = pozdrowienie(nick);
+        const date = document.querySelector('#welcome-screen .z-menu-data');
+        if (date) date.textContent = dataMenu(toIso(new Date()));
     },
 
     initMobileMenu: () => {
@@ -166,15 +236,28 @@ export const AppUI = {
                 l.classList.toggle('active', l.getAttribute('data-tab') === tabId);
             });
 
-            // Aktualizuj stan active na bottom-nav-bar
+            // Aktywny przycisk paska dolnego: klasa .active i aria-current="page" (styl pigułki w components.css)
+            // Ekran bez własnego przycisku podświetla przycisk, z którego się do niego wchodzi:
+            // kreator szablonów → Trening, Wygląd → Profil, ekrany z kafelków Menu → Menu.
+            const NAV_RODZIC = {
+                'template-builder-dashboard': 'training-dashboard',
+                'wyglad-panel': 'settings-panel',
+                'analytics-dashboard': 'welcome-screen',
+                'history-dashboard': 'welcome-screen',
+                'measurements-dashboard': 'welcome-screen',
+                'diet-dashboard': 'welcome-screen',
+                'ai-analytics-dashboard': 'welcome-screen',
+            };
+            const navTab = NAV_RODZIC[tabId] || tabId;
             const navBtns = document.querySelectorAll('.bottom-nav-bar .nav-btn');
             navBtns.forEach(btn => {
-                const btnTab = btn.getAttribute('data-tab') || btn.getAttribute('onclick');
                 // Sprawdź onclick="switchTab('X')" i wyciągnij tabId
                 const onclickAttr = btn.getAttribute('onclick') || '';
                 const match = onclickAttr.match(/switchTab\(['"]([^'"]+)['"]\)/);
-                const btnTabId = match ? match[1] : null;
-                btn.classList.toggle('active', btnTabId === tabId);
+                const on = (match ? match[1] : null) === navTab;
+                btn.classList.toggle('active', on);
+                if (on) btn.setAttribute('aria-current', 'page');
+                else btn.removeAttribute('aria-current');
             });
 
             // Scroll the wrapper (reset to top on tab change)

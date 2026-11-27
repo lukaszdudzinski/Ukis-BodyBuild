@@ -39,11 +39,11 @@
 }
 
 input:checked+.slider {
-    background-color: #00BFFF;
+    background-color: var(--ukis-color-primary);
 }
 
 input:focus+.slider {
-    box-shadow: 0 0 1px #00BFFF;
+    box-shadow: 0 0 1px var(--ukis-color-accent);
 }
 
 input:checked+.slider:before {
@@ -137,11 +137,11 @@ body.glass-off:not(.dark-theme) .sidebar-nav li a.active {
 
     body:not(.glass-off) .input-group input,
     body:not(.glass-off) .input-group select {
-        background-color: rgba(30, 30, 30, 0.9);
+        background-color: var(--ukis-input-bg);
         backdrop-filter: blur(5px);
         -webkit-backdrop-filter: blur(5px);
-        border: 1px solid rgba(255, 255, 255, 0.3);
-        color: #fff;
+        border: 1px solid var(--ukis-input-border);
+        color: var(--ukis-text);
     }
 
     body:not(.dark-theme):not(.glass-off) .input-group input,
@@ -171,7 +171,7 @@ body:not(.dark-theme) div[style*="background: rgba(0,0,0"],
 body:not(.dark-theme) div[style*="background: #222"],
 body:not(.dark-theme) div.log-card {
     background-color: rgba(255, 255, 255, 0.6) !important;
-    border-color: #00BFFF !important;
+    border-color: var(--ukis-color-accent) !important;
     color: #333 !important;
 }
 body:not(.dark-theme) div[style*="background: rgba(0,0,0"] *,
