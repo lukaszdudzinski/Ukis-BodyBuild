@@ -426,6 +426,8 @@ export const TrainingUI = {
         Object.entries(ExerciseCategories).forEach(([partia, nazwy]) => {
             // Szukanie także po angielskiej i dawnej nazwie; na liście tylko nazwa główna.
             nazwy.forEach((nazwa) => {
+                // Ćwiczenie w dwóch partiach (np. Martwy ciąg) pokazuje się raz, z partią główną.
+                if (wyniki.some((w) => w.nazwa === nazwa)) return;
                 if (exerciseSearchTexts(nazwa).some((t) => t.toLocaleLowerCase('pl').includes(q))) wyniki.push({ nazwa, partia });
             });
         });

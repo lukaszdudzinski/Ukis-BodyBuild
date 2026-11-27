@@ -24,7 +24,8 @@ export const ExerciseEntries = [
     { name: 'Przenoszenie hantli nad głowę, leżąc w poprzek ławki', category: 'Klatka', en: 'Dumbbell Pullover', wzorzec: 'accessory' },
     { name: 'Klatka - Wznosy sztangielek hantlami- Siedząc', category: 'Klatka' },
     // Plecy
-    { name: 'Martwy ciąg', category: 'Plecy', en: 'Deadlift', wzorzec: 'lower_pull_hinge', aliases: ['Plecy - Martwy ciąg - Klasyczny'] },
+    // Decyzja właściciela 2026-11-27: Martwy ciąg w Plecach i widoczny też w „Nogi i Pośladki” (grupa mięśni z Pleców).
+    { name: 'Martwy ciąg', category: 'Plecy', alsoIn: ['Nogi i Pośladki'], en: 'Deadlift', wzorzec: 'lower_pull_hinge', aliases: ['Plecy - Martwy ciąg - Klasyczny'] },
     { name: 'Podciąganie', category: 'Plecy', en: 'Pull Up', wzorzec: 'upper_pull', bodyweight: 1, bodyweightOnly: true, aliases: ['Plecy - Podciąganie na drążku - Nachwyt szeroki'] },
     { name: 'Podciąganie w podchwycie', category: 'Plecy', en: 'Chin Up', wzorzec: 'upper_pull', bodyweight: 1, bodyweightOnly: true, aliases: ['Plecy - Podciąganie na drążku - Podchwyt'] },
     { name: 'Wiosłowanie sztangą', category: 'Plecy', en: 'Bent Over Barbell Row', wzorzec: 'upper_pull', aliases: ['Plecy - Wiosłowanie sztangą - Opad tułowia'] },
@@ -64,7 +65,6 @@ export const ExerciseEntries = [
     { name: 'Nogi - Przysiad maszyna - Tył (Back Squat)', category: 'Nogi i Pośladki' },
     { name: 'Pośladki - Wejścia -Gluten belt squa', category: 'Nogi i Pośladki' },
     { name: 'Łydki - Wspięcia na palce - Maszyna', category: 'Nogi i Pośladki' },
-    { name: 'Łydki - Ławka rzymska', category: 'Nogi i Pośladki' },
     { name: 'Łydki - Wspięcia na palce - Suwnica', category: 'Nogi i Pośladki' },
     // Barki
     { name: 'Wyciskanie siłowe nad głowę', category: 'Barki', en: 'Strict Press', wzorzec: 'upper_push', aliases: ['Barki - Wyciskanie sztangi (Żołnierskie) - Stojąc'] },
@@ -133,6 +133,8 @@ export const ExerciseEntries = [
 // { kategoria: [nazwy] } i płaska lista nazw: dawny kształt eksportów, z którego korzysta reszta aplikacji.
 export const ExerciseCategories = {};
 for (const e of ExerciseEntries) (ExerciseCategories[e.category] ||= []).push(e.name);
+// Druga partia (alsoIn): ta sama nazwa także na liście innej partii; płaska lista ma ją raz.
+for (const e of ExerciseEntries) for (const c of e.alsoIn || []) (ExerciseCategories[c] ||= []).push(e.name);
 
 export const ExerciseCatalog = ExerciseEntries.map((e) => e.name);
 
