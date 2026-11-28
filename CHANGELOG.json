@@ -1,5 +1,12 @@
 [
   {
+    "version": "v2026.11.28.06",
+    "date": "2026-11-28",
+    "changes": [
+      "📱 iPhone: dolne menu wraca na swoje miejsce przy krawędzi ekranu. Na Androidzie menu dalej stoi nad paskiem systemu, także przy nawigacji gestami."
+    ]
+  },
+  {
     "version": "v2026.11.28.05",
     "date": "2026-11-28",
     "changes": [

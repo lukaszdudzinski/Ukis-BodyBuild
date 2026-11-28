@@ -16,12 +16,16 @@
         html.ukis-przegladarka #landing-page { display: block !important; }
         html.ukis-przegladarka body { background-color: #111; }
     </style>
-    <!-- viewport-fit=cover: bez tego env(safe-area-inset-*) daje 0, a Android (rysowanie od krawędzi do krawędzi) chowa dolne menu pod paskiem systemu -->
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <!-- viewport-fit=cover tylko poza Apple. Android (Chrome 135+, zainstalowana aplikacja) rysuje stronę pod paskiem systemu
+         i bez cover env(safe-area-inset-bottom) daje 0, więc pasek zasłaniał dolne menu. iPhone/iPad (UA iPhone/iPad/Macintosh)
+         zostaje bez cover: w trybie aplikacji iOS już podaje wstawki, a cover skracał tam widok (czarny pas pod menu).
+         Skrypt musi stać zaraz po meta viewport, przed pierwszym układem strony. -->
+    <script id="viewport-android">(function () { try { if (/iPhone|iPad|iPod|Macintosh/i.test(navigator.userAgent)) return; var v = document.querySelector('meta[name="viewport"]'); v.setAttribute('content', v.getAttribute('content') + ', viewport-fit=cover'); } catch (e) {} })();</script>
     <meta name="description" content="Aplikacja dla dzików, by uki. Dźwigaj i rośnij!">
     <!-- Jeden theme-color: tlo.js ustawia go na --ukis-surface bieżącego motywu -->
     <meta name="theme-color" content="#070707">
-    <meta name="app-version" content="v2026.11.28.05">
+    <meta name="app-version" content="v2026.11.28.06">
     <title>Uki's BodyBuild</title>
     <link rel="stylesheet" href="style.css">
     <link rel="manifest" href="manifest.json">
