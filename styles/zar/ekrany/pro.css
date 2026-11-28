@@ -1,1 +1,139 @@
 /* wyglad: zar */
+/* ============================================================
+   PRO — okno „Wersja Heavy” i pasek stanu w Profilu (spec 8.3, plansza Pro).
+   Znaczniki: src/modules/ui/PremiumUI.js. Okno ponad całą aplikacją (jak dawny modal).
+   ============================================================ */
+
+.pro-scrim {
+    z-index: 100000;
+    align-items: flex-start;
+    overflow-y: auto;
+    padding: 16px 16px calc(24px + env(safe-area-inset-bottom, 0px));
+    background: rgba(0,0,0,.88);
+    backdrop-filter: blur(var(--ukis-glass-blur));
+    -webkit-backdrop-filter: blur(var(--ukis-glass-blur));
+    animation: pro-wejscie .25s ease-out;
+}
+
+/* „Efekt szkła” wyłączony: bez rozmycia, tło pod oknem prawie pełne. */
+body.glass-off .pro-scrim {
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    background: rgba(0,0,0,.94);
+}
+
+@keyframes pro-wejscie {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .pro-scrim { animation: none; }
+}
+
+.pro-okno {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    width: 100%;
+    max-width: 420px;
+    margin: auto;
+    color: var(--ukis-text);
+}
+
+.pro-gora {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.pro-hero {
+    text-align: center;
+}
+
+/* Koło akcentu 76 px z poświatą. */
+.pro-kolo {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 76px;
+    height: 76px;
+    margin: 0 auto 12px;
+    border-radius: 50%;
+    background: var(--ukis-color-primary);
+    color: var(--ukis-on-primary);
+    box-shadow: 0 0 32px var(--ukis-primary-soft);
+}
+
+.pro-tytul {
+    font-size: 34px;
+}
+
+.pro-opis {
+    margin: 8px 0 0;
+    font-size: 15px;
+    line-height: 1.5;
+}
+
+.pro-korzysci .z-li svg {
+    flex: 0 0 auto;
+    color: var(--ukis-color-success);
+}
+
+.pro-wesprzyj {
+    width: 100%;
+}
+
+.pro-haslo-wiersz {
+    display: flex;
+    gap: 8px;
+}
+
+.pro-haslo-wiersz .z-in {
+    flex: 1 1 auto;
+    min-width: 0;
+}
+
+.pro-blad {
+    margin: 8px 0 0;
+    font-size: 13px;
+    color: var(--ukis-text);
+}
+
+.pro-blad::before {
+    content: "";
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    margin-right: 8px;
+    border-radius: 50%;
+    background: var(--ukis-color-accent);
+}
+
+/* ---------- Pasek stanu w Profilu (renderPremiumBanner) ---------- */
+.pro-stan {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    text-align: left;
+}
+
+.pro-stan > svg {
+    flex: 0 0 auto;
+    color: var(--ukis-color-accent);
+}
+
+.pro-stan-txt {
+    flex: 1 1 auto;
+    min-width: 0;
+}
+
+.pro-stan-tyt {
+    font-weight: 600;
+    font-size: 15px;
+}
+
+.pro-stan-pro {
+    border-color: var(--ukis-color-accent);
+}

@@ -4,6 +4,15 @@ import { readBodyProfile } from '../diet/kcalGoal.js';
 import { bodySummary, bfRanges, whrRanges } from '../body/bodyMetrics.js';
 import { canonicalExerciseName } from '../../data/ExerciseCatalog.js';
 import { atlasMuscles, bodyweightFactor } from '../../data/exerciseTraits.js';
+import { ikona } from '../wyglad/ikony.js';
+
+// Encje HTML dla nazw treningów i ćwiczeń wstawianych do szablonów (mogą pochodzić z importu).
+const esc = (s) => String(s ?? '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
 
 export const AnalyticsUI = {
     init: () => {
@@ -18,7 +27,7 @@ export const AnalyticsUI = {
         const container = document.getElementById('analytics-content');
         if (!container) return;
         
-        container.innerHTML = '<p style="text-align: center; color: #aaa;">Ładowanie danych...</p>';
+        container.innerHTML = '<p class="z-sub an-pusto">Ładowanie danych...</p>';
 
         try {
             const trainings = await DatabaseManager.getTrainings();
@@ -30,7 +39,7 @@ export const AnalyticsUI = {
             AnalyticsUI.renderAnalytics(container, trainings, measurements);
         } catch (err) {
             console.error("Error loading analytics:", err);
-            container.innerHTML = '<p style="text-align: center; color: #ff4444;">Błąd ładowania statystyk.</p>';
+            container.innerHTML = '<p class="an-blad an-pusto">Błąd ładowania statystyk.</p>';
         }
     },
 
@@ -39,30 +48,21 @@ export const AnalyticsUI = {
     },
 
     renderNewAnalytics: (container, trainings, measurements) => {
+        const zakladka = (n, etykieta) => `<button type="button" role="tab" id="btn-tab-${n}" class="z-tab analytics-tab-btn${n === 1 ? ' z-on' : ''}" aria-selected="${n === 1}" aria-controls="analytics-tab-${n}" tabindex="${n === 1 ? 0 : -1}" onclick="window.AnalyticsUI.switchTab(${n})">${etykieta}</button>`;
         container.innerHTML = `
-            <!-- TABS / PILLS NAVIGATION -->
-            <div style="padding: 15px; background: rgba(17,17,24,0.85); backdrop-filter: blur(10px); display: flex; gap: 8px; border-bottom: 1px solid rgba(255,255,255,0.05); position: sticky; top: 0; z-index: 10;">
-                <button id="btn-tab-1" class="analytics-tab-btn active" onclick="window.AnalyticsUI.switchTab(1)" style="flex: 1; background: rgba(0, 191, 255, 0.15); border: 1px solid rgba(0, 191, 255, 0.3); color: #00BFFF; font-weight: 600; padding: 12px 4px; border-radius: 14px; font-size: 0.8em; cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; box-sizing: border-box;">
-                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6.5 6.5 11 11"/><path d="m21 21-1-1"/><path d="m3 3 1 1"/><path d="m18 22 4-4"/><path d="m2 6 4-4"/><path d="m3 10 7-7"/><path d="m14 21 7-7"/></svg>
-                    <span style="white-space: nowrap;">Siła</span>
-                </button>
-                <button id="btn-tab-2" class="analytics-tab-btn" onclick="window.AnalyticsUI.switchTab(2)" style="flex: 1; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: #8E8E93; padding: 12px 4px; border-radius: 14px; font-size: 0.8em; cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; box-sizing: border-box; transition: all 0.2s;">
-                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
-                    <span style="white-space: nowrap;">Sylwetka</span>
-                </button>
-                <button id="btn-tab-3" class="analytics-tab-btn" onclick="window.AnalyticsUI.switchTab(3)" style="flex: 1; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: #8E8E93; padding: 12px 4px; border-radius: 14px; font-size: 0.8em; cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; box-sizing: border-box; transition: all 0.2s;">
-                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 18H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h3.19M15 6h2a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2h-3.19"/><line x1="23" y1="13" x2="23" y2="11"/><polyline points="11 6 7 12 13 12 9 18"/></svg>
-                    <span style="white-space: nowrap;">Regeneracja</span>
-                </button>
+            <div class="z-tabs an-tabs" role="tablist" aria-label="Rodzaj analizy" onkeydown="window.AnalyticsUI.tabKey(event)">
+                ${zakladka(1, 'Siła')}
+                ${zakladka(2, 'Sylwetka')}
+                ${zakladka(3, 'Regeneracja')}
             </div>
-            
-            <div id="analytics-tab-1" class="analytics-tab-content" style="display: block; padding-top: 15px; animation: fadeIn 0.3s ease-out;">
+
+            <div id="analytics-tab-1" class="analytics-tab-content an-panel" role="tabpanel" aria-labelledby="btn-tab-1">
                 ${AnalyticsUI.buildStrengthTab(trainings, measurements)}
             </div>
-            <div id="analytics-tab-2" class="analytics-tab-content" style="display: none; padding-top: 15px; animation: fadeIn 0.3s ease-out;">
+            <div id="analytics-tab-2" class="analytics-tab-content an-panel" role="tabpanel" aria-labelledby="btn-tab-2" hidden>
                 ${AnalyticsUI.buildBodyTab(trainings, measurements)}
             </div>
-            <div id="analytics-tab-3" class="analytics-tab-content" style="display: none; padding-top: 15px; animation: fadeIn 0.3s ease-out;">
+            <div id="analytics-tab-3" class="analytics-tab-content an-panel" role="tabpanel" aria-labelledby="btn-tab-3" hidden>
                 ${AnalyticsUI.buildRecoveryTab(trainings)}
             </div>
         `;
@@ -75,37 +75,37 @@ export const AnalyticsUI = {
     },
 
     switchTab: (index) => {
-        const btns = document.querySelectorAll('.analytics-tab-btn');
-        btns.forEach((btn, i) => {
-            if (i + 1 === index) {
-                btn.classList.add('active');
-                btn.style.background = 'rgba(0, 191, 255, 0.15)';
-                btn.style.borderColor = '#00BFFF';
-                btn.style.color = '#00BFFF';
-                btn.style.fontWeight = 'bold';
-            } else {
-                btn.classList.remove('active');
-                btn.style.background = '#222';
-                btn.style.borderColor = '#444';
-                btn.style.color = '#aaa';
-                btn.style.fontWeight = 'normal';
-            }
+        document.querySelectorAll('#analytics-content .analytics-tab-btn').forEach((btn, i) => {
+            const aktywna = i + 1 === index;
+            btn.classList.toggle('z-on', aktywna);
+            btn.setAttribute('aria-selected', String(aktywna));
+            btn.tabIndex = aktywna ? 0 : -1;
         });
-        
-        const contents = document.querySelectorAll('.analytics-tab-content');
-        contents.forEach((content, i) => {
-            if (i + 1 === index) {
-                content.style.display = 'block';
-            } else {
-                content.style.display = 'none';
-            }
+        document.querySelectorAll('#analytics-content .analytics-tab-content').forEach((content, i) => {
+            content.hidden = i + 1 !== index;
         });
+    },
+
+    // Strzałki, Home i End między zakładkami (wzorzec WAI-ARIA tablist).
+    tabKey: (e) => {
+        const taby = [...document.querySelectorAll('#analytics-content .analytics-tab-btn')];
+        const biezacy = taby.indexOf(document.activeElement);
+        if (biezacy < 0) return;
+        let cel = null;
+        if (e.key === 'ArrowRight') cel = (biezacy + 1) % taby.length;
+        else if (e.key === 'ArrowLeft') cel = (biezacy - 1 + taby.length) % taby.length;
+        else if (e.key === 'Home') cel = 0;
+        else if (e.key === 'End') cel = taby.length - 1;
+        if (cel === null) return;
+        e.preventDefault();
+        AnalyticsUI.switchTab(cel + 1);
+        taby[cel].focus();
     },
 
     buildStrengthTab: (trainings, measurements) => {
         let html = '';
         if (trainings.length === 0) {
-            return "<p style=\"text-align: center; color: #888;\">Za mało danych treningowych do przeprowadzenia analizy.</p>";
+            return '<div class="z-card"><p class="z-sub an-pusto">Za mało danych treningowych do przeprowadzenia analizy.</p></div>';
         }
 
         let totalVolume = 0;
@@ -161,89 +161,85 @@ export const AnalyticsUI = {
         const maxStrengthVol = Math.max(...workoutsWithVolume.filter(w => w.type === "strength" || w.volume > 0).map(wo => wo.volume), 1);
         const maxCardioCalories = Math.max(...workoutsWithVolume.filter(w => w.type === "cardio" || w.type === "classes" || w.volume === 0).map(wo => wo.calories), 1);
 
+        const miesiacTonaz = thisMonthVolume > 0 ? (thisMonthVolume >= 1000 ? (thisMonthVolume/1000).toFixed(1) + " t" : thisMonthVolume + " kg") : "0 kg";
+        const ostatnie = workoutsWithVolume.slice(0, 10).reverse();
+
+        // Rodzaj sesji: siłowa (seria 1), cardio (seria 2), zajęcia (seria 3); tak samo słupki, legenda i ikony wierszy.
+        const sesje = ostatnie.map(w => {
+            const dateStr = new Date(w.date).toLocaleDateString('pl-PL', {weekday:'short', day:'numeric', month:'short'});
+            const isCardioOrClasses = (w.type === "cardio" || w.type === "classes") || (w.volume === 0 && (w.calories > 0 || w.duration_seconds > 0));
+            let rodzaj = 'silowe', typeBadge = 'Siłowe', pct, displayVal;
+            if (isCardioOrClasses) {
+                const isClasses = w.type === "classes" || (!w.type && w.volume === 0);
+                rodzaj = isClasses ? 'zajecia' : 'cardio';
+                typeBadge = isClasses ? "Zajęcia" : "Cardio";
+                pct = w.calories > 0 ? Math.min(100, Math.max(8, Math.round((w.calories / maxCardioCalories) * 100))) : 8;
+                displayVal = w.calories > 0 ? `${w.calories} kcal` : (w.durationMinutes ? `${w.durationMinutes} min` : `Aktywność`);
+                if (w.hr) displayVal += ` <span class="z-mut">(HR: ${w.hr})</span>`;
+            } else {
+                pct = Math.min(100, Math.max(8, Math.round((w.volume / maxStrengthVol) * 100)));
+                displayVal = w.volume >= 1000 ? (w.volume/1000).toFixed(1) + " t" : Math.round(w.volume) + " kg";
+                if (w.calories > 0) displayVal += ` <span class="z-mut">(${w.calories} kcal)</span>`;
+            }
+            return { w, dateStr, rodzaj, typeBadge, pct, displayVal, nazwa: w.name ? w.name : typeBadge };
+        });
+        const seria = { silowe: '', cardio: ' z-s2', zajecia: ' z-s3' };
+        const ikonaRodzaju = { silowe: 'dumbbell', cardio: 'line-chart', zajecia: 'users' };
+
         html += `
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 25px;">
-                <div style="background: rgba(255,255,255,0.05); border: 1px solid rgba(0, 191, 255, 0.3); padding: 15px; border-radius: 16px; text-align: center; backdrop-filter: blur(10px);">
-                    <div style="font-size: 2em; color: #00BFFF; font-weight: 700; margin-bottom: 4px; line-height: 1;">${totalWorkouts}</div>
-                    <div style="font-size: 0.8em; color: #8E8E93; text-transform: uppercase; font-weight: 600;">Treningów</div>
+            <div class="an-staty">
+                <div class="z-card z-stat an-stat">
+                    <div class="z-big">${totalWorkouts}</div>
+                    <div class="z-mut">Treningów</div>
                 </div>
-                <div style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255, 152, 0, 0.3); padding: 15px; border-radius: 16px; text-align: center; backdrop-filter: blur(10px);">
-                    <div style="font-size: 1.8em; color: #FF9800; font-weight: 700; margin-bottom: 4px; line-height: 1;">${totalCalories > 0 ? totalCalories.toLocaleString("pl-PL") : "0"} <span style="font-size: 0.55em;">kcal</span></div>
-                    <div style="font-size: 0.8em; color: #8E8E93; text-transform: uppercase; font-weight: 600;">Spalone</div>
+                <div class="z-card z-stat an-stat">
+                    <div class="z-big">${totalCalories > 0 ? totalCalories.toLocaleString("pl-PL") : "0"} <span class="an-jedn">kcal</span></div>
+                    <div class="z-mut">Spalone</div>
                 </div>
-                <div style="background: rgba(255,255,255,0.05); border: 1px solid rgba(233, 30, 99, 0.3); padding: 15px; border-radius: 16px; text-align: center; backdrop-filter: blur(10px);">
-                    <div style="font-size: 1.4em; color: #E91E63; font-weight: 700; margin-bottom: 4px; line-height: 1.2;">${Math.round(totalVolMachine)} <span style="font-size: 0.6em;">kg</span></div>
-                    <div style="font-size: 0.75em; color: #8E8E93; text-transform: uppercase; font-weight: 600;">Tonaż Żelastwa</div>
+                <div class="z-card z-stat an-stat">
+                    <div class="z-big z-hi">${Math.round(totalVolMachine)} <span class="an-jedn">kg</span></div>
+                    <div class="z-mut">Tonaż żelastwa</div>
                 </div>
-                <div style="background: rgba(255,255,255,0.05); border: 1px solid rgba(46, 204, 113, 0.3); padding: 15px; border-radius: 16px; text-align: center; backdrop-filter: blur(10px);">
-                    <div style="font-size: 1.4em; color: #2ECC71; font-weight: 700; margin-bottom: 4px; line-height: 1.2;">${Math.round(totalVolBody)} <span style="font-size: 0.6em;">kg</span></div>
-                    <div style="font-size: 0.75em; color: #8E8E93; text-transform: uppercase; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 6px;">
-                        Tonaż Ciała
-                        <button type="button" onclick="window.AnalyticsUI.showBodyweightInfoModal()" style="background: rgba(255,255,255,0.1); border: none; border-radius: 50%; width: 18px; height: 18px; display: flex; align-items: center; justify-content: center; cursor: pointer;" title="Informacja o tonażu ciała">
-                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
-                        </button>
-                    </div>
+                <div class="z-card z-stat an-stat">
+                    <div class="z-big">${Math.round(totalVolBody)} <span class="an-jedn">kg</span></div>
+                    <div class="z-mut">Tonaż ciała</div>
+                    <button type="button" class="an-info" aria-label="Informacja o tonażu ciała" onclick="window.AnalyticsUI.showBodyweightInfoModal(this)">${ikona('info', 16)}</button>
                 </div>
             </div>
-            
-            <h4 style="color: #00BFFF; border-bottom: 1px solid rgba(0,191,255,0.2); padding-bottom: 8px; margin-bottom: 20px; font-weight: 600;">Zaawansowana Analityka (PRO)</h4>
-            
-            <div style="background: rgba(0, 191, 255, 0.05); border: 1px solid rgba(0, 191, 255, 0.2); padding: 20px; border-radius: 20px; margin-bottom: 25px;">
-                <p style="margin: 0 0 12px 0; font-size: 1.05em; color: #fff; line-height: 1.5;">W tym miesiącu: <strong style="color: #00BFFF;">${thisMonthWorkouts.length}</strong> aktywności, w tym <strong style="color: #00BFFF;">${thisMonthVolume > 0 ? (thisMonthVolume >= 1000 ? (thisMonthVolume/1000).toFixed(1) + " t" : thisMonthVolume + " kg") : "0 kg"}</strong> tonażu siłowego!</p>
-                ${thisMonthWorkouts.length >= 8 
-                    ? '<p style="color: #2ECC71; margin: 0; font-weight: 600; display: flex; align-items: center; gap: 8px;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg> Konsekwencja mistrza! Świetna robota!</p>' 
-                    : '<p style="color: #00BFFF; margin: 0; display: flex; align-items: center; gap: 8px;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 16 16 12 12 8"/><line x1="8" y1="12" x2="16" y2="12"/></svg> Każda sesja przybliża Cię do życiowej formy. Nie przestawaj!</p>'}
+
+            <div class="z-card an-miesiac">
+                <p class="an-miesiac-tekst">W tym miesiącu: <strong class="z-hi">${thisMonthWorkouts.length}</strong> aktywności, w tym <strong class="z-hi">${miesiacTonaz}</strong> tonażu siłowego!</p>
+                ${thisMonthWorkouts.length >= 8
+                    ? `<p class="z-sub an-motyw">${ikona('check', 18)} Konsekwencja mistrza! Świetna robota!</p>`
+                    : `<p class="z-sub an-motyw">${ikona('arrow-up', 18)} Każda sesja przybliża Cię do życiowej formy. Nie przestawaj!</p>`}
             </div>
-            
-            <h5 style="color: #FFD700; margin-top: 20px; margin-bottom: 12px; font-weight: 600; display: flex; align-items: center; gap: 8px;">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
-                Ostatnie 10 sesji treningowych
-            </h5>
-            <div style="display: flex; flex-direction: column; gap: 12px; margin-bottom: 30px;">
-                ${workoutsWithVolume.slice(0,10).reverse().map(w => {
-                    const dateStr = new Date(w.date).toLocaleDateString('pl-PL', {weekday:'short', day:'numeric', month:'short'});
-                    const isCardioOrClasses = (w.type === "cardio" || w.type === "classes") || (w.volume === 0 && (w.calories > 0 || w.duration_seconds > 0));
-                    
-                    let barColor = "#FF9800";
-                    let displayVal = "";
-                    let typeBadge = "";
-                    let typeIcon = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6.5 6.5 11 11"/><path d="m21 21-1-1"/><path d="m3 3 1 1"/><path d="m18 22 4-4"/><path d="m2 6 4-4"/><path d="m3 10 7-7"/><path d="m14 21 7-7"/></svg>';
 
-                    if (isCardioOrClasses) {
-                        const isClasses = w.type === "classes" || (!w.type && w.volume === 0);
-                        typeBadge = isClasses ? "Zajęcia" : "Cardio";
-                        typeIcon = isClasses ? '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>' : '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>';
-                        barColor = isClasses ? "#FF5722" : "#00BFFF";
-                        
-                        displayVal = w.calories > 0 ? `${w.calories} kcal` : (w.durationMinutes ? `${w.durationMinutes} min` : `Aktywność`);
-                        if (w.hr) displayVal += ` <span style="font-size: 0.85em; opacity: 0.85;">(HR: ${w.hr})</span>`;
-                    } else {
-                        typeBadge = "Siłowe";
-                        const barPct = Math.min(100, Math.max(8, Math.round((w.volume / maxStrengthVol) * 100)));
-                        barColor = barPct >= 80 ? "#2ECC71" : (barPct >= 50 ? "#FFD700" : "#FF9800");
-                        displayVal = w.volume >= 1000 ? (w.volume/1000).toFixed(1) + " t" : Math.round(w.volume) + " kg";
-                        if (w.calories > 0) displayVal += ` <span style="font-size: 0.8em; opacity: 0.85;">(${w.calories} kcal)</span>`;
-                    }
-
-                    const workoutNameDisplay = w.name ? w.name : typeBadge;
-
-                    return `
-                    <div class="glass-card" style="display: flex; align-items: center; padding: 14px;">
-                        <div style="width: 48px; height: 48px; border-radius: 14px; background: ${barColor}15; border: 1px solid ${barColor}40; display: flex; align-items: center; justify-content: center; color: ${barColor}; flex-shrink: 0;">
-                            ${typeIcon}
-                        </div>
-                        <div style="flex: 1; margin-left: 14px; overflow: hidden;">
-                            <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 6px;">
-                                <span style="font-weight: 600; font-size: 0.95em; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 65%;">${workoutNameDisplay}</span>
-                                <span style="font-size: 0.75em; color: #8E8E93;">${dateStr}</span>
+            <h3 class="z-hd an-h">Ostatnie ${sesje.length} sesji</h3>
+            <div class="z-card an-sesje">
+                <div class="z-chart-bars an-slupki" role="img" aria-label="Ostatnie ${sesje.length} sesji treningowych od najstarszej: słupki pokazują tonaż w treningach siłowych albo spalone kalorie w cardio i zajęciach. Szczegóły w liście poniżej.">
+                    ${sesje.map(s => `<div class="z-chart-bar${seria[s.rodzaj]}" style="height: ${s.pct}%" title="${esc(s.nazwa)}"></div>`).join('')}
+                </div>
+                <div class="z-chart-legend an-legenda">
+                    <span class="z-chart-key">Siłowe</span>
+                    <span class="z-chart-key z-s2">Cardio</span>
+                    <span class="z-chart-key z-s3">Zajęcia</span>
+                </div>
+            </div>
+            <div class="z-card z-list an-lista">
+                ${sesje.map(s => `
+                    <div class="an-sesja" data-rodzaj="${s.rodzaj}">
+                        <span class="an-ikona" aria-hidden="true">${ikona(ikonaRodzaju[s.rodzaj], 20)}</span>
+                        <div class="an-sesja-tekst">
+                            <div class="an-sesja-gora">
+                                <span class="an-sesja-nazwa">${esc(s.nazwa)}</span>
+                                <span class="z-mut">${s.dateStr}</span>
                             </div>
-                            <div style="display: flex; justify-content: space-between; align-items: center;">
-                                <span style="font-size: 0.8em; color: #8E8E93; text-transform: uppercase;">${typeBadge}</span>
-                                <span style="font-weight: 700; font-size: 1.05em; color: ${barColor};">${displayVal}</span>
+                            <div class="an-sesja-dol">
+                                <span class="z-mut an-rodzaj">${s.typeBadge}</span>
+                                <span class="an-wartosc">${s.displayVal}</span>
                             </div>
                         </div>
-                    </div>`;
-                }).join('')}
+                    </div>`).join('')}
             </div>
         `;
 
@@ -270,40 +266,22 @@ export const AnalyticsUI = {
 
         if (recordsList.length > 0) {
             html += `
-                <div style="margin-top: 30px; margin-bottom: 25px;">
-                    <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,215,0,0.3); padding-bottom: 8px; margin-bottom: 15px;">
-                        <h4 style="color: #FFD700; margin: 0; display: flex; align-items: center; gap: 8px; font-size: 1.1em; font-weight: 600;">
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/></svg>
-                            Twoje Rekordy Siłowe
-                        </h4>
-                        <button type="button" onclick="window.AnalyticsUI.show1RmInfoModal()" style="background: rgba(255,215,0,0.15); border: 1px solid rgba(255,215,0,0.3); color: #FFD700; border-radius: 50%; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; cursor: pointer;" title="Czym jest 1RM?">
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
-                        </button>
-                    </div>
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
-                        ${recordsList.slice(0, 4).map(r => `
-                            <div class="glass-card" style="padding: 14px; display: flex; flex-direction: column; justify-content: space-between; border-color: rgba(255,215,0,0.4);">
-                                <div style="font-size: 0.85em; color: #fff; font-weight: 600; margin-bottom: 8px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${r.name}">${r.name}</div>
-                                <div>
-                                    <div style="font-size: 1.4em; color: #FFD700; font-weight: 700; line-height: 1.1; margin-bottom: 6px;">${r.actualWeight} <span style="font-size: 0.65em; color: #8E8E93; font-weight: normal;">kg</span> <span style="font-size: 0.7em; color: #8E8E93; font-weight: normal;">x ${r.reps}</span></div>
-                                    <div style="font-size: 0.75em; color: #8E8E93; margin-bottom: 8px;">${new Date(r.date).toLocaleDateString("pl-PL", {day:"numeric", month:"short"})}</div>
-                                    <div style="font-size: 0.75em; color: #00BFFF; display: flex; align-items: center; gap: 4px;">
-                                        <span style="background: rgba(0, 191, 255, 0.1); padding: 4px 8px; border-radius: 6px; border: 1px solid rgba(0, 191, 255, 0.2); display: flex; align-items: center; gap: 4px;">
-                                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
-                                            1RM: ~${r.max1Rm.toFixed(1)} kg
-                                        </span>
-                                    </div>
-                                </div>
-                            </div>
-                        `).join("")}
-                    </div>
-                    <div style="text-align: center; margin-top: 15px;">
-                        <button type="button" onclick="window.AnalyticsUI.shareRecords()" style="background: rgba(255,215,0,0.15); color: #FFD700; border: 1px solid rgba(255,215,0,0.3); padding: 12px 18px; border-radius: 12px; font-size: 0.9em; font-weight: 600; cursor: pointer; width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px;">
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
-                            Udostępnij swoje rekordy
-                        </button>
-                    </div>
+                <div class="an-sekcja-gora">
+                    <h3 class="z-hd an-h">Twoje rekordy siłowe</h3>
+                    <button type="button" class="z-chip" onclick="window.AnalyticsUI.show1RmInfoModal(this)">Czym jest 1RM?</button>
                 </div>
+                <div class="z-card z-list an-lista">
+                    ${recordsList.slice(0, 4).map(r => `
+                        <div class="an-rekord">
+                            <div class="an-rek-opis">
+                                <div class="an-rek-nazwa" title="${esc(r.name)}">${esc(r.name)}</div>
+                                <div class="z-mut">${r.actualWeight} kg × ${r.reps} · ${new Date(r.date).toLocaleDateString("pl-PL", {day:"numeric", month:"short"})}</div>
+                            </div>
+                            <div class="an-rm"><span class="z-mut">1RM:</span> <span class="an-rm-val">~${r.max1Rm.toFixed(1)} kg</span></div>
+                        </div>
+                    `).join("")}
+                </div>
+                <button type="button" class="z-ghost an-udostepnij" onclick="window.AnalyticsUI.shareRecords()">${ikona('share', 18)} Udostępnij rekordy</button>
             `;
         }
 
@@ -314,18 +292,13 @@ export const AnalyticsUI = {
         
         if (exListOptions.length > 0) {
             html += `
-                <div style="margin-top: 35px; margin-bottom: 25px;">
-                    <h4 style="color: #2ECC71; border-bottom: 1px solid rgba(46,204,113,0.3); padding-bottom: 8px; margin-bottom: 15px; display: flex; align-items: center; gap: 8px; font-size: 1.1em; font-weight: 600;">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
-                        Śledzenie Progresu (Wykres 1RM)
-                    </h4>
-                    <div style="background: rgba(255,255,255,0.03); padding: 20px; border-radius: 16px; border: 1px solid rgba(255,255,255,0.05); backdrop-filter: blur(10px);">
-                        <select id="analytics-exercise-select" onchange="window.AnalyticsUI.renderExerciseChart(this.value)" style="width: 100%; padding: 14px; border-radius: 12px; background: rgba(0,0,0,0.3); border: 1px solid rgba(46,204,113,0.3); color: #fff; font-size: 0.95em; margin-bottom: 15px; outline: none;">
-                            <option value="">-- Wybierz ćwiczenie --</option>
-                            ${exListOptions.map(name => `<option value="${name}">${name}</option>`).join('')}
-                        </select>
-                        <div id="analytics-exercise-chart-container" style="min-height: 180px; display: flex; align-items: center; justify-content: center; color: #8E8E93; font-size: 0.9em; border-radius: 12px; background: rgba(0,0,0,0.1);">Wybierz ćwiczenie z listy.</div>
-                    </div>
+                <div class="z-card an-progres">
+                    <label class="z-lab" for="analytics-exercise-select">Śledzenie progresu: wybierz ćwiczenie</label>
+                    <select id="analytics-exercise-select" class="z-in" onchange="window.AnalyticsUI.renderExerciseChart(this.value)">
+                        <option value="">-- Wybierz ćwiczenie --</option>
+                        ${exListOptions.map(name => `<option value="${esc(name)}">${esc(name)}</option>`).join('')}
+                    </select>
+                    <div id="analytics-exercise-chart-container" class="an-wykres"><p class="z-mut an-pusto">Wybierz ćwiczenie z listy.</p></div>
                 </div>
             `;
         }
@@ -501,7 +474,7 @@ export const AnalyticsUI = {
         const container = document.getElementById('analytics-exercise-chart-container');
         if (!container) return;
         if (!exerciseName) {
-            container.innerHTML = 'Wybierz ćwiczenie z listy powyżej, aby zobaczyć wykres swojego progresu na przestrzeni czasu.';
+            container.innerHTML = '<p class="z-mut an-pusto">Wybierz ćwiczenie z listy powyżej, aby zobaczyć wykres swojego progresu na przestrzeni czasu.</p>';
             return;
         }
 
@@ -539,7 +512,7 @@ export const AnalyticsUI = {
         });
 
         if (historyData.length === 0) {
-            container.innerHTML = '<span style="color: #ff4444;">Brak wystarczających danych z poprawnym ciężarem do wygenerowania wykresu dla tego ćwiczenia.</span>';
+            container.innerHTML = '<p class="an-blad an-pusto">Brak wystarczających danych z poprawnym ciężarem do wygenerowania wykresu dla tego ćwiczenia.</p>';
             return;
         }
 
@@ -548,29 +521,58 @@ export const AnalyticsUI = {
         
         // Take last 12 entries so it fits well on mobile
         const chartData = historyData.slice(-12);
-        
-        const absoluteMax = Math.max(...chartData.map(d => d.maxWeight));
-        
-        let chartHtml = `
-            <div style="width: 100%; display: flex; align-items: flex-end; justify-content: flex-start; gap: 8px; height: 180px; padding: 10px 10px 35px 10px; background: rgba(0,0,0,0.3); border-radius: 8px; overflow-x: auto; margin-top: 10px; position: relative; border-bottom: 1px solid #2ECC71;">
+        const n = chartData.length;
+
+        // Wykres liniowy SVG: kolory z klas z-chart-* i tokenów (zmieniają się razem z motywem), bez kolorów w kodzie.
+        const W = 300, H = 190, MARGINES = 22, GORA = 28, DOL = H - 46;
+        const ciezary = chartData.map(d => d.maxWeight);
+        const min = Math.min(...ciezary), max = Math.max(...ciezary);
+        const luz = (max - min) * 0.2 || max * 0.1;
+        const lo = min - luz, hi = max + luz;
+        const krok = n > 1 ? (W - 2 * MARGINES) / (n - 1) : 0;
+        const dataKrotka = (dt) => { const x = new Date(dt); return `${String(x.getDate()).padStart(2, '0')}.${String(x.getMonth() + 1).padStart(2, '0')}`; };
+        const punkty = chartData.map((d, i) => ({
+            ...d,
+            opis: `${dataKrotka(d.date)}: ${d.maxWeight} kg × ${d.reps} powt.`,
+            x: n > 1 ? MARGINES + i * krok : W / 2,
+            y: DOL - ((d.maxWeight - lo) / (hi - lo)) * (DOL - GORA),
+        }));
+        const fmt = (v) => Math.round(v * 10) / 10;
+        const linia = punkty.map((p, i) => `${i ? 'L' : 'M'}${fmt(p.x)} ${fmt(p.y)}`).join(' ');
+        const pole = `${linia} L${fmt(punkty[n - 1].x)} ${DOL} L${fmt(punkty[0].x)} ${DOL} Z`;
+        // Etykiety: co druga wartość przy gęstym wykresie (zawsze ostatnia), daty tak, by nie nachodziły.
+        const coWartosc = n > 8 ? 2 : 1;
+        const coData = krok ? Math.max(1, Math.ceil(44 / krok)) : 1;
+        const opis = `Wykres postępu: ${exerciseName}. ${n} ${n === 1 ? 'sesja' : 'sesji'}, najcięższa seria dnia od ${chartData[0].maxWeight} kg do ${chartData[n - 1].maxWeight} kg, rekord ${max} kg.`;
+
+        container.innerHTML = `
+            <svg class="z-chart an-linia" viewBox="0 0 ${W} ${H}" role="group" aria-label="${esc(opis)}" focusable="false">
+                <defs>
+                    <linearGradient id="an-pole" class="z-chart-area" x1="0" y1="0" x2="0" y2="1"><stop offset="0"/><stop offset="1"/></linearGradient>
+                </defs>
+                <line class="an-os" x1="${MARGINES - 8}" x2="${W - MARGINES + 8}" y1="${DOL}" y2="${DOL}"/>
+                ${n > 1 ? `<path d="${pole}" fill="url(#an-pole)" stroke="none"/>` : ''}
+                <path class="z-chart-line" d="${linia}"/>
+                ${punkty.map((p, i) => `
+                    <g class="an-pkt" tabindex="0" role="img" aria-label="${esc(p.opis)}" data-opis="${esc(p.opis)}">
+                        <title>${esc(p.opis)}</title>
+                        <circle class="an-trafienie" cx="${fmt(p.x)}" cy="${fmt(p.y)}" r="14"/>
+                        <circle class="an-punkt" cx="${fmt(p.x)}" cy="${fmt(p.y)}" r="3.5"/>
+                    </g>
+                    ${(n - 1 - i) % coWartosc === 0 ? `<text class="an-wart" x="${fmt(p.x)}" y="${fmt(p.y - 9)}" text-anchor="middle">${p.maxWeight}</text>` : ''}
+                    <text class="z-chart-axis" x="${fmt(p.x)}" y="${DOL + 16}" text-anchor="middle">x${p.reps}</text>
+                    ${(n - 1 - i) % coData === 0 ? `<text class="z-chart-axis" x="${fmt(p.x)}" y="${H - 6}" text-anchor="middle">${esc(new Date(p.date).toLocaleDateString('pl-PL', {day:'numeric', month:'short'}))}</text>` : ''}
+                `).join('')}
+            </svg>
+            <p class="an-odczyt" aria-live="polite">${esc(punkty[n - 1].opis)}</p>
         `;
-        
-        chartData.forEach(d => {
-            const heightPct = Math.max(5, (d.maxWeight / absoluteMax) * 100);
-            const dateShort = new Date(d.date).toLocaleDateString('pl-PL', {day:'numeric', month:'short'});
-            
-            chartHtml += `
-                <div style="display: flex; flex-direction: column; justify-content: flex-end; align-items: center; flex: 1; min-width: 40px; max-width: 60px; height: 100%; position: relative;">
-                    <div style="font-size: 0.75em; color: #2ECC71; font-weight: bold; margin-bottom: 2px;">${d.maxWeight} <span style="font-size:0.7em;color:#aaa;">kg</span></div>
-                    <div style="font-size: 0.65em; color: #888; margin-bottom: 5px;">x${d.reps}</div>
-                    <div style="width: 100%; max-width: 30px; height: ${heightPct}%; background: linear-gradient(to top, rgba(46,204,113,0.3), #2ECC71); border-radius: 4px 4px 0 0; min-height: 5px; box-shadow: 0 0 5px rgba(46,204,113,0.2);"></div>
-                    <div style="font-size: 0.65em; color: #aaa; margin-top: 8px; position: absolute; bottom: -25px; white-space: nowrap;">${dateShort}</div>
-                </div>
-            `;
+        // Każdy punkt (dotyk, klik, fokus z klawiatury) pokazuje swoją datę, ciężar i powtórzenia pod wykresem.
+        const odczyt = container.querySelector('.an-odczyt');
+        container.querySelectorAll('.an-pkt').forEach(g => {
+            const pokaz = () => { odczyt.textContent = g.dataset.opis; };
+            g.addEventListener('click', pokaz);
+            g.addEventListener('focus', pokaz);
         });
-        
-        chartHtml += `</div>`;
-        container.innerHTML = chartHtml;
     },
 
     
@@ -680,65 +682,72 @@ export const AnalyticsUI = {
 
     
     
-    show1RmInfoModal: () => {
-        let modal = document.getElementById("analytics-info-modal");
-        if (!modal) {
-            modal = document.createElement("div");
-            modal.id = "analytics-info-modal";
-            modal.style.cssText = "position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 9999; display: flex; justify-content: center; align-items: center; padding: 20px; box-sizing: border-box; backdrop-filter: blur(5px); flex-direction: column; opacity: 0; transition: opacity 0.3s;";
-            document.body.appendChild(modal);
-        }
-
-        modal.innerHTML = `
-            <div style="background: #1e1e1e; padding: 25px; border-radius: 12px; width: 100%; max-width: 420px; border-top: 5px solid #FFD700; box-shadow: 0 10px 30px rgba(0,0,0,0.8); position: relative; box-sizing: border-box; text-align: left;">
-                <h3 style="color: #FFD700; margin-top: 0; font-size: 1.3em; display: flex; align-items: center; gap: 8px;">
-                    🏆 Czym jest 1RM (One Repetition Max)?
-                </h3>
-                <p style="color: #ddd; font-size: 0.9em; line-height: 1.6; margin-bottom: 15px;">
-                    <strong>1RM</strong> to wskaźnik oznaczający <em>Maksimum Jednego Powtórzenia</em> – czyli największy możliwy ciężar, jaki jesteś w stanie podnieść w danym ćwiczeniu dokładnie <strong>jeden raz</strong> z prawidłową techniką.
-                </p>
-                <div style="background: rgba(255,215,0,0.08); border-left: 3px solid #FFD700; padding: 10px 12px; border-radius: 4px; margin-bottom: 15px; font-size: 0.85em; color: #eee; line-height: 1.5;">
-                    💡 <strong>Dlaczego to szacujemy, a nie sprawdzamy na żywo?</strong><br>
-                    Próby podnoszenia 100% maksa na 1 powtórzenie niosą ze sobą ogromne ryzyko kontuzji stawów, ścięgien i kręgosłupa. Aplikacja bezpiecznie oblicza Twój teoretyczny rekord ze zwykłych serii roboczych (np. seria 80 kg × 8 powtórzeń daje szacowany max ok. 101 kg).
-                </div>
-                <p style="color: #bbb; font-size: 0.85em; line-height: 1.5; margin-bottom: 20px;">
-                    🎯 <strong>Jak to wykorzystać w treningu?</strong><br>
-                    • <strong>Budowanie masy mięśniowej:</strong> trenuj na <strong>70–80%</strong> swojego 1RM (8–12 powtórzeń).<br>
-                    • <strong>Budowanie czystej siły:</strong> trenuj na <strong>80–90%</strong> swojego 1RM (3–5 powtórzeń).
-                </p>
-                <div style="text-align: center;">
-                    <button onclick="document.getElementById('analytics-info-modal').style.opacity='0'; setTimeout(()=>document.getElementById('analytics-info-modal').style.display='none', 300);" style="background: #333; color: #fff; border: 1px solid #555; padding: 10px 30px; border-radius: 6px; font-weight: bold; font-size: 1em; cursor: pointer; display: inline-block;">Wszystko jasne!</button>
+    // Okno objaśnienia z komponentów z-dialog (role="dialog", Escape, klik w tło, powrót fokusu).
+    // `opener`: przycisk, który otworzył okno (Safari nie ustawia fokusu po kliknięciu przycisku).
+    _pokazOkno: (tytul, trescHtml, etykietaPrzycisku, opener) => {
+        const stare = document.getElementById('analytics-info-modal');
+        if (stare) stare.remove();
+        const poprzedni = opener || document.activeElement;
+        const scrim = document.createElement('div');
+        scrim.id = 'analytics-info-modal';
+        scrim.className = 'z-dialog-scrim';
+        scrim.innerHTML = `
+            <div class="z-dialog an-okno" role="dialog" aria-modal="true" aria-labelledby="analytics-okno-tytul">
+                <h2 id="analytics-okno-tytul" class="z-hd">${esc(tytul)}</h2>
+                <div class="an-okno-tresc">${trescHtml}</div>
+                <div class="z-dialog-actions">
+                    <button type="button" class="z-btn an-okno-ok">${esc(etykietaPrzycisku)}</button>
                 </div>
             </div>
         `;
-        modal.style.display = "flex";
-        setTimeout(() => modal.style.opacity = "1", 10);
+        const przycisk = scrim.querySelector('.an-okno-ok');
+        const koniec = () => {
+            document.removeEventListener('keydown', klawisz, true);
+            scrim.remove();
+            if (poprzedni && typeof poprzedni.focus === 'function' && document.contains(poprzedni)) poprzedni.focus();
+        };
+        const klawisz = (e) => {
+            if (e.key === 'Escape') { e.preventDefault(); koniec(); }
+            else if (e.key === 'Tab') { e.preventDefault(); przycisk.focus(); } // jedyna kontrolka w oknie
+        };
+        przycisk.addEventListener('click', koniec);
+        scrim.addEventListener('click', (e) => { if (e.target === scrim) koniec(); });
+        document.addEventListener('keydown', klawisz, true);
+        document.body.append(scrim);
+        przycisk.focus();
     },
 
-    showBodyweightInfoModal: () => {
-        let modal = document.getElementById("analytics-info-modal");
-        if (!modal) {
-            modal = document.createElement("div");
-            modal.id = "analytics-info-modal";
-            modal.style.cssText = "position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 9999; display: flex; justify-content: center; align-items: center; padding: 20px; box-sizing: border-box; backdrop-filter: blur(5px); flex-direction: column; opacity: 0; transition: opacity 0.3s;";
-            document.body.appendChild(modal);
-        }
+    show1RmInfoModal: (opener) => {
+        AnalyticsUI._pokazOkno('Czym jest 1RM (One Repetition Max)?', `
+            <p>
+                <strong>1RM</strong> to wskaźnik oznaczający <em>Maksimum Jednego Powtórzenia</em> – czyli największy możliwy ciężar, jaki jesteś w stanie podnieść w danym ćwiczeniu dokładnie <strong>jeden raz</strong> z prawidłową techniką.
+            </p>
+            <p class="an-okno-nota">
+                <strong>Dlaczego to szacujemy, a nie sprawdzamy na żywo?</strong><br>
+                Próby podnoszenia 100% maksa na 1 powtórzenie niosą ze sobą ogromne ryzyko kontuzji stawów, ścięgien i kręgosłupa. Aplikacja bezpiecznie oblicza Twój teoretyczny rekord ze zwykłych serii roboczych (np. seria 80 kg × 8 powtórzeń daje szacowany max ok. 101 kg).
+            </p>
+            <p>
+                <strong>Jak to wykorzystać w treningu?</strong><br>
+                • <strong>Budowanie masy mięśniowej:</strong> trenuj na <strong>70–80%</strong> swojego 1RM (8–12 powtórzeń).<br>
+                • <strong>Budowanie czystej siły:</strong> trenuj na <strong>80–90%</strong> swojego 1RM (3–5 powtórzeń).
+            </p>
+        `, 'Wszystko jasne!', opener);
+    },
 
-        modal.innerHTML = `
-            <div style="background: #1e1e1e; padding: 25px; border-radius: 12px; width: 100%; max-width: 400px; border-top: 5px solid #2ECC71; box-shadow: 0 10px 30px rgba(0,0,0,0.8); position: relative; box-sizing: border-box; text-align: center;">
-                <h3 style="color: #2ECC71; margin-top: 0; font-size: 1.3em;">ℹ️ Co to jest Tonaż Ciała?</h3>
-                <p style="color: #ddd; font-size: 0.95em; line-height: 1.6; margin-bottom: 25px; text-align: left;">
-                    To szacowana objętość pracy wykonana przy użyciu masy własnego ciała.<br><br>
-                    Aplikacja automatycznie przelicza Twoją wagę na realne obciążenie:<br>
-                    • <strong>Podciąganie / Brzuszki:</strong> 100% wagi ciała<br>
-                    • <strong>Pompki klasyczne:</strong> ok. 65% wagi ciała<br><br>
-                    Dzięki temu ćwiczenia kalisteniczne są sprawiedliwie wliczane do Twojej całkowitej objętości treningowej!
-                </p>
-                <button onclick="document.getElementById('analytics-info-modal').style.opacity='0'; setTimeout(()=>document.getElementById('analytics-info-modal').style.display='none', 300);" style="background: #333; color: #fff; border: 1px solid #555; padding: 10px 30px; border-radius: 6px; font-weight: bold; font-size: 1em; cursor: pointer; display: inline-block;">Rozumiem</button>
-            </div>
-        `;
-        modal.style.display = "flex";
-        setTimeout(() => modal.style.opacity = "1", 10);
+    showBodyweightInfoModal: (opener) => {
+        AnalyticsUI._pokazOkno('Co to jest tonaż ciała?', `
+            <p>
+                To szacowana objętość pracy wykonana przy użyciu masy własnego ciała.
+            </p>
+            <p>
+                Aplikacja automatycznie przelicza Twoją wagę na realne obciążenie:<br>
+                • <strong>Podciąganie / Brzuszki:</strong> 100% wagi ciała<br>
+                • <strong>Pompki klasyczne:</strong> ok. 65% wagi ciała
+            </p>
+            <p>
+                Dzięki temu ćwiczenia kalisteniczne są sprawiedliwie wliczane do Twojej całkowitej objętości treningowej!
+            </p>
+        `, 'Rozumiem', opener);
     },
 
     showInfoModal: (type, value) => {

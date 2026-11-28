@@ -1,4 +1,10 @@
+// wyglad: zar
 import { marked } from 'https://cdn.jsdelivr.net/npm/marked/lib/marked.esm.js';
+import { ikona } from '../wyglad/ikony.js';
+import { bezpiecznyHtml } from '../wyglad/bezpiecznyHtml.js';
+
+// Dane użytkownika (tekst wiadomości, pseudonim) wchodzą do innerHTML tylko przez esc().
+const esc = (t) => String(t ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 
 export const ChatUI = {
     init: () => {
@@ -8,93 +14,27 @@ export const ChatUI = {
                 <!-- Przycisk czatu: koło akcentu motywu nad paskiem dolnym (spec 6.2, .z-fab w components.css) -->
                 <button type="button" id="edward-chat-toggle" class="z-ic z-ic-acc z-fab" aria-label="Czat z Edwardem"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="7" width="16" height="12" rx="3"/><path d="M12 7V4M9 13h.01M15 13h.01"/></svg></button>
 
-                <!-- Chat Window -->
-                <div id="edward-chat-window" style="
-                    position: fixed;
-                    bottom: 90px;
-                    right: 20px;
-                    width: 350px;
-                    max-width: calc(100vw - 40px);
-                    height: 500px;
-                    max-height: calc(100vh - 120px);
-                    background: rgba(20, 20, 20, 0.95);
-                    backdrop-filter: blur(10px);
-                    border: 1px solid #00BFFF;
-                    border-radius: 12px;
-                    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-                    display: none;
-                    flex-direction: column;
-                    z-index: 1000;
-                    overflow: hidden;
-                ">
-                    <!-- Header -->
-                    <div style="
-                        background: #00BFFF;
-                        padding: 15px;
-                        color: white;
-                        font-weight: bold;
-                        display: flex;
-                        justify-content: space-between;
-                        align-items: center;
-                    ">
-                        <div style="display: flex; align-items: center; gap: 10px;">
-                            <span style="font-size: 1.5em;">🤖</span>
-                            <div>
-                                <div style="font-size: 1.1em;">Trener Edward</div>
-                                <div style="font-size: 0.8em; color: rgba(255,255,255,0.8);">Zawsze gotowy do pomocy</div>
-                            </div>
+                <!-- Okno czatu: cały ekran (spec 8.3), style w styles/zar/ekrany/edward.css -->
+                <div id="edward-chat-window" role="dialog" aria-label="Czat z Edwardem">
+                    <header class="z-chat-head">
+                        <span class="z-chat-ikona" aria-hidden="true">${ikona('bot', 24)}</span>
+                        <div class="z-head-txt">
+                            <h2 class="z-hd z-chat-tytul">Trener Edward</h2>
+                            <p class="z-sub">Zawsze gotowy do pomocy</p>
                         </div>
-                        <button id="edward-chat-close" style="background: none; border: none; color: white; font-size: 1.5em; cursor: pointer;">&times;</button>
-                    </div>
+                        <button type="button" id="edward-chat-close" class="z-ic z-card" aria-label="Zamknij czat">${ikona('x')}</button>
+                    </header>
 
-                    <!-- Messages Area -->
-                    <div id="edward-chat-messages" style="
-                        flex: 1;
-                        padding: 15px;
-                        overflow-y: auto;
-                        display: flex;
-                        flex-direction: column;
-                        gap: 15px;
-                    ">
-                        <!-- Welcome Message -->
-                        <div style="align-self: flex-start; max-width: 85%;">
-                            <div style="font-size: 0.8em; color: #888; margin-bottom: 2px;">Edward</div>
-                            <div style="background: #333; padding: 10px 15px; border-radius: 15px; border-bottom-left-radius: 5px; color: white; font-size: 0.95em;">
-                                Cześć! Jestem Edward, Twój wirtualny trener. Masz pytania o trening, dietę czy regenerację? Wal śmiało! 💪
-                            </div>
+                    <div id="edward-chat-messages" class="z-chat-lista" aria-live="polite">
+                        <div class="z-chat-msg z-chat-edward">
+                            <div class="z-mut z-chat-autor">Edward</div>
+                            <div class="z-chat-dymek z-card">Cześć! Jestem Edward, Twój wirtualny trener. Masz pytania o trening, dietę czy regenerację? Wal śmiało!</div>
                         </div>
                     </div>
 
-                    <!-- Input Area -->
-                    <div style="
-                        padding: 15px;
-                        background: rgba(0,0,0,0.5);
-                        border-top: 1px solid #333;
-                        display: flex;
-                        gap: 10px;
-                    ">
-                        <input type="text" id="edward-chat-input" placeholder="Napisz do Edwarda..." style="
-                            flex: 1;
-                            padding: 10px 15px;
-                            border-radius: 20px;
-                            border: 1px solid #444;
-                            background: #222;
-                            color: white;
-                            outline: none;
-                            font-size: 16px;
-                        ">
-                        <button id="edward-chat-send" style="
-                            background: #00BFFF;
-                            color: white;
-                            border: none;
-                            width: 40px;
-                            height: 40px;
-                            border-radius: 50%;
-                            cursor: pointer;
-                            display: flex;
-                            align-items: center;
-                            justify-content: center;
-                        ">➤</button>
+                    <div class="z-chat-pole">
+                        <input type="text" id="edward-chat-input" class="z-in z-chat-wejscie" placeholder="Napisz do Edwarda…" aria-label="Wiadomość do Edwarda" autocomplete="off">
+                        <button type="button" id="edward-chat-send" class="z-ic z-ic-acc z-chat-wyslij" aria-label="Wyślij">${ikona('send', 22)}</button>
                     </div>
                 </div>
             `;
@@ -182,15 +122,23 @@ export const ChatUI = {
             }
             const isHidden = chatWindow.style.display === 'none' || chatWindow.style.display === '';
             chatWindow.style.display = isHidden ? 'flex' : 'none';
+            document.body.classList.toggle('z-edward-otwarty', isHidden);
             if (isHidden) {
                 input.focus();
                 toggleBtn.style.display = 'none';
             }
         });
 
-        closeBtn.addEventListener('click', () => {
+        const zamknij = () => {
             chatWindow.style.display = 'none';
+            document.body.classList.remove('z-edward-otwarty');
             toggleBtn.style.display = 'flex';
+        };
+        closeBtn.addEventListener('click', zamknij);
+        // Zmiana zakładki (także programowa: Strefa trenera, wyłączone sekcje) zamyka czat,
+        // żeby klasa chowająca aplikację nie została przy ukrytym oknie.
+        document.addEventListener('tabChanged', () => {
+            if (document.body.classList.contains('z-edward-otwarty')) zamknij();
         });
 
         sendBtn.addEventListener('click', ChatUI.sendMessage);
@@ -219,57 +167,23 @@ export const ChatUI = {
 
         bubble = document.createElement('div');
         bubble.id = 'edward-contextual-bubble';
-        
-        // Responsywne style - Dymek jak w komiksie (nad przyciskiem)
-        bubble.style.cssText = `
-            position: fixed;
-            bottom: ${currentBottom + 75}px;
-            right: ${currentRight}px;
-            background: rgba(40, 40, 40, 0.95);
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
-            border: 1px solid #00BFFF;
-            color: white;
-            padding: 12px 18px;
-            border-radius: 20px;
-            border-bottom-right-radius: 5px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
-            z-index: 999;
-            max-width: 280px;
-            font-size: 0.95em;
-            line-height: 1.4;
-            opacity: 0;
-            transform: translateY(20px) scale(0.95);
-            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            cursor: ${clickable ? 'pointer' : 'default'};
-        `;
-        
-        // Ogon dymka
-        const tail = document.createElement('div');
-        tail.style.cssText = `
-            position: absolute;
-            bottom: -10px;
-            right: 15px;
-            width: 0;
-            height: 0;
-            border-left: 10px solid transparent;
-            border-right: 10px solid transparent;
-            border-top: 10px solid rgba(40, 40, 40, 0.95);
-            filter: drop-shadow(0 2px 1px rgba(0, 191, 255, 0.5));
-        `;
-        
+        bubble.className = 'z-card z-edward-dymek' + (clickable ? ' z-klik' : '');
+        // Położenie nad przyciskiem (przycisk można przeciągać); reszta wyglądu w edward.css.
+        bubble.style.bottom = (currentBottom + 75) + 'px';
+        bubble.style.right = currentRight + 'px';
+
         const contentDiv = document.createElement('div');
         contentDiv.innerHTML = message;
-        
         bubble.appendChild(contentDiv);
-        bubble.appendChild(tail);
         document.body.appendChild(bubble);
 
-        // Animacja wejścia
-        requestAnimationFrame(() => {
-            bubble.style.opacity = '1';
-            bubble.style.transform = 'translateY(0) scale(1)';
-        });
+        // Animacja wejścia (klasa .z-on; przy prefers-reduced-motion bez przejścia)
+        requestAnimationFrame(() => bubble.classList.add('z-on'));
+
+        const schowaj = () => {
+            bubble.classList.remove('z-on');
+            setTimeout(() => bubble.remove(), 400);
+        };
 
         if (clickable) {
             bubble.addEventListener('click', () => {
@@ -277,9 +191,7 @@ export const ChatUI = {
                     window.PremiumUI.showPremiumPaywall();
                     return;
                 }
-                bubble.style.opacity = '0';
-                bubble.style.transform = 'translateY(10px) scale(0.95)';
-                setTimeout(() => bubble.remove(), 400);
+                schowaj();
                 toggleBtn.click(); // Otwórz czat
                 ChatUI.appendMessage(message, 'edward'); // Dodaj do historii
             });
@@ -288,9 +200,7 @@ export const ChatUI = {
         // Automatyczne zniknięcie po 6 sekundach jeśli nie kliknięto
         setTimeout(() => {
             if (document.getElementById('edward-contextual-bubble')) {
-                bubble.style.opacity = '0';
-                bubble.style.transform = 'translateY(10px) scale(0.95)';
-                setTimeout(() => bubble.remove(), 400);
+                schowaj();
             }
         }, 6000);
     },
@@ -300,24 +210,15 @@ export const ChatUI = {
         if (!messagesDiv) return;
         const isUser = sender === 'user';
         
+        // Użytkownik: tekst i pseudonim przez esc(); Edward: odpowiedź przez marked i bezpiecznyHtml.
+        const autor = isUser ? (localStorage.getItem('userNick') || 'Ty') : 'Edward';
         const html = `
-            <div style="align-self: ${isUser ? 'flex-end' : 'flex-start'}; max-width: 85%;">
-                <div style="font-size: 0.8em; color: #888; margin-bottom: 2px; text-align: ${isUser ? 'right' : 'left'};">
-                    ${isUser ? (localStorage.getItem('userNick') || 'Ty') : 'Edward'}
-                </div>
-                <div style="
-                    background: ${isUser ? '#00BFFF' : '#333'}; 
-                    padding: 10px 15px; 
-                    border-radius: 15px; 
-                    ${isUser ? 'border-bottom-right-radius: 5px;' : 'border-bottom-left-radius: 5px;'}
-                    color: white; 
-                    font-size: 0.95em;
-                ">
-                    ${isUser ? text : marked.parse(text)}
-                </div>
+            <div class="z-chat-msg ${isUser ? 'z-chat-user' : 'z-chat-edward'}">
+                <div class="z-mut z-chat-autor">${esc(autor)}</div>
+                <div class="z-chat-dymek${isUser ? '' : ' z-card'}">${isUser ? esc(text) : bezpiecznyHtml(marked.parse(text))}</div>
             </div>
         `;
-        
+
         messagesDiv.insertAdjacentHTML('beforeend', html);
         messagesDiv.scrollTop = messagesDiv.scrollHeight;
     },
@@ -325,11 +226,9 @@ export const ChatUI = {
     showTyping: () => {
         const messagesDiv = document.getElementById('edward-chat-messages');
         const html = `
-            <div id="edward-typing" style="align-self: flex-start; max-width: 85%;">
-                <div style="font-size: 0.8em; color: #888; margin-bottom: 2px;">Edward</div>
-                <div style="background: #333; padding: 10px 15px; border-radius: 15px; border-bottom-left-radius: 5px; color: #aaa; font-size: 0.9em; font-style: italic;">
-                    Pisze...
-                </div>
+            <div id="edward-typing" class="z-chat-msg z-chat-edward">
+                <div class="z-mut z-chat-autor">Edward</div>
+                <div class="z-chat-dymek z-card z-chat-pisze"><span class="z-sr">Edward pisze</span><span class="z-chat-kropka" aria-hidden="true"></span><span class="z-chat-kropka" aria-hidden="true"></span><span class="z-chat-kropka" aria-hidden="true"></span></div>
             </div>
         `;
         messagesDiv.insertAdjacentHTML('beforeend', html);

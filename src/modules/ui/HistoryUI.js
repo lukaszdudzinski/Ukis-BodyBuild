@@ -1,5 +1,17 @@
+// wyglad: zar
 import { DatabaseManager } from '../db/DatabaseManager.js';
 import { ShareUtils } from '../../utils/ShareUtils.js';
+import { ikona } from '../wyglad/ikony.js';
+
+// Encje HTML dla tekstów z bazy i z obcego pliku (nazwy treningów i ćwiczeń) wstawianych przez innerHTML.
+const esc = (s) => String(s ?? '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+// Argument funkcji w atrybucie onclick="…": literał JS (JSON.stringify), a potem encje HTML (wzór z TrainingUI.js).
+const jsArg = (v) => esc(JSON.stringify(v ?? null));
 
 export const HistoryUI = {
     init: () => {
@@ -30,12 +42,10 @@ export const HistoryUI = {
     renderHistoryList: (records) => {
         const container = document.getElementById('history-grouped-list');
         if (!container) return;
-        
+
         if (records.length === 0) {
-            container.innerHTML = `
-                <!-- Import: przycisk „Importuj” w nagłówku Historii (index.html). -->
-                <p style="color: var(--ukis-text-muted); text-align: center; font-style: italic;">Brak zarejestrowanych treningów.</p>
-            `;
+            // Import: przycisk „Importuj” w nagłówku Historii (index.html).
+            container.innerHTML = '<p class="z-mut z-hist-pusto">Brak zarejestrowanych treningów.</p>';
             return;
         }
 
@@ -50,22 +60,20 @@ export const HistoryUI = {
             grouped[monthYear].push(rec);
         });
 
+        let templates = [];
+        try {
+            const tmp = localStorage.getItem('uki_workout_templates');
+            if (tmp) templates = JSON.parse(tmp);
+        } catch(e) {}
+        const templateNames = templates.map(t => (t.name || '').toLowerCase().trim());
+
+        const serie = (sets) => (!sets || sets.length === 0)
+            ? '<div class="z-hist-seria z-mut"><em>Brak serii</em></div>'
+            : sets.map((set, sIdx) => `<div class="z-hist-seria z-mut">Seria ${sIdx + 1}: ${esc(set.weight)} kg × ${esc(set.reps)} powt.</div>`).join('');
+
         let html = ''; // Import: przycisk „Importuj” w nagłówku Historii (index.html).
         for (const [monthYear, monthRecords] of Object.entries(grouped)) {
-            let templates = [];
-            try {
-                const tmp = localStorage.getItem('uki_workout_templates');
-                if (tmp) templates = JSON.parse(tmp);
-            } catch(e) {}
-            const templateNames = templates.map(t => (t.name || '').toLowerCase().trim());
-
-            html += `
-                <div style="margin-bottom: 30px; padding: 0 15px;">
-                    <h3 style="color: #fff; border-bottom: 1px solid rgba(255,152,0,0.3); padding-bottom: 8px; margin-bottom: 20px; text-transform: capitalize; font-size: 1.2em; font-weight: 600; display: flex; align-items: center; gap: 8px;">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#FF9800" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-                        ${monthYear}
-                    </h3>
-            `;
+            html += `<section class="z-hist-miesiac-grupa"><h3 class="z-hist-miesiac z-mut">${esc(monthYear)}</h3>`;
 
             monthRecords.forEach((rec, idx) => {
                 const totalSets = rec.exercises.reduce((sum, ex) => sum + (ex.sets ? ex.sets.length : 0), 0);
@@ -76,115 +84,85 @@ export const HistoryUI = {
 
                 const cardId = `history-card-${monthYear.replace(/\s/g, '-')}-${idx}`;
                 const isTemplate = rec.name && templateNames.includes(rec.name.toLowerCase().trim());
-                
                 const isNotebook = rec.source === 'zeszyt';
-                const iconSvg = isNotebook
-                    ? '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#00BFFF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 6h4"/><path d="M2 10h4"/><path d="M2 14h4"/><path d="M2 18h4"/><rect width="16" height="20" x="4" y="2" rx="2"/><path d="M16 2v20"/></svg>'
-                    : isTemplate 
-                    ? '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#FFD700" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>'
-                    : '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#00BFFF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6.5 6.5 11 11"/><path d="m21 21-1-1"/><path d="m3 3 1 1"/><path d="m18 22 4-4"/><path d="m2 6 4-4"/><path d="m3 10 7-7"/><path d="m14 21 7-7"/></svg>';
+                // Ikona rodzaju: Zeszyt, szablon, cardio, zajęcia, a domyślnie trening siłowy.
+                const rodzaj = isNotebook ? 'notebook'
+                    : isTemplate ? 'star'
+                    : rec.type === 'cardio' ? 'activity'
+                    : rec.type === 'classes' ? 'users'
+                    : 'dumbbell';
+                const czas = isNotebook ? `${rec.exercises.length} ćwiczeń` : HistoryUI.formatTime(rec.duration_seconds);
+                const idArg = jsArg(String(rec.id));
+                const kcal = (rec.smartwatch && rec.smartwatch.calories) ? rec.smartwatch.calories : '--';
+
+                const cwiczenia = rec.exercises.map((ex, i) => {
+                    if (ex.type === 'superset' && ex.exercises && ex.exercises.length > 0) {
+                        return `<div class="z-hist-cw z-hist-cw-blok">
+                            <div class="z-hist-blok">${i + 1}. Blok Łączony (Superseria)</div>
+                            ${ex.exercises.map((nestedEx, nIdx) => `
+                                <div class="z-hist-cw-nazwa">${i + 1}.${nIdx + 1}. ${esc(nestedEx.name || 'Nieznane ćwiczenie')}</div>
+                                <div class="z-hist-serie">${serie(nestedEx.sets)}</div>`).join('')}
+                        </div>`;
+                    }
+                    return `<div class="z-hist-cw">
+                        <div class="z-hist-cw-nazwa">${i + 1}. ${esc(ex.name || 'Nieznane ćwiczenie')}</div>
+                        <div class="z-hist-serie">${serie(ex.sets)}</div>
+                    </div>`;
+                }).join('');
 
                 html += `
-                    <div class="log-card" style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); padding: 20px; border-radius: 20px; backdrop-filter: blur(10px); margin-bottom: 15px; transition: transform 0.2s;">
-                        <div style="display: flex; justify-content: space-between; align-items: center; cursor: pointer; -webkit-tap-highlight-color: transparent;" onclick="document.getElementById('${cardId}').style.display = document.getElementById('${cardId}').style.display === 'none' ? 'block' : 'none'">
-                            <div style="display: flex; gap: 12px; align-items: center;">
-                                <div style="background: rgba(0,0,0,0.2); padding: 10px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05); display: flex;">
-                                    ${iconSvg}
-                                </div>
-                                <div>
-                                    <strong style="color: #fff; font-size: 1.1em; line-height: 1.2; display: block; margin-bottom: 4px;">${rec.name || rec.date}</strong>
-                                    <span style="color: #8E8E93; font-size: 0.85em; font-weight: 500;">${rec.exercises.length} ćwiczeń • ${totalVolume} kg</span>
-                                </div>
-                            </div>
-                            <span style="color: #8E8E93; display: flex;">
-                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+                    <div class="log-card z-card z-hist-karta">
+                        <button type="button" class="z-hist-gora" aria-expanded="false" aria-controls="${cardId}" onclick="window.HistoryUI.toggleCard(this)">
+                            <span class="z-hist-ico z-ic z-card">${ikona(rodzaj, 22)}</span>
+                            <span class="z-hist-tekst">
+                                <strong class="z-hist-nazwa">${esc(rec.name || rec.date)}</strong>
+                                <span class="z-hist-meta z-mut">${esc(rec.date)} · ${esc(czas)}</span>
                             </span>
-                        </div>
-                        
-                        <div id="${cardId}" style="display: none; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 20px; margin-top: 15px;">
-                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px;">
-                                <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.02); padding: 10px; border-radius: 12px; text-align: center;">
-                                    <strong style="display: block; color: #fff; font-size: 1.1em; margin-bottom: 2px;">${isNotebook ? '—' : HistoryUI.formatTime(rec.duration_seconds)}</strong>
-                                    <span style="color: #8E8E93; font-size: 0.75em; text-transform: uppercase;">Czas</span>
-                                </div>
-                                <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.02); padding: 10px; border-radius: 12px; text-align: center;">
-                                    <strong style="display: block; color: #fff; font-size: 1.1em; margin-bottom: 2px;">${totalSets}</strong>
-                                    <span style="color: #8E8E93; font-size: 0.75em; text-transform: uppercase;">Serie</span>
-                                </div>
-                                <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.02); padding: 10px; border-radius: 12px; text-align: center;">
-                                    <strong style="display: block; color: #fff; font-size: 1.1em; margin-bottom: 2px;">${totalVolume} kg</strong>
-                                    <span style="color: #8E8E93; font-size: 0.75em; text-transform: uppercase;">Objętość</span>
-                                </div>
-                                <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.02); padding: 10px; border-radius: 12px; text-align: center;">
-                                    <strong style="display: block; color: #fff; font-size: 1.1em; margin-bottom: 2px;">${(rec.smartwatch && rec.smartwatch.calories) ? rec.smartwatch.calories : '--'} kcal</strong>
-                                    <span style="color: #8E8E93; font-size: 0.75em; text-transform: uppercase;">Spalone</span>
-                                </div>
+                            <span class="z-hist-chevron z-hist-chevron-dol">${ikona('chevron-down', 20)}</span>
+                            <span class="z-hist-chevron z-hist-chevron-gora">${ikona('chevron-up', 20)}</span>
+                        </button>
+
+                        <div id="${cardId}" class="z-hist-szczegoly" hidden>
+                            <div class="z-hist-staty">
+                                <div class="z-card z-stat"><strong>${isNotebook ? '—' : HistoryUI.formatTime(rec.duration_seconds)}</strong><span class="z-mut">Czas</span></div>
+                                <div class="z-card z-stat"><strong>${totalSets}</strong><span class="z-mut">Serie</span></div>
+                                <div class="z-card z-stat"><strong>${totalVolume} kg</strong><span class="z-mut">Objętość</span></div>
+                                <div class="z-card z-stat"><strong>${esc(kcal)}</strong><span class="z-mut">kcal</span></div>
                             </div>
-                            
-                            <h4 style="color: #FF9800; margin: 0 0 15px 0; font-size: 1em; font-weight: 600;">Szczegóły ćwiczeń</h4>
-                            <div style="display: flex; flex-direction: column; gap: 12px;">
-                                ${rec.exercises.map((ex, i) => {
-                                    if (ex.type === 'superset' && ex.exercises && ex.exercises.length > 0) {
-                                        let html = `
-                                            <div style="background: rgba(233, 30, 99, 0.05); border: 1px solid rgba(233, 30, 99, 0.2); border-radius: 12px; padding: 15px;">
-                                                <div style="color: #E91E63; font-weight: 700; font-size: 0.9em; margin-bottom: 12px; text-transform: uppercase; letter-spacing: 0.5px;">${i+1}. Blok Łączony (Superseria)</div>
-                                        `;
-                                        ex.exercises.forEach((nestedEx, nIdx) => {
-                                            html += `
-                                                <div style="margin-bottom: 8px; color: #fff; font-weight: 600; font-size: 0.95em;">${i+1}.${nIdx+1}. ${nestedEx.name || 'Nieznane ćwiczenie'}</div>
-                                                <div style="padding-left: 12px; border-left: 2px solid rgba(233, 30, 99, 0.5); margin-bottom: 15px; font-size: 0.9em; color: #ccc;">
-                                                    ${(!nestedEx.sets || nestedEx.sets.length === 0) ? '<em style="color: #777;">Brak serii</em>' : ''}
-                                                    ${(nestedEx.sets || []).map((set, sIdx) => `
-                                                        <div style="margin-bottom: 3px;">Seria ${sIdx + 1}: <strong style="color: #fff;">${set.weight} kg</strong> × ${set.reps} powt.</div>
-                                                    `).join('')}
-                                                </div>
-                                            `;
-                                        });
-                                        html += `</div>`;
-                                        return html;
-                                    } else {
-                                        return `
-                                            <div style="background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.05); border-radius: 12px; padding: 15px;">
-                                                <div style="color: #fff; font-weight: 600; font-size: 0.95em; margin-bottom: 10px;">${i+1}. ${ex.name || 'Nieznane ćwiczenie'}</div>
-                                                <div style="padding-left: 12px; border-left: 2px solid rgba(0, 191, 255, 0.5); font-size: 0.9em; color: #ccc;">
-                                                    ${(!ex.sets || ex.sets.length === 0) ? '<em style="color: #777;">Brak serii</em>' : ''}
-                                                    ${(ex.sets || []).map((set, sIdx) => `
-                                                        <div style="margin-bottom: 3px;">Seria ${sIdx + 1}: <strong style="color: #fff;">${set.weight} kg</strong> × ${set.reps} powt.</div>
-                                                    `).join('')}
-                                                </div>
-                                            </div>
-                                        `;
-                                    }
-                                }).join('')}
-                            </div>
-                            
-                            <!-- Action Buttons -->
-                            <div style="display: flex; flex-direction: column; gap: 10px; margin-top: 25px;">
-                                ${isNotebook ? `<button data-testid="open-in-notebook" onclick="window.NotebookUI.openDay('${rec.date}')" style="display: flex; align-items: center; justify-content: center; gap: 8px; background: rgba(0, 191, 255, 0.15); border: 1px solid rgba(0, 191, 255, 0.4); color: #00BFFF; padding: 14px; border-radius: 12px; font-size: 0.9em; font-weight: 600; cursor: pointer;">Otwórz w Zeszycie</button>` : ''}
-                                <button onclick="window.HistoryUI.shareTraining('${rec.id}')" style="display: flex; align-items: center; justify-content: center; gap: 8px; background: rgba(59, 89, 152, 0.15); border: 1px solid rgba(59, 89, 152, 0.4); color: #fff; padding: 14px; border-radius: 12px; font-size: 0.9em; font-weight: 600; cursor: pointer; transition: background 0.2s;">
-                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
-                                    Udostępnij (Obraz)
-                                </button>
-                                <div style="display: flex; gap: 10px;">
-                                    <button onclick="window.HistoryUI.exportTraining('${rec.id}')" style="flex: 1; display: flex; align-items: center; justify-content: center; gap: 8px; background: rgba(255,152,0,0.15); border: 1px solid rgba(255,152,0,0.4); color: #FF9800; padding: 12px; border-radius: 12px; font-size: 0.85em; font-weight: 600; cursor: pointer; transition: background 0.2s;">
-                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-                                        Eksportuj
-                                    </button>
-                                    <button onclick="window.HistoryUI.saveAsTemplateFromHistory('${rec.id}')" style="flex: 1; display: flex; align-items: center; justify-content: center; gap: 8px; background: rgba(46,204,113,0.15); border: 1px solid rgba(46,204,113,0.4); color: #2ECC71; padding: 12px; border-radius: 12px; font-size: 0.85em; font-weight: 600; cursor: pointer; transition: background 0.2s;">
-                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
-                                        Szablon
-                                    </button>
-                                </div>
+
+                            <div class="z-hist-lista">${cwiczenia}</div>
+
+                            <div class="z-hist-akcje">
+                                ${isNotebook ? `<button type="button" class="z-ghost" data-testid="open-in-notebook" onclick="window.NotebookUI.openDay(${jsArg(String(rec.date))})">Otwórz w Zeszycie</button>` : ''}
+                                <button type="button" class="z-ghost" onclick="window.HistoryUI.shareTraining(${idArg})">${ikona('share', 18)}Udostępnij</button>
+                                <button type="button" class="z-ghost" onclick="window.HistoryUI.exportTraining(${idArg})">${ikona('download', 18)}Eksportuj</button>
+                                <button type="button" class="z-ghost" onclick="window.HistoryUI.saveAsTemplateFromHistory(${idArg})">${ikona('copy', 18)}Jako szablon</button>
                             </div>
                         </div>
                     </div>
                 `;
             });
-            
-            html += `</div>`;
+
+            html += `</section>`;
         }
-        
+
         container.innerHTML = html;
+    },
+
+    // Zwijanie i rozwijanie wiersza: aria-expanded na przycisku, karta z akcentem (z-alert), ikona w kole akcentu.
+    toggleCard: (btn) => {
+        const body = document.getElementById(btn.getAttribute('aria-controls'));
+        if (!body) return;
+        const otwarty = btn.getAttribute('aria-expanded') !== 'true';
+        btn.setAttribute('aria-expanded', String(otwarty));
+        body.hidden = !otwarty;
+        const karta = btn.closest('.z-card');
+        if (karta) karta.classList.toggle('z-alert', otwarty);
+        const ico = btn.querySelector('.z-hist-ico');
+        if (ico) {
+            ico.classList.toggle('z-ic-acc', otwarty);
+            ico.classList.toggle('z-card', !otwarty);
+        }
     },
 
     saveAsTemplateFromHistory: (trainingId) => {

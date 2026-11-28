@@ -1,1 +1,305 @@
 /* wyglad: zar */
+/* ============================================================
+   ANALIZA — zakładki i zakładka „Siła” (spec 8.3, plansza AnalizaSila). Znaczniki: src/modules/ui/AnalyticsUI.js.
+   Kolory serii wykresów z tokenów --ukis-chart-*, akcent z --ukis-color-accent, więc motyw zmienia je sam.
+   Zakładki „Sylwetka” i „Regeneracja” dostają nowy wygląd w następnym zadaniu etapu C.
+   ============================================================ */
+
+/* Dolny odstęp: przycisk Edwarda nie zasłania ostatniej karty po przewinięciu do końca. */
+#analytics-content {
+    padding-bottom: 64px;
+}
+
+/* Karty z tekstem w kolorze akcentu (Tonaż żelastwa, 1RM, wartości wykresu) mają gęstsze tło: na jasnej tapecie
+   przy najmniejszym przyciemnieniu akcent na zwykłym szkle miał 4,25 : 1 (wymagane 4,5 : 1). */
+#analytics-content .z-card {
+    background-color: var(--ukis-glass-bg-solid);
+}
+
+#analytics-content .an-tabs {
+    margin-bottom: 16px;
+}
+
+#analytics-content .analytics-tab-content[hidden] {
+    display: none;
+}
+
+#analytics-content .an-pusto {
+    margin: 0;
+    text-align: center;
+}
+
+#analytics-content .an-blad {
+    color: var(--ukis-color-danger);
+}
+
+/* ---------- Statystyki 2 × 2 ---------- */
+#analytics-content .an-staty {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 12px;
+}
+
+#analytics-content .an-stat {
+    position: relative;
+    text-align: center;
+}
+
+#analytics-content .an-stat .z-big {
+    font-size: 24px;
+}
+
+#analytics-content .an-jedn {
+    font-family: var(--ukis-font);
+    font-style: normal;
+    font-weight: 500;
+    font-size: 13px;
+    color: var(--ukis-text-secondary);
+}
+
+/* Ikona „info” przy Tonażu ciała: mała ikona, pole dotyku 44 × 44 px w rogu karty. */
+#analytics-content .an-info {
+    position: absolute;
+    top: 0;
+    right: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: var(--ukis-touch);
+    height: var(--ukis-touch);
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: var(--ukis-text-secondary);
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+}
+
+#analytics-content .an-info:focus-visible,
+#analytics-content .z-chip:focus-visible,
+#analytics-content .z-tab:focus-visible {
+    outline: 2px solid var(--ukis-color-accent);
+    outline-offset: 2px;
+}
+
+#analytics-content .an-miesiac {
+    margin-bottom: 20px;
+}
+
+#analytics-content .an-miesiac-tekst {
+    margin: 0 0 8px;
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+#analytics-content .an-motyw {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 0;
+}
+
+/* ---------- Śródtytuły sekcji ---------- */
+#analytics-content .an-h {
+    margin: 20px 0 10px;
+    font-size: 18px;
+}
+
+#analytics-content .an-sekcja-gora {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin: 20px 0 10px;
+}
+
+#analytics-content .an-sekcja-gora .an-h {
+    margin: 0;
+}
+
+/* ---------- Ostatnie sesje: słupki, legenda, wiersze ---------- */
+#analytics-content .an-slupki {
+    height: 96px;
+}
+
+#analytics-content .an-legenda {
+    margin-top: 12px;
+}
+
+#analytics-content .an-lista {
+    margin-top: 10px;
+}
+
+#analytics-content .an-sesja,
+#analytics-content .an-rekord {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--ukis-divider);
+}
+
+#analytics-content .an-sesja:last-child,
+#analytics-content .an-rekord:last-child {
+    border-bottom: 0;
+}
+
+#analytics-content .an-sesja[data-rodzaj="silowe"] { --an-seria: var(--ukis-chart-1); }
+#analytics-content .an-sesja[data-rodzaj="cardio"] { --an-seria: var(--ukis-chart-2); }
+#analytics-content .an-sesja[data-rodzaj="zajecia"] { --an-seria: var(--ukis-chart-3); }
+
+#analytics-content .an-ikona {
+    flex: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border: 1px solid var(--an-seria);
+    border-radius: var(--ukis-radius-sm);
+    color: var(--an-seria);
+}
+
+#analytics-content .an-sesja-tekst {
+    flex: 1 1 auto;
+    min-width: 0;
+}
+
+#analytics-content .an-sesja-gora,
+#analytics-content .an-sesja-dol {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 8px;
+}
+
+#analytics-content .an-sesja-nazwa {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+#analytics-content .an-rodzaj {
+    text-transform: uppercase;
+}
+
+#analytics-content .an-wartosc {
+    font-size: 14px;
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+/* ---------- Rekordy ---------- */
+#analytics-content .an-rek-opis {
+    flex: 1 1 auto;
+    min-width: 0;
+}
+
+#analytics-content .an-rek-nazwa {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+#analytics-content .an-rm {
+    flex: none;
+    text-align: right;
+}
+
+#analytics-content .an-rm-val {
+    font-family: var(--ukis-font-display);
+    font-style: italic;
+    font-weight: 700;
+    font-size: 18px;
+    font-variant-numeric: tabular-nums;
+    color: var(--ukis-color-accent);
+}
+
+#analytics-content .an-udostepnij {
+    width: 100%;
+    margin-top: 12px;
+}
+
+/* ---------- Śledzenie progresu ---------- */
+#analytics-content .an-progres {
+    margin-top: 20px;
+}
+
+#analytics-content .an-progres .z-lab {
+    margin-bottom: 8px;
+}
+
+#analytics-content .an-wykres {
+    margin-top: 14px;
+}
+
+#analytics-content .an-linia {
+    display: block;
+    width: 100%;
+    height: auto;
+}
+
+#analytics-content .an-os {
+    stroke: rgba(255, 255, 255, .18);
+    stroke-width: 1;
+}
+
+#analytics-content .an-punkt {
+    fill: var(--ukis-color-accent);
+}
+
+#analytics-content .an-wart {
+    fill: var(--ukis-color-accent);
+    color: var(--ukis-color-accent);
+    font-size: 11px;
+    font-weight: 600;
+}
+
+/* ---------- Okno objaśnienia (z-dialog) ---------- */
+.an-okno .an-okno-tresc {
+    margin-top: 10px;
+    font-size: 14px;
+    line-height: 1.6;
+    color: var(--ukis-text-secondary);
+}
+
+.an-okno .an-okno-tresc p {
+    margin: 0 0 12px;
+}
+
+.an-okno .an-okno-nota {
+    padding: 10px 12px;
+    border-left: 3px solid var(--ukis-color-primary);
+    border-radius: 4px;
+    background: var(--ukis-primary-tint);
+}
+
+/* Punkty wykresu postępu: duże pole trafienia (niewidoczne) i odczyt wybranego punktu pod wykresem. */
+#analytics-content .an-pkt {
+    cursor: pointer;
+    outline: none;
+}
+
+#analytics-content .an-trafienie {
+    fill: transparent;
+}
+
+#analytics-content .an-pkt:focus-visible .an-punkt {
+    stroke: var(--ukis-text);
+    stroke-width: 2;
+}
+
+#analytics-content .an-odczyt {
+    margin: 8px 0 0;
+    min-height: 20px;
+    text-align: center;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--ukis-text);
+}

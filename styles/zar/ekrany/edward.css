@@ -1,1 +1,238 @@
 /* wyglad: zar */
+/* Edward (spec 8.3): czat na cały ekran, dymek kontekstowy nad przyciskiem. Przycisk otwarcia: .z-fab w components.css. */
+
+/* Okno: cały ekran. Tło widać z body (poświata albo tapeta), bo ChatUI dodaje body.z-edward-otwarty
+   i aplikacja pod spodem jest wtedy schowana (jak przy Katalogu). Reguła nie działa, gdy inne style
+   chowają samo okno (Strefa trenera, brak AI, Katalog), żeby aplikacja nigdy nie została pusta. */
+body.z-edward-otwarty:not(.tz-on):not(.tz-bez-ai):not(.z-katalog-otwarty) .app-wrapper {
+    visibility: hidden;
+}
+
+#edward-chat-window {
+    position: fixed;
+    inset: 0;
+    z-index: 1000;
+    display: none;
+    flex-direction: column;
+    box-sizing: border-box;
+    color: var(--ukis-text);
+    font-family: var(--ukis-font);
+}
+
+/* Pasek aktualizacji (pwa-updater.js) stoi na dole: okno kończy się nad nim, zamiast się przesuwać w górę. */
+html.ukis-pasek-aktualizacji body #edward-chat-window {
+    translate: none !important;
+    max-height: none !important;
+    bottom: var(--ukis-banner-space, 0px);
+}
+
+/* ---------- Nagłówek ---------- */
+.z-chat-head {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: calc(12px + env(safe-area-inset-top, 0px)) 16px 12px;
+}
+
+.z-chat-ikona {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 auto;
+    width: 46px;
+    height: 46px;
+    border-radius: 50%;
+    background: var(--ukis-color-primary);
+    color: var(--ukis-on-primary);
+    box-shadow: 0 6px 18px var(--ukis-primary-soft);
+}
+
+.z-chat-head .z-head-txt {
+    flex: 1 1 auto;
+    min-width: 0;
+}
+
+.z-chat-head .z-chat-tytul {
+    font-size: 20px;
+}
+
+.z-chat-head .z-sub {
+    margin: 2px 0 0;
+    font-size: 12px;
+}
+
+/* ---------- Lista wiadomości ---------- */
+.z-chat-lista {
+    flex: 1 1 auto;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    padding: 8px 16px 16px;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+}
+
+.z-chat-msg {
+    max-width: 82%;
+}
+
+.z-chat-user {
+    align-self: flex-end;
+}
+
+.z-chat-edward {
+    align-self: flex-start;
+}
+
+.z-chat-user .z-chat-autor {
+    text-align: right;
+}
+
+.z-chat-autor {
+    margin-bottom: 3px;
+}
+
+.z-chat-dymek {
+    padding: 10px 14px;
+    font-size: 14px;
+    line-height: 1.45;
+    overflow-wrap: anywhere;
+}
+
+.z-chat-user .z-chat-dymek {
+    border-radius: 18px 18px 6px 18px;
+    background: var(--ukis-color-primary);
+    color: var(--ukis-on-primary);
+    box-shadow: 0 6px 18px var(--ukis-primary-soft);
+}
+
+.z-chat-dymek.z-card {
+    padding: 10px 14px;
+    border-radius: 18px 18px 18px 6px;
+}
+
+/* Odpowiedź Edwarda to Markdown (marked): akapity, listy, kod. */
+.z-chat-dymek p {
+    margin: 0 0 8px;
+}
+
+.z-chat-dymek > :last-child {
+    margin-bottom: 0;
+}
+
+.z-chat-dymek ul,
+.z-chat-dymek ol {
+    margin: 0 0 8px;
+    padding-left: 20px;
+}
+
+.z-chat-dymek a {
+    color: var(--ukis-color-accent);
+}
+
+.z-chat-dymek code {
+    padding: 1px 5px;
+    border-radius: 6px;
+    background: rgba(255, 255, 255, .1);
+    font-size: 13px;
+}
+
+/* ---------- „Edward pisze” ---------- */
+.z-chat-pisze {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    min-height: 20px;
+}
+
+.z-chat-kropka {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--ukis-text-muted);
+    animation: z-chat-kropka 1.2s ease-in-out infinite;
+}
+
+.z-chat-kropka:nth-of-type(2) { animation-delay: .2s; }
+.z-chat-kropka:nth-of-type(3) { animation-delay: .4s; }
+
+@keyframes z-chat-kropka {
+    0%, 60%, 100% { opacity: .35; transform: translateY(0); }
+    30% { opacity: 1; transform: translateY(-3px); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .z-chat-kropka {
+        animation: none;
+        opacity: .7;
+    }
+}
+
+/* ---------- Pole wpisywania ---------- */
+.z-chat-pole {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 16px calc(14px + env(safe-area-inset-bottom, 0px));
+}
+
+.z-chat-wejscie {
+    flex: 1 1 auto;
+    min-width: 0;
+    min-height: 50px;
+    padding: 0 20px;
+    border-radius: var(--ukis-radius-full);
+}
+
+.z-chat-wyslij {
+    width: 50px;
+    height: 50px;
+    min-height: 50px;
+}
+
+/* ---------- Dymek kontekstowy (ChatUI.showContextualBubble) ---------- */
+.z-edward-dymek {
+    position: fixed;
+    z-index: 999;
+    max-width: 280px;
+    padding: 12px 18px;
+    border-color: var(--ukis-accent-line);
+    border-radius: 20px 20px 6px 20px;
+    font-size: 14px;
+    line-height: 1.4;
+    opacity: 0;
+    transform: translateY(20px) scale(.95);
+    transition: opacity .4s ease, transform .4s cubic-bezier(.175, .885, .32, 1.275);
+    cursor: default;
+}
+
+.z-edward-dymek.z-klik {
+    cursor: pointer;
+}
+
+.z-edward-dymek.z-on {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+}
+
+/* Ogon: obrócony kwadrat w kolorze karty, nad przyciskiem. */
+.z-edward-dymek::after {
+    content: "";
+    position: absolute;
+    right: 20px;
+    bottom: -7px;
+    width: 12px;
+    height: 12px;
+    border-right: 1px solid var(--ukis-accent-line);
+    border-bottom: 1px solid var(--ukis-accent-line);
+    background: var(--ukis-glass-bg-solid);
+    transform: rotate(45deg);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .z-edward-dymek {
+        transition: none;
+        transform: none;
+    }
+}

@@ -1,3 +1,6 @@
+// wyglad: zar
+import { avatarDataUri, resolveGender, loadAvatarChoice } from './defaultAvatar.js';
+
 export const OnboardingUI = {
     // Zdarzenie na document po zamknięciu powitania; „Co nowego?” czeka na nie (AppUI.js).
     CLOSED_EVENT: 'onboardingClosed',
@@ -25,29 +28,41 @@ export const OnboardingUI = {
         const savedNick = localStorage.getItem('userNick') || '';
         const modal = document.createElement('div');
         modal.id = 'onboarding-modal';
-        // z-index nad „Co nowego?” (9999) i powitaniem nowego wyglądu (999999): pole imienia nie może być zasłonięte.
-        modal.style.cssText = 'position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.9); z-index: 1000000; display: flex; justify-content: center; align-items: center; padding: 20px;';
-        
+        modal.className = 'z-welcome';
+        modal.setAttribute('role', 'dialog');
+        modal.setAttribute('aria-modal', 'true');
+        modal.setAttribute('aria-labelledby', 'onboarding-title');
+
         modal.innerHTML = `
-            <div style="background: rgba(255, 255, 255, 0.05); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); padding: 35px; border-radius: 25px; max-width: 450px; width: 100%; border: 1px solid rgba(255, 255, 255, 0.2); text-align: center; box-shadow: 0 15px 35px rgba(0,0,0,0.5);">
-                <div style="font-size: 3.5em; margin-bottom: 5px; text-shadow: 0 0 15px rgba(255,255,255,0.3);">👋</div>
-                <h2 style="color: #fff; margin-top: 0; margin-bottom: 15px; font-weight: 600; letter-spacing: 1px;">Witaj w Uki's BodyBuild! 🚀</h2>
-                <p style="color: #eee; line-height: 1.6; margin-bottom: 25px; font-size: 1.05em; text-shadow: 0 1px 2px rgba(0,0,0,0.8);">
-                    Cześć! Jestem Edward, Twój wirtualny asystent AI 🤖.<br>Jak mam się do Ciebie zwracać?
-                </p>
-                
-                <input type="text" id="onboarding-nick-input" placeholder="Wpisz swój nick lub imię..." autocomplete="given-name" enterkeyhint="done" autocapitalize="words" style="width: 100%; padding: 16px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.3); background: rgba(0,0,0,0.3); color: #fff; font-size: 1.1em; text-align: center; box-sizing: border-box; margin-bottom: 25px; outline: none; box-shadow: inset 0 2px 5px rgba(0,0,0,0.5);">
-                
-                <button id="onboarding-save-btn" class="action-button pulse" style="width: 100%; background: linear-gradient(135deg, #00BFFF, #2196F3); border: none; padding: 15px; border-radius: 30px; font-size: 1.1em; font-weight: bold; cursor: pointer; color: #fff; box-shadow: 0 4px 15px rgba(0, 191, 255, 0.4); transition: transform 0.2s;">
-                    Zaczynamy! ➔
-                </button>
+            <div class="z-welcome-inner">
+                <img class="z-welcome-logo" src="img/logo.png" alt="" width="112" height="112">
+                <h2 id="onboarding-title" class="z-welcome-title">Witaj w Uki's BodyBuild</h2>
+                <p class="z-sub z-welcome-lead">Cześć! Jestem Edward, Twój wirtualny asystent. Pomogę Ci prowadzić treningi, dietę i pomiary.</p>
+                <div class="z-card z-welcome-card">
+                    <label class="z-welcome-q" for="onboarding-nick-input">Jak mam się do Ciebie zwracać?</label>
+                    <input type="text" id="onboarding-nick-input" class="z-in z-welcome-in" placeholder="Wpisz swoje imię lub nick" autocomplete="given-name" enterkeyhint="done" autocapitalize="words">
+                    <div class="z-welcome-av">
+                        <img id="onboarding-avatar-preview" class="z-welcome-av-img" alt="" width="48" height="48">
+                        <span class="z-sub">Awatar dobierze się do imienia. Zmienisz go w Profilu.</span>
+                    </div>
+                    <button type="button" id="onboarding-save-btn" class="z-btn z-welcome-btn">Zaczynamy</button>
+                </div>
+                <p class="z-mut z-welcome-note">Twoje dane zostają tylko w tym telefonie.</p>
             </div>
         `;
-        
+
         document.body.appendChild(modal);
 
         const nickInput = document.getElementById('onboarding-nick-input');
         nickInput.value = savedNick;
+
+        // Podgląd awatara: ta sama logika co w Menu (sylwetka dobrana do imienia, ręczny wybór z Profilu ma pierwszeństwo).
+        const avatarPreview = document.getElementById('onboarding-avatar-preview');
+        const updateAvatar = () => {
+            avatarPreview.src = avatarDataUri(resolveGender(nickInput.value, loadAvatarChoice()));
+        };
+        updateAvatar();
+        nickInput.addEventListener('input', updateAvatar);
 
         let closed = false;
         const closeModal = () => {
@@ -63,7 +78,7 @@ export const OnboardingUI = {
             localStorage.setItem('tutorial_global_v21', 'true');
             localStorage.setItem('tutorial_global_v22', 'true');
             
-            modal.style.opacity = '0';
+            modal.classList.add('z-welcome-out');
             setTimeout(() => {
                 modal.remove();
                 document.dispatchEvent(new Event(OnboardingUI.CLOSED_EVENT));
@@ -88,13 +103,13 @@ export const OnboardingUI = {
             if (tabId === 'diet-dashboard' && !localStorage.getItem('tutorial_context_diet')) {
                 localStorage.setItem('tutorial_context_diet', 'true');
                 if (window.ChatUI) {
-                    window.ChatUI.showContextualBubble("Hej! 👋 Tutaj Dieta! Pamiętaj, że możesz dodać posiłek analizując zdjęcie aparatem!", true);
+                    window.ChatUI.showContextualBubble("Hej! Tutaj Dieta! Pamiętaj, że możesz dodać posiłek analizując zdjęcie aparatem!", true);
                 }
             } else if (tabId === 'nav-training' || tabId === 'training-dashboard') {
                 if (!localStorage.getItem('tutorial_context_training')) {
                     localStorage.setItem('tutorial_context_training', 'true');
                     if (window.ChatUI) {
-                        window.ChatUI.showContextualBubble("Witaj w Treningu! 💪 Tutaj zaplanujesz swoje sesje. Gotowy na wycisk?", true);
+                        window.ChatUI.showContextualBubble("Witaj w Treningu! Tutaj zaplanujesz swoje sesje. Gotowy na wycisk?", true);
                     }
                 }
             }

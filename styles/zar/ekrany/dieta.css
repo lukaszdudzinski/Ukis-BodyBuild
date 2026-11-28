@@ -1,1 +1,376 @@
 /* wyglad: zar */
+/* ============================================================
+   DIETA — ekran dnia (#diet-dashboard, spec 8.3, plansza Dieta). Znaczniki: index.html (nagłówek)
+   i src/modules/ui/DietUI.js (renderUI, loadTodayData, loadHistoryChart, renderImagePreviews).
+   Wykres kołowy, paski i mini-słupki: komponenty .z-chart-* (components.css).
+   Kolory wyłącznie przez var(--ukis-…) (tokens.css); nakładki tylko rgba(0,0,0,…) / rgba(255,255,255,…).
+   ============================================================ */
+
+#diet-dashboard {
+    color: var(--ukis-text);
+    font-family: var(--ukis-font);
+}
+
+/* Miejsce na pasek dolny daje .tab-content-wrapper (styles/zar/base.css); dodatkowe 56 px to miejsce na przycisk
+   Edwarda (koło 52 px nad paskiem), bo wykres 30 dni na końcu ekranu jest klikalny (spec 8.1). */
+#diet-dashboard .diet {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    max-width: 560px;
+    margin: 0 auto;
+    padding-bottom: 56px;
+}
+
+/* Stare .tab-content h3 (layout.css) dodaje cień i marginesy; tu tytuły leżą na karcie albo wprost na tle. */
+#diet-dashboard .diet h3 {
+    margin: 0;
+    text-shadow: none;
+    font-family: var(--ukis-font);
+    font-style: normal;
+    line-height: 1.3;
+}
+
+/* ---------- Podsumowanie: koło kcal + paski makro ---------- */
+#diet-dashboard .diet-summary {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+#diet-dashboard .z-chart-donut {
+    flex: none;
+}
+
+#diet-dashboard .diet-kcal-zjedzone {
+    font-size: 22px;
+}
+
+/* Przekroczony cel: koło pełne, liczba akcentem. */
+#diet-dashboard .diet-ponad-cel .diet-kcal-zjedzone {
+    color: var(--ukis-color-accent);
+}
+
+#diet-dashboard .diet-kcal-cel {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    font-size: 11px;
+    line-height: 1.3;
+}
+
+#diet-dashboard .diet-kcal-zrodlo {
+    display: inline-flex;
+}
+
+#diet-dashboard .diet-kcal-zrodlo:empty {
+    display: none;
+}
+
+#diet-dashboard .diet-makra {
+    flex: 1 1 auto;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    font-size: 12px;
+}
+
+#diet-dashboard .diet-makro-opis {
+    display: flex;
+    justify-content: space-between;
+    gap: 8px;
+}
+
+#diet-dashboard .diet-makro-wartosc {
+    white-space: nowrap;
+}
+
+#diet-dashboard .diet-kcal-hint {
+    margin: 12px 0 0;
+    line-height: 1.4;
+}
+
+/* ---------- Co dzisiaj jadłeś? ---------- */
+#diet-dashboard .diet-dodaj {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 14px;
+}
+
+#diet-dashboard .diet-dodaj-tytul {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--ukis-text);
+}
+
+#diet-dashboard .diet-dodaj textarea {
+    resize: none;
+    line-height: 1.35;
+}
+
+#diet-dashboard .diet-dodaj-akcje {
+    display: flex;
+    gap: 8px;
+}
+
+#diet-dashboard .diet-dodaj-akcje .z-ghost {
+    flex: 1 1 0;
+}
+
+#diet-dashboard .diet-dodaj-akcje .z-btn {
+    flex: 1.4 1 0;
+}
+
+#diet-dashboard .diet-dodaj-akcje svg {
+    flex: none;
+}
+
+#diet-dashboard [hidden] {
+    display: none !important;
+}
+
+/* Miniatury załączonych zdjęć (do 3) z przyciskiem „Usuń zdjęcie” w rogu. */
+#diet-dashboard .diet-zdjecia {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 14px;
+    padding: 10px 10px 0 0;
+}
+
+#diet-dashboard .diet-zdjecie {
+    position: relative;
+    width: 72px;
+    height: 72px;
+}
+
+#diet-dashboard .diet-zdjecie-img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: var(--ukis-radius-sm);
+    border: 1px solid var(--ukis-glass-border);
+    box-sizing: border-box;
+}
+
+#diet-dashboard .diet-zdjecie-usun {
+    position: absolute;
+    top: -14px;
+    right: -14px;
+}
+
+#diet-dashboard .diet-zdjecie-x {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: var(--ukis-color-primary);
+    color: var(--ukis-on-primary);
+}
+
+#diet-dashboard .diet-zdjecie-x svg {
+    width: 14px;
+    height: 14px;
+}
+
+/* Analiza w toku: kółko w kolorze motywu (ruch wyłączony przy prefers-reduced-motion). */
+#diet-dashboard .diet-loading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    min-height: var(--ukis-touch);
+}
+
+#diet-dashboard .diet-spinner {
+    width: 16px;
+    height: 16px;
+    border: 2px solid var(--ukis-track);
+    border-top-color: var(--ukis-color-primary);
+    border-radius: 50%;
+    animation: diet-spin 1s linear infinite;
+}
+
+@keyframes diet-spin {
+    to { transform: rotate(360deg); }
+}
+
+/* ---------- Dzisiejsze posiłki ---------- */
+#diet-dashboard .diet .diet-sec {
+    margin-top: 4px;
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--ukis-text);
+}
+
+#diet-dashboard .diet-lista {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+#diet-dashboard .diet-pusto {
+    margin: 0;
+    padding: 4px 0;
+}
+
+#diet-dashboard .diet-log-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 6px 12px 14px;
+}
+
+#diet-dashboard .diet-log-foto {
+    flex: none;
+    width: 44px;
+    height: 44px;
+    object-fit: cover;
+    border-radius: var(--ukis-radius-sm);
+}
+
+#diet-dashboard .diet-log-tekst {
+    flex: 1 1 auto;
+    min-width: 0;
+}
+
+#diet-dashboard .diet-log-nazwa {
+    font-size: 14px;
+    font-weight: 500;
+    line-height: 1.3;
+    overflow-wrap: anywhere;
+}
+
+#diet-dashboard .diet-log-kcal {
+    flex: none;
+    text-align: right;
+}
+
+#diet-dashboard .diet-log-kcal .z-big {
+    font-size: 18px;
+}
+
+#diet-dashboard .diet-log-kcal .z-mut {
+    font-size: 11px;
+}
+
+#diet-dashboard .diet-log-akcje {
+    flex: none;
+    display: flex;
+}
+
+#diet-dashboard .diet-log-akcje .z-ic {
+    color: var(--ukis-text-secondary);
+}
+
+#diet-dashboard .diet-log-akcje .z-ic svg {
+    width: 20px;
+    height: 20px;
+}
+
+/* ---------- Historia 30 dni ---------- */
+#diet-dashboard .diet-historia {
+    padding: 12px 14px;
+}
+
+#diet-dashboard .diet-historia-gora {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 8px;
+    font-size: 13px;
+}
+
+#diet-dashboard .diet .diet-historia-tytul {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--ukis-text);
+}
+
+/* Wykres: 30 przycisków-kolumn bez przerw (przerwę rysuje odstęp słupka w środku), żeby cała szerokość
+   i wysokość wykresu łapała dotyk; przy 390 px kolumna ma ok. 11 × 40 px. */
+#diet-dashboard .diet-historia .z-chart-mini {
+    position: relative;
+    margin-top: 8px;
+    gap: 0;
+}
+
+#diet-dashboard .diet-dzien {
+    flex: 1 1 0;
+    min-width: 0;
+    height: 100%;
+    display: flex;
+    align-items: flex-end;
+    padding: 0 1.5px;
+    border: 0;
+    background: transparent;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+}
+
+#diet-dashboard .diet-dzien:disabled {
+    cursor: default;
+}
+
+#diet-dashboard .diet-dzien:focus-visible {
+    outline: 2px solid var(--ukis-color-accent);
+    outline-offset: 2px;
+}
+
+#diet-dashboard .diet-dzien-slupek {
+    display: block;
+    width: 100%;
+    min-height: 2px;
+    border-radius: 2px 2px 0 0;
+    background: rgba(255,255,255,.28);
+}
+
+#diet-dashboard .diet-ponad .diet-dzien-slupek {
+    background: var(--ukis-color-danger);
+}
+
+/* Dziś akcentem także wtedy, gdy przekracza cel (linia celu pokazuje przekroczenie). */
+#diet-dashboard .diet-dzien.z-today .diet-dzien-slupek {
+    background: var(--ukis-color-primary);
+}
+
+/* Przerywana linia celu kcal (pozycja w style="bottom: …"). */
+#diet-dashboard .diet-historia-cel {
+    position: absolute;
+    left: 0;
+    right: 0;
+    height: 0;
+    border-top: 1px dashed rgba(255,255,255,.45);
+    pointer-events: none;
+}
+
+/* Skala dat: pierwszy, środkowy i ostatni dzień. */
+#diet-dashboard .diet-historia-daty {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 4px;
+    font-size: 11px;
+}
+
+#diet-dashboard .diet-historia-legenda {
+    margin-top: 6px;
+}
+
+#diet-dashboard .diet-klucz-ponad::before {
+    background: var(--ukis-color-danger);
+}
+
+#diet-dashboard .diet-klucz-dzis::before {
+    background: var(--ukis-color-primary);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    #diet-dashboard .diet-spinner {
+        animation: none;
+    }
+}

@@ -1,5 +1,14 @@
 [
   {
+    "version": "v2026.11.27.04",
+    "date": "2026-11-27",
+    "changes": [
+      "✨ Nowy wygląd kolejnych ekranów: Historia, Pomiary, Dieta, Analiza, Analizy AI, rozmowa z Edwardem, PRO, Serwis i ekran powitalny.",
+      "🍽️ Dieta pokazuje zjedzone gramy białka, węglowodanów i tłuszczów, a wykres 30 dni podaje kcal każdego dnia.",
+      "🔒 Bezpieczniejsze wyświetlanie odpowiedzi AI i nazw posiłków."
+    ]
+  },
+  {
     "version": "v2026.11.27.03",
     "date": "2026-11-27",
     "changes": [

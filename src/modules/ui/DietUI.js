@@ -1,8 +1,14 @@
 import { DatabaseManager } from '../db/DatabaseManager.js';
 import { DietAIEngine } from '../diet/DietAIEngine.js';
 import { MediaManager } from '../db/MediaManager.js';
-import { naglowek } from '../wyglad/naglowek.js';
+import { ikona } from '../wyglad/ikony.js';
 import { computeTdee, readBodyProfile, ageFromBirthYear, saveBirthYear, profileHint, BIRTH_YEAR_ERROR, NO_DATA_HINT, resolveKcalGoal, loadKcalGoal, saveKcalGoal, useComputedKcalGoal, parseKcalInput, isPlausibleKcal, reportKcalIncident, setKcalSourceIcon, KCAL_MIN, KCAL_MAX } from '../diet/kcalGoal.js';
+
+// Dane użytkownika w innerHTML zawsze przez esc() (także w atrybutach w cudzysłowie).
+const esc = (t) => String(t ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const liczba = (v) => Number(v) || 0;
+// Szerokość/wysokość w procentach z jednym miejscem po przecinku, najwyżej 100 %.
+const procent = (czesc, calosc) => `${calosc > 0 ? Math.min(100, Math.round((czesc / calosc) * 1000) / 10) : 0}%`;
 
 export const DietUI = {
     attachedImages: [],
@@ -22,100 +28,58 @@ export const DietUI = {
         DietUI.bindEvents();
     },
 
+    // Treść ekranu (spec 8.3, plansza Dieta) wpada do #diet-content; nagłówek z „Ustawieniami zapotrzebowania”
+    // (#diet-config-btn) stoi w index.html. Okno celu kcal (#diet-tdee-modal) bindEvents przenosi do <body>.
     renderUI: (container) => {
-        container.innerHTML = `
-            ${naglowek({ wariant: 'back', tytul: 'Dieta', podtytul: 'Dzisiaj', wroc: 'welcome-screen' })}
-
-            <!-- TDEE & Progress Rings -->
-            <div class="diet-summary-card" style="margin: 0 15px 20px 15px; background: rgba(255,255,255,0.05); border-radius: 24px; padding: 25px 20px; border: 1px solid rgba(255,255,255,0.1); backdrop-filter: blur(10px); text-align: center;">
-                <h3 style="margin: 0 0 20px 0; color: #FF9800; font-size: 0.95em; font-weight: 600; text-transform: uppercase; letter-spacing: 1px;">Twój cel: <span id="diet-tdee-display">---</span> kcal <span id="diet-kcal-source" style="display: inline-flex; vertical-align: -2px; margin-left: 4px;"></span></h3>
-                <p id="diet-kcal-hint" style="display: none; margin: -12px 0 18px 0; color: #8E8E93; font-size: 0.8em; line-height: 1.4;"></p>
-                <div style="position: relative; width: 160px; height: 160px; margin: 0 auto 25px auto;">
-                    <!-- SVG Circle Progress -->
-                    <svg width="160" height="160" viewBox="0 0 160 160">
-                        <circle cx="80" cy="80" r="70" fill="none" stroke="rgba(255,255,255,0.05)" stroke-width="12" />
-                        <circle id="diet-kcal-ring" cx="80" cy="80" r="70" fill="none" stroke="#FF9800" stroke-width="12" stroke-dasharray="439.8" stroke-dashoffset="439.8" stroke-linecap="round" style="transition: stroke-dashoffset 1s ease-out; transform: rotate(-90deg); transform-origin: 50% 50%;" />
-                    </svg>
-                    <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px;">
-                        <div style="font-size: 0.75em; color: #8E8E93; text-transform: uppercase; font-weight: 600; letter-spacing: 0.5px;">Zjedzono</div>
-                        <div id="diet-kcal-consumed" style="font-size: 2.2em; font-weight: 800; color: #fff; line-height: 1; letter-spacing: -1px;">0</div>
-                        <div style="font-size: 0.85em; color: #8E8E93; font-weight: 500;">kcal</div>
+        const tresc = container.querySelector('#diet-content') || container;
+        const makro = (klucz, nazwa) => `
+                    <div class="diet-makro">
+                        <div class="diet-makro-opis"><span class="diet-makro-nazwa">${nazwa}</span><span class="diet-makro-wartosc z-mut"><span id="diet-${klucz}-display">0</span> g</span></div>
+                    </div>`;
+        tresc.innerHTML = `
+            <div class="diet">
+            <!-- Podsumowanie: kcal zjedzone z celu i makro -->
+            <section class="z-card diet-summary-card" aria-label="Podsumowanie dnia">
+                <div class="diet-summary">
+                    <div class="z-chart z-chart-donut" id="diet-kcal-ring" role="img" aria-label="Zjedzono 0 z 0 kcal" style="--z-val: 0%">
+                        <div class="z-chart-donut-in" aria-hidden="true">
+                            <div class="z-big diet-kcal-zjedzone" id="diet-kcal-consumed">0</div>
+                            <div class="z-mut diet-kcal-cel">z <span id="diet-tdee-display">---</span> kcal <span id="diet-kcal-source" class="diet-kcal-zrodlo"></span></div>
+                        </div>
+                    </div>
+                    <div class="diet-makra">${makro('protein', 'Białko')}${makro('carbs', 'Węgle')}${makro('fat', 'Tłuszcze')}
                     </div>
                 </div>
-                
-                <!-- Makro -->
-                <div style="display: flex; justify-content: space-between; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 20px; gap: 10px;">
-                    <div style="flex: 1; border-radius: 12px; padding: 10px; border: 1px solid rgba(255,255,255,0.05);">
-                        <div style="color: #fff; font-size: 1.1em; font-weight: 700;" id="diet-protein-display">0g</div>
-                        <div style="font-size: 0.75em; color: #8E8E93; margin-top: 4px; text-transform: uppercase; letter-spacing: 0.5px;">Białko</div>
-                    </div>
-                    <div style="flex: 1; border-radius: 12px; padding: 10px; border: 1px solid rgba(255,255,255,0.05);">
-                        <div style="color: #fff; font-size: 1.1em; font-weight: 700;" id="diet-carbs-display">0g</div>
-                        <div style="font-size: 0.75em; color: #8E8E93; margin-top: 4px; text-transform: uppercase; letter-spacing: 0.5px;">Węgle</div>
-                    </div>
-                    <div style="flex: 1; border-radius: 12px; padding: 10px; border: 1px solid rgba(255,255,255,0.05);">
-                        <div style="color: #fff; font-size: 1.1em; font-weight: 700;" id="diet-fat-display">0g</div>
-                        <div style="font-size: 0.75em; color: #8E8E93; margin-top: 4px; text-transform: uppercase; letter-spacing: 0.5px;">Tłuszcze</div>
-                    </div>
+                <p id="diet-kcal-hint" class="z-mut diet-kcal-hint" hidden></p>
+            </section>
+
+            <!-- Co dzisiaj jadłeś? Opis, zdjęcia (do 3) i analiza AI -->
+            <section class="z-card diet-dodaj">
+                <label class="diet-dodaj-tytul" for="diet-context-input">Co dzisiaj jadłeś?</label>
+                <textarea id="diet-context-input" class="z-in" rows="2" placeholder="Napisz lub podyktuj…"></textarea>
+                <div id="diet-image-preview-container" class="diet-zdjecia" hidden></div>
+                <input type="file" id="diet-camera-input" accept="image/*" multiple hidden>
+                <div class="diet-dodaj-akcje">
+                    <button type="button" id="diet-attach-btn" class="z-ghost">${ikona('camera', 18)}Zdjęcie</button>
+                    <button type="button" id="diet-analyze-btn" class="z-btn">${ikona('sparkles', 18)}Analizuj z AI</button>
                 </div>
-            </div>
-
-            <!-- Kamera / Skaner / Tekst zintegrowane w 1 element -->
-            <div style="margin-bottom: 25px; padding: 0 15px;">
-                <div style="background: rgba(255,255,255,0.05); padding: 20px; border-radius: 24px; border: 1px solid rgba(255,255,255,0.1); backdrop-filter: blur(10px);">
-                    <label style="color: #fff; font-size: 0.95em; display: block; margin-bottom: 15px; font-weight: 600;">Dodaj posiłek</label>
-                    
-                    <div style="display: flex; gap: 12px; margin-bottom: 15px; align-items: stretch;">
-                        <textarea id="diet-context-input" placeholder="Napisz lub podyktuj..." style="flex: 1; padding: 15px; border-radius: 16px; border: 1px solid rgba(255,255,255,0.1); background: rgba(0,0,0,0.2); color: #fff; font-size: 0.95em; resize: none; box-sizing: border-box; min-height: 80px; font-family: inherit;" rows="3"></textarea>
-                        
-                        <label id="diet-attach-btn" style="cursor: pointer; color: #FF9800; background: rgba(255,152,0,0.1); border: 1px solid rgba(255,152,0,0.3); border-radius: 16px; padding: 10px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; transition: all 0.2s; min-width: 72px; flex-shrink: 0;">
-                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3"/></svg>
-                            <span style="font-size: 0.65em; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; white-space: nowrap;">Zdjęcie</span>
-                            <input type="file" id="diet-camera-input" accept="image/*" multiple style="display: none;">
-                        </label>
-                    </div>
-
-                    <div id="diet-image-preview-container" style="display: none; flex-wrap: wrap; gap: 10px; margin-bottom: 15px; text-align: left;">
-                        <!-- JS generated miniatures -->
-                    </div>
-
-                    <button id="diet-analyze-btn" class="action-button pulse" style="display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; background: #FF9800; border: none; padding: 15px; border-radius: 16px; font-size: 1em; font-weight: 600; cursor: pointer; color: #FFF; transition: opacity 0.2s;">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/></svg>
-                        Analizuj z AI
-                    </button>
-
-                    <div id="diet-loading" style="display: none; margin-top: 15px; color: #FF9800; font-weight: 500; font-size: 0.9em; text-align: center;">
-                        <span class="spinner" style="display: inline-block; width: 16px; height: 16px; border: 2px solid rgba(255,152,0,0.3); border-radius: 50%; border-top-color: #FF9800; animation: spin 1s ease-in-out infinite; vertical-align: middle; margin-right: 8px;"></span>
-                        <span id="diet-loading-text">Edward analizuje...</span>
-                    </div>
+                <div id="diet-loading" class="diet-loading z-sub" role="status" hidden>
+                    <span class="diet-spinner" aria-hidden="true"></span>
+                    <span id="diet-loading-text">Edward analizuje...</span>
                 </div>
-            </div>
-
-            <!-- Przycisk konfiguracji TDEE -->
-            <div style="padding: 0 15px; margin-bottom: 30px;">
-                <button id="diet-config-btn" style="display: flex; align-items: center; justify-content: center; gap: 8px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); backdrop-filter: blur(10px); color: #fff; padding: 15px; border-radius: 16px; font-size: 0.95em; font-weight: 500; cursor: pointer; width: 100%; transition: background 0.2s;">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1Z"/></svg>
-                    Ustawienia zapotrzebowania
-                </button>
-            </div>
+            </section>
 
             <!-- Dzisiejsze posiłki -->
-            <div style="padding: 0 15px;">
-                <h3 style="margin: 0 0 15px 0; font-size: 1.1em; font-weight: 600; color: #fff;">Dzisiejsze posiłki</h3>
-                <div id="diet-logs-list" style="display: flex; flex-direction: column; gap: 15px;">
-                    <!-- Tu wpada lista posiłków -->
-                </div>
-            </div>
+            <h3 class="diet-sec">Dzisiejsze posiłki</h3>
+            <div id="diet-logs-list" class="diet-lista"></div>
 
-            <!-- Wykres i Historia -->
-            <div style="padding: 0 15px; margin-top: 35px; margin-bottom: 20px;">
-                <h3 style="margin: 0 0 15px 0; font-size: 1.1em; font-weight: 600; color: #fff; display: flex; align-items: center; gap: 8px;">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#FF9800" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M18 17V9"/><path d="M13 17V5"/><path d="M8 17v-3"/></svg>
-                    Historia 30 dni
-                </h3>
-                <div id="diet-history-chart" style="display: flex; align-items: flex-end; gap: 6px; overflow-x: auto; padding-bottom: 15px; height: 160px; border-bottom: 1px solid rgba(255,255,255,0.05); box-sizing: border-box; scrollbar-width: none;">
-                    <!-- JS wyrenderuje slupki -->
-                </div>
+            <!-- Historia 30 dni: mini-słupki, dziś akcentem -->
+            <section class="z-card diet-historia">
+                <div class="diet-historia-gora"><h3 class="diet-historia-tytul">Historia 30 dni</h3><span class="z-mut diet-historia-sr"></span></div>
+                <div id="diet-history-chart" class="z-chart z-chart-mini" role="group" aria-label="Historia 30 dni"></div>
+                <div class="z-mut diet-historia-daty" aria-hidden="true"></div>
+                <div class="z-chart-legend diet-historia-legenda" aria-hidden="true"></div>
+            </section>
             </div>
 
             <!-- Modal konfiguracji TDEE -->
@@ -179,6 +143,11 @@ export const DietUI = {
         if (cameraInput) {
             cameraInput.addEventListener('change', DietUI.handleImageAttach);
         }
+        // „Zdjęcie” to przycisk (osiągalny z klawiatury), a nie <label>: otwiera ukryte pole wyboru pliku.
+        const attachBtn = document.getElementById('diet-attach-btn');
+        if (attachBtn && cameraInput) {
+            attachBtn.addEventListener('click', () => cameraInput.click());
+        }
 
         const removeImgBtn = document.getElementById('diet-remove-image-btn');
         if (removeImgBtn) {
@@ -199,7 +168,9 @@ export const DietUI = {
         const saveBtn = document.getElementById('diet-tdee-save');
 
         if (configBtn && modal) {
-            configBtn.addEventListener('click', async () => {
+            // Przycisk stoi w nagłówku w index.html (nie jest renderowany na nowo), więc onclick zamiast
+            // addEventListener: ponowne DietUI.init() nie podwoi obsługi.
+            configBtn.onclick = async () => {
                 // Załaduj zapisane ustawienia
                 const savedGoal = localStorage.getItem('dietGoal') || 'maintenance';
                 const savedActivity = localStorage.getItem('dietActivity') || '1.55';
@@ -209,7 +180,7 @@ export const DietUI = {
 
                 modal.style.display = 'flex';
                 await DietUI.fillKcalGoalForm();
-            });
+            };
         }
 
         if (closeBtn && modal) {
@@ -408,7 +379,7 @@ export const DietUI = {
             listContainer.innerHTML = '';
             
             if (logs.length === 0) {
-                listContainer.innerHTML = '<p style="text-align: center; color: #666; font-style: italic;">Jeszcze nic nie zjadłeś.</p>';
+                listContainer.innerHTML = '<p class="z-mut diet-pusto">Jeszcze nic nie zjadłeś.</p>';
             } else {
                 logs.forEach(log => {
                     totalKcal += log.calories || 0;
@@ -416,49 +387,22 @@ export const DietUI = {
                     totalC += log.carbs || 0;
                     totalF += log.fat || 0;
 
+                    // Karta posiłku (plansza): nazwa, makro (z-mut), kcal Barlow 18 px; Klonuj i Usuń jako ikony 44 px.
                     const item = document.createElement('div');
-                    item.className = 'diet-log-item';
-                    item.style.cssText = 'margin-bottom: 16px; display: block;';
+                    item.className = 'diet-log-item z-card';
                     item.innerHTML = `
-                        <div style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 20px; padding: 20px; backdrop-filter: blur(10px); box-sizing: border-box;">
-                          <div style="display: flex; gap: 16px; margin-bottom: 20px;">
-                            ${log.thumbnail ? 
-                                '<img id="diet-list-thumb-' + log.id + '" style="width: 60px; height: 60px; object-fit: cover; border-radius: 14px; flex-shrink: 0; box-shadow: 0 4px 10px rgba(0,0,0,0.3);">' 
-                                : '<div style="width: 60px; height: 60px; background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.05); border-radius: 14px; flex-shrink: 0; display: flex; align-items: center; justify-content: center;"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#666" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2Z"/><path d="M12 12a4 4 0 1 0 4-4A4 4 0 0 0 12 12Z"/></svg></div>'
-                            }
-                            <div style="flex-grow: 1; display: flex; justify-content: space-between; align-items: flex-start; gap: 12px;">
-                              <h3 style="margin: 0; font-size: 1.05em; font-weight: 600; color: #fff; line-height: 1.4;">${log.food_name}</h3>
-                              <span style="color: #FF9800; font-weight: 700; font-size: 1em; white-space: nowrap;">${log.calories} kcal</span>
-                            </div>
-                          </div>
-                          
-                          <!-- Macros -->
-                          <div style="display: flex; gap: 8px; margin-bottom: 20px;">
-                            <div style="flex: 1; border-radius: 10px; padding: 8px; text-align: center; border: 1px solid rgba(255,255,255,0.02);">
-                                <div style="color: #fff; font-weight: 600; font-size: 0.9em;">${log.protein}g</div>
-                                <div style="color: #8E8E93; font-size: 0.65em; text-transform: uppercase; margin-top: 2px;">Białko</div>
-                            </div>
-                            <div style="flex: 1; border-radius: 10px; padding: 8px; text-align: center; border: 1px solid rgba(255,255,255,0.02);">
-                                <div style="color: #fff; font-weight: 600; font-size: 0.9em;">${log.carbs}g</div>
-                                <div style="color: #8E8E93; font-size: 0.65em; text-transform: uppercase; margin-top: 2px;">Węgle</div>
-                            </div>
-                            <div style="flex: 1; border-radius: 10px; padding: 8px; text-align: center; border: 1px solid rgba(255,255,255,0.02);">
-                                <div style="color: #fff; font-weight: 600; font-size: 0.9em;">${log.fat}g</div>
-                                <div style="color: #8E8E93; font-size: 0.65em; text-transform: uppercase; margin-top: 2px;">Tłuszcz</div>
-                            </div>
-                          </div>
-
-                          <!-- Action Buttons -->
-                          <div style="display: flex; gap: 10px;">
-                            <button class="clone-diet-btn" data-log='${JSON.stringify(log).replace(/'/g, "&apos;")}' style="flex: 1; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: #fff; border-radius: 12px; padding: 12px; font-size: 0.85em; font-weight: 500; display: flex; align-items: center; justify-content: center; gap: 8px; cursor: pointer; transition: background 0.2s;">
-                              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
-                              Klonuj
-                            </button>
-                            <button class="delete-diet-btn" data-id="${log.id}" style="flex: 1; background: rgba(255,69,58,0.1); border: 1px solid rgba(255,69,58,0.3); color: #FF453A; border-radius: 12px; padding: 12px; font-size: 0.85em; font-weight: 500; display: flex; align-items: center; justify-content: center; gap: 8px; cursor: pointer; transition: background 0.2s;">
-                              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/></svg>
-                              Usuń
-                            </button>
-                          </div>
+                        ${log.thumbnail ? `<img id="diet-list-thumb-${esc(log.id)}" class="diet-log-foto" alt="">` : ''}
+                        <div class="diet-log-tekst">
+                            <div class="diet-log-nazwa">${esc(log.food_name)}</div>
+                            <div class="diet-log-makro z-mut">B ${liczba(log.protein)} · W ${liczba(log.carbs)} · T ${liczba(log.fat)} g</div>
+                        </div>
+                        <div class="diet-log-kcal">
+                            <div class="z-big">${liczba(log.calories)}</div>
+                            <div class="z-mut">kcal</div>
+                        </div>
+                        <div class="diet-log-akcje">
+                            <button type="button" class="z-ic clone-diet-btn" data-log="${esc(JSON.stringify(log))}" aria-label="Klonuj" title="Klonuj">${ikona('copy', 20)}</button>
+                            <button type="button" class="z-ic delete-diet-btn" data-id="${esc(log.id)}" aria-label="Usuń" title="Usuń">${ikona('trash', 20)}</button>
                         </div>
                     `;
                     listContainer.appendChild(item);
@@ -477,7 +421,7 @@ export const DietUI = {
                 document.querySelectorAll('.delete-diet-btn').forEach(btn => {
                     btn.addEventListener('click', async (e) => {
                         if (confirm('Usunąć ten posiłek?')) {
-                            const id = e.target.getAttribute('data-id');
+                            const id = e.currentTarget.getAttribute('data-id');
                             await DatabaseManager.deleteDietLog(id);
                             DietUI.loadTodayData();
                         }
@@ -486,7 +430,7 @@ export const DietUI = {
                 
                 document.querySelectorAll('.clone-diet-btn').forEach(btn => {
                     btn.addEventListener('click', async (e) => {
-                        const log = JSON.parse(e.target.getAttribute('data-log'));
+                        const log = JSON.parse(e.currentTarget.getAttribute('data-log'));
                         try {
                             await DatabaseManager.addDietLog({
                                 date: today,
@@ -513,50 +457,33 @@ export const DietUI = {
         goal.incidents.forEach(reportKcalIncident);
         const tdee = goal.kcal;
         const noComputed = goal.source === 'auto' && goal.noData;
-        setKcalSourceIcon(document.getElementById('diet-kcal-source'), noComputed ? null : goal.source);
+        setKcalSourceIcon(document.getElementById('diet-kcal-source'), noComputed ? null : goal.source, 12);
         // Podpowiedź: brak pomiarów albo przybliżona płeć lub wiek (przy ręcznym celu zbędna).
         const kcalHint = document.getElementById('diet-kcal-hint');
         if (kcalHint) {
             const text = goal.source === 'manual' ? '' : noComputed ? NO_DATA_HINT : profileHint(readBodyProfile());
             kcalHint.textContent = text;
-            kcalHint.style.display = text ? 'block' : 'none';
+            kcalHint.hidden = !text;
         }
         
-        // Aktualizacja interfejsu (Liczniki)
+        // Aktualizacja interfejsu: wykres kołowy (kcal z celu); makro to tylko zjedzone gramy (bez celów i pasków).
         const kcalDisplay = document.getElementById('diet-kcal-consumed');
         if (kcalDisplay) kcalDisplay.textContent = totalKcal;
         
         const tdeeDisplay = document.getElementById('diet-tdee-display');
         if (tdeeDisplay) tdeeDisplay.textContent = tdee;
 
-        const proteinDisplay = document.getElementById('diet-protein-display');
-        if (proteinDisplay) proteinDisplay.textContent = totalP + 'g';
-        const carbsDisplay = document.getElementById('diet-carbs-display');
-        if (carbsDisplay) carbsDisplay.textContent = totalC + 'g';
-        const fatDisplay = document.getElementById('diet-fat-display');
-        if (fatDisplay) fatDisplay.textContent = totalF + 'g';
+        [['protein', totalP], ['carbs', totalC], ['fat', totalF]].forEach(([klucz, suma]) => {
+            const display = document.getElementById(`diet-${klucz}-display`);
+            if (display) display.textContent = suma;
+        });
 
-        // Animacja kółka postępu (SVG circle ma obwód 2*pi*r = 2 * 3.14159 * 65 = ~408.4)
         const ring = document.getElementById('diet-kcal-ring');
         if (ring) {
-            let percentage = totalKcal / tdee;
-            if (percentage > 1) percentage = 1;
-            const dashoffset = 408.4 - (408.4 * percentage);
-            
-            // Opoznienie dla animacji
-            setTimeout(() => {
-                ring.style.strokeDashoffset = dashoffset;
-                const kcalLabel = document.getElementById('diet-kcal-consumed');
-                if (totalKcal > tdee) {
-                    ring.style.stroke = '#F44336'; // Czerwony jeśli przekroczono
-                    if (kcalLabel) kcalLabel.style.color = '#F44336';
-                    ring.classList.add('pulse'); // dodanie klasy pulse
-                } else {
-                    ring.style.stroke = '#FF9800'; // Pomarańczowy domyślnie
-                    if (kcalLabel) kcalLabel.style.color = '#fff';
-                    ring.classList.remove('pulse');
-                }
-            }, 100);
+            ring.style.setProperty('--z-val', procent(totalKcal, tdee));
+            ring.setAttribute('aria-label', `Zjedzono ${totalKcal} z ${tdee} kcal`);
+            // Przekroczony cel: liczba w kolorze akcentu (koło jest już pełne).
+            ring.classList.toggle('diet-ponad-cel', totalKcal > tdee);
             
             // Render wykresu po załadowaniu dzisiejszych danych
             DietUI.loadHistoryChart(tdee);
@@ -569,36 +496,25 @@ export const DietUI = {
         
         previewContainer.innerHTML = '';
         if (DietUI.attachedImages.length > 0) {
-            previewContainer.style.display = 'flex';
+            previewContainer.hidden = false;
             DietUI.attachedImages.forEach((mediaId, index) => {
                 const wrapper = document.createElement('div');
-                wrapper.style.position = 'relative';
+                wrapper.className = 'diet-zdjecie';
                 
                 const img = document.createElement('img');
-                img.style.width = '70px';
-                img.style.height = '70px';
-                img.style.objectFit = 'cover';
-                img.style.borderRadius = '5px';
-                img.style.border = '1px solid #555';
+                img.className = 'diet-zdjecie-img';
+                img.alt = '';
                 
                 window.MediaManager.getMediaUrl(mediaId).then(url => {
                     if (url) img.src = url;
                 });
                 
+                // Cel dotyku 44 px, widoczne kółko 24 px w rogu miniatury.
                 const removeBtn = document.createElement('button');
-                removeBtn.innerHTML = '×';
-                removeBtn.style.position = 'absolute';
-                removeBtn.style.top = '-5px';
-                removeBtn.style.right = '-5px';
-                removeBtn.style.background = '#F44336';
-                removeBtn.style.color = 'white';
-                removeBtn.style.border = 'none';
-                removeBtn.style.borderRadius = '50%';
-                removeBtn.style.width = '22px';
-                removeBtn.style.height = '22px';
-                removeBtn.style.fontSize = '12px';
-                removeBtn.style.cursor = 'pointer';
-                removeBtn.style.fontWeight = 'bold';
+                removeBtn.type = 'button';
+                removeBtn.className = 'z-ic diet-zdjecie-usun';
+                removeBtn.setAttribute('aria-label', `Usuń zdjęcie ${index + 1}`);
+                removeBtn.innerHTML = `<span class="diet-zdjecie-x">${ikona('x', 14)}</span>`;
                 removeBtn.onclick = () => DietUI.removeAttachedImage(index);
                 
                 wrapper.appendChild(img);
@@ -607,15 +523,11 @@ export const DietUI = {
             });
             
             const hint = document.createElement('span');
-            hint.style.display = 'inline-block';
-            hint.style.alignSelf = 'center';
-            hint.style.marginLeft = '10px';
-            hint.style.fontSize = '0.85em';
-            hint.style.color = '#aaa';
+            hint.className = 'z-mut diet-zdjecia-ile';
             hint.textContent = `Zdjęć: ${DietUI.attachedImages.length}/3`;
             previewContainer.appendChild(hint);
         } else {
-            previewContainer.style.display = 'none';
+            previewContainer.hidden = true;
         }
     },
 
@@ -667,11 +579,11 @@ export const DietUI = {
         const analyzeBtn = document.getElementById('diet-analyze-btn');
         
         if (loading) {
-            loading.style.display = 'block';
+            loading.hidden = false;
             const loadingText = document.getElementById('diet-loading-text');
             if (loadingText) loadingText.innerText = 'Edward analizuje...';
         }
-        if (analyzeBtn) analyzeBtn.style.display = 'none';
+        if (analyzeBtn) analyzeBtn.hidden = true;
 
         try {
             // Resolve base64 for AI Engine
@@ -686,8 +598,8 @@ export const DietUI = {
             if (window.ukiLogError) window.ukiLogError('DietAI Error', error.diag ? `${error.toString()} | ${error.diag}` : error.toString());
             alert(error.message);
         } finally {
-            if (loading) loading.style.display = 'none';
-            if (analyzeBtn) analyzeBtn.style.display = 'block';
+            if (loading) loading.hidden = true;
+            if (analyzeBtn) analyzeBtn.hidden = false;
         }
     },
 
@@ -706,7 +618,7 @@ export const DietUI = {
                 <div id="diet-result-thumbnail-container" style="margin-bottom: 15px;"></div>
                 
                 <div style="font-size: 1.2em; font-weight: bold; margin-bottom: 15px; color: #fff; word-break: break-word;">
-                    ${result.food_name || 'Nieznany posiłek'}
+                    ${esc(result.food_name || 'Nieznany posiłek')}
                 </div>
                 
                 <div style="background: rgba(255,152,0,0.1); border: 1px solid rgba(255,152,0,0.3); border-radius: 8px; padding: 15px; margin-bottom: 20px;">
@@ -818,16 +730,16 @@ export const DietUI = {
                 mealsHtml += `
                     <div style="background: rgba(0,0,0,0.3); border: 1px solid #333; border-radius: 8px; padding: 10px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center;">
                         <div>
-                            <div style="color: #FF9800; font-weight: bold; font-size: 1.05em; margin-bottom: 5px;">${log.food_name || 'Posiłek'}</div>
+                            <div style="color: #FF9800; font-weight: bold; font-size: 1.05em; margin-bottom: 5px;">${esc(log.food_name || 'Posiłek')}</div>
                             <div style="display:flex; gap:10px; font-size:0.85em;">
-                                <span style="color:#4CAF50">B: ${log.protein}g</span>
-                                <span style="color:#2196F3">W: ${log.carbs}g</span>
-                                <span style="color:#E91E63">T: ${log.fat}g</span>
+                                <span style="color:#4CAF50">B: ${esc(log.protein)}g</span>
+                                <span style="color:#2196F3">W: ${esc(log.carbs)}g</span>
+                                <span style="color:#E91E63">T: ${esc(log.fat)}g</span>
                             </div>
                         </div>
                         <div style="text-align: right;">
-                            <div style="color: #fff; font-weight: bold; font-size: 1.1em;">${log.calories} kcal</div>
-                            <button onclick="DatabaseManager.deleteDietLog(${log.id}).then(() => { document.getElementById('diet-history-meals-modal').remove(); window.DietUI.loadTodayData(); })" style="background: transparent; color: #ff4444; border: 1px solid #ff4444; border-radius: 4px; padding: 3px 8px; font-size: 0.8em; margin-top: 5px; cursor: pointer;">Usuń</button>
+                            <div style="color: #fff; font-weight: bold; font-size: 1.1em;">${esc(log.calories)} kcal</div>
+                            <button onclick="DatabaseManager.deleteDietLog(${Number(log.id)}).then(() => { document.getElementById('diet-history-meals-modal').remove(); window.DietUI.loadTodayData(); })" style="background: transparent; color: #ff4444; border: 1px solid #ff4444; border-radius: 4px; padding: 3px 8px; font-size: 0.8em; margin-top: 5px; cursor: pointer;">Usuń</button>
                         </div>
                     </div>
                 `;
@@ -837,7 +749,7 @@ export const DietUI = {
         modal.innerHTML = `
             <div style="background: #1e1e1e; padding: 20px; border-radius: 12px; border: 1px solid #FF9800; max-width: 400px; width: 100%; max-height: 80vh; display: flex; flex-direction: column;">
                 <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #444; padding-bottom: 10px; margin-bottom: 15px;">
-                    <h3 style="color: #FF9800; margin: 0;">Posiłki z dnia: ${date}</h3>
+                    <h3 style="color: #FF9800; margin: 0;">Posiłki z dnia: ${esc(date)}</h3>
                     <button onclick="this.closest('#diet-history-meals-modal').remove()" style="background: none; border: none; color: #fff; font-size: 1.5em; cursor: pointer;">&times;</button>
                 </div>
                 <div style="overflow-y: auto; flex: 1;">
@@ -849,40 +761,56 @@ export const DietUI = {
         document.body.appendChild(modal);
     },
 
+    // „Historia 30 dni” (plansza): 30 mini-słupków i „śr. X kcal” z narysowanych dni z wpisami. Każdy dzień to przycisk
+    // na całą wysokość wykresu z etykietą „DD.MM: N kcal” (dzień bez wpisów: wyłączony); klik albo Enter pokazuje
+    // posiłki z tego dnia. Dziś akcentem, dni ponad cel kolorem ostrzeżenia, przerywana linia celu, skala dat pod spodem.
     loadHistoryChart: async (tdee) => {
         const historyContainer = document.getElementById('diet-history-chart');
         if (!historyContainer) return;
+        const karta = historyContainer.closest('.diet-historia') || document;
+        const srednia = karta.querySelector('.diet-historia-sr');
+        const daty = karta.querySelector('.diet-historia-daty');
+        const legenda = karta.querySelector('.diet-historia-legenda');
         
         const history = await DatabaseManager.getDietLogsHistory(30);
         historyContainer.innerHTML = '';
-        
-        if (history.length === 0) {
-            historyContainer.innerHTML = '<div style="color: #666; font-size: 0.9em; padding: 10px;">Brak danych do wykresu. Dodaj posiłki.</div>';
+
+        // Dni jak „dziś” w loadTodayData (data UTC), od 29 dni temu do dziś. Baza oddaje 31 dni (>= dziś − 30),
+        // więc średnią i skalę liczymy tylko z narysowanych dni.
+        const today = new Date().toISOString().split('T')[0];
+        const start = new Date(`${today}T00:00:00Z`);
+        const dni = Array.from({ length: 30 }, (_, i) => new Date(start.getTime() - (29 - i) * 86400000).toISOString().split('T')[0]);
+        const wszystkie = new Map(history.map(log => [log.date, liczba(log.total_calories)]));
+        const kcal = new Map(dni.filter(d => wszystkie.has(d)).map(d => [d, wszystkie.get(d)]));
+        const pusto = kcal.size === 0;
+        [historyContainer, daty, legenda].forEach(el => { if (el) el.hidden = pusto; });
+        if (pusto) {
+            if (srednia) srednia.textContent = 'Brak danych. Dodaj posiłki.';
             return;
         }
 
-        history.forEach(log => {
-            const heightPercent = Math.min((log.total_calories / tdee) * 100, 100); 
-            const isOver = log.total_calories > tdee;
-            const barColor = isOver ? '#F44336' : '#FF9800'; 
-            
-            const d = new Date(log.date);
-            const dateStr = d.getDate().toString().padStart(2, '0') + '.' + (d.getMonth() + 1).toString().padStart(2, '0');
+        const cel = liczba(tdee);
+        const skala = Math.max(cel, ...kcal.values());
+        const sr = Math.round([...kcal.values()].reduce((a, v) => a + v, 0) / kcal.size);
+        const ddmm = (d) => `${d.slice(8, 10)}.${d.slice(5, 7)}`;
+        if (srednia) srednia.textContent = `śr. ${sr} kcal`;
+        historyContainer.setAttribute('aria-label', `Historia 30 dni: średnio ${sr} kcal, dziś ${kcal.get(today) || 0} kcal`);
 
-            const barContainer = document.createElement('div');
-            barContainer.style.cssText = 'display: flex; flex-direction: column; align-items: center; justify-content: flex-end; height: 100%; min-width: 30px; flex-shrink: 0; cursor: pointer;';
-            barContainer.onclick = () => DietUI.showHistoryMealsModal(log.date);
-            
-            barContainer.innerHTML = `
-                <div style="font-size: 0.7em; color: ${barColor}; margin-bottom: 2px;">${log.total_calories}</div>
-                <div style="width: 100%; background: ${barColor}; height: ${heightPercent}%; border-radius: 3px 3px 0 0; opacity: 0.8;"></div>
-                <div style="font-size: 0.7em; color: #888; margin-top: 4px;">${dateStr}</div>
-            `;
-            
-            historyContainer.appendChild(barContainer);
+        historyContainer.innerHTML = dni.map(d => {
+            const v = kcal.get(d) || 0;
+            const ponad = cel > 0 && v > cel;
+            const klasy = ['diet-dzien', d === today ? 'z-today' : '', ponad ? 'diet-ponad' : ''].filter(Boolean).join(' ');
+            const opis = `${ddmm(d)}: ${v} kcal${ponad ? ', ponad cel' : ''}${d === today ? ', dziś' : ''}`;
+            return `<button type="button" class="${klasy}" data-date="${d}" aria-label="${opis}" title="${opis}"${kcal.has(d) ? '' : ' disabled'}><span class="diet-dzien-slupek" style="height: ${procent(v, skala)}"></span></button>`;
+        }).join('') + (cel > 0 ? `<div class="diet-historia-cel" aria-hidden="true" style="bottom: ${procent(cel, skala)}"></div>` : '');
+
+        historyContainer.querySelectorAll('.diet-dzien:not([disabled])').forEach(btn => {
+            btn.addEventListener('click', () => DietUI.showHistoryMealsModal(btn.dataset.date));
         });
-        
-        historyContainer.scrollLeft = historyContainer.scrollWidth;
+        if (daty) daty.innerHTML = [dni[0], dni[14], dni[29]].map(d => `<span>${ddmm(d)}</span>`).join('');
+        if (legenda) {
+            legenda.innerHTML = `<span class="z-chart-key diet-klucz-ponad">ponad cel ${cel} kcal</span><span class="z-chart-key diet-klucz-dzis">dziś</span>`;
+        }
     },
 
     resizeAndToBase64: (file) => {

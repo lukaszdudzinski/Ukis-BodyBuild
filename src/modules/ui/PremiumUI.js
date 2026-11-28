@@ -1,3 +1,5 @@
+// wyglad: zar
+import { ikona } from '../wyglad/ikony.js';
 import { hasTrainerLicenseSync } from '../trainer/trainerAccess.js';
 
 export const PremiumUI = {
@@ -38,42 +40,57 @@ export const PremiumUI = {
         const existing = document.getElementById('premium-paywall-modal');
         if (existing) existing.remove();
 
+        const dni = PremiumUI.getTrialStatus().daysLeft;
         const html = `
-            <div id="premium-paywall-modal" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(17,17,24,0.85); backdrop-filter: blur(8px); z-index: 100000; display: flex; justify-content: center; align-items: center; padding: 20px; box-sizing: border-box; opacity: 0; transition: opacity 0.3s; animation: fadeIn 0.3s forwards;">
-                <div style="background: rgba(255,255,255,0.05); border: 1px solid rgba(0, 191, 255, 0.3); border-radius: 24px; width: 100%; max-width: 420px; text-align: center; overflow: hidden; display: flex; flex-direction: column; box-shadow: 0 20px 40px rgba(0,0,0,0.5);">
-                    
-                    <div style="background: linear-gradient(135deg, rgba(0,191,255,0.1) 0%, rgba(17,17,24,0) 100%); padding: 40px 20px 20px; position: relative; border-bottom: 1px solid rgba(255,255,255,0.05);">
-                        <button onclick="document.getElementById('premium-paywall-modal').remove()" style="position: absolute; top: 20px; right: 20px; background: rgba(255,255,255,0.1); border: none; color: #fff; width: 32px; height: 32px; border-radius: 16px; font-size: 1.2em; display: flex; align-items: center; justify-content: center; cursor: pointer;">&times;</button>
-                        <div style="display: flex; justify-content: center; margin-bottom: 20px; color: #00BFFF;">
-                            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M17 8h1a4 4 0 1 1 0 8h-1"/><path d="M3 8h14v9a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4Z"/><line x1="6" y1="2" x2="6" y2="4"/><line x1="10" y1="2" x2="10" y2="4"/><line x1="14" y1="2" x2="14" y2="4"/></svg>
-                        </div>
-                        <h3 style="color: #00BFFF; margin: 0 0 12px 0; font-size: 1.5em; font-weight: 700;">Czas na wsparcie</h3>
-                        <p style="color: #8E8E93; font-size: 0.95em; line-height: 1.5; margin: 0;">Twój 7-dniowy okres próbny na funkcje AI dobiegł końca.</p>
+            <div id="premium-paywall-modal" class="z-dialog-scrim pro-scrim" role="dialog" aria-modal="true" aria-labelledby="pro-tytul">
+                <div class="pro-okno">
+                    <div class="pro-gora">
+                        <button type="button" class="z-ic z-card" aria-label="Zamknij" onclick="document.getElementById('premium-paywall-modal').remove()">${ikona('x', 20)}</button>
+                        <span class="z-pill">Okres próbny: ${dni} dni</span>
                     </div>
 
-                    <div style="padding: 25px 20px;">
-                        <p style="color: #fff; font-size: 0.95em; line-height: 1.5; text-align: left; margin-bottom: 25px;">
-                            Jeśli chcesz korzystać z narzędzi AI w aplikacji i rejestrować kaloryczność posiłków ze zdjęć oraz analizować dane z Trenerem Edwardem, możesz to robić wspierając projekt.<br><br>
-                            <b style="color: #FF9800; font-weight: 600;">Dziękujemy za każde wsparcie!</b>
-                        </p>
-                        
-                        <a href="https://suppi.pl/ukidives" target="_blank" style="display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; background: rgba(255, 152, 0, 0.15); border: 1px solid rgba(255, 152, 0, 0.3); color: #FF9800; padding: 14px; font-weight: 600; font-size: 1.05em; border-radius: 12px; text-decoration: none; margin-bottom: 25px; box-sizing: border-box;">
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 8h1a4 4 0 1 1 0 8h-1"/><path d="M3 8h14v9a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4Z"/><line x1="6" y1="2" x2="6" y2="4"/><line x1="10" y1="2" x2="10" y2="4"/><line x1="14" y1="2" x2="14" y2="4"/></svg>
-                            Wesprzyj Projekt
-                        </a>
+                    <div class="pro-hero">
+                        <div class="pro-kolo">${ikona('coffee', 34)}</div>
+                        <h2 id="pro-tytul" class="z-hd pro-tytul">Wersja Heavy</h2>
+                        <p class="z-sub pro-opis">Twój 7-dniowy okres próbny na funkcje AI dobiegł końca. Wspierając projekt, odblokowujesz narzędzia AI na stałe. Dziękujemy za każde wsparcie!</p>
+                    </div>
 
-                        <div style="border-top: 1px solid rgba(255,255,255,0.05); padding-top: 25px;">
-                            <label style="display: block; color: #8E8E93; font-size: 0.85em; margin-bottom: 10px; text-align: left;">Masz już hasło ze wsparcia?</label>
-                            <div style="display: flex; gap: 8px;">
-                                <input type="text" id="premium-token-input" placeholder="Wpisz hasło..." style="flex: 1; padding: 12px; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; color: #fff; outline: none;">
-                                <button onclick="window.PremiumUI.verifyToken()" style="background: rgba(46, 204, 113, 0.15); border: 1px solid rgba(46, 204, 113, 0.3); color: #2ECC71; padding: 0 18px; font-weight: 600; border-radius: 12px; cursor: pointer;">Odblokuj</button>
-                            </div>
+                    <div class="z-card z-list pro-korzysci">
+                        <div class="z-li">${ikona('check', 20)}<span>Trener Edward: rozmowa i porady</span></div>
+                        <div class="z-li">${ikona('check', 20)}<span>Kalorie posiłków ze zdjęć</span></div>
+                        <div class="z-li">${ikona('check', 20)}<span>Analizy AI treningów i diety</span></div>
+                    </div>
+
+                    <a class="z-btn pro-wesprzyj" href="https://suppi.pl/ukidives" target="_blank" rel="noopener noreferrer">${ikona('coffee', 20)}Wesprzyj projekt</a>
+
+                    <div class="z-card pro-haslo">
+                        <label class="z-lab" for="premium-token-input">Masz już hasło ze wsparcia?</label>
+                        <div class="pro-haslo-wiersz">
+                            <input type="text" id="premium-token-input" class="z-in" placeholder="Wpisz hasło..." autocomplete="off" autocapitalize="off" spellcheck="false">
+                            <button type="button" class="z-ghost" onclick="window.PremiumUI.verifyToken()">Odblokuj</button>
                         </div>
+                        <p id="premium-token-error" class="pro-blad" role="alert" hidden></p>
                     </div>
                 </div>
             </div>
         `;
         document.body.insertAdjacentHTML('beforeend', html);
+    },
+
+    // Komunikat z-toast zamiast alert() (jak TrainingUI.komunikat). Tekst przez textContent.
+    komunikat: (tekst) => {
+        let t = document.getElementById('premium-komunikat');
+        if (!t) {
+            t = document.createElement('div');
+            t.id = 'premium-komunikat';
+            t.className = 'z-toast';
+            t.setAttribute('role', 'status');
+            document.body.append(t);
+        }
+        t.textContent = tekst;
+        t.hidden = false;
+        clearTimeout(PremiumUI._zegarKomunikatu);
+        PremiumUI._zegarKomunikatu = setTimeout(() => { t.hidden = true; }, 5000);
     },
 
     verifyToken: () => {
@@ -83,12 +100,19 @@ export const PremiumUI = {
         const val = input.value.trim();
         if (val === 'UkiSuppi2026' || val === 'UkiBodyBuildPro') {
             localStorage.setItem('uki_ai_premium_token', val);
-            alert("Hasło poprawne! Narzędzia AI (Trener Edward oraz Analiza Zdjęć Posiłków) zostały odblokowane na stałe. Dziękujemy za wsparcie!");
             const modal = document.getElementById('premium-paywall-modal');
             if (modal) modal.remove();
+            PremiumUI.komunikat('Hasło poprawne! Narzędzia AI zostały odblokowane na stałe. Dziękujemy za wsparcie!');
+            const label = document.getElementById('premium-status');
+            if (label) label.textContent = 'Wersja Heavy';
             PremiumUI.renderPremiumBanner();
         } else {
-            alert("Nieprawidłowe hasło. Spróbuj ponownie lub wesprzyj projekt by uzyskać dostęp.");
+            const blad = document.getElementById('premium-token-error');
+            if (blad) {
+                blad.textContent = 'Nieprawidłowe hasło. Spróbuj ponownie lub wesprzyj projekt, by uzyskać dostęp.';
+                blad.hidden = false;
+            }
+            input.focus();
         }
     },
     renderPremiumBanner: () => {
@@ -99,40 +123,34 @@ export const PremiumUI = {
         
         if (status.isProToken) {
             banner.innerHTML = `
-                <div style="background: rgba(255, 215, 0, 0.05); border: 1px solid rgba(255, 215, 0, 0.3); padding: 12px 16px; border-radius: 16px; display: inline-flex; align-items: center; gap: 12px; backdrop-filter: blur(10px);">
-                    <div style="color: #FFD700; display: flex; align-items: center; justify-content: center;">
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 4h20"/><path d="m2 8 3-4"/><path d="m22 8-3-4"/><path d="m2 20 3-12h14l3 12Z"/><path d="M12 16v-4"/><path d="m8 16 4-4"/><path d="m16 16-4-4"/></svg>
-                    </div>
-                    <div style="text-align: left;">
-                        <div style="color: #FFD700; font-weight: 600; font-size: 1.05em;">Wersja PRO Aktywna</div>
-                        <div style="color: #8E8E93; font-size: 0.85em;">Wszystkie funkcje AI odblokowane. Dziękujemy!</div>
+                <div class="z-card pro-stan pro-stan-pro">
+                    ${ikona('check', 24)}
+                    <div class="pro-stan-txt">
+                        <div class="pro-stan-tyt">Wersja PRO aktywna</div>
+                        <div class="z-sub">Wszystkie funkcje AI odblokowane. Dziękujemy!</div>
                     </div>
                 </div>
             `;
         } else if (status.hasAccess) {
             banner.innerHTML = `
-                <div style="background: rgba(0, 191, 255, 0.05); border: 1px solid rgba(0, 191, 255, 0.3); padding: 12px 16px; border-radius: 16px; display: inline-flex; align-items: center; gap: 12px; backdrop-filter: blur(10px);">
-                    <div style="color: #00BFFF; display: flex; align-items: center; justify-content: center;">
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                <div class="z-card pro-stan">
+                    ${ikona('clock', 24)}
+                    <div class="pro-stan-txt">
+                        <div class="pro-stan-tyt">Okres próbny AI</div>
+                        <div class="z-sub">Pozostało dni: <strong>${Number(status.daysLeft)}</strong></div>
                     </div>
-                    <div style="text-align: left;">
-                        <div style="color: #00BFFF; font-weight: 600; font-size: 1.05em;">Okres Próbny AI</div>
-                        <div style="color: #8E8E93; font-size: 0.85em;">Pozostało dni: <strong style="color: #fff;">${status.daysLeft}</strong></div>
-                    </div>
-                    <button onclick="window.PremiumUI.showPremiumPaywall()" style="background: rgba(255, 152, 0, 0.15); border: 1px solid rgba(255, 152, 0, 0.3); color: #FF9800; border-radius: 8px; padding: 6px 14px; margin-left: 12px; cursor: pointer; font-size: 0.85em; font-weight: 600;">Odblokuj PRO</button>
+                    <button type="button" class="z-ghost" onclick="window.PremiumUI.showPremiumPaywall()">Odblokuj PRO</button>
                 </div>
             `;
         } else {
             banner.innerHTML = `
-                <div style="background: rgba(255, 69, 58, 0.05); border: 1px solid rgba(255, 69, 58, 0.3); padding: 12px 16px; border-radius: 16px; display: inline-flex; align-items: center; gap: 12px; backdrop-filter: blur(10px);">
-                    <div style="color: #FF453A; display: flex; align-items: center; justify-content: center;">
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                <div class="z-card z-alert pro-stan">
+                    ${ikona('lock', 24)}
+                    <div class="pro-stan-txt">
+                        <div class="pro-stan-tyt">Aplikacja Light</div>
+                        <div class="z-sub">Funkcje inteligentne AI są zablokowane.</div>
                     </div>
-                    <div style="text-align: left;">
-                        <div style="color: #FF453A; font-weight: 600; font-size: 1.05em;">Aplikacja Light</div>
-                        <div style="color: #8E8E93; font-size: 0.85em;">Funkcje inteligentne AI są zablokowane.</div>
-                    </div>
-                    <button onclick="window.PremiumUI.showPremiumPaywall()" style="background: rgba(255, 152, 0, 0.15); border: 1px solid rgba(255, 152, 0, 0.3); color: #FF9800; border-radius: 8px; padding: 6px 14px; margin-left: 12px; cursor: pointer; font-size: 0.85em; font-weight: 600;">Odblokuj PRO</button>
+                    <button type="button" class="z-ghost" onclick="window.PremiumUI.showPremiumPaywall()">Odblokuj PRO</button>
                 </div>
             `;
         }

@@ -1,8 +1,24 @@
+// wyglad: zar
 import { DatabaseManager } from '../db/DatabaseManager.js';
 import { MediaManager } from '../db/MediaManager.js';
 import { MeasurementsComponent } from '../../components/MeasurementsComponent.js';
 import { normalizeHeightCm } from '../diet/kcalGoal.js';
 import { currentSex, saveSex } from '../body/sexConfirm.js';
+import { navyBodyFat } from '../body/bodyMetrics.js';
+import { ikona } from '../wyglad/ikony.js';
+
+// Encje HTML dla danych w innerHTML (daty i liczby z bazy, także z importu kopii).
+const esc = (s) => String(s ?? '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+// Argument funkcji w atrybucie onclick="…": literał JS, a potem encje HTML (wzór z TrainingUI.js).
+const jsArg = (v) => esc(JSON.stringify(v ?? null));
+
+// Napis na przycisku zapisu: „Zapisz pomiary” albo „Aktualizuj” przy edycji.
+const napisZapisu = (tekst) => `${ikona('check', 18)} ${tekst}`;
 
 export const MeasurementsUI = {
     init: () => {
@@ -28,10 +44,15 @@ export const MeasurementsUI = {
         }
 
         // Płeć: pole bez wartości domyślnej („Wybierz płeć”); zapisujemy tylko świadomy wybór.
-        const genderSelect = document.getElementById('measureGender');
-        if (genderSelect) {
+        const genderTabs = document.getElementById('measureGender');
+        if (genderTabs) {
             MeasurementsUI.restoreGender();
-            genderSelect.addEventListener('change', () => saveSex(genderSelect.value));
+            genderTabs.addEventListener('click', (e) => {
+                const tab = e.target.closest('[data-plec]');
+                if (!tab) return;
+                MeasurementsUI.setGender(tab.dataset.plec);
+                saveSex(tab.dataset.plec);
+            });
         }
 
         // Render history on load
@@ -46,9 +67,19 @@ export const MeasurementsUI = {
     },
 
     // Pole „Płeć” pokazuje zapisaną płeć albo „Wybierz płeć”, gdy jej nie ma (także po wyczyszczeniu formularza).
-    restoreGender: () => {
-        const select = document.getElementById('measureGender');
-        if (select) select.value = currentSex() || '';
+    restoreGender: () => MeasurementsUI.setGender(currentSex() || ''),
+
+    // Zakładki M/K trzymają wartość w data-value ('male' | 'female' | ''), tę samą co dawne pole wyboru.
+    setGender: (value) => {
+        const tabs = document.getElementById('measureGender');
+        if (!tabs) return;
+        tabs.dataset.value = value;
+        tabs.querySelectorAll('[data-plec]').forEach((t) => t.setAttribute('aria-selected', String(t.dataset.plec === value)));
+    },
+
+    getGender: () => {
+        const tabs = document.getElementById('measureGender');
+        return tabs ? tabs.dataset.value || '' : '';
     },
 
     handlePhotoPreview: async (e) => {
@@ -59,13 +90,13 @@ export const MeasurementsUI = {
                 const id = await MediaManager.saveMedia(file);
                 const url = await MediaManager.getMediaUrl(id);
                 preview.src = url;
-                preview.style.display = 'block';
+                preview.hidden = false;
                 preview.dataset.mediaId = id;
             } catch (err) {
                 alert('Błąd odczytu zdjęcia');
             }
         } else {
-            preview.style.display = 'none';
+            preview.hidden = true;
             preview.dataset.mediaId = '';
         }
     },
@@ -89,8 +120,7 @@ export const MeasurementsUI = {
             photo: preview && preview.dataset.mediaId ? preview.dataset.mediaId : null
         };
 
-        const genderSelect = document.getElementById('measureGender');
-        if (genderSelect) saveSex(genderSelect.value); // pusty wybór niczego nie nadpisuje
+        saveSex(MeasurementsUI.getGender()); // pusty wybór niczego nie nadpisuje
 
         try {
             if (window.currentEditMeasurementId) {
@@ -102,7 +132,7 @@ export const MeasurementsUI = {
                 alert("Pomiary zaktualizowane pomyślnie!");
                 window.currentEditMeasurementId = null;
                 const submitBtn = e.target.querySelector('button[type="submit"]');
-                if(submitBtn) submitBtn.innerHTML = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg> Zapisz Pomiary';
+                if(submitBtn) submitBtn.innerHTML = napisZapisu('Zapisz pomiary');
             } else {
                 await DatabaseManager.addMeasurement(data);
                 alert("Pomiary zapisane pomyślnie!");
@@ -115,7 +145,7 @@ export const MeasurementsUI = {
             
             // Reset photo
             if(preview) {
-                preview.style.display = 'none';
+                preview.hidden = true;
                 preview.dataset.mediaId = '';
             }
             
@@ -133,73 +163,67 @@ export const MeasurementsUI = {
 
         try {
             const records = await DatabaseManager.getMeasurements();
-            
+
             if (records.length === 0) {
-                container.innerHTML = '<p style="color: #888; text-align: center; font-style: italic;">Brak dodanych pomiarów.</p>';
+                container.innerHTML = '<p class="z-mut z-pomiary-pusto">Brak dodanych pomiarów.</p>';
                 return;
             }
 
-            container.innerHTML = '';
-            
-            records.forEach(rec => {
-                const card = document.createElement('div');
-                card.className = "log-card";
-                card.style.cssText = "background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 20px; padding: 20px; backdrop-filter: blur(10px); margin-bottom: 15px; box-sizing: border-box;";
-                card.innerHTML = `
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding-bottom: 15px; border-bottom: 1px solid rgba(255,255,255,0.05);">
-                        <strong style="color: #FF9800; font-size: 1.1em; display: flex; align-items: center; gap: 8px;">
-                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-                            ${rec.date}
-                        </strong>
-                        <div style="display: flex; gap: 8px;">
-                            <button onclick="window.editMeasurement(${rec.id})" style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: #fff; border-radius: 10px; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: background 0.2s;">
-                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
-                            </button>
-                            <button onclick="window.cloneMeasurement(${rec.id})" style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: #fff; border-radius: 10px; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: background 0.2s;">
-                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
-                            </button>
-                            <button onclick="window.deleteMeasurement(${rec.id})" style="background: rgba(255,69,58,0.1); border: 1px solid rgba(255,69,58,0.3); color: #FF453A; border-radius: 10px; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: background 0.2s;">
-                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
-                            </button>
-                        </div>
-                    </div>
-                    <div style="display: flex; gap: 15px;">
-                        <div id="measure-photo-${rec.id}" style="width: 80px; height: 80px; display: none;"></div>
-                        <div style="flex-grow: 1; display: grid; grid-template-columns: 1fr 1fr; gap: 8px; font-size: 0.9em; color: #fff;">
-                            <div style="background: rgba(255,255,255,0.03); padding: 8px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.02);"><strong style="color: #8E8E93; font-size: 0.8em; text-transform: uppercase; display: block; margin-bottom: 2px;">Waga</strong> ${rec.weight} kg</div>
-                            ${rec.height ? `<div style="background: rgba(255,255,255,0.03); padding: 8px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.02);"><strong style="color: #8E8E93; font-size: 0.8em; text-transform: uppercase; display: block; margin-bottom: 2px;">Wzrost</strong> ${rec.height} cm</div>` : ''}
-                            ${rec.chest ? `<div style="background: rgba(255,255,255,0.03); padding: 8px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.02);"><strong style="color: #8E8E93; font-size: 0.8em; text-transform: uppercase; display: block; margin-bottom: 2px;">Klatka</strong> ${rec.chest} cm</div>` : ''}
-                            ${rec.waist ? `<div style="background: rgba(255,255,255,0.03); padding: 8px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.02);"><strong style="color: #8E8E93; font-size: 0.8em; text-transform: uppercase; display: block; margin-bottom: 2px;">Talia</strong> ${rec.waist} cm</div>` : ''}
-                            ${rec.hips ? `<div style="background: rgba(255,255,255,0.03); padding: 8px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.02);"><strong style="color: #8E8E93; font-size: 0.8em; text-transform: uppercase; display: block; margin-bottom: 2px;">Biodra</strong> ${rec.hips} cm</div>` : ''}
-                            ${rec.thigh ? `<div style="background: rgba(255,255,255,0.03); padding: 8px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.02);"><strong style="color: #8E8E93; font-size: 0.8em; text-transform: uppercase; display: block; margin-bottom: 2px;">Udo</strong> ${rec.thigh} cm</div>` : ''}
-                            ${rec.biceps ? `<div style="background: rgba(255,255,255,0.03); padding: 8px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.02);"><strong style="color: #8E8E93; font-size: 0.8em; text-transform: uppercase; display: block; margin-bottom: 2px;">Biceps</strong> ${rec.biceps} cm</div>` : ''}
-                            ${rec.neck ? `<div style="background: rgba(255,255,255,0.03); padding: 8px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.02);"><strong style="color: #8E8E93; font-size: 0.8em; text-transform: uppercase; display: block; margin-bottom: 2px;">Szyja</strong> ${rec.neck} cm</div>` : ''}
-                        </div>
-                    </div>
-                `;
-                container.appendChild(card);
+            const sex = currentSex();
+            container.innerHTML = records.map((rec) => MeasurementsUI.rowHtml(rec, sex)).join('');
 
-                if (rec.photo) {
-                    MediaManager.getMediaUrl(rec.photo).then(url => {
-                        if (url) {
-                            const photoContainer = document.getElementById(`measure-photo-${rec.id}`);
-                            if (photoContainer) {
-                                photoContainer.style.display = 'block';
-                                photoContainer.innerHTML = `<img src="${url}" style="width: 80px; height: 80px; object-fit: cover; border-radius: 8px; border: 1px solid #444;" />`;
-                            }
-                        }
-                    });
-                }
+            records.forEach((rec) => {
+                if (!rec.photo) return;
+                MediaManager.getMediaUrl(rec.photo).then((url) => {
+                    const box = document.getElementById(`measure-photo-${rec.id}`);
+                    if (!url || !box) return;
+                    const img = document.createElement('img');
+                    img.src = url;
+                    img.alt = 'Zdjęcie sylwetki';
+                    box.hidden = false;
+                    box.replaceChildren(img);
+                });
             });
         } catch (err) {
             console.error("Error loading history:", err);
-            container.innerHTML = '<p style="color: #ff4444; text-align: center;">Błąd ładowania historii.</p>';
+            container.innerHTML = '<p class="z-pomiary-blad" role="alert">Błąd ładowania historii.</p>';
         }
+    },
+
+    // Wiersz historii: miniatura 56 × 70, „data · waga”, skrót obwodów i BF% (US Navy, gdy starcza danych).
+    rowHtml: (rec, sex) => {
+        const id = jsArg(String(rec.id));
+        const wzrost = normalizeHeightCm(rec.height) ?? rec.height;
+        const bf = navyBodyFat({ sex, height: wzrost, waist: rec.waist, neck: rec.neck, hips: rec.hips });
+        const obwody = [['Wzrost', wzrost], ['Klatka', rec.chest], ['Talia', rec.waist], ['Biodra', rec.hips],
+            ['Udo', rec.thigh], ['Biceps', rec.biceps], ['Szyja', rec.neck]]
+            .filter(([, v]) => v)
+            .map(([n, v]) => `<span class="z-pomiar-obw"><span class="z-mut">${n}</span> ${esc(v)}</span>`)
+            .join('');
+        const przycisk = (akcja, nazwa, ikonaNazwa, klasa = '') =>
+            `<button type="button" class="z-ic z-card ${klasa}" aria-label="${nazwa}" onclick="window.${akcja}(${id})">${ikona(ikonaNazwa, 18)}</button>`;
+        return `
+            <article class="z-card z-pomiar">
+                <div id="measure-photo-${esc(rec.id)}" class="z-pomiar-foto" hidden></div>
+                <div class="z-pomiar-tresc">
+                    <div class="z-pomiar-gora">
+                        <strong class="z-pomiar-tyt">${esc(rec.date)} · ${esc(rec.weight)} kg</strong>
+                        ${bf !== null ? `<span class="z-pomiar-bf">BF ${bf.toFixed(1)}%</span>` : ''}
+                    </div>
+                    <div class="z-pomiar-obwody">${obwody}</div>
+                </div>
+                <div class="z-pomiar-akcje">
+                    ${przycisk('editMeasurement', 'Edytuj pomiar', 'pencil')}
+                    ${przycisk('cloneMeasurement', 'Klonuj pomiar', 'copy')}
+                    ${przycisk('deleteMeasurement', 'Usuń pomiar', 'trash', 'z-danger')}
+                </div>
+            </article>`;
     }
 };
 
 // Global handlers
-window.deleteMeasurement = async (id) => {
+window.deleteMeasurement = async (rawId) => {
+    const id = Number(rawId); // id z onclick przychodzi jako tekst
     if (confirm("Czy na pewno chcesz usunąć ten pomiar?")) {
         const { DatabaseManager } = await import('../db/DatabaseManager.js');
         await DatabaseManager.deleteMeasurement(id);
@@ -208,7 +232,8 @@ window.deleteMeasurement = async (id) => {
     }
 };
 
-window.populateMeasurementForm = async (id, isEdit) => {
+window.populateMeasurementForm = async (rawId, isEdit) => {
+    const id = Number(rawId); // id z onclick przychodzi jako tekst
     const { DatabaseManager } = await import('../db/DatabaseManager.js');
     const { MediaManager } = await import('../db/MediaManager.js');
     const records = await DatabaseManager.getMeasurements();
@@ -219,12 +244,12 @@ window.populateMeasurementForm = async (id, isEdit) => {
         window.currentEditMeasurementId = id;
         document.getElementById('measureDate').value = rec.date;
         const submitBtn = document.querySelector('#measurementsForm button[type="submit"]');
-        if (submitBtn) submitBtn.innerHTML = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg> Aktualizuj';
+        if (submitBtn) submitBtn.innerHTML = napisZapisu('Aktualizuj');
     } else {
         window.currentEditMeasurementId = null;
         document.getElementById('measureDate').value = new Date().toISOString().split('T')[0];
         const submitBtn = document.querySelector('#measurementsForm button[type="submit"]');
-        if (submitBtn) submitBtn.innerHTML = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg> Zapisz Pomiary';
+        if (submitBtn) submitBtn.innerHTML = napisZapisu('Zapisz pomiary');
     }
 
     if (rec.weight) document.getElementById('measureWeight').value = rec.weight;
@@ -242,11 +267,11 @@ window.populateMeasurementForm = async (id, isEdit) => {
         const url = await MediaManager.getMediaUrl(rec.photo);
         if (url) {
             preview.src = url;
-            preview.style.display = 'block';
+            preview.hidden = false;
             preview.dataset.mediaId = rec.photo;
         }
     } else if (preview) {
-        preview.style.display = 'none';
+        preview.hidden = true;
         preview.dataset.mediaId = '';
     }
 

@@ -1,1 +1,207 @@
 /* wyglad: zar */
+/* Historia (spec 8.3, plansza Historia; HistoryUI.renderHistoryList).
+   Wiersz: .log-card.z-card.z-hist-karta; zwinięty = karta, rozwinięty = karta z akcentem (.z-alert).
+   Rozwinięcie przełącza HistoryUI.toggleCard (aria-expanded na .z-hist-gora, hidden na .z-hist-szczegoly). */
+
+/* Odstęp na pasek dolny (base.css) i na pływający przycisk Edwarda, żeby po przewinięciu do końca
+   „Jako szablon” nie leżał pod kołem 52 px. */
+#history-grouped-list {
+    margin-bottom: 64px;
+}
+
+.z-hist-miesiac-grupa {
+    margin-bottom: 18px;
+}
+
+.z-hist-miesiac {
+    margin: 0 0 10px;
+    padding: 0 4px;
+    font-family: var(--ukis-font);
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+}
+
+.z-hist-pusto {
+    text-align: center;
+    font-style: italic;
+    margin: 24px 0;
+}
+
+/* ---------- Wiersz ---------- */
+.z-hist-karta {
+    margin-bottom: 12px;
+    padding: 12px;
+}
+
+.z-hist-gora {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    width: 100%;
+    min-height: var(--ukis-touch);
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: var(--ukis-text);
+    font: inherit;
+    text-align: left;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.z-hist-gora:focus-visible {
+    outline: 2px solid var(--ukis-color-accent);
+    outline-offset: 4px;
+    border-radius: var(--ukis-radius-sm);
+}
+
+.z-hist-tekst {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    flex: 1 1 auto;
+    min-width: 0;
+}
+
+.z-hist-nazwa {
+    font-size: 15px;
+    font-weight: 500;
+    line-height: 1.25;
+    overflow-wrap: anywhere;
+}
+
+.z-hist-meta {
+    line-height: 1.3;
+}
+
+.z-hist-ico svg {
+    width: 22px;
+    height: 22px;
+}
+
+/* Zwinięty: ikona w kole szkła 44 px (z-ic z-card). Rozwinięty: koło akcentu 40 px (z-ic-acc), nazwa 600. */
+.z-hist-gora[aria-expanded="true"] .z-hist-ico {
+    width: 40px;
+    height: 40px;
+    min-height: 40px;
+}
+
+.z-hist-gora[aria-expanded="true"] .z-hist-nazwa {
+    font-weight: 600;
+}
+
+.z-hist-chevron {
+    display: inline-flex;
+    flex: 0 0 auto;
+    color: var(--ukis-text-secondary);
+}
+
+.z-hist-gora[aria-expanded="true"] .z-hist-chevron-dol,
+.z-hist-gora[aria-expanded="false"] .z-hist-chevron-gora {
+    display: none;
+}
+
+/* ---------- Szczegóły ---------- */
+.z-hist-szczegoly {
+    margin-top: 14px;
+    padding-top: 14px;
+    border-top: 1px solid var(--ukis-divider);
+}
+
+.z-hist-szczegoly[hidden] {
+    display: none;
+}
+
+.z-hist-staty {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 16px;
+}
+
+.z-hist-staty .z-stat {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    padding: 12px;
+    box-shadow: none;
+    text-align: center;
+}
+
+.z-hist-staty .z-stat strong {
+    font-family: var(--ukis-font-display);
+    font-style: italic;
+    font-weight: 700;
+    font-size: 18px;
+    line-height: 1.2;
+    color: var(--ukis-text);
+}
+
+.z-hist-staty .z-stat .z-mut {
+    font-size: 12px;
+}
+
+.z-hist-lista {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    font-size: 13px;
+}
+
+.z-hist-cw-nazwa {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--ukis-text);
+    margin-bottom: 4px;
+}
+
+.z-hist-serie {
+    padding-left: 10px;
+    border-left: 2px solid var(--ukis-primary-soft);
+    margin-bottom: 6px;
+}
+
+.z-hist-seria {
+    font-size: 13px;
+    margin-bottom: 2px;
+}
+
+.z-hist-cw-blok {
+    padding: 10px 12px;
+    border: 1px solid var(--ukis-accent-line);
+    border-radius: var(--ukis-radius-sm);
+    background: var(--ukis-primary-tint);
+}
+
+.z-hist-blok {
+    margin-bottom: 8px;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: .5px;
+    text-transform: uppercase;
+    /* Akcent na primary-tint dawał 4,2–4,35 : 1, więc biały tekst; akcent niesie ramka bloku. */
+    color: var(--ukis-text);
+}
+
+/* ---------- Akcje ---------- */
+.z-hist-akcje {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 18px;
+}
+
+.z-hist-akcje .z-ghost {
+    flex: 1 1 auto;
+    justify-content: center;
+    gap: 6px;
+    font-size: 12px;
+}
+
+/* Serie w bloku superserii leżą na tle z-primary-tint: z-mut dawał tam 3,96 : 1 (tapeta biała), więc jaśniejszy tekst wtórny. */
+.z-hist-cw-blok .z-hist-seria {
+    color: var(--ukis-text-secondary);
+}

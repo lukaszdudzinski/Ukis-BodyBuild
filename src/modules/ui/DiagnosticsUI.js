@@ -1,7 +1,12 @@
+// wyglad: zar
 import { DatabaseManager } from '../db/DatabaseManager.js';
 import { ExerciseCategories, isCatalogExercise } from '../../data/ExerciseCatalog.js';
 import { suggestCatalogName } from '../../data/exerciseTraits.js';
 import { naglowek } from '../wyglad/naglowek.js';
+import { ikona } from '../wyglad/ikony.js';
+
+const esc = (s) => String(s ?? '')
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
 
 export const DiagnosticsUI = {
     init: () => {
@@ -17,148 +22,141 @@ export const DiagnosticsUI = {
 
         wrapper.innerHTML = `
             ${naglowek({ wariant: 'main', tytul: 'Serwis', podtytul: 'Kopia, naprawa i porządki' })}
-            <div style="background: rgba(255, 152, 0, 0.05); padding: 20px; border-radius: 16px; border: 1px solid rgba(255,152,0,0.3); margin-bottom: 25px; backdrop-filter: blur(10px);">
-                <h3 style="color: #FF9800; margin-top: 0; display: flex; align-items: center; gap: 8px; font-weight: 600;">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
-                    Pełne Archiwum Bazy Danych
-                </h3>
-                <p style="font-size: 0.9em; color: #8E8E93; line-height: 1.5;">Utwórz kompletną kopię bezpieczeństwa (pomiary, treningi, szablony, dieta, raporty AI, awatar i ustawienia) lub przywróć całą aplikację z pliku archiwum JSON. <br><span id="db-size-display" style="color: #00BFFF; font-weight: 600;">Szacowanie rozmiaru bazy...</span></p>
-                <div style="display: flex; gap: 12px; margin-top: 20px;">
-                    <button id="db-export-btn" style="flex: 1; padding: 14px 10px; background: rgba(0, 191, 255, 0.15); border: 1px solid rgba(0, 191, 255, 0.3); color: #00BFFF; border-radius: 12px; cursor: pointer; font-size: 0.95em; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 6px;">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-                        Utwórz Archiwum
+            <div class="z-serwis">
+            <section class="z-card z-serwis-karta" aria-labelledby="serwis-t-kopia">
+                <div class="z-serwis-tyt" id="serwis-t-kopia" role="heading" aria-level="3">${ikona('database')}Kopia zapasowa</div>
+                <p class="z-sub z-serwis-opis">Utwórz kompletną kopię bezpieczeństwa (pomiary, treningi, szablony, dieta, raporty AI, awatar i ustawienia) lub przywróć całą aplikację z pliku archiwum JSON. <span id="db-size-display" class="z-serwis-rozmiar">Szacowanie rozmiaru bazy...</span></p>
+                <div class="z-serwis-rzad">
+                    <button type="button" id="db-export-btn" class="z-btn">
+                        ${ikona('download', 18)}
+                        Utwórz kopię
                     </button>
-                    <button id="db-import-btn" style="flex: 1; padding: 14px 10px; background: rgba(255, 152, 0, 0.15); border: 1px solid rgba(255, 152, 0, 0.3); color: #FF9800; border-radius: 12px; cursor: pointer; font-size: 0.95em; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 6px;">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-                        Przywróć z Pliku
+                    <button type="button" id="db-import-btn" class="z-ghost">
+                        ${ikona('upload', 18)}
+                        Przywróć z pliku
                     </button>
-                    <input type="file" id="db-import-file" accept=".json" style="display: none;">
-                </div>
-                
-                <div style="margin-top: 20px;">
-                    <label style="display: block; color: #8E8E93; font-size: 0.9em; margin-bottom: 8px;">Częstotliwość propozycji archiwizacji:</label>
-                    <select id="backup-frequency-select" style="width: 100%; padding: 12px; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; color: #fff; font-size: 0.95em; cursor: pointer; outline: none;">
-                        <option value="activity">Po aktywności (jeśli był wczoraj trening)</option>
-                        <option value="daily">Codziennie</option>
-                        <option value="weekly">Co tydzień</option>
-                        <option value="monthly">Co miesiąc</option>
-                        <option value="bimonthly">Co dwa miesiące</option>
-                        <option value="never">Nigdy nie proponuj</option>
-                    </select>
+                    <input type="file" id="db-import-file" accept=".json" hidden>
                 </div>
 
-                <details style="margin-top: 20px; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 15px;">
-                    <summary style="color: #8E8E93; font-size: 0.85em; cursor: pointer; user-select: none;">Narzędzia eksperymentalne (Dla deweloperów)</summary>
-                    <div style="display: flex; gap: 12px; margin-top: 15px;">
-                        <button id="db-export-raw-btn" style="flex: 1; padding: 12px 10px; background: rgba(231, 76, 60, 0.1); border: 1px solid rgba(231, 76, 60, 0.3); color: #E74C3C; border-radius: 12px; cursor: pointer; font-size: 0.85em; font-weight: 600; text-align: center; display: flex; align-items: center; justify-content: center; gap: 6px;">
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                <label class="z-lab z-serwis-etykieta" for="backup-frequency-select">Częstotliwość propozycji archiwizacji</label>
+                <select id="backup-frequency-select" class="z-in">
+                    <option value="activity">Po aktywności (jeśli był wczoraj trening)</option>
+                    <option value="daily">Codziennie</option>
+                    <option value="weekly">Co tydzień</option>
+                    <option value="monthly">Co miesiąc</option>
+                    <option value="bimonthly">Co dwa miesiące</option>
+                    <option value="never">Nigdy nie proponuj</option>
+                </select>
+
+                <details class="z-serwis-narz">
+                    <summary>Narzędzia eksperymentalne (dla deweloperów)</summary>
+                    <div class="z-serwis-rzad">
+                        <button type="button" id="db-export-raw-btn" class="z-ghost">
+                            ${ikona('download', 18)}
                             Pobierz RAW
                         </button>
-                        <button id="db-import-raw-btn" style="flex: 1; padding: 12px 10px; background: rgba(46, 204, 113, 0.1); border: 1px solid rgba(46, 204, 113, 0.3); color: #2ECC71; border-radius: 12px; cursor: pointer; font-size: 0.85em; font-weight: 600; text-align: center; display: flex; align-items: center; justify-content: center; gap: 6px;">
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                        <button type="button" id="db-import-raw-btn" class="z-ghost z-danger">
+                            ${ikona('upload', 18)}
                             Przywróć RAW
                         </button>
-                        <input type="file" id="db-import-raw-file" accept=".sqlite3" style="display: none;">
+                        <input type="file" id="db-import-raw-file" accept=".sqlite3" hidden>
                     </div>
                 </details>
-            </div>
+            </section>
 
-            <div style="background: rgba(231, 76, 60, 0.05); padding: 20px; border-radius: 16px; border: 1px solid rgba(231, 76, 60, 0.3); margin-bottom: 25px; backdrop-filter: blur(10px);">
-                <h3 style="color: #E74C3C; margin-top: 0; font-weight: 600;">Przycisk Paniki (Twardy Reset)</h3>
-                <p style="font-size: 0.9em; color: #8E8E93; line-height: 1.5;">Użyj tylko wtedy, gdy aplikacja przestała się aktualizować lub "utknęła" na starej wersji. <b style="color: #fff;">Konta i statystyki są bezpieczne</b> (baza SQLite nie jest usuwana).</p>
-                <button id="pwa-hard-reset-btn" style="width: 100%; padding: 14px; font-weight: 600; font-size: 1em; background: rgba(231, 76, 60, 0.15); color: #E74C3C; border: 1px solid rgba(231, 76, 60, 0.4); border-radius: 12px; cursor: pointer; margin-top: 15px; display: flex; align-items: center; justify-content: center; gap: 8px;">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
-                    Wykonaj Twardy Reset Aplikacji
-                </button>
-            </div>
-
-            
-            <div style="background: rgba(33, 150, 243, 0.05); padding: 20px; border-radius: 16px; border: 1px solid rgba(33, 150, 243, 0.3); margin-bottom: 25px; backdrop-filter: blur(10px);">
-                <h3 style="color: #2196F3; margin-top: 0; display: flex; align-items: center; gap: 8px; font-weight: 600;">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>
-                    Zarządzanie Pamięcią (Storage)
-                </h3>
-                <p style="font-size: 0.9em; color: #8E8E93; line-height: 1.5;">Wybierz, z jakich modułów chcesz usunąć stare zdjęcia, aby zwolnić miejsce. Usunięte zostaną <b style="color: #fff;">tylko pliki graficzne</b>, Twoje dane pozostaną nienaruszone!</p>
-                <div style="margin-top: 20px; display: flex; flex-direction: column; gap: 12px; color: #fff;">
-                    <label style="display: flex; align-items: center; gap: 10px; cursor: pointer;">
-                        <input type="checkbox" id="sm-diet" checked style="width: 20px; height: 20px; accent-color: #2196F3;">
-                        <span>Dieta (Zdjęcia posiłków)</span>
+            <section class="z-card z-serwis-karta" aria-labelledby="serwis-t-miejsce">
+                <div class="z-serwis-tyt" id="serwis-t-miejsce" role="heading" aria-level="3">${ikona('trash')}Zwalnianie miejsca</div>
+                <p class="z-sub z-serwis-opis">Wybierz, z jakich modułów chcesz usunąć stare zdjęcia, aby zwolnić miejsce. Usunięte zostaną <strong class="z-serwis-mocny">tylko pliki graficzne</strong>, Twoje dane pozostaną nienaruszone.</p>
+                <div class="z-serwis-pola">
+                    <label class="z-check">
+                        <input type="checkbox" id="sm-diet" checked>
+                        <span>Dieta (zdjęcia posiłków)</span>
                     </label>
-                    <label style="display: flex; align-items: center; gap: 10px; cursor: pointer;">
-                        <input type="checkbox" id="sm-training" checked style="width: 20px; height: 20px; accent-color: #2196F3;">
-                        <span>Treningi (Zdjęcia z siłowni)</span>
+                    <label class="z-check">
+                        <input type="checkbox" id="sm-training" checked>
+                        <span>Treningi (zdjęcia z siłowni)</span>
                     </label>
-                    <label style="display: flex; align-items: center; gap: 10px; cursor: pointer;">
-                        <input type="checkbox" id="sm-measurements" checked style="width: 20px; height: 20px; accent-color: #2196F3;">
-                        <span>Pomiary (Zdjęcia sylwetki)</span>
+                    <label class="z-check">
+                        <input type="checkbox" id="sm-measurements" checked>
+                        <span>Pomiary (zdjęcia sylwetki)</span>
                     </label>
                 </div>
-                <div style="margin-top: 20px;">
-                    <label style="font-size: 0.9em; color: #8E8E93; margin-bottom: 8px; display: block;">Okres do wyczyszczenia (starsze niż):</label>
-                    <select id="sm-time-select" style="width: 100%; padding: 12px; border-radius: 12px; background: rgba(0,0,0,0.3); color: #fff; border: 1px solid rgba(255,255,255,0.1); outline: none;">
-                        <option value="1">1 dzień</option>
-                        <option value="7">1 tydzień</option>
-                        <option value="30">1 miesiąc</option>
-                        <option value="90">3 miesiące</option>
-                        <option value="180">6 miesięcy</option>
-                        <option value="9999">Wszystkie</option>
-                    </select>
-                </div>
-                <button id="db-clear-media-btn" style="width: 100%; padding: 14px; background: rgba(33, 150, 243, 0.15); color: #2196F3; border: 1px solid rgba(33, 150, 243, 0.3); border-radius: 12px; cursor: pointer; margin-top: 20px; font-weight: 600; font-size: 0.95em; display: flex; align-items: center; justify-content: center; gap: 8px;">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+                <label class="z-lab z-serwis-etykieta" for="sm-time-select">Okres do wyczyszczenia (starsze niż)</label>
+                <select id="sm-time-select" class="z-in">
+                    <option value="1">1 dzień</option>
+                    <option value="7">1 tydzień</option>
+                    <option value="30">1 miesiąc</option>
+                    <option value="90">3 miesiące</option>
+                    <option value="180">6 miesięcy</option>
+                    <option value="9999">Wszystkie</option>
+                </select>
+                <button type="button" id="db-clear-media-btn" class="z-ghost z-serwis-szeroki">
+                    ${ikona('trash', 18)}
                     Rozpocznij zwalnianie miejsca
                 </button>
-            </div>
+            </section>
 
-            <div style="background: rgba(155, 89, 182, 0.05); padding: 20px; border-radius: 16px; border: 1px solid rgba(155, 89, 182, 0.3); margin-bottom: 25px; backdrop-filter: blur(10px);">
-                <h3 style="color: #9B59B6; margin-top: 0; display: flex; align-items: center; gap: 8px; font-weight: 600;">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
-                    Naprawa i Mapowanie Danych
-                </h3>
-                <p style="font-size: 0.9em; color: #8E8E93; line-height: 1.5;">Narzędzie do automatycznej naprawy starych nazw ćwiczeń na nowe, zunifikowane nazwy z Katalogu. <b style="color: #fff;">WAŻNE: Przed użyciem utwórz Archiwum na samej górze!</b></p>
-                <button id="db-migrate-names-btn" style="width: 100%; padding: 14px; font-weight: 600; font-size: 0.95em; background: rgba(155, 89, 182, 0.15); color: #9B59B6; border: 1px solid rgba(155, 89, 182, 0.3); border-radius: 12px; cursor: pointer; margin-top: 20px; display: flex; align-items: center; justify-content: center; gap: 8px;">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.5 2v6h-6M2.13 15.57a9 9 0 1 0 3.84-10.58l-5.49 5.49"/></svg>
+            <section class="z-card z-serwis-karta" aria-labelledby="serwis-t-naprawa">
+                <div class="z-serwis-tyt" id="serwis-t-naprawa" role="heading" aria-level="3">${ikona('wrench')}Naprawa i mapowanie danych</div>
+                <p class="z-sub z-serwis-opis">Narzędzie do automatycznej naprawy starych nazw ćwiczeń na nowe, zunifikowane nazwy z Katalogu. <strong class="z-serwis-mocny">Ważne: przed użyciem utwórz kopię na samej górze ekranu.</strong></p>
+                <button type="button" id="db-migrate-names-btn" class="z-ghost z-serwis-szeroki">
+                    ${ikona('rotate-ccw', 18)}
                     Wykonaj Mapowanie Ćwiczeń
                 </button>
-            </div>
-            
-            <div style="background: rgba(255, 69, 58, 0.05); padding: 20px; border-radius: 16px; border: 1px solid rgba(255, 69, 58, 0.3); margin-bottom: 25px; backdrop-filter: blur(10px);">
-                <h3 style="color: #FF453A; margin-top: 0; display: flex; align-items: center; gap: 8px; font-weight: 600;">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-                    Formatowanie Bazy (Usuwa Błędy I/O)
-                </h3>
-                <p style="font-size: 0.9em; color: #8E8E93; line-height: 1.5;">Rozwiązuje ostatecznie problem "disk I/O error" w Safari. <br><b style="color: #fff;">KROK 1:</b> Utwórz Archiwum wyżej i pobierz plik JSON.<br><b style="color: #fff;">KROK 2:</b> Kliknij ten przycisk.<br><b style="color: #fff;">KROK 3:</b> Po restarcie zaimportuj pobrany plik JSON.</p>
-                <button id="db-factory-reset-btn" style="width: 100%; padding: 14px; font-weight: 600; font-size: 0.95em; background: rgba(255, 69, 58, 0.15); color: #FF453A; border: 1px solid rgba(255, 69, 58, 0.3); border-radius: 12px; cursor: pointer; margin-top: 20px; display: flex; align-items: center; justify-content: center; gap: 8px;">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><path d="M13 2v7h7"/><path d="M12 18v-6"/><path d="M9 15l3 3 3-3"/></svg>
-                    FORMATUJ BAZĘ DANYCH
-                </button>
-            </div>
+            </section>
 
-            <div style="background: rgba(255,255,255,0.05); padding: 20px; border-radius: 16px; border: 1px solid rgba(255,255,255,0.1); margin-bottom: 25px; backdrop-filter: blur(10px);">
-                <h3 style="color: #fff; margin-top: 0; font-weight: 600;">Pamięć Podręczna</h3>
-                <p style="font-size: 0.9em; color: #8E8E93; line-height: 1.5;">Użyj tej opcji <b style="color: #fff;">tylko wtedy, gdy zaciął się interfejs</b> (np. nie ładuje się awatar, źle działa motyw lub zablokował się samouczek). Zresetuje ona wyłącznie podręczne ustawienia wyglądu. <b style="color: #00BFFF;">Twoja historia treningów i atlas ćwiczeń są w pełni bezpieczne!</b></p>
-                <button id="db-clear-local-btn" style="width: 100%; padding: 14px; background: rgba(255,255,255,0.1); color: #fff; border: 1px solid rgba(255,255,255,0.2); border-radius: 12px; cursor: pointer; margin-top: 15px; font-size: 0.95em; font-weight: 600;">
+            <section class="z-card z-serwis-karta" aria-labelledby="serwis-t-cache">
+                <div class="z-serwis-tyt" id="serwis-t-cache" role="heading" aria-level="3">${ikona('settings')}Pamięć podręczna</div>
+                <p class="z-sub z-serwis-opis">Użyj tej opcji <strong class="z-serwis-mocny">tylko wtedy, gdy zaciął się interfejs</strong> (np. nie ładuje się awatar, źle działa motyw lub zablokował się samouczek). Zresetuje ona wyłącznie podręczne ustawienia wyglądu. <strong class="z-serwis-mocny">Twoja historia treningów i atlas ćwiczeń są w pełni bezpieczne.</strong></p>
+                <button type="button" id="db-clear-local-btn" class="z-ghost z-serwis-szeroki">
                     Wyczyść tylko LocalStorage
                 </button>
-            </div>
-            
-            <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.05); padding: 20px; border-radius: 16px; margin-bottom: 25px;">
-                <h3 style="margin-top: 0; color: #fff; font-weight: 600;">Logi Błędów Aplikacji</h3>
-                <div id="diagnostics-logs-container" style="background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.05); color: #00BFFF; font-family: monospace; font-size: 0.85em; padding: 15px; border-radius: 12px; min-height: 150px; max-height: 300px; overflow-y: auto; margin: 15px 0; word-break: break-all; white-space: pre-wrap; box-sizing: border-box; width: 100%;">
+            </section>
+
+            <section class="z-card z-serwis-karta" aria-labelledby="serwis-t-logi">
+                <div class="z-serwis-tyt" id="serwis-t-logi" role="heading" aria-level="3">${ikona('info')}Logi błędów aplikacji</div>
+                <div id="diagnostics-logs-container" class="z-serwis-logi" role="region" aria-label="Logi błędów" tabindex="0">
                     Ładowanie logów...
                 </div>
-                
-                <div style="display: flex; gap: 12px; margin-bottom: 12px;">
-                    <button id="copy-errors-btn" style="flex: 1; padding: 12px 10px; background: rgba(255,255,255,0.1); color: #fff; border: 1px solid rgba(255,255,255,0.2); border-radius: 10px; font-weight: 600; cursor: pointer; font-size: 0.9em;">
+                <div class="z-serwis-rzad">
+                    <button type="button" id="copy-errors-btn" class="z-ghost">
+                        ${ikona('copy', 18)}
                         Kopiuj Logi
                     </button>
-                    <button id="share-errors-btn" style="flex: 1; padding: 12px 10px; background: rgba(0, 191, 255, 0.15); color: #00BFFF; border: 1px solid rgba(0,191,255,0.3); border-radius: 10px; font-weight: 600; cursor: pointer; font-size: 0.9em;">
+                    <button type="button" id="share-errors-btn" class="z-ghost">
+                        ${ikona('share', 18)}
                         Udostępnij Logi
                     </button>
                 </div>
-                <button id="clear-errors-btn" style="width: 100%; padding: 12px; background: transparent; color: #8E8E93; border: 1px dashed rgba(255,255,255,0.2); border-radius: 10px; cursor: pointer; font-size: 0.9em; font-weight: 600;">
+                <button type="button" id="clear-errors-btn" class="z-ghost z-serwis-szeroki">
                     Wyczyść Logi
                 </button>
+            </section>
+
+            <section class="z-card z-alert z-serwis-karta" aria-labelledby="serwis-t-awaria">
+                <div class="z-serwis-tyt z-serwis-tyt-awaria" id="serwis-t-awaria" role="heading" aria-level="3">${ikona('alert')}Strefa awaryjna</div>
+
+                <h4 class="z-serwis-podtyt">Przycisk paniki (twardy reset)</h4>
+                <p class="z-sub z-serwis-opis">Użyj tylko wtedy, gdy aplikacja przestała się aktualizować lub „utknęła” na starej wersji. <strong class="z-serwis-mocny">Konta i statystyki są bezpieczne</strong> (baza SQLite nie jest usuwana).</p>
+                <button type="button" id="pwa-hard-reset-btn" class="z-ghost z-danger z-serwis-szeroki">
+                    ${ikona('alert', 18)}
+                    Wykonaj Twardy Reset Aplikacji
+                </button>
+
+                <div class="z-sep"></div>
+
+                <h4 class="z-serwis-podtyt">Formatowanie bazy (usuwa błędy I/O)</h4>
+                <p class="z-sub z-serwis-opis">Rozwiązuje ostatecznie problem „disk I/O error” w Safari.</p>
+                <ol class="z-sub z-serwis-kroki">
+                    <li><strong class="z-serwis-mocny">Krok 1:</strong> utwórz kopię wyżej i pobierz plik JSON.</li>
+                    <li><strong class="z-serwis-mocny">Krok 2:</strong> kliknij ten przycisk.</li>
+                    <li><strong class="z-serwis-mocny">Krok 3:</strong> po restarcie zaimportuj pobrany plik JSON.</li>
+                </ol>
+                <button type="button" id="db-factory-reset-btn" class="z-ghost z-danger z-serwis-szeroki">
+                    ${ikona('trash', 18)}
+                    Formatuj bazę danych
+                </button>
+            </section>
             </div>
         `;
 
@@ -180,12 +178,12 @@ export const DiagnosticsUI = {
                     
                     let html = '';
                     for (const v in grouped) {
-                        html += `<div style="color: #FF9800; font-weight: bold; font-size: 1.1em; border-bottom: 1px solid #333; margin-top: 10px; padding-bottom: 4px;">Wersja: ${v}</div>`;
+                        html += `<div class="z-log-wer">Wersja: ${esc(v)}</div>`;
                         grouped[v].forEach(l => {
-                            html += `<div style="margin: 8px 0; border-left: 2px solid #E74C3C; padding-left: 8px;">`;
-                            html += `<span style="color: #888; font-size: 0.85em;">${l.time}</span><br>`;
-                            html += `<span style="color: #E74C3C; font-weight: bold;">${l.msg}</span>`;
-                            if (l.stack) html += `<br><span style="color: #aaa; font-size: 0.8em;">${l.stack.substring(0, 200)}...</span>`;
+                            html += `<div class="z-log-wpis">`;
+                            html += `<span class="z-log-czas">${esc(l.time)}</span><br>`;
+                            html += `<span class="z-log-msg">${esc(l.msg)}</span>`;
+                            if (l.stack) html += `<br><span class="z-log-stos">${esc(l.stack.substring(0, 200))}...</span>`;
                             html += `</div>`;
                         });
                     }
@@ -522,29 +520,29 @@ export const DiagnosticsUI = {
                         const bestMatch = suggestCatalogName(unknown);
 
                         rowsHtml += `
-                            <div style="background: rgba(255,255,255,0.05); padding: 10px; border-radius: 6px; margin-bottom: 10px; border: 1px solid #444;">
-                                <div style="color: #ff9800; font-weight: bold; margin-bottom: 5px;">Nieznane: "${unknown}"</div>
-                                <select id="map-select-${i}" data-original="${unknown}" style="width: 100%; padding: 8px; border-radius: 4px; background: #222; color: #fff; border: 1px solid #00BFFF;">
+                            <div class="z-serwis-wiersz">
+                                <label class="z-lab z-serwis-nieznane" for="map-select-${i}">Nieznane: "${esc(unknown)}"</label>
+                                <select id="map-select-${i}" class="z-in" data-original="${esc(unknown)}">
                                     <option value="">-- Pomiń (Zostaw bez zmian) --</option>
-                                    ${validExercises.map(ex => `<option value="${ex}" ${ex === bestMatch ? 'selected' : ''}>Zmień na: ${ex}</option>`).join('')}
+                                    ${validExercises.map(ex => `<option value="${esc(ex)}" ${ex === bestMatch ? 'selected' : ''}>Zmień na: ${esc(ex)}</option>`).join('')}
                                 </select>
                             </div>
                         `;
                     });
 
                     const modalHtml = `
-                        <div id="${modalId}" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 100000; display: flex; justify-content: center; align-items: center; padding: 20px; box-sizing: border-box;">
-                            <div style="background: #1e1e1e; border: 1px solid #9B59B6; border-radius: 12px; width: 100%; max-width: 500px; max-height: 90vh; display: flex; flex-direction: column; box-shadow: 0 10px 40px rgba(155,89,182,0.3);">
-                                <div style="padding: 15px; border-bottom: 1px solid #333; display: flex; justify-content: space-between; align-items: center;">
-                                    <h3 style="color: #9B59B6; margin: 0;">Asystent Mapowania</h3>
-                                    <button onclick="document.getElementById('${modalId}').remove()" style="background: none; border: none; color: #aaa; font-size: 1.5em; cursor: pointer;">&times;</button>
+                        <div id="${modalId}" class="z-dialog-scrim z-serwis-scrim">
+                            <div class="z-dialog z-serwis-okno" role="dialog" aria-modal="true" aria-labelledby="${modalId}-tyt">
+                                <div class="z-serwis-okno-gora">
+                                    <h3 class="z-hd" id="${modalId}-tyt">Asystent Mapowania</h3>
+                                    <button type="button" class="z-ic" aria-label="Zamknij" onclick="document.getElementById('${modalId}').remove()">${ikona('x')}</button>
                                 </div>
-                                <div style="padding: 15px; overflow-y: auto; flex: 1;">
-                                    <p style="font-size: 0.9em; color: #ccc;">Poniżej znajdują się nazwy, które nie występują w nowym katalogu. Wybierz z listy docelowe odpowiedniki. Jeśli zostawisz "-- Pomiń --", nazwa nie zostanie zmieniona.</p>
+                                <div class="z-serwis-okno-tresc">
+                                    <p class="z-sub">Poniżej znajdują się nazwy, które nie występują w nowym katalogu. Wybierz z listy docelowe odpowiedniki. Jeśli zostawisz "-- Pomiń --", nazwa nie zostanie zmieniona.</p>
                                     ${rowsHtml}
                                 </div>
-                                <div style="padding: 15px; border-top: 1px solid #333; text-align: center;">
-                                    <button id="map-save-btn" style="background: #2ECC71; color: white; border: none; padding: 12px 20px; font-weight: bold; font-size: 1.1em; border-radius: 6px; cursor: pointer; width: 100%;">💾 Zapisz Zmiany do Bazy</button>
+                                <div class="z-dialog-actions">
+                                    <button type="button" id="map-save-btn" class="z-btn z-serwis-szeroki">Zapisz zmiany do bazy</button>
                                 </div>
                             </div>
                         </div>
