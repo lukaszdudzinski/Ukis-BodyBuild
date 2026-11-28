@@ -187,40 +187,6 @@ body.zar.z-tlo-poswiata .app-content {
     background-color: rgba(0, 0, 0, 0.12);
 }
 
-/* ---------- Most dla kolorów wpisanych w style="…" ----------
-   Zostały dwie reguły z mostu A10: pasują jeszcze do karty przełącznika wyglądów (ui-switch.js, #uki-ui-switch-card
-   w Profilu; ten wspólny plik dostaje własny wygląd w etapie D). Pozostałe reguły mostu nie pasowały już do niczego
-   i zostały usunięte w C13. !important jest konieczne, bo nadpisujemy atrybut style. */
-
-/* Szare podpisy, etykiety i puste stany. */
-body.zar .app-content :is(
-    [style^="color: #8e8e93" i], [style^="color:#8e8e93" i], [style*=" color: #8e8e93" i], [style*=" color:#8e8e93" i], [style*=";color: #8e8e93" i], [style*=";color:#8e8e93" i],
-    [style^="color: #888" i], [style^="color:#888" i], [style*=" color: #888" i], [style*=" color:#888" i], [style*=";color: #888" i], [style*=";color:#888" i],
-    [style^="color: #777" i], [style^="color:#777" i], [style*=" color: #777" i], [style*=" color:#777" i], [style*=";color: #777" i], [style*=";color:#777" i],
-    [style^="color: #666" i], [style^="color:#666" i], [style*=" color: #666" i], [style*=" color:#666" i], [style*=";color: #666" i], [style*=";color:#666" i],
-    [style^="color: #555" i], [style^="color:#555" i], [style*=" color: #555" i], [style*=" color:#555" i], [style*=";color: #555" i], [style*=";color:#555" i],
-    [style^="color: #999" i], [style^="color:#999" i], [style*=" color: #999" i], [style*=" color:#999" i], [style*=";color: #999" i], [style*=";color:#999" i],
-    [style^="color: #aaa" i], [style^="color:#aaa" i], [style*=" color: #aaa" i], [style*=" color:#aaa" i], [style*=";color: #aaa" i], [style*=";color:#aaa" i],
-    [style^="color: rgb(142, 142, 147)"], [style*=" color: rgb(142, 142, 147)"],
-    [style^="color: rgb(136, 136, 136)"], [style*=" color: rgb(136, 136, 136)"]
-) {
-    color: var(--ukis-text-secondary) !important;
-}
-
-/* Barwne przyciski z półprzezroczystym tłem w kolorze tekstu: ciemne tło jak .z-ghost.z-danger, barwa zostaje w ramce i tekście. */
-body.zar .app-content :is(
-    [style*="background: rgba(231, 76, 60, 0." i], [style*="background: rgba(231,76,60,0." i], [style*="background:rgba(231,76,60,0." i],
-    [style*="background: rgba(255, 69, 58, 0." i], [style*="background: rgba(255,69,58,0." i], [style*="background:rgba(255,69,58,0." i],
-    [style*="background: rgba(255, 152, 0, 0." i], [style*="background: rgba(255,152,0,0." i], [style*="background:rgba(255,152,0,0." i],
-    [style*="background: rgba(0, 191, 255, 0." i], [style*="background: rgba(0,191,255,0." i], [style*="background:rgba(0,191,255,0." i],
-    [style*="background: rgba(33, 150, 243, 0." i], [style*="background: rgba(33,150,243,0." i], [style*="background:rgba(33,150,243,0." i],
-    [style*="background: rgba(46, 204, 113, 0." i], [style*="background: rgba(46,204,113,0." i], [style*="background:rgba(46,204,113,0." i],
-    [style*="background: rgba(155, 89, 182, 0." i], [style*="background: rgba(155,89,182,0." i], [style*="background:rgba(155,89,182,0." i],
-    [style*="background: rgba(0, 210, 106, 0." i], [style*="background: rgba(0,210,106,0." i], [style*="background:rgba(0,210,106,0." i]
-) {
-    background: var(--ukis-danger-ghost-bg) !important;
-}
-
 /* ============================================================
    UKŁAD NA TELEFONIE
    Jeden kontener przewijania (.tab-content-wrapper), pływający pasek dolny nad treścią.

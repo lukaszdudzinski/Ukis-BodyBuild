@@ -29,10 +29,6 @@ export const SettingsUI = {
         const settingsPanel = document.getElementById('settings-panel');
         if (!settingsPanel) return;
 
-        // Przełącznik wyglądu (okres przejściowy - patrz ui-switch.js); droga do klasycznego do etapu D (R10).
-        const uiSwitchMount = document.getElementById('profile-ui-switch');
-        if (window.UkiUiSwitch && uiSwitchMount) window.UkiUiSwitch.mountSettingsCard(uiSwitchMount);
-
         // „Zobacz ponownie powitanie”: powitanie Edwarda od razu (OnboardingUI.init pokazuje je, gdy nie ma flagi v22).
         const resetTutorialBtn = document.getElementById('reset-tutorial-btn');
         if (resetTutorialBtn) {

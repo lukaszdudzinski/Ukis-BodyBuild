@@ -1,6 +1,5 @@
 // Cel kaloryczny diety: wyliczenie z pomiarów, ręczna zmiana i strażnik wiarygodności.
 // Jedno miejsce dla wszystkich zapisów i odczytów celu (algorytm, ręczna zmiana, import kopii).
-// Identyczna kopia: src/modules/diet/kcalGoal.js i classic-app/src/modules/diet/kcalGoal.js (zmieniaj obie naraz).
 
 // Zapis: { kcal, source: 'auto' | 'manual', at, incident? }.
 // 'auto' = wyliczony algorytmem, 'manual' = ustawiony ręcznie. `incident` = ostatnio zgłoszona błędna wartość

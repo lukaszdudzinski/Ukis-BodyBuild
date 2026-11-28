@@ -74,6 +74,8 @@ export const ChangelogUI = {
     close: () => {
         const overlay = document.getElementById('changelog-modal-overlay');
         if (overlay) overlay.style.display = 'none';
+        // Następne okno startowe (komunikat dla użytkowników wyglądu klasycznego, AppUI.js) czeka na to zdarzenie.
+        document.dispatchEvent(new Event('changelogClosed'));
     },
 
     bindEvents: () => {

@@ -11,8 +11,6 @@ const RETRY_LABELS = {
     invalid: 'Nieprawidłowa odpowiedź serwera.'
 };
 
-const VARIANT = import.meta.url.includes('/classic-app/') ? 'klasyczny' : 'glass';
-
 const isQuotaText = (text) => /exceeded your current quota|quota exceeded/i.test(text);
 const isOverloadText = (text) => /high demand|overloaded|UNAVAILABLE/i.test(text);
 
@@ -189,7 +187,6 @@ export const DietAIEngine = {
         parts.push(`próby ${attempt}/${maxAttempts}`);
         parts.push(`${((Date.now() - startedAt) / 1000).toFixed(1)} s`);
         parts.push(`zdjęć ${images}`);
-        parts.push(`wariant ${VARIANT}`);
         if (error.raw) parts.push(`odp: "${safeSnippet(error.raw, contextText)}"`);
         return parts.join(' | ');
     }

@@ -1,8 +1,9 @@
 import { PremiumUI } from "./PremiumUI.js";
 import { menuTrening, dataMenu, pozdrowienie } from "../wyglad/menuTrening.js";
 import { toIso } from "../trainer/trainerPlan.js";
+import { pokazJesliTrzeba as komunikatKlasyczny } from "../wyglad/komunikatKlasyczny.js";
 
-export const APP_VERSION = 'v2026.11.28.01'; // Faza 6.2: Katalog z podziałem na partie i Fixy UI
+export const APP_VERSION = 'v2026.11.28.02'; // Faza 6.2: Katalog z podziałem na partie i Fixy UI
 
 // Obsługa błędów globalnych — zdefiniowana w main.js (klucz: uki_error_logs)
 
@@ -32,12 +33,15 @@ export const AppUI = {
         if (premiumLabel) premiumLabel.textContent = premiumStatus.isProToken ? 'Wersja Heavy' : 'Wersja Light';
 
         // CHANGELOG AUTO-SHOW LOGIC (tylko w zainstalowanej aplikacji; w karcie przeglądarki nic nie zapisujemy)
-        const appMode = !window.UkiUiSwitch || window.UkiUiSwitch.isAppMode();
+        const appMode = !window.UkiAppStart || window.UkiAppStart.isAppMode();
         const lastSeen = localStorage.getItem('uki-bodybuild-last-version');
         // Powitanie Edwarda (OnboardingUI) jeszcze przed użytkownikiem.
         const onboardingPending = localStorage.getItem('tutorial_global_v22') !== 'true';
         // Nowa instalacja: nie ma czego pokazywać w „Co nowego?”, jedynym oknem jest powitanie Edwarda.
         const freshInstall = onboardingPending && lastSeen === null;
+        // Jednorazowy komunikat dla użytkowników wyglądu klasycznego (spec 11 pkt 3): ostatni w kolejce okien
+        // startowych, po zamknięciu „Co nowego?” albo od razu, gdy „Co nowego?” się nie pokazuje.
+        let coNowego = false;
         if (!appMode) {
             // Strona instalacji: „Co nowego?” pokaże zainstalowana aplikacja.
         } else if (freshInstall) {
@@ -46,6 +50,8 @@ export const AppUI = {
             localStorage.setItem('uki-bodybuild-last-version', APP_VERSION);
             
             if (window.showChangelogModal) {
+                coNowego = true;
+                document.addEventListener('changelogClosed', () => komunikatKlasyczny(), { once: true });
                 AppUI.afterStartupOverlays(onboardingPending, () => setTimeout(async () => {
                     const btn = document.getElementById('changelog-update-now-btn');
                     if (btn) btn.style.display = 'none';
@@ -75,6 +81,9 @@ export const AppUI = {
                     window.showChangelogModal(compareVersion ? compareVersion : 'all');
                 }, 800));
             }
+        }
+        if (appMode && !coNowego) {
+            AppUI.afterStartupOverlays(onboardingPending, () => setTimeout(() => komunikatKlasyczny(), 800));
         }
 
         // Menu: data, pozdrowienie i karta „Twój trening” (spec 8.3) na starcie i przy każdym powrocie do Menu.
@@ -148,14 +157,13 @@ export const AppUI = {
         ui.startFromTemplate(id);
     },
 
-    // Okna startowe pokazują się kolejno, nigdy naraz: powitanie nowego wyglądu (ui-switch.js)
-    // → powitanie Edwarda (OnboardingUI, zdarzenie 'onboardingClosed') → dopiero potem cb (np. „Co nowego?”).
+    // Okna startowe pokazują się kolejno, nigdy naraz: powitanie Edwarda (OnboardingUI, zdarzenie
+    // 'onboardingClosed') → dopiero potem cb (np. „Co nowego?”).
     afterStartupOverlays: (onboardingPending, cb) => {
         if (onboardingPending) {
-            // Powitanie Edwarda samo czeka na powitanie nowego wyglądu, więc wystarczy czekać na nie.
             document.addEventListener('onboardingClosed', () => cb(), { once: true });
-        } else if (window.UkiUiSwitch && typeof window.UkiUiSwitch.whenWelcomeClosed === 'function') {
-            window.UkiUiSwitch.whenWelcomeClosed(cb);
+        } else if (window.UkiAppStart && typeof window.UkiAppStart.whenWelcomeClosed === 'function') {
+            window.UkiAppStart.whenWelcomeClosed(cb);
         } else {
             cb();
         }

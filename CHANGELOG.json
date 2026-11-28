@@ -1,5 +1,13 @@
 [
   {
+    "version": "v2026.11.28.02",
+    "date": "2026-11-28",
+    "changes": [
+      "🧹 Jeden wygląd dla wszystkich: wygląd klasyczny zastąpił „Czerwony żar”. Twoje treningi, pomiary i ustawienia są na miejscu.",
+      "🌐 Nowa strona instalacji w stylu aplikacji, z aktualnymi zrzutami ekranów."
+    ]
+  },
+  {
     "version": "v2026.11.28.01",
     "date": "2026-11-28",
     "changes": [

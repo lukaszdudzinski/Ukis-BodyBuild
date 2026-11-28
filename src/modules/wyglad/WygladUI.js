@@ -1,7 +1,6 @@
 // wyglad: zar
 // Ekran „Wygląd” (#wyglad-panel, spec 8.3, plansza Wyglad): motyw kolorów, tło (poświata albo tapeta),
 // przyciemnienie i rozmycie tapety. Wejście z Profilu. Każda zmiana idzie przez window.Wyglad (tlo.js).
-// Karta przełącznika wyglądów (ui-switch.js) siedzi obok, w #wyglad-przelacznik, i ten ekran jej nie przebudowuje.
 import { Wyglad, ZDARZENIE } from './tlo.js';
 import { MOTYWY, PRZYCIEMNIENIE } from './wygladModel.js';
 import { TAPETY } from './tapety.js';

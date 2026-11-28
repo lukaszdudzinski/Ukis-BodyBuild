@@ -6,7 +6,6 @@
 // Ćwiczenia własne użytkownika (uki_custom_exercises) są poza katalogiem.
 // bodyweight: część ciężaru ciała doliczana do tonażu (dotychczasowe współczynniki: pompki 0,65, podciąganie 1);
 // bodyweightOnly: ćwiczenie z ciężarem ciała bez rekordu PR w sesji (jak dotąd: podciąganie, pompki; brzuch z kategorii).
-// Wygląd klasyczny importuje ten moduł (classic-app/src/data/ExerciseCatalog.js tylko go re-eksportuje).
 
 export const ExerciseEntries = [
     // Klatka

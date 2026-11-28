@@ -1,6 +1,5 @@
 // Jednorazowe potwierdzenie zapisanej płci. Dawny formularz Pomiarów zapisywał „Mężczyzna”, gdy nikt
 // nie zmienił pola, więc część kobiet ma płeć zapisaną błędnie. Pytamy raz, przy wejściu w Pomiary lub Dietę.
-// Identyczna kopia: src/modules/body/sexConfirm.js i classic-app/src/modules/body/sexConfirm.js (zmieniaj obie naraz).
 import { readBodyProfile } from '../diet/kcalGoal.js';
 
 export const SEX_KEY = 'uki-bodybuild-gender';
@@ -45,7 +44,7 @@ export function saveSex(value, storage = localStorage) {
 
 const isAppMode = () => {
     try {
-        return !window.UkiUiSwitch || typeof window.UkiUiSwitch.isAppMode !== 'function' || window.UkiUiSwitch.isAppMode();
+        return !window.UkiAppStart || typeof window.UkiAppStart.isAppMode !== 'function' || window.UkiAppStart.isAppMode();
     } catch (e) {
         return true;
     }
@@ -54,7 +53,7 @@ const isAppMode = () => {
 const close = () => document.getElementById(OVERLAY_ID)?.remove();
 
 // Okna, przy których nie pytamy (zapytamy przy następnym wejściu): „Co nowego”, powitania, dymek Edwarda.
-const BLOCKING_IDS = ['changelog-modal-overlay', 'uki-new-ui-welcome-overlay', 'onboarding-modal', 'edward-contextual-bubble'];
+const BLOCKING_IDS = ['changelog-modal-overlay', 'onboarding-modal', 'edward-contextual-bubble'];
 const isShown = (el) => {
     if (!el) return false;
     try {
@@ -69,15 +68,6 @@ export const blockingDialogOpen = () => BLOCKING_IDS.some(id => [...document.que
 export function maybeConfirmSex(tab = null) {
     if (typeof document === 'undefined' || !document.body) return false;
     if (!isAppMode() || !needsSexConfirm() || document.getElementById(OVERLAY_ID)) return false;
-    const uiSwitch = window.UkiUiSwitch;
-    if (uiSwitch && uiSwitch.welcomePending && typeof uiSwitch.whenWelcomeClosed === 'function') {
-        // Po zamknięciu powitania mogą się jeszcze pokazać „Co nowego” lub okno imienia: sprawdzamy ponownie po chwili.
-        uiSwitch.whenWelcomeClosed(() => setTimeout(() => {
-            const view = tab && document.getElementById(tab);
-            if (!view || isShown(view)) maybeConfirmSex(tab);
-        }, 1000));
-        return false;
-    }
     if (blockingDialogOpen()) return false;
     // Pierwsze wejście w Dietę: za chwilę pojawi się dymek Edwarda (samouczek), więc pytamy przy następnej wizycie.
     if (tab === 'diet-dashboard' && get(localStorage, 'tutorial_context_diet') === null) return false;

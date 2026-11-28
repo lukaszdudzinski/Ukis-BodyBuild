@@ -191,7 +191,7 @@ document.addEventListener('DOMContentLoaded', () => {
         
         // Codzienne przypomnienie o końcu okresu próbnego (tylko w zainstalowanej aplikacji)
         const status = PremiumUI.getTrialStatus();
-        const appMode = !window.UkiUiSwitch || window.UkiUiSwitch.isAppMode();
+        const appMode = !window.UkiAppStart || window.UkiAppStart.isAppMode();
         if (appMode && !status.hasAccess && !status.isProToken) {
             const today = new Date().toISOString().split('T')[0];
             const lastShown = localStorage.getItem('uki_ai_paywall_last_shown');

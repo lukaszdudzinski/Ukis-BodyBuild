@@ -1,5 +1,4 @@
 // Analiza sylwetki: BF% (US Navy), FFMI, WHR i ich normy. Czyste funkcje, bez DOM i bez pamięci.
-// Identyczna kopia: src/modules/body/bodyMetrics.js i classic-app/src/modules/body/bodyMetrics.js (zmieniaj obie naraz).
 import { normalizeHeightCm, normalizeWeightKg } from '../diet/kcalGoal.js';
 
 const positive = (v) => {

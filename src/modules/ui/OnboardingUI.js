@@ -7,13 +7,13 @@ export const OnboardingUI = {
 
     init: () => {
         // Powitanie należy do zainstalowanej aplikacji, nie do strony instalacji w przeglądarce.
-        if (window.UkiUiSwitch && !window.UkiUiSwitch.isAppMode()) return;
+        if (window.UkiAppStart && !window.UkiAppStart.isAppMode()) return;
         // Główny wyzwalacz powitania
         if (localStorage.getItem('tutorial_global_v22') !== 'true') {
-            // Okna startowe pokazują się kolejno: najpierw ewentualne powitanie nowego wyglądu (ui-switch.js).
-            const uiSwitch = window.UkiUiSwitch;
-            if (uiSwitch && typeof uiSwitch.whenWelcomeClosed === 'function') {
-                uiSwitch.whenWelcomeClosed(() => OnboardingUI.showGlobalWelcome());
+            // Okna startowe pokazują się kolejno (app-start.js, whenWelcomeClosed).
+            const start = window.UkiAppStart;
+            if (start && typeof start.whenWelcomeClosed === 'function') {
+                start.whenWelcomeClosed(() => OnboardingUI.showGlobalWelcome());
             } else {
                 OnboardingUI.showGlobalWelcome();
             }

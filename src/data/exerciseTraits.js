@@ -1,7 +1,7 @@
 // Cechy ćwiczenia potrzebne w sesji i w analizie: partia (atlas regeneracji), ciężar ciała w tonażu
 // i to, czy w sesji liczymy rekord PR. Dla ćwiczeń z katalogu (także pod dawną nazwą) decydują dane katalogu;
 // dawne słowa kluczowe w nazwie zostają tylko dla ćwiczeń własnych spoza katalogu.
-// Czysta logika, bez DOM. Wygląd klasyczny importuje ten moduł (classic-app/src/data/exerciseTraits.js).
+// Czysta logika, bez DOM.
 import { findExercise, exerciseMuscleGroup, sameExercise } from './ExerciseCatalog.js';
 
 const lower = (name) => String(name ?? '').toLowerCase();

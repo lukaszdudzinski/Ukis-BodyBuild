@@ -1,1 +1,24 @@
 /* wyglad: zar */
+/* Jednorazowy komunikat „Nowy wygląd BodyBuild” dla użytkowników dawnego wyglądu klasycznego (spec 11 pkt 3,
+   src/modules/wyglad/komunikatKlasyczny.js). Okno z-dialog nad paskiem dolnym i paskiem aktualizacji. */
+.komunikat-scrim {
+    z-index: 3000;
+}
+
+.komunikat-tytul {
+    margin: 0 0 10px;
+    font-size: 22px;
+    line-height: 1.2;
+    color: var(--ukis-text);
+}
+
+.komunikat-tresc {
+    margin: 0;
+    font-size: 15px;
+    line-height: 1.5;
+    color: var(--ukis-text-secondary);
+}
+
+.komunikat-okno .z-dialog-actions {
+    margin-top: 20px;
+}

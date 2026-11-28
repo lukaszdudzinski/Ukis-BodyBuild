@@ -4,7 +4,7 @@
    Znaczniki: src/components/TrainingComponent.js (#training-calendar-view),
    src/modules/ui/TrainingUI.js (renderCalendar, handleDayClick).
    Zastępuje styles/components/calendar.css i stare reguły .calendar-* z layout.css
-   (te zostają dla nieużywanego CalendarUI.js, więc tu wszystko jest w #training-calendar-view).
+   (te reguły zostały po usuniętym CalendarUI.js, więc tu wszystko jest w #training-calendar-view).
    ============================================================ */
 
 /* ---------- Miejsce na przycisk Edwarda pod kartą dnia ----------

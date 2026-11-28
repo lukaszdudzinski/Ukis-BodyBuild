@@ -290,15 +290,6 @@
     color: var(--ukis-text);
 }
 
-/* Karta przełącznika wyglądów (ui-switch.js, styl własny do etapu D): tylko odstęp z siatki ekranu. */
-#profile-ui-switch:empty {
-    display: none;
-}
-
-#settings-panel #uki-ui-switch-card {
-    margin: 0 !important;
-}
-
 /* Wersja „Heavy v…” / „Light v…”. */
 .profil-wersja {
     margin: 4px 0 0;

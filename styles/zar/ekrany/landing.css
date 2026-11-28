@@ -1,0 +1,758 @@
+/* wyglad: zar */
+/* ============================================================
+   STRONA WIZYTÓWKOWA (#landing-page w index.html): widoczna tylko w zwykłej karcie przeglądarki
+   (html.ukis-przegladarka), czyli przed instalacją aplikacji. Język „Czerwony żar”: zdjęcie siłowni
+   pod czarnym przyciemnieniem, szklane karty, czerwony akcent, Barlow kursywa w nagłówkach.
+   Zrzuty aplikacji: img/landing/*.webp (skrypt zrzutów w folderze scripts, opis w raporcie L1).
+   ============================================================ */
+
+#landing-page {
+    display: none;
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 999999;
+    width: 100%;
+    min-height: 100vh;
+    overflow-x: hidden;
+    color: var(--ukis-text);
+    font-family: var(--ukis-font);
+    font-size: 15px;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+    -webkit-text-size-adjust: 100%;
+}
+
+/* Tło: zdjęcie siłowni stoi w miejscu (warstwa fixed, działa też na iPhonie, gdzie background-attachment: fixed nie działa),
+   przyciemnienie co najmniej 70 % (sprawdza to test kontrastu strony) i lekka poświata akcentu u góry. */
+#landing-page::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    background-color: var(--ukis-surface);
+    background-image:
+        radial-gradient(70% 45% at 80% 0%, var(--ukis-primary-tint), transparent 70%),
+        linear-gradient(180deg, rgba(0,0,0,.7) 0%, rgba(0,0,0,.8) 55%, rgba(0,0,0,.9) 100%),
+        url('../../../img/landing/silownia.webp');
+    background-size: 100% 100%, 100% 100%, cover;
+    background-position: center;
+    background-repeat: no-repeat;
+}
+
+#landing-page *,
+#landing-page *::before,
+#landing-page *::after {
+    box-sizing: border-box;
+}
+
+#landing-page img {
+    max-width: 100%;
+}
+
+#landing-page h1,
+#landing-page h2,
+#landing-page h3,
+#landing-page p,
+#landing-page ol,
+#landing-page ul,
+#landing-page figure {
+    margin: 0;
+}
+
+#landing-page a:focus-visible,
+#landing-page .lp-galeria:focus-visible {
+    outline: 2px solid var(--ukis-color-accent);
+    outline-offset: 3px;
+}
+
+#landing-page .lp-wrap {
+    max-width: 1160px;
+    margin: 0 auto;
+    padding: 0 20px calc(28px + env(safe-area-inset-bottom, 0px));
+}
+
+/* Ikony Lucide w znacznikach: kreska 1,8, kolor z tekstu. */
+#landing-page .lp-svg {
+    flex: 0 0 auto;
+    width: 20px;
+    height: 20px;
+}
+
+/* ---------- Pasek górny ---------- */
+#landing-page .lp-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: calc(14px + env(safe-area-inset-top, 0px)) 0 14px;
+}
+
+#landing-page .lp-marka {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-width: 0;
+}
+
+#landing-page .lp-logo {
+    flex: 0 0 auto;
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    border: 2px solid var(--ukis-accent-line);
+    box-shadow: 0 0 22px var(--ukis-logo-glow);
+    background: var(--ukis-surface);
+    object-fit: cover;
+}
+
+#landing-page .lp-nazwa {
+    font-family: var(--ukis-font-display);
+    font-style: italic;
+    font-weight: 700;
+    font-size: 20px;
+    letter-spacing: 0.2px;
+    white-space: nowrap;
+}
+
+#landing-page .lp-top-link {
+    min-height: var(--ukis-touch);
+    padding: 10px 16px;
+    font-size: 14px;
+}
+
+/* ---------- Hero ---------- */
+#landing-page .lp-hero {
+    padding: 28px 0 8px;
+    text-align: center;
+}
+
+#landing-page .lp-eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 14px;
+    border: 1px solid rgba(255,255,255,.18);
+    border-radius: var(--ukis-radius-full);
+    background: rgba(0,0,0,.45);
+    color: var(--ukis-text-secondary);
+    font-size: 13px;
+    font-weight: 500;
+    letter-spacing: 0.2px;
+}
+
+#landing-page .lp-kropka {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--ukis-color-primary);
+    box-shadow: 0 0 10px var(--ukis-color-primary);
+}
+
+#landing-page .lp-h1 {
+    margin: 20px 0 16px;
+    font-family: var(--ukis-font-display);
+    font-style: italic;
+    font-weight: 700;
+    font-size: 54px;
+    line-height: 0.98;
+    letter-spacing: -0.5px;
+    color: var(--ukis-text);
+    text-shadow: 0 4px 24px rgba(0,0,0,.6);
+}
+
+#landing-page .lp-h1 em {
+    font-style: inherit;
+    color: var(--ukis-color-accent);
+}
+
+#landing-page .lp-lead {
+    max-width: 34ch;
+    margin: 0 auto;
+    color: var(--ukis-text-secondary);
+    font-size: 17px;
+    line-height: 1.55;
+}
+
+/* Na telefonie przyciski jeden pod drugim, tej samej szerokości. */
+#landing-page .lp-cta {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    max-width: 320px;
+    margin: 26px auto 0;
+}
+
+#landing-page .lp-btn {
+    min-height: 52px;
+    padding: 14px 22px;
+    font-size: 16px;
+    white-space: nowrap;
+}
+
+/* Wsparcie projektu: ten sam przycisk-pigułka co reszta, ciepły akcent tylko w ramce i ikonie kubka. */
+#landing-page .lp-kawa {
+    border-color: var(--ukis-color-warning);
+    font-weight: 600;
+}
+
+#landing-page .lp-kawa .lp-svg {
+    color: var(--ukis-color-warning);
+}
+
+/* Lista atutów: wyśrodkowany blok, znaczniki w jednej kolumnie. */
+#landing-page .lp-atuty {
+    display: grid;
+    justify-content: center;
+    gap: 10px;
+    margin-top: 26px;
+    padding: 0;
+    list-style: none;
+}
+
+#landing-page .lp-atuty li {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--ukis-text-secondary);
+    font-size: 14px;
+}
+
+#landing-page .lp-znak {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: var(--ukis-primary-tint);
+    color: var(--ukis-color-accent);
+}
+
+#landing-page .lp-znak .lp-svg {
+    width: 14px;
+    height: 14px;
+}
+
+/* ---------- Telefon (ramka CSS wokół zrzutu 390 × 844) ---------- */
+#landing-page .lp-tel {
+    position: relative;
+    width: 236px;
+    padding: 7px;
+    border-radius: 42px;
+    background-color: var(--ukis-surface-2);
+    background-image: linear-gradient(150deg, rgba(255,255,255,.2), rgba(255,255,255,.03) 38%, rgba(255,255,255,.08));
+    box-shadow:
+        inset 0 0 0 1px rgba(255,255,255,.14),
+        0 0 0 1px rgba(0,0,0,.7),
+        0 28px 60px rgba(0,0,0,.6);
+}
+
+#landing-page .lp-tel img {
+    display: block;
+    width: 100%;
+    height: auto;
+    aspect-ratio: 390 / 844;
+    border-radius: 35px;
+    background: var(--ukis-surface);
+}
+
+#landing-page .lp-hero-telefony {
+    position: relative;
+    display: flex;
+    justify-content: center;
+    margin-top: 40px;
+    padding-bottom: 12px;
+}
+
+/* Poświata akcentu za telefonami. */
+#landing-page .lp-hero-telefony::before {
+    content: '';
+    position: absolute;
+    left: 50%;
+    top: 12%;
+    width: 340px;
+    height: 70%;
+    transform: translateX(-50%);
+    border-radius: 50%;
+    background: radial-gradient(closest-side, var(--ukis-primary-soft), transparent);
+    filter: blur(24px);
+    pointer-events: none;
+}
+
+#landing-page .lp-tel-przod {
+    z-index: 2;
+    width: 228px;
+    transform: translateX(-38px);
+}
+
+#landing-page .lp-tel-tyl {
+    position: absolute;
+    z-index: 1;
+    top: 46px;
+    left: calc(50% - 22px);
+    width: 192px;
+    transform: rotate(5deg);
+    transform-origin: top left;
+}
+
+#landing-page .lp-tel-tyl img {
+    filter: brightness(.72);
+}
+
+/* ---------- Sekcje ---------- */
+#landing-page .lp-sekcja {
+    padding-top: 76px;
+    scroll-margin-top: 16px;
+}
+
+#landing-page .lp-sekcja-head {
+    max-width: 620px;
+    margin: 0 auto;
+    text-align: center;
+}
+
+#landing-page .lp-nadtytul {
+    color: var(--ukis-color-accent);
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 1.6px;
+    text-transform: uppercase;
+}
+
+#landing-page .lp-h2 {
+    margin: 8px 0 12px;
+    font-family: var(--ukis-font-display);
+    font-style: italic;
+    font-weight: 700;
+    font-size: 34px;
+    line-height: 1.05;
+    letter-spacing: 0.2px;
+}
+
+#landing-page .lp-opis {
+    color: var(--ukis-text-secondary);
+    font-size: 16px;
+    line-height: 1.55;
+}
+
+/* ---------- Galeria ekranów: przewijana w bok na telefonie, siatka na szerszym ekranie ---------- */
+#landing-page .lp-galeria {
+    display: flex;
+    gap: 14px;
+    margin: 28px -20px 0;
+    padding: 4px 20px 16px;
+    list-style: none;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    scroll-padding: 0 20px;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+}
+
+#landing-page .lp-galeria::-webkit-scrollbar {
+    display: none;
+}
+
+#landing-page .lp-slajd {
+    flex: 0 0 82%;
+    max-width: 320px;
+    scroll-snap-align: center;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    padding: 0;
+    border-radius: var(--ukis-radius-lg);
+}
+
+#landing-page .lp-slajd-tekst {
+    padding: 22px 20px 18px;
+}
+
+#landing-page .lp-ikona {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    margin-bottom: 14px;
+    border-radius: var(--ukis-radius-sm);
+    background: var(--ukis-color-primary);
+    color: var(--ukis-on-primary);
+    box-shadow: 0 6px 18px var(--ukis-primary-soft);
+}
+
+#landing-page .lp-slajd h3 {
+    font-family: var(--ukis-font-display);
+    font-style: italic;
+    font-weight: 700;
+    font-size: 22px;
+    line-height: 1.15;
+}
+
+#landing-page .lp-slajd p {
+    margin-top: 6px;
+    color: var(--ukis-text-secondary);
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+/* Telefon wychodzi z dołu karty: widać górę ekranu, dół przycina krawędź karty. */
+#landing-page .lp-slajd-ekran {
+    position: relative;
+    flex: 0 0 330px;
+    margin-top: auto;
+    overflow: hidden;
+    display: flex;
+    justify-content: center;
+}
+
+#landing-page .lp-slajd-ekran .lp-tel {
+    width: 224px;
+    align-self: flex-start;
+    box-shadow:
+        inset 0 0 0 1px rgba(255,255,255,.14),
+        0 0 0 1px rgba(0,0,0,.7),
+        0 -6px 30px rgba(0,0,0,.45);
+}
+
+/* ---------- Instalacja ---------- */
+#landing-page .lp-systemy {
+    display: grid;
+    gap: 16px;
+    margin-top: 28px;
+}
+
+#landing-page .lp-system {
+    padding: 22px 20px;
+    border-radius: var(--ukis-radius-lg);
+}
+
+#landing-page .lp-system-head {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding-bottom: 16px;
+    margin-bottom: 18px;
+    border-bottom: 1px solid var(--ukis-separator);
+}
+
+#landing-page .lp-system-ikona {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 48px;
+    height: 48px;
+    border-radius: 14px;
+    background: var(--ukis-primary-tint);
+    border: 1px solid var(--ukis-accent-line);
+    color: var(--ukis-color-accent);
+}
+
+#landing-page .lp-system-ikona .lp-svg {
+    width: 24px;
+    height: 24px;
+}
+
+#landing-page .lp-system h3 {
+    font-family: var(--ukis-font-display);
+    font-style: italic;
+    font-weight: 700;
+    font-size: 24px;
+    line-height: 1.1;
+}
+
+#landing-page .lp-system-head .z-sub {
+    margin-top: 2px;
+}
+
+#landing-page .lp-kroki {
+    display: grid;
+    gap: 16px;
+    padding: 0;
+    list-style: none;
+    counter-reset: lp-krok;
+}
+
+#landing-page .lp-kroki li {
+    display: grid;
+    grid-template-columns: 32px 1fr;
+    gap: 14px;
+    align-items: start;
+    counter-increment: lp-krok;
+    color: var(--ukis-text-secondary);
+    font-size: 15px;
+    line-height: 1.55;
+}
+
+#landing-page .lp-kroki li::before {
+    content: counter(lp-krok);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: var(--ukis-color-primary);
+    color: var(--ukis-on-primary);
+    font-family: var(--ukis-font-display);
+    font-style: italic;
+    font-weight: 700;
+    font-size: 16px;
+    box-shadow: 0 4px 14px var(--ukis-primary-soft);
+}
+
+#landing-page .lp-kroki p {
+    padding-top: 4px;
+}
+
+#landing-page .lp-kroki strong {
+    color: var(--ukis-text);
+    font-weight: 600;
+}
+
+/* Ikona przycisku przeglądarki w treści kroku (np. „Udostępnij”). */
+#landing-page .lp-ik {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 26px;
+    height: 26px;
+    margin: 0 2px;
+    vertical-align: -7px;
+    border: 1px solid var(--ukis-ghost-border);
+    border-radius: 8px;
+    background: var(--ukis-ghost-bg);
+    color: var(--ukis-text);
+}
+
+#landing-page .lp-ik .lp-svg {
+    width: 16px;
+    height: 16px;
+}
+
+#landing-page .lp-uwaga {
+    display: flex;
+    gap: 10px;
+    margin-top: 20px;
+    padding: 12px 14px;
+    border: 1px solid var(--ukis-accent-line);
+    border-radius: var(--ukis-radius-sm);
+    background: var(--ukis-primary-tint);
+    color: var(--ukis-text);
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+#landing-page .lp-uwaga .lp-svg {
+    margin-top: 1px;
+    color: var(--ukis-color-accent);
+}
+
+#landing-page .lp-komputer {
+    max-width: 560px;
+    margin: 20px auto 0;
+    color: var(--ukis-text-secondary);
+    font-size: 14px;
+    text-align: center;
+}
+
+/* ---------- Wsparcie i stopka ---------- */
+#landing-page .lp-wsparcie {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+    margin-top: 76px;
+    padding: 26px 22px;
+    border-radius: var(--ukis-radius-lg);
+    text-align: center;
+}
+
+#landing-page .lp-wsparcie-ikona {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 52px;
+    height: 52px;
+    border-radius: 50%;
+    border: 1px solid var(--ukis-color-warning);
+    background: rgba(0,0,0,.35);
+    color: var(--ukis-color-warning);
+}
+
+#landing-page .lp-wsparcie-ikona .lp-svg {
+    width: 24px;
+    height: 24px;
+}
+
+#landing-page .lp-wsparcie h2 {
+    font-family: var(--ukis-font-display);
+    font-style: italic;
+    font-weight: 700;
+    font-size: 24px;
+    line-height: 1.15;
+}
+
+#landing-page .lp-wsparcie p {
+    margin-top: 6px;
+    max-width: 46ch;
+    color: var(--ukis-text-secondary);
+    font-size: 15px;
+}
+
+#landing-page .lp-stopka {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    margin-top: 40px;
+    padding-top: 24px;
+    border-top: 1px solid var(--ukis-divider);
+    color: var(--ukis-text-secondary);
+    font-size: 13px;
+    text-align: center;
+}
+
+#landing-page .lp-stopka .lp-logo {
+    width: 36px;
+    height: 36px;
+    box-shadow: none;
+}
+
+/* ---------- Wejście (bez ruchu przy prefers-reduced-motion) ---------- */
+@keyframes lp-wejscie {
+    from { opacity: 0; transform: translateY(18px); }
+    to { opacity: 1; transform: none; }
+}
+
+#landing-page .lp-hero-tekst {
+    animation: lp-wejscie .6s ease-out both;
+}
+
+#landing-page .lp-hero-telefony {
+    animation: lp-wejscie .8s ease-out .15s both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    #landing-page .lp-hero-tekst,
+    #landing-page .lp-hero-telefony {
+        animation: none;
+    }
+}
+
+/* ---------- Szerszy ekran ---------- */
+@media (min-width: 700px) {
+    #landing-page .lp-wrap {
+        padding-left: 32px;
+        padding-right: 32px;
+    }
+
+    #landing-page .lp-galeria {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 20px;
+        margin: 36px 0 0;
+        padding: 0;
+        overflow: visible;
+    }
+
+    #landing-page .lp-slajd {
+        max-width: none;
+    }
+
+    #landing-page .lp-systemy {
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+    }
+
+    #landing-page .lp-system {
+        padding: 28px;
+    }
+
+    #landing-page .lp-wsparcie {
+        flex-direction: row;
+        text-align: left;
+        padding: 26px 28px;
+    }
+
+    #landing-page .lp-wsparcie > div {
+        flex: 1 1 auto;
+    }
+
+    #landing-page .lp-wsparcie .lp-btn {
+        flex: 0 0 auto;
+    }
+
+    #landing-page .lp-wsparcie p {
+        max-width: none;
+    }
+
+    #landing-page .lp-h2 {
+        font-size: 44px;
+    }
+}
+
+@media (min-width: 1000px) {
+    #landing-page .lp-hero {
+        display: grid;
+        grid-template-columns: 1.1fr 0.9fr;
+        align-items: center;
+        gap: 40px;
+        padding: 36px 0 24px;
+        text-align: left;
+    }
+
+    #landing-page .lp-h1 {
+        font-size: 84px;
+        margin: 24px 0 20px;
+    }
+
+    #landing-page .lp-lead {
+        max-width: 36ch;
+        margin: 0;
+        font-size: 19px;
+    }
+
+    #landing-page .lp-cta {
+        flex-direction: row;
+        max-width: none;
+        margin: 32px 0 0;
+    }
+
+    #landing-page .lp-atuty {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: flex-start;
+        gap: 10px 20px;
+        margin-top: 28px;
+    }
+
+    #landing-page .lp-hero-telefony {
+        margin-top: 0;
+    }
+
+    #landing-page .lp-hero-telefony::before {
+        width: 460px;
+    }
+
+    #landing-page .lp-tel-przod {
+        width: 272px;
+        transform: translateX(-56px);
+    }
+
+    #landing-page .lp-tel-tyl {
+        top: 54px;
+        left: calc(50% - 18px);
+        width: 232px;
+    }
+
+    #landing-page .lp-galeria {
+        grid-template-columns: repeat(4, 1fr);
+    }
+
+    #landing-page .lp-sekcja {
+        padding-top: 96px;
+    }
+}
