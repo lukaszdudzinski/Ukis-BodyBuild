@@ -1,5 +1,13 @@
 [
   {
+    "version": "v2026.11.28.04",
+    "date": "2026-11-28",
+    "changes": [
+      "🥗 Dieta pokazuje teraz cele makro dopasowane do Twojego celu: zakres białka z paskiem postępu oraz orientacyjne ilości tłuszczu i węglowodanów, wyliczone z Twojej wagi.",
+      "⚖️ Cel kalorii lepiej pasuje do Ciebie: redukcja to −20%, a masa +10% zapotrzebowania, z bezpiecznymi granicami, więc cel nie spadnie zbyt nisko."
+    ]
+  },
+  {
     "version": "v2026.11.28.03",
     "date": "2026-11-28",
     "changes": [

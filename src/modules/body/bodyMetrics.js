@@ -1,5 +1,5 @@
 // Analiza sylwetki: BF% (US Navy), FFMI, WHR i ich normy. Czyste funkcje, bez DOM i bez pamięci.
-import { normalizeHeightCm, normalizeWeightKg } from '../diet/kcalGoal.js';
+import { normalizeHeightCm, normalizeWeightKg, sortNewestFirst } from '../diet/kcalGoal.js';
 
 const positive = (v) => {
     if (v === null || v === undefined || v === '') return null;
@@ -7,11 +7,8 @@ const positive = (v) => {
     return Number.isFinite(n) && n > 0 ? n : null;
 };
 
-// Od najnowszego (data malejąco; przy tej samej dacie zostaje kolejność z bazy: created_at malejąco).
-export function sortNewestFirst(measurements) {
-    return [...(Array.isArray(measurements) ? measurements : [])]
-        .sort((a, b) => String(b.date || '').localeCompare(String(a.date || '')));
-}
+// Od najnowszego: wspólna z celem kcal (kcalGoal.js), eksportowana dalej dla dotychczasowych odbiorców.
+export { sortNewestFirst };
 
 // Najnowsza wartość każdego pola osobno: wpis z samą wagą nie ukrywa wzrostu, talii, szyi ani bioder.
 export function latestBodyFields(measurements) {

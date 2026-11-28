@@ -3,7 +3,8 @@ import { DatabaseManager } from '../db/DatabaseManager.js';
 import { DietAIEngine } from '../diet/DietAIEngine.js';
 import { MediaManager } from '../db/MediaManager.js';
 import { ikona } from '../wyglad/ikony.js';
-import { computeTdee, readBodyProfile, ageFromBirthYear, saveBirthYear, profileHint, BIRTH_YEAR_ERROR, NO_DATA_HINT, resolveKcalGoal, loadKcalGoal, saveKcalGoal, useComputedKcalGoal, parseKcalInput, isPlausibleKcal, reportKcalIncident, setKcalSourceIcon, KCAL_MIN, KCAL_MAX } from '../diet/kcalGoal.js';
+import { computeKcalTarget, isAdvancedExperience, normalizeDietGoal, readBodyProfile, ageFromBirthYear, saveBirthYear, profileHint, BIRTH_YEAR_ERROR, NO_DATA_HINT, resolveKcalGoal, loadKcalGoal, saveKcalGoal, useComputedKcalGoal, parseKcalInput, isPlausibleKcal, reportKcalIncident, setKcalSourceIcon, KCAL_MIN, KCAL_MAX } from '../diet/kcalGoal.js';
+import { computeMacroTargets, GOAL_WHY, MACRO_MESSAGES } from '../diet/macroTargets.js';
 
 // Dane użytkownika w innerHTML zawsze przez esc() (także w atrybutach w cudzysłowie).
 const esc = (t) => String(t ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
@@ -68,13 +69,17 @@ export const DietUI = {
     // (#diet-config-btn) stoi w index.html. Okno celu kcal (#diet-tdee-modal) bindEvents przenosi do <body>.
     renderUI: (container) => {
         const tresc = container.querySelector('#diet-content') || container;
-        const makro = (klucz, nazwa) => `
-                    <div class="diet-makro">
-                        <div class="diet-makro-opis"><span class="diet-makro-nazwa">${nazwa}</span><span class="diet-makro-wartosc z-mut"><span id="diet-${klucz}-display">0</span> g</span></div>
+        // Wiersz makro: zjedzone gramy i cel (#diet-…-cel, wypełnia renderMakro). Białko ma pasek do punktu celu,
+        // tłuszcz linijkę „min. X g”.
+        const makro = (klucz, nazwa, dodatek = '') => `
+                    <div class="diet-makro" id="diet-makro-${klucz}">
+                        <div class="diet-makro-opis"><span class="diet-makro-nazwa">${nazwa}</span><span class="diet-makro-wartosc z-mut"><span id="diet-${klucz}-display">0</span><span id="diet-${klucz}-cel"> g</span></span></div>${dodatek}
                     </div>`;
+        const pasekBialka = '<div id="diet-protein-pasek" class="z-chart-progress diet-makro-pasek" role="img" hidden><div class="z-chart-fill"></div></div>';
+        const minTluszczu = '<div id="diet-fat-min" class="z-mut diet-makro-min" hidden></div>';
         tresc.innerHTML = `
             <div class="diet">
-            <!-- Podsumowanie: kcal zjedzone z celu i makro -->
+            <!-- Podsumowanie: kcal zjedzone z celu i makro (zjedzone / cel zależny od celu diety) -->
             <section class="z-card diet-summary-card" aria-label="Podsumowanie dnia">
                 <div class="diet-summary">
                     <div class="z-chart z-chart-donut" id="diet-kcal-ring" role="img" aria-label="Zjedzono 0 z 0 kcal" style="--z-val: 0%">
@@ -83,9 +88,12 @@ export const DietUI = {
                             <div class="z-mut diet-kcal-cel">z <span id="diet-tdee-display">---</span> kcal <span id="diet-kcal-source" class="diet-kcal-zrodlo"></span></div>
                         </div>
                     </div>
-                    <div class="diet-makra">${makro('protein', 'Białko')}${makro('carbs', 'Węgle')}${makro('fat', 'Tłuszcze')}
+                    <div class="diet-makra">${makro('protein', 'Białko', pasekBialka)}${makro('carbs', 'Węgle')}${makro('fat', 'Tłuszcze', minTluszczu)}
                     </div>
                 </div>
+                <p id="diet-makro-dlaczego" class="z-mut diet-makro-linia" hidden><span class="diet-makro-pytanie">Dlaczego tyle?</span> <span id="diet-makro-dlaczego-tekst"></span></p>
+                <p id="diet-makro-uwaga" class="diet-makro-linia diet-makro-uwaga" hidden></p>
+                <p id="diet-makro-podpowiedz" class="z-mut diet-makro-linia" hidden></p>
                 <p id="diet-kcal-hint" class="z-mut diet-kcal-hint" hidden></p>
             </section>
 
@@ -141,9 +149,9 @@ export const DietUI = {
                     <div class="diet-okno-pole">
                         <label class="z-lab" for="diet-tdee-goal">Obecny cel</label>
                         <select id="diet-tdee-goal" class="z-in">
-                            <option value="cut">Redukcja (-500 kcal)</option>
+                            <option value="cut">Redukcja (−20%)</option>
                             <option value="maintenance" selected>Utrzymanie wagi</option>
-                            <option value="bulk">Budowa masy (+300 kcal)</option>
+                            <option value="bulk">Budowa masy (+10%)</option>
                         </select>
                     </div>
 
@@ -227,7 +235,8 @@ export const DietUI = {
             if (!modal) return;
             otwarteZ = z;
             // Załaduj zapisane ustawienia
-            const savedGoal = localStorage.getItem('dietGoal') || 'maintenance';
+            // Etykieta z wywiadu AI (np. „… (Hipertrofia)”) wybiera odpowiadającą opcję; zapis zmienia dopiero „Zapisz”.
+            const savedGoal = normalizeDietGoal(localStorage.getItem('dietGoal'));
             const savedActivity = localStorage.getItem('dietActivity') || '1.55';
 
             document.getElementById('diet-tdee-goal').value = savedGoal;
@@ -404,18 +413,25 @@ export const DietUI = {
         }
     },
 
-    // Wyliczenie z pomiarów (Mifflin-St Jeor) z płcią i wiekiem użytkownika. `settings` z okna ustawień;
-    // domyślnie zapisane ustawienia. Błędne pomiary (np. wzrost w milimetrach) poprawia lub pomija computeTdee.
-    calculateTDEE: async (settings = {}) => {
+    // Wyliczenie z pomiarów (Mifflin-St Jeor × aktywność, cel w procentach TDEE) z płcią, wiekiem i stażem użytkownika.
+    // `settings` z okna ustawień; domyślnie zapisane ustawienia. Błędne pomiary (np. wzrost w milimetrach) poprawia
+    // lub pomija computeKcalTarget. Zwraca pomiary, opcje i wynik ({ bmr, tdee, kcal, floor } albo null bez wagi).
+    wyliczCel: async (settings = {}) => {
         const measurements = await DatabaseManager.getMeasurements();
         const profile = readBodyProfile();
-        const kcal = computeTdee(measurements, {
+        const opts = {
             activity: parseFloat(settings.activity ?? (localStorage.getItem('dietActivity') || '1.55')),
-            goal: settings.goal ?? (localStorage.getItem('dietGoal') || 'maintenance'),
+            goal: normalizeDietGoal(settings.goal ?? localStorage.getItem('dietGoal')),
             sex: profile.sex,
-            age: settings.birthYear !== undefined ? ageFromBirthYear(settings.birthYear) : profile.age
-        });
-        return kcal; // null, gdy brak pomiaru z wagą (cel domyślny wybiera resolveKcalGoal)
+            age: settings.birthYear !== undefined ? ageFromBirthYear(settings.birthYear) : profile.age,
+            advanced: isAdvancedExperience(localStorage.getItem('trainingExperience'))
+        };
+        return { measurements, opts, target: computeKcalTarget(measurements, opts) };
+    },
+
+    calculateTDEE: async (settings = {}) => {
+        const { target } = await DietUI.wyliczCel(settings);
+        return target ? target.kcal : null; // null, gdy brak pomiaru z wagą (cel domyślny wybiera resolveKcalGoal)
     },
 
     loadTodayData: async () => {
@@ -506,7 +522,8 @@ export const DietUI = {
         }
 
         // Cel: ręczny albo wyliczony; błędne wartości odrzuca strażnik (wpis w logu + komunikat, raz na zdarzenie).
-        const goal = resolveKcalGoal(await DietUI.calculateTDEE());
+        const { measurements, opts, target } = await DietUI.wyliczCel();
+        const goal = resolveKcalGoal(target ? target.kcal : null);
         goal.incidents.forEach(reportKcalIncident);
         const tdee = goal.kcal;
         const noComputed = goal.source === 'auto' && goal.noData;
@@ -519,17 +536,19 @@ export const DietUI = {
             kcalHint.hidden = !text;
         }
         
-        // Aktualizacja interfejsu: wykres kołowy (kcal z celu); makro to tylko zjedzone gramy (bez celów i pasków).
+        // Aktualizacja interfejsu: wykres kołowy (kcal z celu) i makro: zjedzone gramy oraz cele z celu kcal w użyciu.
         const kcalDisplay = document.getElementById('diet-kcal-consumed');
         if (kcalDisplay) kcalDisplay.textContent = totalKcal;
         
         const tdeeDisplay = document.getElementById('diet-tdee-display');
         if (tdeeDisplay) tdeeDisplay.textContent = tdee;
 
-        [['protein', totalP], ['carbs', totalC], ['fat', totalF]].forEach(([klucz, suma]) => {
-            const display = document.getElementById(`diet-${klucz}-display`);
-            if (display) display.textContent = suma;
+        const cele = computeMacroTargets(measurements, {
+            kcal: tdee, goal: opts.goal, sex: opts.sex, age: opts.age,
+            manual: goal.source === 'manual', floor: target ? target.floor : null
         });
+        // Bez wagi prośbę o pomiar pokazuje już podpowiedź celu kcal; przy ręcznym celu prosimy o wagę tutaj.
+        DietUI.renderMakro(cele, { protein: totalP, carbs: totalC, fat: totalF }, opts.goal, !noComputed);
 
         const ring = document.getElementById('diet-kcal-ring');
         if (ring) {
@@ -543,6 +562,59 @@ export const DietUI = {
             // Render wykresu po załadowaniu dzisiejszych danych
             DietUI.loadHistoryChart(tdee);
         }
+    },
+
+    // Wiersze makro na karcie podsumowania. `cele` z computeMacroTargets (null = bez celów, tylko zjedzone gramy).
+    // Na dole karty: „Dlaczego tyle?”, najważniejsza uwaga (błąd > ostrzeżenie > informacja) i do dwóch podpowiedzi.
+    // Uwaga dla nastolatków zasłonięta przez ostrzeżenie trafia na początek podpowiedzi, żeby nie zniknęła.
+    renderMakro: (cele, zjedzone, celDiety, prosOWage) => {
+        const ustaw = (id, tekst) => {
+            const el = document.getElementById(id);
+            if (!el) return null;
+            el.textContent = tekst;
+            el.hidden = !tekst;
+            return el;
+        };
+        const cel = {
+            protein: cele ? ` / ${cele.protein.low}–${cele.protein.high} g` : ' g',
+            carbs: cele && cele.carbs !== null ? ` / ok. ${cele.carbs} g` : ' g',
+            fat: cele ? ` / ok. ${cele.fat.target} g` : ' g'
+        };
+        Object.keys(cel).forEach((klucz) => {
+            const display = document.getElementById(`diet-${klucz}-display`);
+            if (display) display.textContent = zjedzone[klucz];
+            const celEl = document.getElementById(`diet-${klucz}-cel`);
+            if (celEl) celEl.textContent = cel[klucz];
+        });
+        ustaw('diet-fat-min', cele ? `min. ${cele.fat.floor} g` : '');
+
+        // Pasek białka do punktu celu; w zakresie (po zaokrągleniu, jak widać na ekranie) — kolor sukcesu.
+        const pasek = document.getElementById('diet-protein-pasek');
+        const wZakresie = !!cele && zjedzone.protein >= cele.protein.low && zjedzone.protein <= cele.protein.high;
+        document.getElementById('diet-makro-protein')?.classList.toggle('diet-w-zakresie', wZakresie);
+        if (pasek) {
+            pasek.hidden = !cele;
+            if (cele) {
+                // Do punktu po ewentualnym obcięciu (nie P_mid): to plan, z którego sumują się kalorie (celowo).
+                pasek.querySelector('.z-chart-fill').style.width = procent(zjedzone.protein, cele.protein.target);
+                pasek.setAttribute('aria-label', `Białko: ${zjedzone.protein} z ${cele.protein.target} g${wZakresie ? ', w zakresie' : ''}`);
+            }
+        }
+
+        const dlaczego = document.getElementById('diet-makro-dlaczego');
+        if (dlaczego) {
+            dlaczego.hidden = !cele;
+            ustaw('diet-makro-dlaczego-tekst', cele ? GOAL_WHY[normalizeDietGoal(celDiety)] : '');
+        }
+        const uwaga = cele && cele.messages[0];
+        const uwagaEl = ustaw('diet-makro-uwaga', uwaga ? uwaga.text : '');
+        if (uwagaEl) {
+            if (uwaga) uwagaEl.dataset.poziom = uwaga.level;
+            else delete uwagaEl.dataset.poziom;
+        }
+        const nastolatek = cele && cele.messages.find((m, i) => i > 0 && m.text === MACRO_MESSAGES.teenCut);
+        const podpowiedzi = cele ? [...(nastolatek ? [nastolatek.text] : []), ...cele.hints].slice(0, 2) : [];
+        ustaw('diet-makro-podpowiedz', cele ? podpowiedzi.join(' ') : (prosOWage ? MACRO_MESSAGES.noWeight : ''));
     },
 
     renderImagePreviews: () => {

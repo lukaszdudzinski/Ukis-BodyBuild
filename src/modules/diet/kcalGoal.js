@@ -45,6 +45,14 @@ export function normalizeHeightCm(h) {
     return n >= HEIGHT_RANGE[0] && n <= HEIGHT_RANGE[1] ? n : null;
 }
 
+// Od najnowszego (data malejąco; przy tej samej dacie zostaje kolejność z bazy: created_at malejąco).
+// Wspólne dla celu kcal i analizy sylwetki (bodyMetrics.js eksportuje ją dalej), żeby waga była ta sama.
+const measurementDate = (m) => String((m && m.date) || '');
+export function sortNewestFirst(measurements) {
+    return [...(Array.isArray(measurements) ? measurements : [])]
+        .sort((a, b) => measurementDate(b).localeCompare(measurementDate(a)));
+}
+
 export function normalizeWeightKg(w) {
     const n = Number(w);
     return Number.isFinite(n) && n >= WEIGHT_RANGE[0] && n <= WEIGHT_RANGE[1] ? n : null;
@@ -114,28 +122,75 @@ export function profileHint({ sex, age }) {
     return '';
 }
 
-// Wzór Mifflin-St Jeor × aktywność ± cel. `measurements` od najnowszego.
+// Cel diety z pamięci (`dietGoal`) → 'cut' | 'maintenance' | 'bulk'. Kody przechodzą bez zmian; wywiad AI zapisuje
+// pełne etykiety (CEL w AiAnalyticsUI.js): Hipertrofia → masa, Rzeźba/Spalanie → redukcja, Rekompozycja i Siła →
+// utrzymanie (spec §3.6). Wszystko inne → utrzymanie. Nie zmienia zapisu.
+export function normalizeDietGoal(value) {
+    const s = String(value ?? '').toLowerCase();
+    if (s === 'cut' || s === 'maintenance' || s === 'bulk') return s;
+    if (s.includes('sił')) return 'maintenance';
+    if (s.includes('reduk') || s.includes('rzeźb') || s.includes('spalanie')) return 'cut';
+    if (s.includes('hipertrofia') || s.includes('mas')) return 'bulk';
+    return 'maintenance';
+}
+
+// Staż „zaawansowany” (z wywiadu AI, klucz `trainingExperience`): „3-5 lat …” albo „5+ lat …”.
+export const isAdvancedExperience = (text) => /3-5 lat|5\+/.test(String(text ?? ''));
+
+// Cel kcal (spec 2026-11-28-bodybuild-makro-cel §3.1): procent TDEE zamiast stałych −500 / +300.
+//   redukcja TDEE × 0,80 (deficyt ≤ 25% i ≤ 1000 kcal; poniżej 18 lat ≤ 10%),
+//   masa TDEE × 1,10, zaawansowani × 1,05 (nadwyżka ≤ 15% i ≤ 500 kcal), utrzymanie = TDEE (także cel spoza listy).
+// Podłoga każdego celu automatycznego: max(BMR, 1200 kobiety / 1500 mężczyźni i płeć nieznana).
+const CUT_SHARE = 0.20;
+const CUT_MAX_SHARE = 0.25;
+const CUT_MAX_SHARE_TEEN = 0.10;
+const CUT_MAX_KCAL = 1000;
+const BULK_SHARE = 0.10;
+const BULK_SHARE_ADVANCED = 0.05;
+const BULK_MAX_SHARE = 0.15;
+const BULK_MAX_KCAL = 500;
+export const ADULT_AGE = 18;
+export const KCAL_FLOOR = { female: 1200, male: 1500 };
+export const round10 = (v) => Math.round(v / 10) * 10;
+
+// Wzór Mifflin-St Jeor × aktywność, potem cel. Waga i wzrost: najnowsze poprawne (sortNewestFirst, jak cele makro).
 //   mężczyźni: 10·kg + 6.25·cm − 5·wiek + 5;  kobiety: … − 161;  płeć nieznana: … − 78.
-// Wiek nieznany → 30 lat. Zwraca null, gdy nie ma żadnej poprawnej wagi.
-export function computeTdee(measurements, { activity = 1.55, goal = 'maintenance', sex = null, age = null } = {}) {
-    const list = Array.isArray(measurements) ? measurements : [];
+// Wiek nieznany → 30 lat, wzrost nieznany → 175 cm. Zwraca { bmr, tdee, kcal, floor } (kcal i podłoga co 10 kcal)
+// albo null, gdy nie ma żadnej poprawnej wagi.
+export function computeKcalTarget(measurements, { activity = 1.55, goal = 'maintenance', sex = null, age = null, advanced = false } = {}) {
     let weight = null;
     let height = null;
-    for (const m of list) {
+    for (const m of sortNewestFirst(measurements)) {
         if (weight === null) weight = normalizeWeightKg(m && m.weight);
         if (height === null) height = normalizeHeightCm(m && m.height);
         if (weight !== null && height !== null) break;
     }
     if (weight === null) return null;
     if (height === null) height = 175;
-    const years = Number.isFinite(age) && age >= AGE_MIN && age <= AGE_MAX ? age : DEFAULT_AGE;
+    const knownAge = Number.isFinite(age) && age >= AGE_MIN && age <= AGE_MAX ? age : null;
+    const years = knownAge ?? DEFAULT_AGE;
     const sexConstant = SEX_CONSTANT[sex] ?? UNKNOWN_SEX_CONSTANT;
     const bmr = (10 * weight) + (6.25 * height) - (5 * years) + sexConstant;
     const multiplier = Number(activity);
-    let tdee = bmr * (Number.isFinite(multiplier) && multiplier >= 1 && multiplier <= 2.5 ? multiplier : 1.55);
-    if (goal === 'cut') tdee -= 500;
-    if (goal === 'bulk') tdee += 300;
-    return Math.round(tdee);
+    const tdee = bmr * (Number.isFinite(multiplier) && multiplier >= 1 && multiplier <= 2.5 ? multiplier : 1.55);
+    let kcal = tdee;
+    const g = normalizeDietGoal(goal);
+    if (g === 'cut') {
+        const maxShare = knownAge !== null && knownAge < ADULT_AGE ? CUT_MAX_SHARE_TEEN : CUT_MAX_SHARE;
+        kcal = tdee - Math.min(CUT_SHARE * tdee, maxShare * tdee, CUT_MAX_KCAL);
+    } else if (g === 'bulk') {
+        const share = advanced ? BULK_SHARE_ADVANCED : BULK_SHARE;
+        kcal = tdee + Math.min(share * tdee, BULK_MAX_SHARE * tdee, BULK_MAX_KCAL);
+    }
+    // Podłoga w górę do 10 kcal, żeby zaokrąglony cel nie zszedł poniżej BMR.
+    const floor = Math.ceil(Math.max(bmr, KCAL_FLOOR[sex] ?? KCAL_FLOOR.male) / 10) * 10;
+    return { bmr: Math.round(bmr), tdee: Math.round(tdee), kcal: Math.max(round10(kcal), floor), floor };
+}
+
+// Sam cel kcal (liczba) albo null bez wagi.
+export function computeTdee(measurements, opts = {}) {
+    const target = computeKcalTarget(measurements, opts);
+    return target ? target.kcal : null;
 }
 
 function readRaw(storage) {
