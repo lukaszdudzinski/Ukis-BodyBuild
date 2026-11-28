@@ -3,7 +3,7 @@ import { menuTrening, dataMenu, pozdrowienie } from "../wyglad/menuTrening.js";
 import { toIso } from "../trainer/trainerPlan.js";
 import { pokazJesliTrzeba as komunikatKlasyczny } from "../wyglad/komunikatKlasyczny.js";
 
-export const APP_VERSION = 'v2026.11.28.04'; // Faza 6.2: Katalog z podziałem na partie i Fixy UI
+export const APP_VERSION = 'v2026.11.28.05'; // Faza 6.2: Katalog z podziałem na partie i Fixy UI
 
 // Obsługa błędów globalnych — zdefiniowana w main.js (klucz: uki_error_logs)
 

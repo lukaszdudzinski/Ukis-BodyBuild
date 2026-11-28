@@ -1,5 +1,12 @@
 [
   {
+    "version": "v2026.11.28.05",
+    "date": "2026-11-28",
+    "changes": [
+      "📱 Android: dolne menu (Trening, Zeszyt, Profil) i przyciski okien nie chowają się już pod paskiem systemu."
+    ]
+  },
+  {
     "version": "v2026.11.28.04",
     "date": "2026-11-28",
     "changes": [
