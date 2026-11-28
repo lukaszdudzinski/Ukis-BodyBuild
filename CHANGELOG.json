@@ -1,5 +1,12 @@
 [
   {
+    "version": "v2026.11.28.03",
+    "date": "2026-11-28",
+    "changes": [
+      "📱 Android: dolny pasek systemu jest teraz ciemny jak aplikacja zamiast niebieskiego (zmiana pojawi się, gdy Chrome odświeży zainstalowaną aplikację)."
+    ]
+  },
+  {
     "version": "v2026.11.28.02",
     "date": "2026-11-28",
     "changes": [
