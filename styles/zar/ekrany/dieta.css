@@ -337,6 +337,8 @@
 /* Dziś akcentem także wtedy, gdy przekracza cel (linia celu pokazuje przekroczenie). */
 #diet-dashboard .diet-dzien.z-today .diet-dzien-slupek {
     background: var(--ukis-color-primary);
+    /* Znak nie-kolorowy: ponad cel (danger) i dziś (primary) bywają oba czerwone. */
+    box-shadow: inset 0 0 0 2px var(--ukis-on-primary);
 }
 
 /* Przerywana linia celu kcal (pozycja w style="bottom: …"). */
@@ -367,10 +369,268 @@
 
 #diet-dashboard .diet-klucz-dzis::before {
     background: var(--ukis-color-primary);
+    box-shadow: inset 0 0 0 1.5px var(--ukis-on-primary);
 }
 
 @media (prefers-reduced-motion: reduce) {
     #diet-dashboard .diet-spinner {
         animation: none;
     }
+}
+
+/* ============================================================
+   OKNA DIETY (C4): potwierdzenie posiłku (#diet-result-modal-overlay), cel kcal (#diet-tdee-modal) i posiłki z dnia
+   (#diet-history-meals-modal). Arkusze z-sheet z components.css; okna siedzą w <body>, więc selektory są poza
+   #diet-dashboard. Zasłona nad paskiem dolnym i przyciskami pływającymi (z-index 2500).
+   ============================================================ */
+.diet-okno-scrim {
+    z-index: 2500;
+}
+
+.diet-okno {
+    max-height: 92vh;
+    max-height: 92dvh;
+    -webkit-overflow-scrolling: touch;
+    font-family: var(--ukis-font);
+}
+
+.diet-okno .z-sheet-head {
+    min-height: var(--ukis-touch);
+}
+
+.diet-okno-tytul {
+    font-size: 22px;
+    min-width: 0;
+    overflow-wrap: anywhere;
+}
+
+.diet-okno-pole {
+    margin-bottom: 16px;
+}
+
+.diet-okno-pole .z-lab {
+    margin-bottom: 6px;
+}
+
+.diet-okno-blad {
+    margin-top: 6px;
+    font-size: 13px;
+    line-height: 1.4;
+    color: var(--ukis-color-danger);
+}
+
+.diet-okno-etykieta-ikona {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.diet-okno-zrodlo {
+    display: inline-flex;
+    color: var(--ukis-color-accent);
+}
+
+.diet-okno-wyliczony {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    margin-top: 8px;
+}
+
+.diet-okno-podpowiedz {
+    margin-top: 8px;
+    line-height: 1.4;
+}
+
+.diet-okno-opis {
+    margin: 0 0 18px;
+    line-height: 1.5;
+}
+
+.diet-okno-zapisz {
+    width: 100%;
+}
+
+/* ---------- Potwierdzenie posiłku ---------- */
+.diet-okno-fotki {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 8px;
+}
+
+.diet-okno-fotki:not(:empty) {
+    margin-bottom: 12px;
+}
+
+.diet-okno-foto {
+    width: 80px;
+    height: 80px;
+    object-fit: cover;
+    border-radius: var(--ukis-radius-sm);
+    border: 1px solid var(--ukis-glass-border);
+}
+
+.diet-okno-nazwa {
+    margin-bottom: 12px;
+    font-size: 17px;
+    font-weight: 600;
+    line-height: 1.3;
+    text-align: center;
+    overflow-wrap: anywhere;
+}
+
+.diet-okno-kcal {
+    margin-bottom: 12px;
+    padding: 12px;
+    text-align: center;
+}
+
+.diet-okno-kcal .z-lab {
+    margin-bottom: 8px;
+}
+
+.diet-okno-krok {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+}
+
+/* „−” i „+”: koło 52 px (większy cel niż 44 px, bo stuka się je wielokrotnie). */
+.diet-krok-btn,
+.diet-krok-btn.z-ic {
+    width: 52px;
+    height: 52px;
+    min-height: 52px;
+    color: var(--ukis-text);
+}
+
+.diet-okno-kcal-pole {
+    width: 120px;
+    min-width: 0;
+    padding: 8px;
+    text-align: center;
+    font-family: var(--ukis-font-display);
+    font-style: italic;
+    font-weight: 700;
+    font-size: 28px;
+    -moz-appearance: textfield;
+    appearance: textfield;
+}
+
+.diet-okno-kcal-pole::-webkit-outer-spin-button,
+.diet-okno-kcal-pole::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+.diet-okno-jednostka {
+    display: block;
+    margin-top: 6px;
+}
+
+.diet-okno-makra {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 8px;
+    margin-bottom: 16px;
+}
+
+.diet-okno-m {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    padding: 10px 6px;
+    border: 1px solid var(--ukis-glass-border);
+    border-radius: var(--ukis-radius-sm);
+    background: var(--ukis-ghost-bg);
+}
+
+.diet-okno-m-nazwa::before {
+    content: "";
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    margin-right: 6px;
+    border-radius: 50%;
+    background: var(--ukis-chart-1);
+}
+
+.diet-okno-m-wegle .diet-okno-m-nazwa::before {
+    background: var(--ukis-chart-2);
+}
+
+.diet-okno-m-tluszcze .diet-okno-m-nazwa::before {
+    background: var(--ukis-chart-3);
+}
+
+.diet-okno-m-gramy {
+    font-size: 20px;
+}
+
+.diet-okno-akcje {
+    display: flex;
+    gap: 10px;
+}
+
+.diet-okno-akcje > * {
+    flex: 1 1 0;
+}
+
+/* ---------- Posiłki z dnia ---------- */
+.diet-okno-lista {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.diet-okno-pusto {
+    margin: 0;
+    padding: 8px 0;
+    text-align: center;
+    font-size: 14px;
+}
+
+.diet-okno-posilek {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 6px 12px 14px;
+}
+
+.diet-okno-posilek-tekst {
+    flex: 1 1 auto;
+    min-width: 0;
+}
+
+.diet-okno-posilek-nazwa {
+    font-size: 14px;
+    font-weight: 500;
+    line-height: 1.3;
+    overflow-wrap: anywhere;
+}
+
+.diet-okno-posilek-kcal {
+    flex: none;
+    text-align: right;
+}
+
+.diet-okno-posilek-kcal .z-big {
+    font-size: 18px;
+}
+
+.diet-okno-posilek-kcal .z-mut {
+    font-size: 11px;
+}
+
+.diet-okno-usun {
+    color: var(--ukis-text-secondary);
+}
+
+.diet-okno-usun svg {
+    width: 20px;
+    height: 20px;
 }

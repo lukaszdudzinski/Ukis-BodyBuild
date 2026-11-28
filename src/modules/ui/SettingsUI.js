@@ -1,64 +1,131 @@
+// wyglad: zar
 import { DatabaseManager } from '../db/DatabaseManager.js';
 import { MediaManager } from '../db/MediaManager.js';
 import { ShareUtils } from '../../utils/ShareUtils.js';
 import { isTrainerEnabled, setTrainerEnabled, getTrainerLicense } from '../trainer/trainerAccess.js';
-import { applyDefaultAvatar, loadAvatarChoice, saveAvatarChoice } from './defaultAvatar.js';
+import { applyDefaultAvatar, loadAvatarChoice, saveAvatarChoice, avatarDataUri, resolveGender } from './defaultAvatar.js';
 import { Wyglad, ZDARZENIE as WYGLAD_ZMIENIONY } from '../wyglad/tlo.js';
 import { nazwaMotywu } from '../wyglad/WygladUI.js';
+import { PremiumUI } from './PremiumUI.js';
+import { loadKcalGoal } from '../diet/kcalGoal.js';
+
+// Dane w innerHTML zawsze przez esc() (także w atrybutach w cudzysłowie).
+const esc = (t) => String(t ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const ustaw = (id, tekst) => { const el = document.getElementById(id); if (el) el.textContent = tekst; };
+
+// „1 odznaka”, „2 odznaki”, „5 odznak”.
+const odznakiSlowo = (n) => {
+    if (n === 1) return 'odznaka';
+    const d = n % 10, s = n % 100;
+    return d >= 2 && d <= 4 && (s < 12 || s > 14) ? 'odznaki' : 'odznak';
+};
+// Krótki staż do karty i wiersza: „1-3 lata (Średniozaawansowany)” → „1-3 lata”.
+const krotkiStaz = (v) => String(v || '').replace(/\s*\(.*\)\s*$/, '');
+const SYLWETKI = { auto: 'Automatycznie', male: 'Mężczyzna', female: 'Kobieta' };
+const DOMYSLNY_STAZ = '1-3 lata (Średniozaawansowany)';
 
 export const SettingsUI = {
     init: () => {
-        // Find or create export/import buttons in the settings panel
         const settingsPanel = document.getElementById('settings-panel');
         if (!settingsPanel) return;
 
-        // Add Data Management section if it doesn't exist
-        if (!document.getElementById('reset-tutorial-btn')) {
-            const dataSection = document.createElement('div');
-            dataSection.innerHTML = `
-                <h4 style="margin-top: 20px;">Pomoc i Samouczek</h4>
-                <div class="form-full-width" style="margin-bottom: 20px;">
-                    <button id="reset-tutorial-btn" style="width: 100%; margin-bottom: 10px; background: rgba(255, 152, 0, 0.15); border: 1px solid rgba(255, 152, 0, 0.3); color: #FF9800; padding: 12px; border-radius: 12px; font-weight: 600; font-size: 0.95em; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px;">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
-                        Zobacz ponownie powitanie (Reset)
-                    </button>
-                </div>
-            `;
-            const pwaGuide = document.getElementById('settings-pwa-guide');
-            if (pwaGuide && pwaGuide.parentNode) {
-                pwaGuide.parentNode.insertBefore(dataSection, pwaGuide);
-            } else {
-                settingsPanel.appendChild(dataSection);
-            }
-            // Przełącznik wyglądu (okres przejściowy - patrz ui-switch.js); droga do klasycznego do etapu D (R10).
-            if (window.UkiUiSwitch) window.UkiUiSwitch.mountSettingsCard(dataSection);
-        }
+        // Przełącznik wyglądu (okres przejściowy - patrz ui-switch.js); droga do klasycznego do etapu D (R10).
+        const uiSwitchMount = document.getElementById('profile-ui-switch');
+        if (window.UkiUiSwitch && uiSwitchMount) window.UkiUiSwitch.mountSettingsCard(uiSwitchMount);
 
+        // „Zobacz ponownie powitanie”: powitanie Edwarda od razu (OnboardingUI.init pokazuje je, gdy nie ma flagi v22).
         const resetTutorialBtn = document.getElementById('reset-tutorial-btn');
         if (resetTutorialBtn) {
             resetTutorialBtn.addEventListener('click', () => {
                 localStorage.removeItem('tutorial_global');
-                localStorage.removeItem('userNick');
-                alert("Powitanie zostało zresetowane! Przejdź do głównego ekranu lub odśwież stronę.");
+                localStorage.removeItem('tutorial_global_v22');
                 if (window.OnboardingUI) window.OnboardingUI.init();
             });
         }
-        
-        const appVerSpan = document.getElementById('settings-app-version');
-        if (appVerSpan && window.APP_VERSION) {
-            appVerSpan.innerText = window.APP_VERSION;
-        }
 
-        // SettingsUI logic cleaned up
-
+        SettingsUI.initRozwijane();
+        SettingsUI.initCelKcal();
         SettingsUI.initTrainerCard();
         SettingsUI.initWygladRow();
         SettingsUI.initTheme();
         SettingsUI.initLaboratory();
         SettingsUI.initProfile();
         SettingsUI.initDietSettings();
-        
+
         SettingsUI.renderBadges();
+        SettingsUI.odswiezKarte();
+
+        // Plakietka PRO i wersja idą za stanem z PremiumUI (np. po odblokowaniu PRO z paska w Profilu).
+        const banner = document.getElementById('premium-status-banner');
+        if (banner && typeof MutationObserver === 'function') {
+            new MutationObserver(() => SettingsUI.odswiezKarte()).observe(banner, { childList: true });
+        }
+        document.addEventListener('nickUpdated', () => SettingsUI.odswiezKarte());
+        document.addEventListener('tabChanged', (e) => {
+            if (!e.detail || e.detail.tab !== 'settings-panel') return;
+            SettingsUI.renderBadges();
+            SettingsUI.odswiezKarte();
+        });
+    },
+
+    // Wiersze z aria-controls rozwijają edytor w miejscu. Klasa .expanded na treści zostaje dla AppUI
+    // (baner limitu PWA otwiera „Instalację” kliknięciem w .install-guide-header, gdy treść jej nie ma).
+    initRozwijane: () => {
+        document.querySelectorAll('#settings-panel button[aria-controls][aria-expanded]').forEach((btn) => {
+            btn.addEventListener('click', () => {
+                const tresc = document.getElementById(btn.getAttribute('aria-controls'));
+                if (!tresc) return;
+                const otworz = btn.getAttribute('aria-expanded') !== 'true';
+                btn.setAttribute('aria-expanded', String(otworz));
+                tresc.hidden = !otworz;
+                tresc.classList.toggle('expanded', otworz);
+            });
+        });
+    },
+
+    // „Cel kaloryczny” otwiera dzisiejsze okno celu kcal z Diety (#diet-tdee-modal, DietUI.otworzCelKcal).
+    initCelKcal: () => {
+        const btn = document.getElementById('profile-cel-kcal');
+        if (!btn) return;
+        btn.addEventListener('click', () => {
+            if (window.DietUI && typeof window.DietUI.otworzCelKcal === 'function') {
+                window.DietUI.otworzCelKcal(btn, () => SettingsUI.odswiezKarte());
+            }
+        });
+    },
+
+    // Karta użytkownika i wartości wierszy listy: nick, awatar, staż, odznaki, przypomnienie, cel kcal, PRO, wersja.
+    odswiezKarte: () => {
+        const nick = (localStorage.getItem('userNick') || '').trim();
+        ustaw('profile-karta-nick', nick || 'Bez nicku');
+        ustaw('profile-nick-val', nick || 'Brak');
+        const nickInput = document.getElementById('profile-nick-input');
+        if (nickInput && document.activeElement !== nickInput && nickInput.value !== nick) nickInput.value = nick;
+
+        const staz = krotkiStaz(localStorage.getItem('trainingExperience') || DOMYSLNY_STAZ);
+        const ach = window.AchievementsSystem;
+        const defs = ach ? ach.achievementsDef : {};
+        const zdobyte = ach ? ach.getEarnedAchievements().filter((id) => defs[id]).length : 0;
+        ustaw('profile-karta-meta', `Staż ${staz} · ${zdobyte} ${odznakiSlowo(zdobyte)}`);
+        ustaw('profile-staz-val', staz);
+        ustaw('profile-odznaki-val', `${zdobyte} z ${Object.keys(defs).length}`);
+
+        const przyp = localStorage.getItem('uki-bodybuild-reminder') || '30';
+        ustaw('profile-przypomnienie-val', przyp === '0' ? 'Wyłączone' : `Co ${przyp} dni`);
+
+        const { goal } = loadKcalGoal();
+        ustaw('profile-cel-kcal-val', goal ? `${goal.kcal} kcal` : 'Ustaw');
+
+        const wybor = loadAvatarChoice();
+        const zdjecie = localStorage.getItem('uki-bodybuild-avatar');
+        ustaw('profile-avatar-val', zdjecie ? 'Własne zdjęcie' : SYLWETKI[wybor]);
+        const podglad = document.getElementById('profile-avatar-preview');
+        if (podglad && !zdjecie) podglad.style.backgroundImage = `url("${avatarDataUri(resolveGender(nick, wybor))}")`;
+
+        const status = PremiumUI.getTrialStatus();
+        const pill = document.getElementById('profile-pro-pill');
+        if (pill) pill.hidden = !status.isProToken;
+        ustaw('settings-app-version', window.APP_VERSION ? `${status.isProToken ? 'Heavy' : (status.hasAccess ? `Trial (${PremiumUI.dniTekst(status.daysLeft)})` : 'Light')} ${window.APP_VERSION}` : '');
     },
 
     // Karta „Jestem trenerem”: przełącznik pokazujący kafelek Strefy oraz imię z ważnego kodu.
@@ -66,32 +133,34 @@ export const SettingsUI = {
         const panel = document.getElementById('settings-panel');
         if (!panel || document.getElementById('trainer-profile-card')) return;
 
+        // Wiersz z-switch: etykieta (tekst, podpowiedź, imię trenera z kodu) + ukryte pole wyboru role="switch" + tor.
         const checkbox = document.createElement('input');
         checkbox.type = 'checkbox';
+        checkbox.className = 'profil-switch-pole';
+        checkbox.setAttribute('role', 'switch');
         checkbox.checked = isTrainerEnabled();
-        checkbox.style.cssText = 'width: 22px; height: 22px; accent-color: #00BFFF; cursor: pointer;';
         const labelText = document.createElement('span');
         labelText.textContent = 'Jestem trenerem';
-        labelText.style.cssText = 'color: #fff; font-weight: 600;';
-        const toggle = document.createElement('label');
-        toggle.className = 'trainer-switch';
-        toggle.style.cssText = 'display: flex; align-items: center; gap: 12px; min-height: 44px; cursor: pointer;';
-        toggle.append(checkbox, labelText);
-
-        const hint = document.createElement('p');
+        const hint = document.createElement('span');
+        hint.className = 'z-mut';
         hint.textContent = 'Pokazuje w Menu kafelek Strefy trenera: osobne, szyfrowane miejsce na dane klientów.';
-        hint.style.cssText = 'margin: 4px 0 0 0; color: #bbb; font-size: 0.85em; line-height: 1.4;';
-        const who = document.createElement('p');
-        who.style.cssText = 'margin: 8px 0 0 0; color: #00BFFF; font-weight: 600;';
+        const who = document.createElement('span');
+        who.className = 'profil-trener-kto';
         who.hidden = true;
+        const txt = document.createElement('span');
+        txt.className = 'profil-switch-txt';
+        txt.append(labelText, hint, who);
+        const tor = document.createElement('span');
+        tor.className = 'z-switch-tor';
+        tor.setAttribute('aria-hidden', 'true');
+        const toggle = document.createElement('label');
+        toggle.className = 'z-switch trainer-switch';
+        toggle.append(txt, checkbox, tor);
 
         const card = document.createElement('div');
         card.id = 'trainer-profile-card';
-        card.style.cssText = 'background: rgba(0,0,0,0.4); padding: 15px; border-radius: 8px; border: 1px solid #00BFFF; margin-bottom: 20px;';
-        const title = document.createElement('h4');
-        title.textContent = 'Strefa trenera';
-        title.style.cssText = 'margin: 0 0 6px 0; color: #00BFFF;';
-        card.append(title, toggle, hint, who);
+        card.className = 'profil-trener';
+        card.append(toggle);
 
         const showName = async () => {
             const license = await getTrainerLicense();
@@ -109,10 +178,9 @@ export const SettingsUI = {
             }
         });
 
-        const container = panel.querySelector('.settings-container') || panel;
-        const profile = container.querySelector('.profile-section');
-        if (profile && profile.nextSibling) container.insertBefore(card, profile.nextSibling);
-        else container.appendChild(card);
+        // Miejsce montażu: karta przełączników Profilu (pod „Efektem szkła” i „Laboratorium”).
+        const box = document.getElementById('profile-przelaczniki') || panel.querySelector('.settings-container') || panel;
+        box.appendChild(card);
         showName();
     },
 
@@ -126,31 +194,23 @@ export const SettingsUI = {
         const allDefs = window.AchievementsSystem.achievementsDef;
         let html = '';
 
+        // Ikona odznaki to SVG z kodu (AchievementsSystem), nie dane użytkownika.
         for (const key in allDefs) {
             const def = allDefs[key];
             const isEarned = earnedIds.includes(def.id);
-            
-            if (isEarned) {
-                html += `
-                    <div style="background: rgba(255,215,0,0.1); border: 1px solid #FFD700; border-radius: 8px; padding: 10px; width: 80px; text-align: center; cursor: help;" title="${def.description}">
-                        <div style="font-size: 2em; margin-bottom: 5px;">${def.icon}</div>
-                        <div style="font-size: 0.65em; font-weight: bold; color: #FFD700; line-height: 1.1;">${def.title}</div>
-                    </div>
-                `;
-            } else {
-                html += `
-                    <div style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; padding: 10px; width: 80px; text-align: center; opacity: 0.4; filter: grayscale(100%); cursor: help;" title="${def.description}">
-                        <div style="font-size: 2em; margin-bottom: 5px;">${def.icon}</div>
-                        <div style="font-size: 0.65em; font-weight: bold; color: #aaa; line-height: 1.1;">${def.title}</div>
-                    </div>
-                `;
-            }
+            html += `
+                <div class="profil-odznaka${isEarned ? ' z-on' : ''}" title="${esc(def.description)}">
+                    <span class="profil-odznaka-ik" aria-hidden="true">${def.icon}</span>
+                    <span class="profil-odznaka-tyt">${esc(def.title)}</span>
+                    <span class="z-sr">${isEarned ? 'zdobyta' : 'do zdobycia'}: ${esc(def.description)}</span>
+                </div>
+            `;
         }
-        
-        if(Object.keys(allDefs).length === 0) {
-            html = '<div style="color: #888; font-size: 0.9em;">Brak zdefiniowanych odznak.</div>';
+
+        if (Object.keys(allDefs).length === 0) {
+            html = '<div class="z-mut">Brak zdefiniowanych odznak.</div>';
         }
-        
+
         container.innerHTML = html;
     },
 
@@ -173,7 +233,7 @@ export const SettingsUI = {
         const textToShare = `Zdobyłem ${earnedCount} odznak w Uki's BodyBuild! Moja kolekcja: ${badgesText}. Dołącz i bij rekordy: https://lukaszdudzinski.github.io/Ukis-BodyBuild/`;
 
         const statsList = [
-            { label: 'Zdobyte odznaki', value: String(earnedCount), color: '#FFD700' },
+            { label: 'Zdobyte odznaki', value: String(earnedCount), color: getComputedStyle(document.documentElement).getPropertyValue('--ukis-color-accent').trim() || undefined },
             { label: 'Kolekcja', value: badgesText.substring(0, 30) + (badgesText.length > 30 ? '...' : '') }
         ];
 
@@ -203,16 +263,7 @@ export const SettingsUI = {
     },
 
     initDietSettings: () => {
-        const goalSelect = document.getElementById('diet-goal-select');
         const workerUrlInput = document.getElementById('diet-worker-url');
-
-        if (goalSelect) {
-            const savedGoal = localStorage.getItem('dietGoal') || 'maintenance';
-            goalSelect.value = savedGoal;
-            goalSelect.addEventListener('change', (e) => {
-                localStorage.setItem('dietGoal', e.target.value);
-            });
-        }
 
         if (workerUrlInput) {
             const savedUrl = localStorage.getItem('dietWorkerUrl') || '';
@@ -297,8 +348,7 @@ export const SettingsUI = {
         if (savedAvatar && avatarPreview) {
             MediaManager.getMediaUrl(savedAvatar).then(url => {
                 if (url) {
-                    avatarPreview.style.backgroundImage = `url(${url})`;
-                    avatarPreview.innerHTML = ''; // Hide emoji
+                    avatarPreview.style.backgroundImage = `url("${url}")`;
                 }
             });
             SettingsUI.applyProfileAvatar(savedAvatar);
@@ -310,6 +360,7 @@ export const SettingsUI = {
             
             reminderSelect.addEventListener('change', (e) => {
                 localStorage.setItem('uki-bodybuild-reminder', e.target.value);
+                SettingsUI.odswiezKarte();
             });
         }
 
@@ -319,6 +370,7 @@ export const SettingsUI = {
             silhouetteSelect.addEventListener('change', (e) => {
                 saveAvatarChoice(e.target.value);
                 applyDefaultAvatar();
+                SettingsUI.odswiezKarte();
             });
         }
 
@@ -329,6 +381,7 @@ export const SettingsUI = {
             
             expSelect.addEventListener('change', (e) => {
                 localStorage.setItem('trainingExperience', e.target.value);
+                SettingsUI.odswiezKarte();
             });
         }
 
@@ -342,6 +395,10 @@ export const SettingsUI = {
             });
         }
 
+        // „Zmień zdjęcie” to przycisk (osiągalny z klawiatury): otwiera ukryte pole wyboru pliku.
+        const avatarBtn = document.getElementById('profile-avatar-btn');
+        if (avatarBtn && avatarUpload) avatarBtn.addEventListener('click', () => avatarUpload.click());
+
         if (avatarUpload) {
             avatarUpload.addEventListener('change', async (e) => {
                 const file = e.target.files[0];
@@ -351,10 +408,10 @@ export const SettingsUI = {
                         localStorage.setItem('uki-bodybuild-avatar', id);
                         const url = await MediaManager.getMediaUrl(id);
                         if (avatarPreview && url) {
-                            avatarPreview.style.backgroundImage = `url(${url})`;
-                            avatarPreview.innerHTML = '';
+                            avatarPreview.style.backgroundImage = `url("${url}")`;
                         }
                         SettingsUI.applyProfileAvatar(id);
+                        SettingsUI.odswiezKarte();
                     } catch(err) {
                         alert('Błąd zapisu avatara.');
                     }
@@ -373,7 +430,7 @@ export const SettingsUI = {
                 nickEl = document.createElement('div');
                 nickEl.id = 'header-user-nick';
                 nickEl.style.fontSize = '0.9em';
-                nickEl.style.color = '#00BFFF';
+                nickEl.style.color = 'var(--ukis-color-accent)';
                 nickEl.style.marginRight = '10px';
                 // Insert before the nav-links
                 const navLinks = document.querySelector('.nav-links');
@@ -419,7 +476,7 @@ export const SettingsUI = {
                 avatarEl.style.borderRadius = '50%';
                 avatarEl.style.backgroundSize = 'cover';
                 avatarEl.style.backgroundPosition = 'center';
-                avatarEl.style.border = '2px solid #00BFFF';
+                avatarEl.style.border = '2px solid var(--ukis-color-accent)';
                 avatarEl.style.marginRight = '15px';
                 
                 const nickEl = document.getElementById('header-user-nick');

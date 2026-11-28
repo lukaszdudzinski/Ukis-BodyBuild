@@ -163,16 +163,6 @@
     color: #aaa;
 }
 
-
-/* Settings Installation Guide */
-.install-guide-section {
-    background-color: transparent;
-    border-radius: 0;
-    padding: 0;
-    margin-top: 20px;
-    border: none;
-}
-
 .install-guide-header {
     display: flex;
     align-items: center;
@@ -201,12 +191,6 @@
     /* Match settings labels */
 }
 
-.toggle-icon {
-    transition: transform 0.3s ease;
-    font-size: 0.8em;
-    color: var(--ukis-text-secondary, #888);
-}
-
 .install-guide-content {
     display: none;
     margin-top: 0;
@@ -223,33 +207,6 @@
 
 .install-guide-content.expanded {
     display: block;
-}
-
-/* Adjust header when expanded */
-.install-guide-header.active-header {
-    border-radius: 8px 8px 0 0;
-    /* Rounded top only */
-    background-color: rgba(255, 255, 255, 0.1);
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-    /* Separator */
-}
-
-.install-guide-img {
-    width: 100%;
-    border-radius: 8px;
-    border: 1px solid #444;
-    margin-bottom: 15px;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
-}
-
-.install-steps-list ol {
-    padding-left: 20px;
-    color: #e0e0e0;
-    line-height: 1.6;
-}
-
-.install-steps-list li {
-    margin-bottom: 8px;
 }
 
 @keyframes fadeIn {

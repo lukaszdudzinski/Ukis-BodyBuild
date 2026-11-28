@@ -1,24 +1,6 @@
 /* ============================================================
    KOMPONENTY: MODALE I TOOLTIPY
    ============================================================ */
-.overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0, 0, 0, 0.6);
-    backdrop-filter: blur(3px);
-    z-index: 1000;
-    opacity: 0;
-    visibility: hidden;
-    transition: opacity 0.3s;
-}
-
-.overlay.active {
-    opacity: 1;
-    visibility: visible;
-}
 
 /* Tooltip Overlay */
 #tooltip-overlay {
@@ -91,76 +73,6 @@
     color: var(--ukis-color-accent);
 }
 
-.tooltip-trigger {
-    position: relative;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 24px;
-    height: 24px;
-    border-radius: 50%;
-    background-color: #4a4a4a;
-    color: #e0e0e0;
-    font-size: 1em;
-    font-weight: bold;
-    cursor: help;
-}
-
-.tooltip-trigger .tooltip-content {
-    display: none !important;
-}
-
-.label-with-tooltip {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-}
-
-.button-with-tooltip {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    width: 100%;
-}
-
-.button-with-tooltip button {
-    flex: 1;
-}
-
-.button-with-tooltip .tooltip-button {
-    flex-shrink: 0;
-    width: 24px;
-    height: 24px;
-    font-size: 1em;
-    line-height: 24px;
-    padding: 0;
-    border-radius: 50%;
-    background-color: #4a4a4a;
-    color: #e0e0e0;
-    font-weight: bold;
-    cursor: help;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-/* NOWY STYL: Modal Alarmowy */
-#global-tooltip.emergency-modal {
-    border: 2px solid #DC143C;
-    animation: pulse-red 1.5s infinite;
-    background-color: rgba(70, 10, 20, 0.95);
-    position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    z-index: 1200;
-    width: min(520px, 92%);
-    max-width: 92%;
-    box-sizing: border-box;
-    margin: 0;
-}
-
-#global-tooltip.emergency-modal,
 #global-tooltip.tooltip-content {
     position: fixed !important;
     left: 50vw !important;
@@ -173,32 +85,6 @@
     overflow-y: auto !important;
     -webkit-overflow-scrolling: touch;
     box-sizing: border-box !important;
-}
-
-#global-tooltip.emergency-modal h4 {
-    color: #DC143C !important;
-    font-size: 1.5em;
-    font-weight: bold;
-    text-shadow: 0 0 10px rgba(220, 20, 60, 0.7);
-}
-
-#global-tooltip.emergency-modal a {
-    color: #ffffff;
-    font-size: 1.3em;
-    font-weight: bold;
-    display: block;
-    margin-top: 15px;
-    padding: 10px;
-    border: 1px solid #DC143C;
-    border-radius: 8px;
-    text-decoration: none;
-    background: rgba(220, 20, 60, 0.2);
-    transition: background-color 0.2s;
-}
-
-#global-tooltip.emergency-modal a:hover {
-    background-color: #DC143C;
-    color: #fff;
 }
 
 /* Mobile override for emergency modal */

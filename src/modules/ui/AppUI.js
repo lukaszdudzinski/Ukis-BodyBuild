@@ -2,7 +2,7 @@ import { PremiumUI } from "./PremiumUI.js";
 import { menuTrening, dataMenu, pozdrowienie } from "../wyglad/menuTrening.js";
 import { toIso } from "../trainer/trainerPlan.js";
 
-export const APP_VERSION = 'v2026.11.27.04'; // Faza 6.2: Katalog z podziałem na partie i Fixy UI
+export const APP_VERSION = 'v2026.11.28.01'; // Faza 6.2: Katalog z podziałem na partie i Fixy UI
 
 // Obsługa błędów globalnych — zdefiniowana w main.js (klucz: uki_error_logs)
 
@@ -12,10 +12,9 @@ export const AppUI = {
             localStorage.setItem("uki_install_date", new Date().toISOString());
         }
         AppUI.initNavigation();
-        AppUI.initMobileMenu();
         AppUI.initPWA();
         
-        // Inicjalnie aktywuj welcome-screen (ustawia display:flex i active na nav-btn)
+        // Inicjalnie aktywuj welcome-screen (display: block i aktywny przycisk paska dolnego)
         if (window.switchTab) {
             window.switchTab('welcome-screen');
         }
@@ -24,28 +23,7 @@ export const AppUI = {
         // Expose do global scope dla index.html
         window.APP_VERSION = APP_VERSION;
 
-        const versionDisplays = document.querySelectorAll('.version-info, .app-version-display');
-        
         const premiumStatus = PremiumUI.getTrialStatus();
-        
-        let variantName = '';
-        if (premiumStatus.isProToken) {
-            variantName = 'Heavy';
-        } else if (premiumStatus.hasAccess) {
-            variantName = `Trial (${premiumStatus.daysLeft} dni)`;
-        } else {
-            variantName = 'Light';
-        }
-
-        versionDisplays.forEach(el => {
-            if (el.classList.contains('app-version-display')) {
-                // W Ustawieniach
-                el.innerHTML = `${variantName} ${APP_VERSION} <span onclick="alert('Objaśnienie wariantów:\\n\\nTrial - Przez 7 dni masz odblokowaną pełną wersję aplikacji ze wszystkimi funkcjami.\\nHeavy - Wersja z nielimitowanym dostępem do sztucznej inteligencji (AI).\\nLight - Wersja podstawowa bez funkcji AI.')" style="cursor: pointer; color: #FF9800; margin-left: 5px; font-size: 1.1em;" title="Co to znaczy?">ⓘ</span><br><a href="#" onclick="event.preventDefault(); window.showChangelogModal('all')" style="color: #FF9800; text-decoration: underline; font-size: 0.9em; display: inline-block; margin-top: 10px; cursor: pointer;">Zobacz co nowego (Changelog)</a>`;
-            } else {
-                // Sidebar oraz dashboard-version
-                el.textContent = `${variantName} ${APP_VERSION}`;
-            }
-        });
 
         // Stopka Menu: sam numer wersji + osobny napis wariantu (Heavy tylko z tokenem Pro, reszta to Light).
         const dashVersion = document.getElementById('dashboard-version');
@@ -193,49 +171,10 @@ export const AppUI = {
         if (date) date.textContent = dataMenu(toIso(new Date()));
     },
 
-    initMobileMenu: () => {
-        const mobileMenuToggle = document.getElementById('mobile-menu-toggle');
-        const sidebarNav = document.querySelector('.sidebar-nav');
-        const overlay = document.querySelector('.overlay');
-        const sidebarLinks = document.querySelectorAll('.sidebar-nav a');
-
-        function toggleMenu() {
-            if (sidebarNav) sidebarNav.classList.toggle('active');
-            if (overlay) overlay.classList.toggle('active');
-        }
-
-        function closeMenu() {
-            if (sidebarNav) sidebarNav.classList.remove('active');
-            if (overlay) overlay.classList.remove('active');
-        }
-
-        if (mobileMenuToggle) {
-            mobileMenuToggle.addEventListener('click', (e) => {
-                e.stopPropagation();
-                toggleMenu();
-            });
-        }
-        if (overlay) {
-            overlay.addEventListener('click', closeMenu);
-        }
-        sidebarLinks.forEach(link => {
-            if (link.closest('ul')) {
-                link.addEventListener('click', closeMenu);
-            }
-        });
-    },
-
     initNavigation: () => {
-        const navLinks = document.querySelectorAll('.sidebar-nav ul a[data-tab]');
         const tabContents = document.querySelectorAll('.app-content > .tab-content-wrapper > .tab-content');
-        const homeLinkHeader = document.getElementById('home-link-header');
-        const tilesHomeBtn = document.getElementById('tiles-mode-home-btn'); // Floating X Button
 
         function switchTab(tabId) {
-            navLinks.forEach(l => {
-                l.classList.toggle('active', l.getAttribute('data-tab') === tabId);
-            });
-
             // Aktywny przycisk paska dolnego: klasa .active i aria-current="page" (styl pigułki w components.css)
             // Ekran bez własnego przycisku podświetla przycisk, z którego się do niego wchodzi:
             // kreator szablonów → Trening, Wygląd → Profil, ekrany z kafelków Menu → Menu.
@@ -271,12 +210,7 @@ export const AppUI = {
                 content.style.display = 'none';
                 if (content.id === tabId) {
                     content.classList.add('active-tab');
-                    // glass-dashboard potrzebuje display:flex, reszta block
-                    if (content.classList.contains('glass-dashboard')) {
-                        content.style.display = 'flex';
-                    } else {
-                        content.style.display = 'block';
-                    }
+                    content.style.display = 'block';
                 }
             });
 
@@ -288,58 +222,10 @@ export const AppUI = {
             if (window.OnboardingUI && window.OnboardingUI.checkContextualTutorial) {
                 window.OnboardingUI.checkContextualTutorial(tabId);
             }
-
-            // Mobile Home Button Logic (Show everywhere EXCEPT welcome screen)
-            if (tilesHomeBtn) {
-                const isMobile = window.innerWidth <= 768;
-                if (isMobile && tabId !== 'welcome-screen') {
-                    tilesHomeBtn.style.display = 'flex';
-                } else {
-                    tilesHomeBtn.style.display = 'none';
-                }
-            }
         }
 
         // EXPOSE GLOBALLY for index.html inline onclicks!
-        window.switchTab = switchTab; 
-
-        // 1. Sidebar Links
-        navLinks.forEach(link => {
-            link.addEventListener('click', (e) => {
-                e.preventDefault();
-                const tabId = link.getAttribute('data-tab');
-                if (tabId) switchTab(tabId);
-            });
-        });
-
-        // 2. Sidebar Header (Desktop Home)
-        if (homeLinkHeader) {
-            homeLinkHeader.addEventListener('click', (e) => {
-                e.preventDefault();
-                switchTab('welcome-screen');
-            });
-        }
-
-        // 3. Mobile Header (Logo/Title Click -> Home)
-        const mobileHeaders = document.querySelectorAll('.mobile-header, .home-header');
-        mobileHeaders.forEach(header => {
-            header.addEventListener('click', (e) => {
-                if (window.innerWidth <= 768) {
-                    const activeTab = document.querySelector('.tab-content.active-tab');
-                    if (activeTab && activeTab.id !== 'welcome-screen') {
-                        switchTab('welcome-screen');
-                    }
-                }
-            });
-            header.style.cursor = 'pointer'; 
-        });
-
-        // 4. Tiles Mode Home Button (Floating X)
-        if (tilesHomeBtn) {
-            tilesHomeBtn.addEventListener('click', () => {
-                switchTab('welcome-screen');
-            });
-        }
+        window.switchTab = switchTab;
     },
 
     initPWA: () => {

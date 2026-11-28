@@ -15,7 +15,7 @@ export const ChatUI = {
                 <button type="button" id="edward-chat-toggle" class="z-ic z-ic-acc z-fab" aria-label="Czat z Edwardem"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="7" width="16" height="12" rx="3"/><path d="M12 7V4M9 13h.01M15 13h.01"/></svg></button>
 
                 <!-- Okno czatu: cały ekran (spec 8.3), style w styles/zar/ekrany/edward.css -->
-                <div id="edward-chat-window" role="dialog" aria-label="Czat z Edwardem">
+                <div id="edward-chat-window" role="dialog" aria-modal="true" aria-label="Czat z Edwardem">
                     <header class="z-chat-head">
                         <span class="z-chat-ikona" aria-hidden="true">${ikona('bot', 24)}</span>
                         <div class="z-head-txt">
@@ -124,21 +124,29 @@ export const ChatUI = {
             chatWindow.style.display = isHidden ? 'flex' : 'none';
             document.body.classList.toggle('z-edward-otwarty', isHidden);
             if (isHidden) {
+                // Dymek kontekstowy nie zostaje nad otwartym czatem.
+                const dymek = document.getElementById('edward-contextual-bubble');
+                if (dymek) dymek.remove();
                 input.focus();
                 toggleBtn.style.display = 'none';
             }
         });
 
-        const zamknij = () => {
+        const zamknij = (oddajFokus = true) => {
             chatWindow.style.display = 'none';
             document.body.classList.remove('z-edward-otwarty');
             toggleBtn.style.display = 'flex';
+            if (oddajFokus) toggleBtn.focus();
         };
-        closeBtn.addEventListener('click', zamknij);
+        closeBtn.addEventListener('click', () => zamknij());
+        // Escape zamyka czat (okno jest modalne).
+        chatWindow.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') zamknij();
+        });
         // Zmiana zakładki (także programowa: Strefa trenera, wyłączone sekcje) zamyka czat,
         // żeby klasa chowająca aplikację nie została przy ukrytym oknie.
         document.addEventListener('tabChanged', () => {
-            if (document.body.classList.contains('z-edward-otwarty')) zamknij();
+            if (document.body.classList.contains('z-edward-otwarty')) zamknij(false);
         });
 
         sendBtn.addEventListener('click', ChatUI.sendMessage);

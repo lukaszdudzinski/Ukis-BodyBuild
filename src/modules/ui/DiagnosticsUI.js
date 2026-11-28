@@ -38,7 +38,7 @@ export const DiagnosticsUI = {
                     <input type="file" id="db-import-file" accept=".json" hidden>
                 </div>
 
-                <label class="z-lab z-serwis-etykieta" for="backup-frequency-select">Częstotliwość propozycji archiwizacji</label>
+                <label class="z-lab z-serwis-etykieta" for="backup-frequency-select">Przypominaj o kopii</label>
                 <select id="backup-frequency-select" class="z-in">
                     <option value="activity">Po aktywności (jeśli był wczoraj trening)</option>
                     <option value="daily">Codziennie</option>
@@ -140,7 +140,7 @@ export const DiagnosticsUI = {
                 <p class="z-sub z-serwis-opis">Użyj tylko wtedy, gdy aplikacja przestała się aktualizować lub „utknęła” na starej wersji. <strong class="z-serwis-mocny">Konta i statystyki są bezpieczne</strong> (baza SQLite nie jest usuwana).</p>
                 <button type="button" id="pwa-hard-reset-btn" class="z-ghost z-danger z-serwis-szeroki">
                     ${ikona('alert', 18)}
-                    Wykonaj Twardy Reset Aplikacji
+                    Twardy reset aplikacji (dane bezpieczne)
                 </button>
 
                 <div class="z-sep"></div>

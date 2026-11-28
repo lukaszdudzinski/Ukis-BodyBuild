@@ -87,11 +87,11 @@ export const ExerciseEntries = [
     { name: 'Wyciskanie, leżąc na ławce płaskiej w wąskim chwycie', category: 'Triceps', en: 'Close Grip Bench Press', wzorzec: 'upper_push_accessory', aliases: ['Triceps - Wyciskanie wąsko - Sztanga płasko'] },
     { name: 'Prostowanie przedramion na lince wyciągu górnego', category: 'Triceps', en: 'Triceps Pushdown', wzorzec: 'upper_push_accessory', aliases: ['Triceps - Prostowanie ramion na wyciągu - Uchwyt prosty'] },
     { name: 'Prostowanie przedramion na lince wyciągu dolnego tyłem do wyciągu', category: 'Triceps', en: 'Standing Cable Triceps Overhead Extension', wzorzec: 'upper_push_accessory' },
-    { name: 'Prostowanie przedramion, leżąc na gryfie łamanym', category: 'Triceps', en: 'EZ Bar Skull Crusher', wzorzec: 'upper_push_accessory', aliases: ['Triceps - Wyciskanie francuskie - Sztanga łamana (leżąc)'] }, // właściciel: „?” przy wzorcu, do potwierdzenia
+    { name: 'Prostowanie przedramion, leżąc na gryfie łamanym', category: 'Triceps', en: 'EZ Bar Skull Crusher', wzorzec: 'upper_push_accessory', aliases: ['Triceps - Wyciskanie francuskie - Sztanga łamana (leżąc)'] },
     { name: 'Wyciskanie francuskie, siedząc', category: 'Triceps', en: 'Seated Dumbbell French Press', wzorzec: 'upper_push_accessory' },
     { name: 'Wyciskanie francuskie, leżąc, hantlami', category: 'Triceps', en: 'Lying Dumbbell French Press', wzorzec: 'upper_push_accessory' },
     { name: 'Prostowanie przedramion z hantlami, leżąc przodem na ławce skośnej', category: 'Triceps', en: 'Incline Dumbbell Triceps Kickback', wzorzec: 'upper_push_accessory' },
-    { name: 'Prostowanie przedramion z hantlami w opadzie tułowia', category: 'Triceps', en: 'Dumbbell Triceps Kickback', wzorzec: 'upper_push_accessory' }, // właściciel: „?” przy wzorcu, do potwierdzenia
+    { name: 'Prostowanie przedramion z hantlami w opadzie tułowia', category: 'Triceps', en: 'Dumbbell Triceps Kickback', wzorzec: 'upper_push_accessory' },
     { name: 'Triceps - Prostowanie ramion na wyciągu - Uchwyt łamany', category: 'Triceps' },
     { name: 'Triceps - Prostowanie ramion na wyciągu - Lina', category: 'Triceps' },
     { name: 'Triceps - Wyciskanie francuskie jednorącz - Hantel za głowę', category: 'Triceps' },

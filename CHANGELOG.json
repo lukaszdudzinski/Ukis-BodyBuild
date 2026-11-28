@@ -1,5 +1,14 @@
 [
   {
+    "version": "v2026.11.28.01",
+    "date": "2026-11-28",
+    "changes": [
+      "✨ Nowy wygląd ostatnich ekranów: Profil, Analiza (Sylwetka i Regeneracja) oraz okna Diety: dodawanie posiłku, cel kalorii i posiłki z poprzednich dni.",
+      "🛠️ Poprawki: Historia liczy serie i objętość także w superseriach, pole daty w Pomiarach nie wchodzi na iPhonie pod wybór płci, „Zobacz ponownie powitanie” znów działa, a usunięcie posiłku z poprzedniego dnia trzeba potwierdzić.",
+      "⚡ Aplikacja jest lżejsza: usunęliśmy nieużywane style poprzedniego wyglądu."
+    ]
+  },
+  {
     "version": "v2026.11.27.04",
     "date": "2026-11-27",
     "changes": [

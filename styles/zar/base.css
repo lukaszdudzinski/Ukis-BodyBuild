@@ -20,14 +20,6 @@ body.zar.z-tlo-tapeta {
     background-image: none;
 }
 
-/* Stare tło Liquid Glass (plamy i zaciemnienie) nie istnieje w nowym wyglądzie. */
-body.zar .blob-1,
-body.zar .blob-2,
-body.zar .blob-3,
-body.zar > .overlay {
-    display: none;
-}
-
 /* Warstwa tapety: stała, pod całą treścią, nie łapie dotyku. Widoczna tylko przy tapecie. */
 #z-tlo {
     position: fixed;
@@ -125,7 +117,7 @@ body.z-tlo-tapeta #z-tlo {
    a jej koniec da się przewinąć 16 px ponad nią (56 px paska + 14 px odstępu od dołu + 16 px).
    Gdy widać pasek aktualizacji UKIS, pwa-updater.js podaje jego wysokość w --ukis-banner-space;
    reguła jest mocniejsza od `html.ukis-pasek-aktualizacji .tab-content-wrapper` z pwa-updater.js
-   i od `padding: 0 !important` z glassmorphism.css, więc oba miejsca się sumują. */
+   i od `padding: 0 !important` z layout.css, więc oba miejsca się sumują. */
 body.zar .app-content > .tab-content-wrapper {
     padding-bottom: calc(56px + 14px + 16px + env(safe-area-inset-bottom, 0px) + var(--ukis-banner-space, 0px)) !important;
 }

@@ -2,75 +2,26 @@
    KOMPONENTY: FORMULARZE I PRZYCISKI
    ============================================================ */
 
-/* Input Groups */
-.input-group {
-    margin-bottom: 16px;
-    display: flex;
-    flex-direction: column;
-}
-
-.input-group label,
-.label-with-tooltip label {
-    margin-bottom: 6px;
-    font-size: 0.9em;
-    color: #ffffff !important;
-    font-weight: 500;
-    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.9);
-    letter-spacing: 0.5px;
-}
-
-.input-group input,
-.input-group select {
-    background-color: var(--ukis-input-bg);
-    border: 1px solid var(--ukis-input-border);
-    color: var(--ukis-text);
-    padding: 12px 10px;
-    min-height: 44px;
-    border-radius: var(--ukis-radius-sm);
-    font-size: max(16px, 1.2em);
-    font-weight: bold;
-    text-align: center;
-    width: 100%;
-    max-width: 100%;
-    min-width: 0;
-    box-sizing: border-box;
-    -webkit-appearance: none;
-}
-
-.input-group input:focus,
-.input-group select:focus {
-    outline: none;
-    border-color: var(--ukis-color-accent);
-    box-shadow: 0 0 5px var(--ukis-accent-line);
-}
-
-.input-group input:focus-visible,
-.input-group select:focus-visible,
-.input-group textarea:focus-visible {
-    outline: 2px solid var(--ukis-color-accent);
-    outline-offset: 2px;
-}
-
-/* Pola poza .input-group w starych ekranach: tokeny motywu, bez dotykania Strefy trenera ani komponentów z-*
-   (zerowa specyficzność przez :where, więc każda własna reguła pola wygrywa). */
+/* Pola bez klas z-* w treści aplikacji: tokeny motywu, 16 px (bez przybliżania w iOS; dawniej z reguły .input-group),
+   min. 44 px; bez dotykania Strefy trenera (.in) ani komponentów z-*. */
 :where(body.zar .app-content) :where(input:not([type=checkbox]):not([type=radio]):not([type=range]):not([type=file]):not([type=color]):not([type=hidden]):not([type=button]):not([type=submit]), select):not(.in):not([class*="z-"]) {
     background-color: var(--ukis-input-bg);
     border: 1px solid var(--ukis-input-border);
     color: var(--ukis-text);
     border-radius: var(--ukis-radius-sm);
     min-height: 44px;
+    font-size: max(16px, 1em);
     box-sizing: border-box;
 }
 
-.input-group input:disabled {
-    opacity: 0.5;
-    background-color: var(--ukis-input-bg);
-    cursor: not-allowed;
+/* WebKit (Safari, iPhone) bez tego nie daje natywnej liście wysokości 44 px (jak dawniej .input-group select). */
+:where(body.zar .app-content) select:not(.in):not([class*="z-"]) {
+    -webkit-appearance: none;
+    appearance: none;
 }
 
-/* Pola poza .input-group (textarea, .input-field): te same tokeny motywu, 16 px (bez przybliżania w iOS), min. 44 px. */
-textarea,
-.input-field {
+/* textarea: te same tokeny motywu, 16 px (bez przybliżania w iOS), min. 44 px. */
+textarea {
     background-color: var(--ukis-input-bg);
     border: 1px solid var(--ukis-input-border);
     color: var(--ukis-text);
@@ -80,10 +31,6 @@ textarea,
 }
 
 textarea {
-    min-height: 44px;
-}
-
-.input-field {
     min-height: 44px;
 }
 
@@ -113,166 +60,6 @@ textarea {
     box-shadow: 0 2px 5px var(--ukis-primary-tint);
 }
 
-.pulse-button {
-    background-color: transparent;
-    color: var(--ukis-color-accent);
-    font-weight: bold;
-    border: 1px solid var(--ukis-color-accent);
-    padding: 12px 24px;
-    font-size: 1.1em;
-    border-radius: 6px;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    box-shadow: 0 0 10px var(--ukis-primary-tint);
-}
-
-.pulse-button:hover {
-    background-color: var(--ukis-color-primary);
-    color: var(--ukis-on-primary);
-    box-shadow: 0 0 20px var(--ukis-accent-line);
-}
-
-.back-to-dashboard {
-    background: none;
-    border: 1px solid var(--ukis-color-accent);
-    color: var(--ukis-color-accent);
-    padding: 6px 15px;
-    border-radius: 20px;
-    cursor: pointer;
-    font-size: 0.9em;
-    margin-bottom: 15px;
-    transition: all 0.2s;
-    font-weight: bold;
-}
-
-.back-to-dashboard:hover {
-    color: var(--ukis-on-primary);
-    background-color: var(--ukis-color-primary);
-}
-
-/* Form Layouts */
-.two-column-form {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 20px;
-}
-
-.form-column {
-    flex: 1;
-    min-width: 250px;
-}
-
-.form-full-width {
-    flex-basis: 100%;
-}
-
-@media (max-width: 768px) {
-    .two-column-form {
-        flex-direction: column;
-        gap: 0;
-    }
-
-    .form-column {
-        width: 100%;
-        min-width: 0;
-    }
-}
-
-/* Checkboxes (Checklists) */
-.checklist-group {
-    margin-bottom: 20px;
-    background-color: rgba(255, 255, 255, 0.2);
-    border-radius: 8px;
-    padding: 10px 15px;
-    border: 1px solid #4a4a4a;
-}
-
-.checklist-group h4 {
-    font-size: 1.2em;
-    color: var(--ukis-color-accent);
-    border-bottom-color: rgba(255, 255, 255, 0.3);
-}
-
-.checklist-item label {
-    color: #f0f0f0;
-    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.6);
-}
-
-.checklist-item input[type="checkbox"] {
-    border-color: #ccc;
-    background-color: rgba(255, 255, 255, 0.3);
-}
-
-.checklist-item input[type="checkbox"]:checked {
-    background-color: var(--ukis-color-primary);
-    border-color: var(--ukis-color-accent);
-}
-
-.checklist-item input[type="checkbox"]:checked+label {
-    color: #ddd;
-    text-shadow: 0 1px 1px rgba(0, 0, 0, 0.4);
-    text-decoration: line-through;
-}
-
-.global-reset-wrapper {
-    background: rgba(40, 40, 40, 0.7);
-    border-radius: 8px;
-    padding: 10px;
-    margin-top: 15px;
-    margin-bottom: 15px;
-    text-align: center;
-    animation: pulse-glow-dark 3s infinite ease-in-out;
-    border: 1px solid var(--ukis-primary-tint);
-}
-
-#global-checklist-reset-btn {
-    background-color: var(--ukis-color-primary);
-    color: var(--ukis-on-primary);
-    font-weight: bold;
-    border: none;
-    padding: 12px 24px;
-    font-size: 1em;
-    border-radius: 50px;
-    cursor: pointer;
-    width: 100%;
-    transition: all 0.3s ease;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
-}
-
-#global-checklist-reset-btn:hover {
-    background-color: var(--ukis-color-primary);
-    color: var(--ukis-on-primary);
-    transform: translateY(-2px);
-    box-shadow: 0 6px 12px var(--ukis-accent-line);
-}
-
-#global-checklist-reset-btn:active {
-    transform: translateY(0);
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
-}
-
-@media (max-width: 768px) {
-    .checklist-item {
-        padding: 8px 0;
-        border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-    }
-
-    .checklist-item input[type="checkbox"] {
-        width: 28px;
-        height: 28px;
-    }
-
-    .checklist-item label {
-        font-size: 1.1em;
-        margin-left: 15px;
-        line-height: 1.4;
-    }
-}
-
 /* Shared Action Button (like Zapisz wynik): pigułka w akcencie motywu, min. 44 px. */
 .action-button {
     background-color: var(--ukis-color-primary);
@@ -298,6 +85,6 @@ textarea {
 }
 
 .action-button:active {
-    transform: translateY(0);
+    transform: scale(0.95);
     box-shadow: 0 2px 5px var(--ukis-primary-tint);
 }

@@ -19,11 +19,9 @@
     <meta name="description" content="Aplikacja dla dzików, by uki. Dźwigaj i rośnij!">
     <!-- Jeden theme-color: tlo.js ustawia go na --ukis-surface bieżącego motywu -->
     <meta name="theme-color" content="#070707">
-    <meta name="app-version" content="v2026.11.27.04">
+    <meta name="app-version" content="v2026.11.28.01">
     <title>Uki's BodyBuild</title>
     <link rel="stylesheet" href="style.css">
-    <link rel="stylesheet" href="styles/glassmorphism.css">
-    <link rel="stylesheet" href="game_styles.css">
     <link rel="manifest" href="manifest.json">
     <link rel="stylesheet" href="styles/lightbox.css">
     <link rel="stylesheet" href="styles/trainer.css">
@@ -312,13 +310,6 @@
             }
         })();
     </script>
-    <div class="overlay"></div>
-
-    
-    <!-- Blobs for Glassmorphism -->
-    <div class="blob-1"></div>
-    <div class="blob-2"></div>
-    <div class="blob-3"></div>
 
     <div class="app-wrapper">
 
@@ -480,233 +471,260 @@
                 </div>
                 <!-- /wyglad -->
 
+                <!-- wyglad: zar: #settings-panel -->
                 <div id="settings-panel" class="tab-content">
-                    <div class="settings-container">
-                    <!-- wyglad: zar: #settings-panel -->
+                    <div class="settings-container z-profil">
                     <header class="z-head-main">
                         <div class="z-head-txt">
                             <h2 class="z-hd">Profil</h2>
                         </div>
                     </header>
-                    <!-- /wyglad -->
-                    <div id="premium-status-banner" style="margin-bottom: 20px; text-align: center;"></div>
-                    
-                    <!-- Profile Section -->
-                    <div class="profile-section" style="background: rgba(0,0,0,0.4); padding: 15px; border-radius: 8px; border: 1px solid #00BFFF; margin-bottom: 20px;">
-                        <h4 style="margin-top: 0; color: #00BFFF;">Twój Profil</h4>
-                        <!-- wyglad: zar: #profile-wyglad -->
-                        <button type="button" id="profile-wyglad" class="z-li" onclick="switchTab('wyglad-panel')" style="margin-bottom: 15px;">
-                            <span>Wygląd: motyw i tapeta</span>
-                            <span class="z-li-val" id="profile-wyglad-motyw">Czerwony żar</span>
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg>
-                        </button>
-                        <!-- /wyglad -->
-                        
-                        <div style="display: flex; gap: 15px; align-items: center; margin-bottom: 15px;">
-                            <div id="profile-avatar-preview" style="width: 80px; height: 80px; border-radius: 50%; background: #333; border: 2px solid #00BFFF; overflow: hidden; display: flex; justify-content: center; align-items: center; background-size: cover; background-position: center;">
-                                <span style="color: #666; font-size: 2em;">👤</span>
+
+                    <!-- Karta użytkownika: awatar, nick, staż i odznaki, plakietka PRO (SettingsUI.odswiezKarte) -->
+                    <section class="z-card profil-karta" aria-label="Twój profil">
+                        <div id="profile-avatar-preview" class="profil-awatar" role="img" aria-label="Awatar"></div>
+                        <div class="profil-karta-txt">
+                            <div class="profil-nick" id="profile-karta-nick"></div>
+                            <div class="z-mut profil-meta" id="profile-karta-meta"></div>
+                            <span class="z-pill profil-pro" id="profile-pro-pill" hidden>Wersja PRO aktywna</span>
+                        </div>
+                    </section>
+
+                    <!-- Stan wersji (okres próbny / Light) z PremiumUI.renderPremiumBanner -->
+                    <div id="premium-status-banner"></div>
+
+                    <!-- Ustawienia profilu: każdy wiersz otwiera dzisiejszy edytor (rozwinięcie w miejscu albo okno) -->
+                    <section class="z-card z-list profil-ustawienia" aria-label="Ustawienia profilu">
+                        <div class="profil-poz">
+                            <button type="button" class="z-li" id="profile-row-avatar" aria-expanded="false" aria-controls="profile-ed-avatar">
+                                <span>Zdjęcie i sylwetka awatara</span>
+                                <span class="z-li-val" id="profile-avatar-val"></span>
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg>
+                            </button>
+                            <div class="profil-edytor" id="profile-ed-avatar" hidden>
+                                <button type="button" class="z-ghost profil-plik" id="profile-avatar-btn">
+                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3"/></svg>
+                                    <span>Zmień zdjęcie</span>
+                                </button>
+                                <input type="file" id="profile-avatar-upload" accept="image/*" hidden>
+                                <label class="z-lab" for="profile-avatar-silhouette">Sylwetka awatara</label>
+                                <select id="profile-avatar-silhouette" class="z-in">
+                                    <option value="auto">Automatycznie</option>
+                                    <option value="male">Mężczyzna</option>
+                                    <option value="female">Kobieta</option>
+                                </select>
+                                <p class="z-mut profil-opis">Domyślny obrazek w Menu, gdy nie masz własnego zdjęcia. „Automatycznie” zgaduje po imieniu.</p>
                             </div>
-                            <div style="flex: 1;">
-                                <label class="action-button" style="display: inline-block; background-color: #333; border-color: #555; cursor: pointer; padding: 5px 10px; border-radius: 5px; font-size: 0.9em; width: 100%; box-sizing: border-box; text-align: center; color: #fff; text-shadow: 0 1px 3px rgba(0,0,0,0.8);">
-                                    Zmień Awatar
-                                    <input type="file" id="profile-avatar-upload" accept="image/*" style="display: none;">
-                                </label>
+                        </div>
+                        <div class="profil-poz">
+                            <button type="button" class="z-li" id="profile-row-nick" aria-expanded="false" aria-controls="profile-ed-nick">
+                                <span>Nick</span>
+                                <span class="z-li-val" id="profile-nick-val"></span>
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg>
+                            </button>
+                            <div class="profil-edytor" id="profile-ed-nick" hidden>
+                                <label class="z-lab" for="profile-nick-input">Twój nick</label>
+                                <input type="text" id="profile-nick-input" class="z-in" placeholder="Wpisz swój nick" autocomplete="nickname">
                             </div>
                         </div>
-
-                        <div style="margin-bottom: 15px;">
-                            <label style="display: block; margin-bottom: 5px; color: #ccc;">Twój Nick:</label>
-                            <input type="text" id="profile-nick-input" placeholder="Wpisz swój nick..." style="width: 100%; padding: 10px; border-radius: 4px; border: 1px solid #00BFFF; background: #222; color: #fff; box-sizing: border-box; font-size: 1.2em; font-weight: bold; text-align: center;">
-                        </div>
-
-                        <div style="margin-bottom: 15px;">
-                            <label for="profile-avatar-silhouette" style="display: block; margin-bottom: 5px; color: #ccc;">Sylwetka awatara:</label>
-                            <select id="profile-avatar-silhouette" style="width: 100%; padding: 10px; border-radius: 4px; border: 1px solid #00BFFF; background: #222; color: #fff; font-size: 1.1em; text-align: center;">
-                                <option value="auto">Automatycznie</option>
-                                <option value="male">Mężczyzna</option>
-                                <option value="female">Kobieta</option>
-                            </select>
-                            <p style="font-size: 0.8em; color: #888; margin-top: 5px;">Domyślny obrazek w Menu, gdy nie masz własnego zdjęcia. „Automatycznie” zgaduje po imieniu.</p>
-                        </div>
-
-                        <div style="margin-bottom: 20px;">
-                            <label style="display: block; margin-bottom: 5px; color: #ccc;">Twój Staż Treningowy:</label>
-                            <select id="profile-experience-select" style="width: 100%; padding: 10px; border-radius: 4px; border: 1px solid #00BFFF; background: #222; color: #fff; font-size: 1.2em; font-weight: bold; text-align: center;">
-                                <option value="0-6 miesięcy (Początkujący)">0-6 miesięcy (Początkujący)</option>
-                                <option value="1-3 lata (Średniozaawansowany)">1-3 lata (Średniozaawansowany)</option>
-                                <option value="3+ lat (Zaawansowany)">3+ lat (Zaawansowany)</option>
-                            </select>
-                            <p style="font-size: 0.8em; color: #888; margin-top: 5px;">Pomaga Trenerowi Edwardowi dobrać odpowiednią objętość i ćwiczenia przy poprawie planu.</p>
-                        </div>
-
-                        <div style="margin-bottom: 20px;">
-                            <h5 style="color: #FFD700; border-bottom: 1px solid rgba(255,215,0,0.2); padding-bottom: 5px; margin-bottom: 5px;">🏆 Twoje Odznaki</h5>
-                            <p style="font-size: 0.8em; color: #ccc; margin: 0 0 10px 0;">Odznaki to nagrody za Twoje osiągnięcia treningowe. Trenuj ciężko, aby zdobyć je wszystkie!</p>
-                            <div id="settings-badges-container" style="display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 15px;">
-                                <!-- Rendered by JS -->
+                        <div class="profil-poz">
+                            <button type="button" class="z-li" id="profile-row-staz" aria-expanded="false" aria-controls="profile-ed-staz">
+                                <span>Staż treningowy</span>
+                                <span class="z-li-val" id="profile-staz-val"></span>
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg>
+                            </button>
+                            <div class="profil-edytor" id="profile-ed-staz" hidden>
+                                <label class="z-lab" for="profile-experience-select">Twój staż treningowy</label>
+                                <select id="profile-experience-select" class="z-in">
+                                    <option value="0-6 miesięcy (Początkujący)">0-6 miesięcy (Początkujący)</option>
+                                    <option value="1-3 lata (Średniozaawansowany)">1-3 lata (Średniozaawansowany)</option>
+                                    <option value="3+ lat (Zaawansowany)">3+ lat (Zaawansowany)</option>
+                                </select>
+                                <p class="z-mut profil-opis">Pomaga Trenerowi Edwardowi dobrać odpowiednią objętość i ćwiczenia przy poprawie planu.</p>
                             </div>
-                            <button onclick="if(window.SettingsUI) window.SettingsUI.shareBadges()" class="action-button" style="background-color: #3b5998; border-color: #3b5998; color: white; width: 100%; padding: 12px; display: flex; justify-content: center; align-items: center; gap: 8px;">
-                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
-                                Pochwal się odznakami
+                        </div>
+                        <div class="profil-poz">
+                            <button type="button" class="z-li" id="profile-row-odznaki" aria-expanded="false" aria-controls="profile-ed-odznaki">
+                                <span>Odznaki</span>
+                                <span class="z-li-val" id="profile-odznaki-val"></span>
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg>
+                            </button>
+                            <div class="profil-edytor" id="profile-ed-odznaki" hidden>
+                                <p class="z-mut profil-opis">Odznaki to nagrody za Twoje osiągnięcia treningowe. Trenuj ciężko, aby zdobyć je wszystkie!</p>
+                                <div id="settings-badges-container" class="profil-odznaki"></div>
+                                <button type="button" class="z-ghost profil-szeroki" onclick="if(window.SettingsUI) window.SettingsUI.shareBadges()">
+                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+                                    <span>Pochwal się odznakami</span>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="profil-poz">
+                            <button type="button" id="profile-wyglad" class="z-li" onclick="switchTab('wyglad-panel')">
+                                <span>Wygląd: motyw i tapeta</span>
+                                <span class="z-li-val" id="profile-wyglad-motyw">Czerwony żar</span>
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg>
                             </button>
                         </div>
-
-
-
-                        <div style="margin-bottom: 15px;">
-                            <label style="display: block; margin-bottom: 5px; color: #ccc;">Przypominaj o pomiarach ciała co:</label>
-                            <select id="profile-reminder-select" style="width: 100%; padding: 10px; border-radius: 4px; border: 1px solid #00BFFF; background: #222; color: #fff; font-size: 1.2em; font-weight: bold; text-align: center;">
-                                <option value="7">Tydzień (7 dni)</option>
-                                <option value="14">Dwa tygodnie (14 dni)</option>
-                                <option value="30" selected>Miesiąc (30 dni)</option>
-                                <option value="0">Wyłączone</option>
-                            </select>
-                            <p style="font-size: 0.8em; color: #888; margin-top: 5px;">Aplikacja wyświetli przypomnienie w zakładce "Analiza Składu", jeśli minie określony czas od ostatnich pomiarów.</p>
+                        <div class="profil-poz">
+                            <button type="button" class="z-li" id="profile-row-przypomnienie" aria-expanded="false" aria-controls="profile-ed-przypomnienie">
+                                <span>Przypomnienie o pomiarach</span>
+                                <span class="z-li-val" id="profile-przypomnienie-val"></span>
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg>
+                            </button>
+                            <div class="profil-edytor" id="profile-ed-przypomnienie" hidden>
+                                <label class="z-lab" for="profile-reminder-select">Przypominaj o pomiarach ciała co</label>
+                                <select id="profile-reminder-select" class="z-in">
+                                    <option value="7">Tydzień (7 dni)</option>
+                                    <option value="14">Dwa tygodnie (14 dni)</option>
+                                    <option value="30" selected>Miesiąc (30 dni)</option>
+                                    <option value="0">Wyłączone</option>
+                                </select>
+                                <p class="z-mut profil-opis">Aplikacja wyświetli przypomnienie w Pomiarach, jeśli minie określony czas od ostatnich pomiarów.</p>
+                            </div>
                         </div>
-                    </div>
-                    
-                    <!-- Diet Settings Section -->
-                    <div class="diet-settings-section" style="background: rgba(0,0,0,0.4); padding: 15px; border-radius: 8px; border: 1px solid #FF9800; margin-bottom: 20px;">
-                        <h4 style="margin-top: 0; color: #FF9800;">Dieta i AI</h4>
-                        
-                        <div style="margin-bottom: 15px;">
-                            <label style="display: block; margin-bottom: 5px; color: #ccc;">Cel Kaloryczny (TDEE):</label>
-                            <select id="diet-goal-select" style="width: 100%; padding: 10px; border-radius: 4px; border: 1px solid #FF9800; background: #222; color: #fff; font-size: 1.2em; font-weight: bold; text-align: center;">
-                                <option value="maintenance">Utrzymanie wagi (Maintenance)</option>
-                                <option value="cut">Redukcja (-500 kcal)</option>
-                                <option value="bulk">Budowa masy (+300 kcal)</option>
-                            </select>
-                            <p style="font-size: 0.8em; color: #888; margin-top: 5px;">Aplikacja wyliczy Twoje zapotrzebowanie ze wzoru Mifflin-St Jeor na podstawie wagi i wzrostu.</p>
+                        <div class="profil-poz">
+                            <button type="button" class="z-li" id="profile-cel-kcal" aria-haspopup="dialog">
+                                <span>Cel kaloryczny</span>
+                                <span class="z-li-val" id="profile-cel-kcal-val"></span>
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg>
+                            </button>
                         </div>
+                    </section>
 
-                        <div style="margin-bottom: 15px;">
-                            <label style="display: block; margin-bottom: 5px; color: #ccc;">Adres URL Serwera AI (Bramkarz):</label>
-                            <input type="url" id="diet-worker-url" placeholder="https://uki-dieta...workers.dev" style="width: 100%; padding: 10px; border-radius: 4px; border: 1px solid #FF9800; background: #222; color: #fff; box-sizing: border-box; font-size: 1.2em; font-weight: bold; text-align: center;">
-                            <p style="font-size: 0.8em; color: #888; margin-top: 5px;">Służy do automatycznego wyliczania kalorii ze zdjęć przez Twój prywatny serwer Cloudflare.</p>
-                        </div>
-                    </div>
-                    
-                    
-                    <div class="settings-toggle-row"><label for="glass-toggle">Efekt Szklany (Liquid
-                            Glass)</label><label class="theme-switch" for="glass-toggle"><input type="checkbox"
-                                id="glass-toggle" /><span class="slider round"></span></label></div>
+                    <!-- Przełączniki z-switch; „Jestem trenerem” (#trainer-profile-card) dokłada SettingsUI.initTrainerCard -->
+                    <section class="z-card z-list profil-przelaczniki" id="profile-przelaczniki" aria-label="Przełączniki">
+                        <label class="z-switch" for="glass-toggle">
+                            <span class="profil-switch-txt">Efekt szkła (Liquid Glass)</span>
+                            <input type="checkbox" id="glass-toggle" class="profil-switch-pole" role="switch">
+                            <span class="z-switch-tor" aria-hidden="true"></span>
+                        </label>
+                        <label class="z-switch" for="experimental-numpad-toggle">
+                            <span class="profil-switch-txt">
+                                <span>Laboratorium: eksperymentalny trening</span>
+                                <span class="z-mut">Własna klawiatura liczbowa, duże przyciski i gesty przesuwania.</span>
+                            </span>
+                            <input type="checkbox" id="experimental-numpad-toggle" class="profil-switch-pole" role="switch">
+                            <span class="z-switch-tor" aria-hidden="true"></span>
+                        </label>
+                    </section>
 
-                    <!-- Laboratorium -->
-                    <div style="background: rgba(255, 152, 0, 0.1); border: 1px solid #FF9800; border-radius: 8px; padding: 15px; margin: 20px 0;">
-                        <h4 style="color: #FF9800; margin: 0 0 10px 0;">🧪 Laboratorium (BETA)</h4>
-                        <div class="settings-toggle-row" style="margin-bottom: 0;">
-                            <label for="experimental-numpad-toggle" style="flex: 1;">
-                                <div style="font-weight: bold;">Eksperymentalny UX Treningu</div>
-                                <div style="font-size: 0.8em; color: #888; font-weight: normal; margin-top: 5px;">Własny Numpad, wielkie Steppery, gesty Swipe.</div>
-                            </label>
-                            <label class="theme-switch" for="experimental-numpad-toggle">
-                                <input type="checkbox" id="experimental-numpad-toggle" />
-                                <span class="slider round"></span>
-                            </label>
-                        </div>
-                    </div>
-
-
-
-                    <!-- PWA Installation Guide Section -->
-                    <div class="install-guide-section" id="settings-pwa-guide">
-                        <div class="install-guide-header"
-                            onclick="this.classList.toggle('active-header'); document.getElementById('install-guide-content').classList.toggle('expanded'); document.getElementById('guide-toggle-icon').style.transform = document.getElementById('install-guide-content').classList.contains('expanded') ? 'rotate(180deg)' : 'rotate(0deg)'">
-                            <h4>📱 Instalacja na iOS / Android</h4>
-                            <span id="guide-toggle-icon" class="toggle-icon">▼</span>
-                        </div>
-                        <div id="install-guide-content" class="install-guide-content">
-                            <!-- Standardized Infographic Container -->
-                            <p>Aby zainstalować aplikację na swoim urządzeniu...</p>
-
-                            <div class="install-steps-list">
-                                <p style="font-weight: bold; color: #fff; margin-bottom: 10px;">iOS (iPhone / iPad) -
-                                    Safari:</p>
+                    <!-- Pomoc: rozwinięcia w miejscu i ponowne powitanie -->
+                    <section class="z-card z-list profil-pomoc" aria-label="Pomoc">
+                        <div class="profil-poz" id="settings-pwa-guide">
+                            <button type="button" class="z-li install-guide-header" aria-expanded="false" aria-controls="install-guide-content">
+                                <span>Instalacja na iOS / Android</span>
+                                <svg id="guide-toggle-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg>
+                            </button>
+                            <div class="profil-edytor profil-tekst" id="install-guide-content" hidden>
+                                <p>Aby zainstalować aplikację na swoim urządzeniu:</p>
+                                <p class="profil-pomoc-tyt">iOS (iPhone / iPad) – Safari</p>
                                 <ol>
                                     <li>Kliknij ikonę <strong>Udostępnij</strong> (kwadrat ze strzałką).</li>
-                                    <li>Wybierz "<strong>Do ekranu początkowego</strong>".</li>
-                                    <li>Kliknij "Dodaj".</li>
+                                    <li>Wybierz „<strong>Do ekranu początkowego</strong>”.</li>
+                                    <li>Kliknij „Dodaj”.</li>
                                 </ol>
-                                <p style="font-weight: bold; color: #fff; margin-bottom: 10px; margin-top: 15px;">
-                                    Android - Chrome:</p>
+                                <p class="profil-pomoc-tyt">Android – Chrome</p>
                                 <ol>
                                     <li>Kliknij <strong>Menu</strong> (trzy kropki).</li>
-                                    <li>Wybierz "<strong>Zainstaluj aplikację</strong>".</li>
+                                    <li>Wybierz „<strong>Zainstaluj aplikację</strong>”.</li>
                                     <li>Potwierdź instalację.</li>
                                 </ol>
                             </div>
                         </div>
+                        <div class="profil-poz" id="settings-help-guide">
+                            <button type="button" class="z-li install-guide-header" aria-expanded="false" aria-controls="help-guide-content">
+                                <span>Instrukcja obsługi</span>
+                                <svg id="help-toggle-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg>
+                            </button>
+                            <div class="profil-edytor profil-tekst" id="help-guide-content" hidden>
+                                <p><strong>Witaj w Uki's BodyBuild! Czas zrobić formę życia!</strong></p>
 
-
-                        <div class="settings-info-row" style="margin-top: 25px;">
-                            <span>Wersja Aplikacji</span>
-                            <span class="app-version-display"
-                                style="font-weight: bold; color: #00BFFF;">Loading...</span>
-                        </div>
-                        
-                        <!-- Ultimate Help Guide Section -->
-                        <div class="install-guide-section" id="settings-help-guide" style="margin-top: 25px; border-color: #00BFFF;">
-                            <div class="install-guide-header"
-                                onclick="this.classList.toggle('active-header'); document.getElementById('help-guide-content').classList.toggle('expanded'); document.getElementById('help-toggle-icon').style.transform = document.getElementById('help-guide-content').classList.contains('expanded') ? 'rotate(180deg)' : 'rotate(0deg)'">
-                                <h4 style="color: #00BFFF;">🧠 Instrukcja Obsługi (Help)</h4>
-                                <span id="help-toggle-icon" class="toggle-icon" style="color: #00BFFF;">▼</span>
-                            </div>
-                            <div id="help-guide-content" class="install-guide-content">
-                                <p style="font-weight: bold; font-size: 1.1em; margin-bottom: 15px;">Witaj w Uki's BodyBuild! 🚀 Czas zrobić formę życia!</p>
-                                
-                                <h5 style="color: #00BFFF; margin-top: 15px;">🏋️ Kafel: Trening</h5>
-                                <ul style="padding-left: 20px; line-height: 1.6; color: #ddd;">
-                                    <li><strong>Kalendarz Treningowy:</strong> Wybierz dzień z kalendarza, by rozpocząć nową sesję lub przejrzeć planowane.</li>
-                                    <li><strong>Dodawanie Ćwiczeń:</strong> Wpisz nazwę, ustaw serie, ciężar i powtórzenia. Po każdej serii kliknij <strong>+ Seria</strong>. Proste i skuteczne.</li>
-                                    <li><strong>Magiczny Minus (Ciężar Własny):</strong> Wpisz w nazwę słowa takie jak <em>podciąganie, pompki, brzuch, drążek, dipy</em>. System automatycznie ukryje zbędne pola, wyświetli tryb ciężaru własnego z opcją na gumy (odjęcie kilogramów za pomocą magicznego przycisku <strong>+/-</strong>). 🎈</li>
-                                    <li><strong>🔥 Dropsety:</strong> Seria do upadku mięśniowego! Gdy już nie masz siły, zdejmujesz ciężar i kontynuujesz. Kliknij ikonkę 🔥 Dropset zamiast zwykłej serii. System elegancko wciągnie ją pod spód.</li>
-                                    <li><strong>🔗 Superserie:</strong> Łączysz dwa ćwiczenia ze sobą? Wybierz typ "Superseria" z rozwijanej listy. System zepnie te ćwiczenia gustowną ramką.</li>
-                                    <li><strong>📸 Zdjęcia Maszyn:</strong> Przy każdym ćwiczeniu znajdziesz przycisk aparatu. Zrób zdjęcie wyciągu albo ustawień fotela, by nigdy więcej nie zapomnieć kąta oparcia!</li>
-                                    <li><strong>⌚ Smartwatch i Czas:</strong> Zanim zapiszesz trening na samym dole, zaznacz pole by wpisać <strong>ręczny czas trwania</strong> (godziny i minuty) lub dodaj kalorie i tętno zczytane z Twojego Garmina/Apple Watcha.</li>
+                                <p class="profil-pomoc-tyt">Trening</p>
+                                <ul>
+                                    <li><strong>Kalendarz treningowy:</strong> wybierz dzień z kalendarza, by rozpocząć nową sesję lub przejrzeć zaplanowane.</li>
+                                    <li><strong>Dodawanie ćwiczeń:</strong> wpisz nazwę, ustaw serie, ciężar i powtórzenia. Po każdej serii kliknij <strong>+ Seria</strong>.</li>
+                                    <li><strong>Ciężar własny:</strong> wpisz w nazwę słowa takie jak <em>podciąganie, pompki, brzuch, drążek, dipy</em>. Aplikacja ukryje zbędne pola i pokaże tryb ciężaru własnego z opcją gum (odjęcie kilogramów przyciskiem <strong>+/-</strong>).</li>
+                                    <li><strong>Dropsety:</strong> seria do upadku mięśniowego. Gdy nie masz już siły, zdejmujesz ciężar i kontynuujesz. Kliknij „Dropset” zamiast zwykłej serii, a aplikacja doda ją pod spodem.</li>
+                                    <li><strong>Superserie:</strong> łączysz dwa ćwiczenia? Wybierz typ „Superseria” z listy, a ćwiczenia zostaną spięte ramką.</li>
+                                    <li><strong>Zdjęcia maszyn:</strong> przy każdym ćwiczeniu jest przycisk aparatu. Zrób zdjęcie wyciągu albo ustawień fotela, by nie zapomnieć kąta oparcia.</li>
+                                    <li><strong>Smartwatch i czas:</strong> przed zapisaniem treningu możesz wpisać <strong>ręczny czas trwania</strong> (godziny i minuty) albo dodać kalorie i tętno z zegarka.</li>
                                 </ul>
 
-                                <h5 style="color: #00BFFF; margin-top: 15px;">📏 Kafel: Pomiary Ciała</h5>
-                                <ul style="padding-left: 20px; line-height: 1.6; color: #ddd;">
-                                    <li><strong>Śledzenie Centymetrów:</strong> Podawaj obwody najważniejszych partii, by na bieżąco monitorować rozwój sylwetki. System sam rysuje dla Ciebie interaktywne wykresy w ujęciu historycznym.</li>
-                                    <li><strong>Waga i Tłuszcz:</strong> System pilnuje historii Twojej wagi i rzutuje ją na zaawansowane parametry w innych zakładkach!</li>
+                                <p class="profil-pomoc-tyt">Pomiary ciała</p>
+                                <ul>
+                                    <li><strong>Obwody:</strong> podawaj obwody najważniejszych partii, by śledzić rozwój sylwetki. Aplikacja rysuje wykresy w ujęciu historycznym.</li>
+                                    <li><strong>Waga i tłuszcz:</strong> historia wagi zasila wskaźniki w innych zakładkach.</li>
                                 </ul>
 
-                                <h5 style="color: #00BFFF; margin-top: 15px;">📊 Kafel: Analiza Progresu</h5>
-                                <ul style="padding-left: 20px; line-height: 1.6; color: #ddd;">
-                                    <li><strong>Mierniki Zaawansowane (BF%, FFMI, WHR):</strong> Na podstawie pomiarów algorytmy precyzyjnie wyliczają Twój poziom tkanki tłuszczowej, wskaźnik beztłuszczowej masy mięśniowej i ewentualne ryzyko metaboliczne.</li>
-                                    <li><strong>Piękne Wskaźniki:</strong> Kliknij przycisk informacji obok wyniku, a zobaczysz piękny, wyśrodkowany wykres paskowy z pełnym wyjaśnieniem, co ten wynik dla Ciebie oznacza. Bądź w strefie zielonej! 🟢</li>
+                                <p class="profil-pomoc-tyt">Analiza progresu</p>
+                                <ul>
+                                    <li><strong>Wskaźniki (BF%, FFMI, WHR):</strong> na podstawie pomiarów aplikacja wylicza poziom tkanki tłuszczowej, wskaźnik beztłuszczowej masy mięśniowej i ryzyko metaboliczne.</li>
+                                    <li><strong>Objaśnienia:</strong> kliknij przycisk informacji obok wyniku, by zobaczyć wykres paskowy i wyjaśnienie, co ten wynik oznacza.</li>
                                 </ul>
 
-                                <h5 style="color: #00BFFF; margin-top: 15px;">🥗 Kafel: Dieta i Żywienie</h5>
-                                <ul style="padding-left: 20px; line-height: 1.6; color: #ddd;">
-                                    <li><strong>Śledzenie Kalorii:</strong> Ręcznie dodawaj posiłki lub wypitą wodę, by w pełni kontrolować swoje makroskładniki.</li>
-                                    <li><strong>Sztuczna Inteligencja (AI):</strong> Możesz zrobić nawet do <strong>3 zdjęć swojego talerza</strong> naraz! Asystent AI rozpozna składniki, oszacuje wielkość porcji i sam wyliczy białko, węgle i tłuszcze prosto do Twojego dziennika! Magia. Pamiętaj tylko o uzupełnieniu adresu IP serwera lokalnego w panelu Diety.</li>
+                                <p class="profil-pomoc-tyt">Dieta i żywienie</p>
+                                <ul>
+                                    <li><strong>Kalorie:</strong> dodawaj posiłki i wypitą wodę, by kontrolować makroskładniki. Cel kaloryczny zmienisz w Diecie albo w Profilu.</li>
+                                    <li><strong>Sztuczna inteligencja (AI):</strong> możesz zrobić do <strong>3 zdjęć talerza</strong> naraz. Asystent rozpozna składniki, oszacuje porcje i wyliczy białko, węglowodany i tłuszcze. Adres serwera AI ustawisz w Profilu, w „Zaawansowanych”.</li>
                                 </ul>
 
-                                <h5 style="color: #00BFFF; margin-top: 15px;">📖 Kafel: Historia Treningów</h5>
-                                <ul style="padding-left: 20px; line-height: 1.6; color: #ddd;">
-                                    <li><strong>Twoje Osiągnięcia:</strong> Przeglądaj każdy odbyty trening z najdrobniejszymi detalami (dropsety, serie).</li>
-                                    <li><strong>Udostępnianie (Social Media):</strong> Kliknij przycisk Udostępnij! Apka weźmie <strong>pierwsze z Twoich zdjęć zrobionych na treningu</strong> jako tło, nałoży epicki, mroczny filtr, dorzuci podsumowanie objętości i wygeneruje obrazek idealny do zaszpanowania na Insta lub FB! 📸💪</li>
+                                <p class="profil-pomoc-tyt">Historia treningów</p>
+                                <ul>
+                                    <li><strong>Twoje osiągnięcia:</strong> przeglądaj każdy trening ze szczegółami (dropsety, serie).</li>
+                                    <li><strong>Udostępnianie:</strong> kliknij „Udostępnij”. Aplikacja weźmie pierwsze zdjęcie z treningu jako tło, doda podsumowanie objętości i przygotuje obrazek do mediów społecznościowych.</li>
                                 </ul>
 
-                                <h5 style="color: #00BFFF; margin-top: 15px;">⚙️ Kafel: Ustawienia i Profil</h5>
-                                <ul style="padding-left: 20px; line-height: 1.6; color: #ddd;">
-                                    <li><strong>Motywy (Dark / Light / Glass):</strong> Zmieniaj wygląd aplikacji, by dostosować go do własnych preferencji. Glass mode robi mroźny efekt półprzezroczystego szkła!</li>
-                                    <li><strong>Awatar i Nick:</strong> Ustaw swój pseudonim i wrzuć awatara – będą one zdobić górny panel nawigacyjny.</li>
-                                    <li><strong>Tapeta (Wallpaper):</strong> Wrzuć ulubione zdjęcie z galerii. System delikatnie je przyciemni, byś widział pod spodem motywujące tło zawsze i wszędzie (poprawione działanie na telefonach komórkowych)! 🖼️</li>
-                                    <li><strong>Gadatliwy Trener Edward:</strong> Nasz Wirtualny Asystent będzie Ci doradzał i przypominał o regularności podczas surfowania po aplikacji. 🦾</li>
-                                </ul>
-                                
-                                <h5 style="color: #00BFFF; margin-top: 15px;">☕ Kafel: Postaw Kawę</h5>
-                                <ul style="padding-left: 20px; line-height: 1.6; color: #ddd;">
-                                    <li>Jeśli apka robi robotę i żyła na bicepsie rośnie... to autorzy chętnie napiją się dobrego, mocnego espresso za zaoszczędzony czas! 😉☕</li>
+                                <p class="profil-pomoc-tyt">Profil</p>
+                                <ul>
+                                    <li><strong>Wygląd: motyw i tapeta:</strong> trzy motywy kolorów oraz tapeta (wbudowana albo zdjęcie z galerii). Efekt szkła włączysz i wyłączysz przełącznikiem w Profilu.</li>
+                                    <li><strong>Awatar i nick:</strong> ustaw pseudonim i zdjęcie; zobaczysz je w Menu.</li>
+                                    <li><strong>Trener Edward:</strong> wirtualny asystent doradza i przypomina o regularności.</li>
                                 </ul>
 
-                                <p style="margin-top: 25px; color: #aaa; font-size: 0.9em; text-align: center;">Nie ma wymówek. Koniec czytania, podnoś żelastwo i rośnij duży! 🏆</p>
+                                <p class="profil-pomoc-tyt">Postaw kawę</p>
+                                <ul>
+                                    <li>Jeśli aplikacja robi robotę, autorzy chętnie napiją się dobrego espresso za zaoszczędzony czas.</li>
+                                </ul>
+
+                                <p class="z-mut">Nie ma wymówek. Koniec czytania, podnoś żelastwo i rośnij!</p>
                             </div>
                         </div>
+                        <div class="profil-poz">
+                            <button type="button" class="z-li" id="profile-co-nowego" onclick="if (window.showChangelogModal) window.showChangelogModal('all')">
+                                <span>Co nowego w aplikacji</span>
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg>
+                            </button>
+                        </div>
+                        <div class="profil-poz">
+                            <button type="button" class="z-li" id="reset-tutorial-btn">
+                                <span>Zobacz ponownie powitanie</span>
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg>
+                            </button>
+                        </div>
+                    </section>
+
+                    <!-- Karta przełącznika wyglądów (ui-switch.js, mountSettingsCard): droga do klasycznego do etapu D (R10) -->
+                    <div id="profile-ui-switch"></div>
+
+                    <!-- Zaawansowane (zwinięte): adres serwera AI -->
+                    <section class="z-card z-list profil-zaawansowane" aria-label="Zaawansowane">
+                        <div class="profil-poz">
+                            <button type="button" class="z-li" id="profile-row-zaawansowane" aria-expanded="false" aria-controls="profile-ed-zaawansowane">
+                                <span>Zaawansowane</span>
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg>
+                            </button>
+                            <div class="profil-edytor" id="profile-ed-zaawansowane" hidden>
+                                <label class="z-lab" for="diet-worker-url">Adres serwera AI</label>
+                                <input type="url" id="diet-worker-url" class="z-in" placeholder="https://uki-dieta...workers.dev" autocomplete="off">
+                                <p class="z-mut profil-opis">Służy do wyliczania kalorii ze zdjęć przez Twój prywatny serwer Cloudflare.</p>
+                            </div>
+                        </div>
+                    </section>
+
+                    <p class="z-mut profil-wersja" id="settings-app-version"></p>
                     </div>
                 </div>
+                <!-- /wyglad -->
 
             </div>
         </main>

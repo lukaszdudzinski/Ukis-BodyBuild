@@ -1,3 +1,4 @@
+// wyglad: zar
 import { DatabaseManager } from '../db/DatabaseManager.js';
 import { ShareUtils } from '../../utils/ShareUtils.js';
 import { readBodyProfile } from '../diet/kcalGoal.js';
@@ -67,6 +68,19 @@ export const AnalyticsUI = {
             </div>
         `;
         
+        // Odczyt punktu wykresu BF% (dotyk, klik, fokus): jedna para obsług na kontenerze, zastępowana przy każdym renderze.
+        const pokazBf = (e) => {
+            const g = e.target.closest && e.target.closest('.an-bf-wykres .an-pkt');
+            const odczyt = g && g.closest('.an-bf-wykres').querySelector('.an-odczyt');
+            if (odczyt) odczyt.textContent = g.dataset.opis;
+        };
+        ['click', 'focusin'].forEach(typ => {
+            if (AnalyticsUI._pokazBf) container.removeEventListener(typ, AnalyticsUI._pokazBf);
+        });
+        AnalyticsUI._pokazBf = pokazBf;
+        container.addEventListener('click', pokazBf);
+        container.addEventListener('focusin', pokazBf);
+
         // Resolve media/charts if needed
         const select = document.getElementById('analytics-exercise-select');
         if (select && select.value) {
@@ -157,6 +171,8 @@ export const AnalyticsUI = {
         const thisYear = new Date().getFullYear();
         thisMonthWorkouts = workoutsWithVolume.filter(w => w.date.getMonth() === thisMonth && w.date.getFullYear() === thisYear);
         thisMonthWorkouts.forEach(w => thisMonthVolume += w.volume);
+        // Dane do przycisku „Udostępnij progres” w zakładce Sylwetka.
+        AnalyticsUI.cachedProgress = { monthWorkouts: thisMonthWorkouts.length, monthVolume: Math.round(thisMonthVolume), totalVolume: Math.round(totalVolume) };
 
         const maxStrengthVol = Math.max(...workoutsWithVolume.filter(w => w.type === "strength" || w.volume > 0).map(wo => wo.volume), 1);
         const maxCardioCalories = Math.max(...workoutsWithVolume.filter(w => w.type === "cardio" || w.type === "classes" || w.volume === 0).map(wo => wo.calories), 1);
@@ -305,13 +321,108 @@ export const AnalyticsUI = {
         return html;
     },
 
+    // Karta „Pomiary pod kontrolą”: ile dni do kolejnego pomiaru wg przypomnienia z Ustawień (uki-bodybuild-reminder).
+    _kartaPomiarow: (lastDate) => {
+        const dodaj = `<button type="button" class="z-chip an-dodaj" onclick="window.switchTab('measurements-dashboard')">${ikona('plus', 16)} Dodaj pomiar</button>`;
+        const [y, m, d] = String(lastDate || '').slice(0, 10).split('-').map(Number);
+        const dzis = new Date();
+        const dni = Math.round((new Date(dzis.getFullYear(), dzis.getMonth(), dzis.getDate()) - new Date(y, (m || 1) - 1, d || 1)) / 86400000);
+        const co = parseInt(localStorage.getItem('uki-bodybuild-reminder') || '30', 10);
+        const dniTxt = (n) => `${n} ${n === 1 ? 'dzień' : 'dni'}`;
+        let stan = '';
+        if (!Number.isFinite(dni) || !Number.isFinite(co)) stan = '';
+        else if (co === 0) stan = 'Przypomnienia o pomiarach są wyłączone w Ustawieniach.';
+        else if (co - dni > 0) stan = `Następne za ${dniTxt(co - dni)}`;
+        else if (co - dni === 0) stan = 'Następny pomiar wypada dziś';
+        else stan = `Pomiar spóźniony o ${dniTxt(dni - co)}`;
+        const opis = Number.isFinite(dni) ? `Ostatni wpis: ${dni <= 0 ? 'dzisiaj' : `${dniTxt(dni)} temu`}.` : '';
+        return `
+            <div class="z-card an-pomiary">
+                <div class="an-pomiary-tekst">
+                    <h3 class="z-hd an-h an-h-karta">Pomiary pod kontrolą</h3>
+                    ${stan ? `<p class="an-pomiary-stan">${stan}</p>` : ''}
+                    ${opis ? `<p class="z-mut an-pomiary-opis">${opis}</p>` : ''}
+                </div>
+                ${dodaj}
+            </div>`;
+    },
+
+    // Seria wskaźnika w czasie: wartość po każdym pomiarze, liczona tą samą funkcją co karta (bodySummary).
+    _historiaWskaznikow: (measurements, gender) => {
+        const rosnaco = [...measurements].sort((a, b) => new Date(a.date) - new Date(b.date));
+        return rosnaco.map(m => ({
+            date: m.date,
+            s: bodySummary(measurements.filter(x => new Date(x.date) <= new Date(m.date)), gender)
+        }));
+    },
+
+    _zmiana: (seria, ndec, jednostka, malejeDobrze) => {
+        if (seria.length < 2) return '<p class="z-mut an-zmiana-pusta">Pierwszy pomiar: zmiany pojawią się po kolejnym.</p>';
+        const v = seria[seria.length - 1] - seria[0];
+        const zaokr = Number(Math.abs(v).toFixed(ndec));
+        if (zaokr === 0) return '<p class="z-mut an-zmiana-pusta">Bez zmian od pierwszego wpisu.</p>';
+        const dobrze = malejeDobrze ? v < 0 : v > 0;
+        return `<p class="an-zmiana ${dobrze ? 'an-dobrze' : 'an-zle'}" data-zmiana="${dobrze ? 'korzystna' : 'niekorzystna'}">${ikona(v > 0 ? 'arrow-up' : 'arrow-down', 14)}<span>${v > 0 ? '+' : '−'}${zaokr.toFixed(ndec)}${jednostka} od pierwszego wpisu</span></p>`;
+    },
+
+    _wskaznik: ({ klucz, etykieta, wartosc, jednostka, kategoria, zmiana, infoArg }) => `
+        <div class="z-card z-stat an-wsk" data-wskaznik="${klucz}">
+            <div class="z-mut an-wsk-etykieta">${etykieta}</div>
+            <div class="z-big an-wsk-wartosc">${wartosc}${jednostka ? ` <span class="an-jedn">${jednostka}</span>` : ''}</div>
+            <p class="an-kat">${kategoria}</p>
+            ${zmiana}
+            <button type="button" class="an-info" aria-label="Objaśnienie: ${etykieta}" onclick="window.AnalyticsUI.showInfoModal('${klucz}', ${infoArg}, this)">${ikona('info', 16)}</button>
+        </div>`,
+
+    // Wykres BF% w czasie (linia SVG; kolory z klas z-chart-* i tokenów). Punkt: dotyk, klik albo fokus pokazuje odczyt.
+    _wykresBf: (punkty) => {
+        const n = punkty.length;
+        const W = 300, H = 170, M = 22, GORA = 26, DOL = H - 40;
+        const wart = punkty.map(p => p.bf);
+        const min = Math.min(...wart), max = Math.max(...wart);
+        const luz = (max - min) * 0.2 || max * 0.1 || 1;
+        const lo = min - luz, hi = max + luz;
+        const krok = (W - 2 * M) / (n - 1);
+        const fmt = (v) => Math.round(v * 10) / 10;
+        const pts = punkty.map((p, i) => ({
+            ...p,
+            x: M + i * krok,
+            y: DOL - ((p.bf - lo) / (hi - lo)) * (DOL - GORA),
+            opis: `${new Date(p.date).toLocaleDateString('pl-PL', { day: 'numeric', month: 'short' })}: BF ${p.bf.toFixed(1)}%`
+        }));
+        const linia = pts.map((p, i) => `${i ? 'L' : 'M'}${fmt(p.x)} ${fmt(p.y)}`).join(' ');
+        const pole = `${linia} L${fmt(pts[n - 1].x)} ${DOL} L${fmt(pts[0].x)} ${DOL} Z`;
+        const coWart = n > 8 ? 2 : 1;
+        const coData = Math.max(1, Math.ceil(44 / krok));
+        const opis = `Wykres BF%: ${n} pomiarów, od ${wart[0].toFixed(1)}% do ${wart[n - 1].toFixed(1)}%.`;
+        return `
+            <svg class="z-chart an-linia" viewBox="0 0 ${W} ${H}" role="group" aria-label="${esc(opis)}" focusable="false">
+                <defs>
+                    <linearGradient id="an-pole-bf" class="z-chart-area" x1="0" y1="0" x2="0" y2="1"><stop offset="0"/><stop offset="1"/></linearGradient>
+                </defs>
+                <line class="an-os" x1="${M - 8}" x2="${W - M + 8}" y1="${DOL}" y2="${DOL}"/>
+                <path d="${pole}" fill="url(#an-pole-bf)" stroke="none"/>
+                <path class="z-chart-line" d="${linia}"/>
+                ${pts.map((p, i) => `
+                    <g class="an-pkt" tabindex="0" role="img" aria-label="${esc(p.opis)}" data-opis="${esc(p.opis)}">
+                        <title>${esc(p.opis)}</title>
+                        <circle class="an-trafienie" cx="${fmt(p.x)}" cy="${fmt(p.y)}" r="14"/>
+                        <circle class="an-punkt" cx="${fmt(p.x)}" cy="${fmt(p.y)}" r="3.5"/>
+                    </g>
+                    ${(n - 1 - i) % coWart === 0 ? `<text class="an-wart" x="${fmt(p.x)}" y="${fmt(p.y - 9)}" text-anchor="middle">${p.bf.toFixed(1)}</text>` : ''}
+                    ${(n - 1 - i) % coData === 0 ? `<text class="z-chart-axis" x="${fmt(p.x)}" y="${H - 6}" text-anchor="middle">${esc(new Date(p.date).toLocaleDateString('pl-PL', { day: 'numeric', month: 'short' }))}</text>` : ''}
+                `).join('')}
+            </svg>
+            <p class="an-odczyt" aria-live="polite">${esc(pts[n - 1].opis)}</p>`;
+    },
+
     buildBodyTab: (trainings, measurements) => {
-        let html = '';
         if (measurements.length === 0) {
             return `
-                <div style="background: rgba(255, 165, 0, 0.1); border-left: 4px solid orange; padding: 15px; margin-bottom: 20px; border-radius: 4px;">
-                    <strong style="color: orange;">Brak pomiarów ciała!</strong>
-                    <p style="margin: 5px 0 0 0; font-size: 0.9em; color: #ddd;">Aby śledzić swój progres sylwetkowy, przejdź do zakładki "Pomiary Ciała" i dodaj pierwszy wpis.</p>
+                <div class="z-card z-alert an-brak">
+                    <h3 class="z-hd an-h an-h-karta">Brak pomiarów ciała!</h3>
+                    <p class="z-sub an-brak-tekst">Aby śledzić swój progres sylwetkowy, przejdź do zakładki "Pomiary Ciała" i dodaj pierwszy wpis.</p>
+                    <button type="button" class="z-chip an-dodaj" onclick="window.switchTab('measurements-dashboard')">${ikona('plus', 16)} Dodaj pomiar</button>
                 </div>
             `;
         }
@@ -323,28 +434,20 @@ export const AnalyticsUI = {
         const gender = readBodyProfile().sex;
         const body = bodySummary(measurements, gender);
         const missingForBF = body.missing;
+        const hist = AnalyticsUI._historiaWskaznikow(measurements, gender);
+        const seria = (pole) => hist.map(h => h.s[pole]).filter(v => v !== null && v !== undefined);
 
-        let bfHtml = '';
-        let ffmiHtml = '';
-        let whrHtml = '';
+        let wskazniki = '';
+        let alertBf = '';
         let bf = null;
         let normalizedFfmi = null;
 
         if (missingForBF.length === 0) {
             bf = body.bf;
-
-            const bfText = body.bfCategory.text;
-
-            bfHtml = `
-                <div style="background: rgba(255,255,255,0.05); border: 1px solid rgba(0, 191, 255, 0.3); padding: 20px; border-radius: 16px; margin-bottom: 16px; position: relative; backdrop-filter: blur(10px);">
-                    <strong style="color: #00BFFF; font-size: 1.1em; font-weight: 600;">Szacunkowy BF%</strong>
-                    <button onclick="window.AnalyticsUI.showInfoModal('bf', ${bf})" style="position: absolute; right: 20px; top: 20px; background: rgba(0, 191, 255, 0.1); border: none; color: #00BFFF; border-radius: 50%; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; cursor: pointer;">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
-                    </button>
-                    <div style="font-size: 2.2em; font-weight: 700; margin: 12px 0; color: #fff;">${bf.toFixed(1)} <span style="font-size: 0.5em; font-weight: normal; color: #8E8E93;">%</span></div>
-                    <p style="margin: 0; font-size: 0.9em; font-weight: 500; color: #00BFFF;">${bfText}</p>
-                </div>
-            `;
+            wskazniki += AnalyticsUI._wskaznik({
+                klucz: 'bf', etykieta: 'Szacunkowy BF%', wartosc: bf.toFixed(1), jednostka: '%',
+                kategoria: body.bfCategory.text, zmiana: AnalyticsUI._zmiana(seria('bf'), 1, ' %', true), infoArg: bf
+            });
 
             if (body.ffmi !== null) {
                 normalizedFfmi = body.ffmi;
@@ -364,40 +467,44 @@ export const AnalyticsUI = {
                     else ffmiText = "Genetyczna elita";
                 }
 
-                ffmiHtml = `
-                    <div style="background: rgba(255,255,255,0.05); border: 1px solid rgba(46, 204, 113, 0.3); padding: 20px; border-radius: 16px; margin-bottom: 16px; position: relative; backdrop-filter: blur(10px);">
-                        <strong style="color: #2ECC71; font-size: 1.1em; font-weight: 600;">FFMI (Index Beztłuszczowy)</strong>
-                        <button onclick="window.AnalyticsUI.showInfoModal('ffmi', ${normalizedFfmi})" style="position: absolute; right: 20px; top: 20px; background: rgba(46, 204, 113, 0.1); border: none; color: #2ECC71; border-radius: 50%; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; cursor: pointer;">
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
-                        </button>
-                        <div style="font-size: 2.2em; font-weight: 700; margin: 12px 0; color: #fff;">${normalizedFfmi.toFixed(1)}</div>
-                        <p style="margin: 0; font-size: 0.9em; font-weight: 500; color: #2ECC71;">${ffmiText}</p>
-                    </div>
-                `;
+                wskazniki += AnalyticsUI._wskaznik({
+                    klucz: 'ffmi', etykieta: 'FFMI (Index Beztłuszczowy)', wartosc: normalizedFfmi.toFixed(1), jednostka: '',
+                    kategoria: ffmiText, zmiana: AnalyticsUI._zmiana(seria('ffmi'), 1, '', false), infoArg: normalizedFfmi
+                });
             }
         } else {
-            bfHtml = `<div style="background: rgba(255, 68, 68, 0.05); border: 1px solid rgba(255, 68, 68, 0.3); border-radius: 12px; padding: 15px; margin-bottom: 20px; text-align: center;"><strong style="color: #ff4444; font-size: 1.1em;">Brak danych BF%</strong><p style="margin: 8px 0 0 0; font-size: 0.9em; color: #8E8E93;">Uzupełnij: ${missingForBF.join(", ")}.</p></div>`;
+            alertBf = `
+                <div class="z-card z-alert an-brak">
+                    <h3 class="z-hd an-h an-h-karta">Brak danych BF%</h3>
+                    <p class="z-sub an-brak-tekst">Uzupełnij: ${missingForBF.join(", ")}.</p>
+                    <button type="button" class="z-chip an-dodaj" onclick="window.switchTab('measurements-dashboard')">${ikona('plus', 16)} Dodaj pomiar</button>
+                </div>`;
         }
 
         if (body.whr !== null) {
             const whr = body.whr;
             const whrText = body.whrCategory ? body.whrCategory.text : 'Ustaw płeć w Pomiarach ciała, żeby ocenić ryzyko.';
+            wskazniki += AnalyticsUI._wskaznik({
+                klucz: 'whr', etykieta: 'WHR (Talia-Biodra)', wartosc: whr.toFixed(2), jednostka: '',
+                kategoria: whrText, zmiana: AnalyticsUI._zmiana(seria('whr'), 2, '', true), infoArg: whr
+            });
+        }
 
-            whrHtml = `
-                <div style="background: rgba(255,255,255,0.05); border: 1px solid rgba(155, 89, 182, 0.3); padding: 20px; border-radius: 16px; margin-bottom: 25px; position: relative; backdrop-filter: blur(10px);">
-                    <strong style="color: #9B59B6; font-size: 1.1em; font-weight: 600;">WHR (Talia-Biodra)</strong>
-                    <button onclick="window.AnalyticsUI.showInfoModal('whr', ${whr})" style="position: absolute; right: 20px; top: 20px; background: rgba(155, 89, 182, 0.1); border: none; color: #9B59B6; border-radius: 50%; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; cursor: pointer;">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
-                    </button>
-                    <div style="font-size: 2.2em; font-weight: 700; margin: 12px 0; color: #fff;">${whr.toFixed(2)}</div>
-                    <p style="margin: 0; font-size: 0.9em; font-weight: 500; color: #9B59B6;">${whrText}</p>
+        // Wykres BF% w czasie: tylko pomiary, dla których da się policzyć BF%.
+        let wykresBf = '';
+        const punktyBf = hist.filter(h => h.s.bf !== null && h.s.bf !== undefined).map(h => ({ date: h.date, bf: h.s.bf })).slice(-12);
+        if (punktyBf.length >= 2) {
+            const p = AnalyticsUI.cachedProgress;
+            wykresBf = `
+                <h3 class="z-hd an-h">BF% w czasie</h3>
+                <div class="z-card an-bf-wykres">
+                    ${AnalyticsUI._wykresBf(punktyBf)}
                 </div>
-            `;
+                ${p ? `<button type="button" class="z-ghost an-udostepnij" onclick="window.AnalyticsUI.shareProgress(${Number(p.monthWorkouts)}, ${Number(p.monthVolume)}, ${Number(p.totalVolume)})">${ikona('share', 18)} Udostępnij progres</button>` : ''}`;
         }
 
         let trendsHtml = '';
         if (sortedMeasurements.length > 1) {
-            trendsHtml += '<h5 style="color: #FF9800; margin-top: 25px; margin-bottom: 15px; font-weight: 600; font-size: 1.1em;">Zmiany (od pierwszego wpisu)</h5>';
             const dict = { weight: 'Waga', chest: 'Klatka', waist: 'Talia', hips: 'Biodra', thigh: 'Udo', biceps: 'Biceps', neck: 'Szyja' };
             let diffs = '';
             for (const [key, label] of Object.entries(dict)) {
@@ -405,67 +512,56 @@ export const AnalyticsUI = {
                     const v = last[key] - first[key];
                     if (v !== 0) {
                         const sign = v > 0 ? '+' : '';
-                        const color = v > 0 ? (key==='waist' ? '#FF453A' : '#2ECC71') : (key==='waist' ? '#2ECC71' : '#FF453A');
-                        const iconSvg = v > 0 
-                            ? `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/></svg>`
-                            : `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="7" y1="7" x2="17" y2="17"/><polyline points="17 7 17 17 7 17"/></svg>`;
-                        diffs += `<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 8px; font-size: 0.95em;"><span style="color: #8E8E93;">${label}</span><strong style="color: ${color}; display: flex; align-items: center; gap: 4px;">${iconSvg} ${sign}${v.toFixed(1)} ${key==='weight'?'kg':'cm'}</strong></div>`;
+                        const dobrze = v > 0 ? key !== 'waist' : key === 'waist';
+                        diffs += `<div class="an-zm-wiersz"><span class="z-mut">${label}</span><strong class="an-zm-wart ${dobrze ? 'an-dobrze' : 'an-zle'}">${ikona(v > 0 ? 'arrow-up' : 'arrow-down', 14)} ${sign}${v.toFixed(1)} ${key==='weight'?'kg':'cm'}</strong></div>`;
                     }
                 }
             }
-            if(diffs) trendsHtml += `<div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.05); padding: 16px; border-radius: 16px; backdrop-filter: blur(10px);">${diffs}</div>`;
+            if (diffs) trendsHtml += `<h3 class="z-hd an-h">Zmiany (od pierwszego wpisu)</h3><div class="z-card an-zmiany">${diffs}</div>`;
         }
-        
-        return bfHtml + ffmiHtml + whrHtml + trendsHtml;
+
+        return AnalyticsUI._kartaPomiarow(last.date) + alertBf + (wskazniki ? `<div class="an-wskazniki">${wskazniki}</div>` : '') + wykresBf + trendsHtml;
     },
 
     buildRecoveryTab: (trainings) => {
-        if (trainings.length === 0) return '<p style="color: #8E8E93; text-align: center;">Brak danych treningowych do analizy regeneracji.</p>';
+        if (trainings.length === 0) return '<div class="z-card"><p class="z-sub an-pusto">Brak danych treningowych do analizy regeneracji.</p></div>';
         const now = Date.now();
         const last48h = now - (48 * 60 * 60 * 1000);
         const recentTrainings = trainings.filter(t => (t.startTime || new Date(t.date).getTime()) > last48h);
 
         const muscles = {
-            chest: { name: 'Klatka Piersiowa', status: 'green' },
-            back: { name: 'Plecy', status: 'green' },
-            legs: { name: 'Nogi', status: 'green' },
-            shoulders: { name: 'Barki', status: 'green' },
-            arms: { name: 'Ramiona', status: 'green' },
-            core: { name: 'Brzuch', status: 'green' }
+            chest: { name: 'Klatka Piersiowa', tired: false },
+            back: { name: 'Plecy', tired: false },
+            legs: { name: 'Nogi', tired: false },
+            shoulders: { name: 'Barki', tired: false },
+            arms: { name: 'Ramiona', tired: false },
+            core: { name: 'Brzuch', tired: false }
         };
 
         recentTrainings.forEach(t => (t.exercises || []).forEach(ex => {
             // Partie z danych katalogu (także pod dawną nazwą); słowa kluczowe tylko dla ćwiczeń własnych.
-            atlasMuscles(ex.name).forEach(key => { if (muscles[key]) muscles[key].status = 'red'; });
+            atlasMuscles(ex.name).forEach(key => { if (muscles[key]) muscles[key].tired = true; });
         }));
 
-        let atlasCards = '';
-        Object.keys(muscles).forEach(key => {
-            const m = muscles[key];
-            const bg = m.status === 'red' ? 'rgba(255, 69, 58, 0.1)' : 'rgba(46, 204, 113, 0.1)';
-            const border = m.status === 'red' ? 'rgba(255, 69, 58, 0.3)' : 'rgba(46, 204, 113, 0.3)';
-            const color = m.status === 'red' ? '#FF453A' : '#2ECC71';
-            const iconSvg = m.status === 'red' 
-                ? '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>' 
-                : '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>';
-            const label = m.status === 'red' ? 'Zmęczone' : 'Gotowe';
-
-            atlasCards += `
-                <div style="background: ${bg}; border: 1px solid ${border}; padding: 16px 12px; border-radius: 16px; text-align: center; display: flex; flex-direction: column; justify-content: center; backdrop-filter: blur(10px);">
-                    <strong style="color: #fff; font-size: 0.9em; margin-bottom: 8px;">${m.name}</strong>
-                    <span style="font-size: 0.8em; color: ${color}; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 6px;">
-                        ${iconSvg} ${label}
-                    </span>
-                </div>
-            `;
-        });
+        const lista = Object.entries(muscles);
+        const zmeczone = lista.filter(([, m]) => m.tired).map(([, m]) => m.name);
+        const atlasCards = lista.map(([key, m]) => `
+            <div class="an-partia" data-partia="${key}" data-stan="${m.tired ? 'zmeczone' : 'gotowe'}">
+                <strong class="an-partia-nazwa">${m.name}</strong>
+                <span class="an-partia-stan">${ikona(m.tired ? 'alert' : 'check', 16)} ${m.tired ? 'Zmęczone' : 'Gotowe'}</span>
+            </div>`).join('');
+        const podpowiedz = zmeczone.length
+            ? `Dziś odpuść: ${zmeczone.join(', ')}. Trenuj partie oznaczone jako gotowe.`
+            : 'Wszystkie partie są wypoczęte. Możesz trenować dowolną.';
 
         return `
-            <div style="background: rgba(255,255,255,0.03); padding: 20px; border-radius: 16px; border: 1px solid rgba(255,255,255,0.05); margin-bottom: 25px; backdrop-filter: blur(10px);">
-                <p style="margin: 0 0 20px 0; font-size: 0.9em; color: #8E8E93; line-height: 1.5;">Analiza na podstawie treningów z ostatnich 48 godzin. Partie oznaczone na czerwono zaangażowano niedawno i potrzebują czasu na regenerację. Unikaj obciążania ich dzisiaj!</p>
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+            <h3 class="z-hd an-h an-h-pierwszy">Regeneracja i atlas mięśni</h3>
+            <div class="z-card an-atlas">
+                <p class="z-sub an-atlas-opis">Analiza na podstawie treningów z ostatnich 48 godzin. Partie oznaczone jako zmęczone zaangażowano niedawno i potrzebują czasu na regenerację. Unikaj obciążania ich dzisiaj!</p>
+                <div class="an-partie">
                     ${atlasCards}
                 </div>
+                <p class="an-edward"><strong>Edward:</strong> ${podpowiedz}</p>
             </div>
         `;
     },
@@ -624,7 +720,7 @@ export const AnalyticsUI = {
             const statsList = topRecords.map(r => ({
                 label: r.name,
                 value: `${r.actualWeight} kg (${r.reps} powt.)`,
-                color: "#FFD700"
+                color: AnalyticsUI._kolor('--ukis-color-accent')
             }));
 
             const textToShare = `Moje aktualne rekordy siłowe z Uki's BodyBuild! 🔥 Dźwigaj i rośnij: https://lukaszdudzinski.github.io/Ukis-BodyBuild/`;
@@ -653,7 +749,7 @@ export const AnalyticsUI = {
 
             const statsList = [
                 { label: 'Treningi w tym miesiącu', value: String(monthWorkouts) },
-                { label: 'Ciężar przerzucony w miesiącu', value: `${monthVolume} kg`, color: '#00BFFF' },
+                { label: 'Ciężar przerzucony w miesiącu', value: `${monthVolume} kg`, color: AnalyticsUI._kolor('--ukis-color-accent') },
                 { label: 'Całkowita objętość', value: `${totalVolume} kg` }
             ];
 
@@ -682,6 +778,16 @@ export const AnalyticsUI = {
 
     
     
+    // Kolor tokenu (wartość obliczona) dla rysunku na canvasie (grafika do udostępnienia): kolory z motywu, nie z kodu.
+    _kolor: (token) => {
+        const probka = document.createElement('i');
+        probka.style.color = `var(${token})`;
+        document.body.append(probka);
+        const kolor = getComputedStyle(probka).color;
+        probka.remove();
+        return kolor;
+    },
+
     // Okno objaśnienia z komponentów z-dialog (role="dialog", Escape, klik w tło, powrót fokusu).
     // `opener`: przycisk, który otworzył okno (Safari nie ustawia fokusu po kliknięciu przycisku).
     _pokazOkno: (tytul, trescHtml, etykietaPrzycisku, opener) => {
@@ -707,7 +813,7 @@ export const AnalyticsUI = {
             if (poprzedni && typeof poprzedni.focus === 'function' && document.contains(poprzedni)) poprzedni.focus();
         };
         const klawisz = (e) => {
-            if (e.key === 'Escape') { e.preventDefault(); koniec(); }
+            if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); koniec(); } // nie zamyka też ekranu pod oknem
             else if (e.key === 'Tab') { e.preventDefault(); przycisk.focus(); } // jedyna kontrolka w oknie
         };
         przycisk.addEventListener('click', koniec);
@@ -750,114 +856,84 @@ export const AnalyticsUI = {
         `, 'Rozumiem', opener);
     },
 
-    showInfoModal: (type, value) => {
-        let modal = document.getElementById('analytics-info-modal');
-        if (!modal) {
-            modal = document.createElement('div');
-            modal.id = 'analytics-info-modal';
-            modal.style.cssText = 'position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 9999; display: flex; justify-content: center; align-items: center; padding: 20px; box-sizing: border-box; backdrop-filter: blur(5px); flex-direction: column; opacity: 0; transition: opacity 0.3s;';
-            document.body.appendChild(modal);
-        }
-
+    // Okno objaśnienia wskaźnika (BF%, FFMI, WHR): skala z zaznaczoną wartością. Pasy mają kolory z tokenów (klasy an-pas-N).
+    showInfoModal: (type, value, opener) => {
         const sex = readBodyProfile().sex;
         const gender = sex || 'male'; // BF% i FFMI pokazujemy tylko przy znanej płci
-        let title, color, desc, ranges, minVal, maxVal;
+        let title, desc, ranges, minVal, maxVal, pasy;
 
         if (type === 'bf') {
             title = 'Szacunkowy BF% (Tkanka Tłuszczowa)';
-            color = '#00BFFF';
             desc = 'BF% obrazuje jak dużą część Twojej masy stanowi tłuszcz. Utrzymanie go w ryzach zmniejsza ryzyko chorób układu krążenia i cukrzycy typu 2. Zbyt niski poziom również jest niezdrowy i może zaburzać gospodarkę hormonalną!';
             ranges = bfRanges(gender); // te same progi ACE co na karcie
             minVal = 2; maxVal = ranges[ranges.length-1].max;
+            pasy = [0, 1, 2, 3, 4];
         } else if (type === 'ffmi') {
             title = 'FFMI (Index Beztłuszczowy)';
-            color = '#2ECC71';
             desc = 'FFMI to miernik czystej masy mięśniowej niezależny od wzrostu. Im wyższy, tym jesteś bardziej muskularny. Dobrze rozwinięta tkanka mięśniowa to pancerz ochronny stawów, lepszy metabolizm i wyższa wrażliwość insulinowa!';
             if (gender === 'male') {
                 ranges = [
-                    { label: 'Niska', max: 18, color: '#f1c40f' },
-                    { label: 'Przeciętna', max: 20, color: '#3498db' },
-                    { label: 'Dobra', max: 22, color: '#2ecc71' },
-                    { label: 'Doskonała', max: 25, color: '#9b59b6' },
-                    { label: 'Elita', max: 30, color: '#e74c3c' }
+                    { label: 'Niska', max: 18 },
+                    { label: 'Przeciętna', max: 20 },
+                    { label: 'Dobra', max: 22 },
+                    { label: 'Doskonała', max: 25 },
+                    { label: 'Elita', max: 30 }
                 ];
             } else {
                 ranges = [
-                    { label: 'Niska', max: 15, color: '#f1c40f' },
-                    { label: 'Przeciętna', max: 17, color: '#3498db' },
-                    { label: 'Dobra', max: 19, color: '#2ecc71' },
-                    { label: 'Doskonała', max: 21, color: '#9b59b6' },
-                    { label: 'Elita', max: 26, color: '#e74c3c' }
+                    { label: 'Niska', max: 15 },
+                    { label: 'Przeciętna', max: 17 },
+                    { label: 'Dobra', max: 19 },
+                    { label: 'Doskonała', max: 21 },
+                    { label: 'Elita', max: 26 }
                 ];
             }
             minVal = 13; maxVal = ranges[ranges.length-1].max;
+            pasy = [0, 1, 2, 3, 4];
         } else if (type === 'whr') {
             title = 'WHR (Talia do Bioder)';
-            color = '#9B59B6';
             desc = 'WHR określa typ sylwetki (jabłko vs gruszka). Typ "jabłka" oznacza gromadzenie tłuszczu wokół narządów wewnętrznych (tłuszcz wisceralny), co drastycznie podnosi ryzyko zawałów, zatorów oraz zespołu metabolicznego!';
             ranges = whrRanges(sex); // te same progi WHO co na karcie; bez płci: null
             minVal = 0.6; maxVal = ranges ? ranges[ranges.length-1].max : 1;
+            pasy = [2, 4];
+        } else {
+            return;
         }
 
         if (!ranges) {
             // Płeć nieznana: zamiast norm innej płci prosimy o jej ustawienie.
-            modal.innerHTML = `
-                <div style="background: #1e1e1e; padding: 25px; border-radius: 12px; width: 100%; max-width: 400px; border-top: 5px solid ${color}; box-shadow: 0 10px 30px rgba(0,0,0,0.8); position: relative; box-sizing: border-box;">
-                    <h3 style="color: ${color}; margin-top: 0; font-size: 1.4em;">${title}</h3>
-                    <p style="color: #ddd; font-size: 0.95em; line-height: 1.5; margin-bottom: 15px;">${desc}</p>
-                    <p id="analytics-info-nosex" style="color: #fff; font-weight: 600; margin-bottom: 20px;">Ustaw płeć w Pomiarach ciała, żeby ocenić ryzyko.</p>
-                    <div style="text-align: center;">
-                        <button onclick="document.getElementById('analytics-info-modal').style.opacity='0'; setTimeout(()=>document.getElementById('analytics-info-modal').style.display='none', 300);" style="background: #333; color: #fff; border: 1px solid #555; padding: 10px 25px; border-radius: 8px; cursor: pointer;">Zamknij</button>
-                    </div>
-                </div>
-            `;
-            modal.style.display = 'flex';
-            setTimeout(() => modal.style.opacity = '1', 10);
+            AnalyticsUI._pokazOkno(title, `
+                <p>${esc(desc)}</p>
+                <p id="analytics-info-nosex" class="an-okno-nota">Ustaw płeć w Pomiarach ciała, żeby ocenić ryzyko.</p>
+            `, 'Zamknij', opener);
             return;
         }
 
-        // Generate bars
         let currentPos = minVal;
         const totalSpan = maxVal - minVal;
+        const fmt = (n) => (Number.isInteger(n) ? String(n) : n.toFixed(2));
         let barsHtml = '';
-        ranges.forEach(r => {
-            const span = r.max - currentPos;
-            const pct = (span / totalSpan) * 100;
-            barsHtml += `<div style="width: ${pct}%; background: ${r.color}; height: 100%; border-right: 1px solid rgba(0,0,0,0.3);" title="${r.label}"></div>`;
+        let legendaHtml = '';
+        ranges.forEach((r, i) => {
+            const pct = ((r.max - currentPos) / totalSpan) * 100;
+            barsHtml += `<div class="an-pas an-pas-${pasy[i]}" style="width: ${pct}%" title="${esc(r.label)}"></div>`;
+            legendaHtml += `<li><span class="an-pas-probka an-pas-${pasy[i]}" aria-hidden="true"></span>${esc(r.label)} <span class="z-mut">${fmt(currentPos)}–${fmt(r.max)}</span></li>`;
             currentPos = r.max;
         });
 
         const pointerPct = Math.max(0, Math.min(100, ((value - minVal) / totalSpan) * 100));
 
-        modal.innerHTML = `
-            <div style="background: #1e1e1e; padding: 25px; border-radius: 12px; width: 100%; max-width: 400px; border-top: 5px solid ${color}; box-shadow: 0 10px 30px rgba(0,0,0,0.8); position: relative; box-sizing: border-box;">
-                <h3 style="color: ${color}; margin-top: 0; font-size: 1.4em;">${title}</h3>
-                <p style="color: #ddd; font-size: 0.95em; line-height: 1.5; margin-bottom: 25px;">${desc}</p>
-                
-                <div style="position: relative; height: 30px; margin-bottom: 30px;">
-                    <!-- The Gauge -->
-                    <div style="display: flex; height: 16px; border-radius: 8px; overflow: hidden; width: 100%; box-sizing: border-box; box-shadow: inset 0 2px 4px rgba(0,0,0,0.5);">
-                        ${barsHtml}
-                    </div>
-                    <!-- Pointer -->
-                    <div style="position: absolute; left: ${pointerPct}%; top: 12px; transform: translateX(-50%); text-align: center; z-index: 2;">
-                        <div style="width: 0; height: 0; border-left: 8px solid transparent; border-right: 8px solid transparent; border-bottom: 10px solid #fff; margin: 0 auto;"></div>
-                        <strong style="color: #fff; background: #000; padding: 3px 8px; border-radius: 4px; display: inline-block; margin-top: 4px; font-size: 1.1em; border: 1px solid ${color};">${Number(value).toFixed(2)}</strong>
-                    </div>
-                </div>
-
-                <div style="display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; font-size: 0.85em; color: #888; margin-top: 15px; margin-bottom: 20px; line-height: 1.3;">
-                    ${ranges.map(r => `<span style="color: ${r.color}; margin: 2px;">${r.label}</span>`).join('')}
-                </div>
-
-                <div style="text-align: center;">
-                    <button onclick="document.getElementById('analytics-info-modal').style.opacity='0'; setTimeout(()=>document.getElementById('analytics-info-modal').style.display='none', 300);" style="background: #333; color: #fff; border: 1px solid #555; padding: 10px 30px; border-radius: 6px; font-weight: bold; font-size: 1em; cursor: pointer; display: inline-block;">Zamknij</button>
+        AnalyticsUI._pokazOkno(title, `
+            <p>${esc(desc)}</p>
+            <div class="an-skala">
+                <div class="an-pasy" role="img" aria-label="Skala wskaźnika z zaznaczoną wartością ${Number(value).toFixed(2)}">${barsHtml}</div>
+                <div class="an-znacznik" style="left: ${pointerPct}%">
+                    <span class="an-strzalka" aria-hidden="true"></span>
+                    <strong class="an-znacznik-wart">${Number(value).toFixed(2)}</strong>
                 </div>
             </div>
-        `;
-
-        modal.style.display = 'flex';
-        setTimeout(() => modal.style.opacity = '1', 10);
+            <ul class="an-pas-legenda">${legendaHtml}</ul>
+        `, 'Zamknij', opener);
     }
 };
 

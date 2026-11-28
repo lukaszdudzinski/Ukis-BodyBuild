@@ -2,7 +2,7 @@
 /* ============================================================
    ANALIZA — zakładki i zakładka „Siła” (spec 8.3, plansza AnalizaSila). Znaczniki: src/modules/ui/AnalyticsUI.js.
    Kolory serii wykresów z tokenów --ukis-chart-*, akcent z --ukis-color-accent, więc motyw zmienia je sam.
-   Zakładki „Sylwetka” i „Regeneracja” dostają nowy wygląd w następnym zadaniu etapu C.
+   Zakładki „Sylwetka” i „Regeneracja” (C6): wskaźniki, wykres BF%, atlas mięśni i okno objaśnienia ze skalą.
    ============================================================ */
 
 /* Dolny odstęp: przycisk Edwarda nie zasłania ostatniej karty po przewinięciu do końca. */
@@ -302,4 +302,264 @@
     font-size: 14px;
     font-weight: 600;
     color: var(--ukis-text);
+}
+
+/* ---------- Sylwetka: karta „Pomiary pod kontrolą” i brak danych ---------- */
+#analytics-content .an-pomiary,
+#analytics-content .an-brak {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-bottom: 16px;
+}
+
+#analytics-content .an-pomiary-tekst,
+#analytics-content .an-brak-tekst {
+    flex: 1 1 160px;
+    min-width: 0;
+}
+
+#analytics-content .an-brak {
+    flex-direction: column;
+    align-items: flex-start;
+}
+
+#analytics-content .an-brak .an-h-karta,
+#analytics-content .an-brak-tekst {
+    margin: 0;
+}
+
+#analytics-content .an-h-karta {
+    margin: 0 0 4px;
+    font-size: 18px;
+}
+
+#analytics-content .an-pomiary-stan {
+    margin: 0;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--ukis-color-accent);
+}
+
+#analytics-content .an-pomiary-opis {
+    margin: 2px 0 0;
+}
+
+/* ---------- Sylwetka: wskaźniki BF%, FFMI, WHR ---------- */
+#analytics-content .an-wskazniki {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 12px;
+}
+
+#analytics-content .an-wsk {
+    position: relative;
+    padding: 14px 16px;
+}
+
+#analytics-content .an-wsk-etykieta {
+    padding-right: var(--ukis-touch);
+    font-size: 13px;
+}
+
+#analytics-content .an-wsk-wartosc {
+    margin: 4px 0;
+    font-size: 32px;
+}
+
+#analytics-content .an-kat {
+    margin: 0;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--ukis-text-secondary);
+}
+
+#analytics-content .an-zmiana,
+#analytics-content .an-zmiana-pusta {
+    margin: 8px 0 0;
+    font-size: 13px;
+}
+
+#analytics-content .an-zmiana {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-weight: 600;
+}
+
+#analytics-content .an-dobrze {
+    color: var(--ukis-color-success);
+}
+
+#analytics-content .an-zle {
+    color: var(--ukis-danger-text);
+}
+
+#analytics-content .an-dodaj {
+    flex: none;
+}
+
+/* ---------- Sylwetka: zmiany od pierwszego wpisu ---------- */
+#analytics-content .an-zmiany {
+    padding: 4px 16px;
+}
+
+#analytics-content .an-zm-wiersz {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--ukis-divider);
+    font-size: 14px;
+}
+
+#analytics-content .an-zm-wiersz:last-child {
+    border-bottom: 0;
+}
+
+#analytics-content .an-zm-wart {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+
+/* ---------- Regeneracja: atlas mięśni ---------- */
+#analytics-content .an-h-pierwszy {
+    margin-top: 0;
+}
+
+#analytics-content .an-atlas-opis {
+    margin: 0 0 16px;
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+#analytics-content .an-partie {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+}
+
+#analytics-content .an-partia {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 8px;
+    padding: 14px 12px;
+    text-align: center;
+    border: 1px solid var(--ukis-divider);
+    border-radius: var(--ukis-radius-md);
+}
+
+#analytics-content .an-partia-nazwa {
+    font-size: 14px;
+}
+
+#analytics-content .an-partia-stan {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--ukis-success-text);
+}
+
+/* Partie, które pracowały w ostatnich 48 h: akcent motywu (ramka, tło, tekst). */
+#analytics-content .an-partia[data-stan="zmeczone"] {
+    border-color: var(--ukis-color-accent);
+}
+
+#analytics-content .an-partia[data-stan="zmeczone"] .an-partia-stan {
+    color: var(--ukis-color-accent);
+}
+
+#analytics-content .an-edward {
+    margin: 16px 0 0;
+    font-size: 14px;
+    line-height: 1.5;
+    color: var(--ukis-text);
+}
+
+#analytics-content .an-edward strong {
+    color: var(--ukis-color-accent);
+}
+
+/* ---------- Okno objaśnienia wskaźnika: skala z zaznaczoną wartością ---------- */
+.an-okno .an-skala {
+    position: relative;
+    height: 64px;
+    margin: 4px 0 8px;
+}
+
+.an-okno .an-pasy {
+    display: flex;
+    height: 16px;
+    overflow: hidden;
+    border-radius: 8px;
+}
+
+.an-okno .an-pas {
+    height: 100%;
+    border-right: 1px solid rgba(0, 0, 0, .3);
+}
+
+.an-okno .an-pas-0 { background: var(--ukis-pas-0); }
+.an-okno .an-pas-1 { background: var(--ukis-pas-1); }
+.an-okno .an-pas-2 { background: var(--ukis-pas-2); }
+.an-okno .an-pas-3 { background: var(--ukis-pas-3); }
+.an-okno .an-pas-4 { background: var(--ukis-pas-4); }
+
+.an-okno .an-znacznik {
+    position: absolute;
+    top: 12px;
+    transform: translateX(-50%);
+    text-align: center;
+}
+
+.an-okno .an-strzalka {
+    display: block;
+    width: 0;
+    height: 0;
+    margin: 0 auto;
+    border-left: 8px solid transparent;
+    border-right: 8px solid transparent;
+    border-bottom: 10px solid var(--ukis-text);
+}
+
+.an-okno .an-znacznik-wart {
+    display: inline-block;
+    margin-top: 4px;
+    padding: 3px 8px;
+    border: 1px solid var(--ukis-color-accent);
+    border-radius: 4px;
+    background: var(--ukis-glass-bg-solid);
+    color: var(--ukis-text);
+    font-size: 16px;
+}
+
+.an-okno .an-pas-legenda {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px 14px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    font-size: 13px;
+}
+
+.an-okno .an-pas-legenda li {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.an-okno .an-pas-probka {
+    flex: none;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
 }

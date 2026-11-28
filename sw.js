@@ -1,4 +1,4 @@
-const CACHE_NAME = 'ukis-bodybuild-v2026.11.27.04'; // deployed: 2026-08-27T00:01
+const CACHE_NAME = 'ukis-bodybuild-v2026.11.28.01'; // deployed: 2026-08-27T00:01
 const OWN_CACHE_PREFIXES = ['ukis-bodybuild-', 'uki-bodybuild-']; // własne cache (także historyczne uki-bodybuild-v2026.8.x); cudze cache w domenie zostają
 // Core assets that MUST be cached immediately
 const CORE_ASSETS = [
@@ -10,23 +10,10 @@ const CORE_ASSETS = [
     './style.css',
     './styles/base.css',
     './styles/layout.css',
-    './styles/themes.css',
-    './styles/components/cards.css',
     './styles/components/forms.css',
     './styles/components/modals.css',
-    './styles/components/formulas.css',
     './styles/components/pwa.css',
-    './styles/sections/welcome.css',
-    './styles/sections/pro-dashboard.css',
-    './styles/sections/lectures.css',
-    './styles/sections/settings.css',
-    './styles/sections/tools.css',
-    './styles/sections/science.css',
-    './styles/sections/quiz.css',
-    './styles/sections/game.css',
     './styles/lightbox.css',
-    './game_styles.css',
-    './styles/glassmorphism.css',
     './classic.html',
     './classic-app/style.css',
     './classic-app/game_styles.css',

@@ -1,3 +1,4 @@
+// wyglad: zar
 import { DatabaseManager } from '../db/DatabaseManager.js';
 import { DietAIEngine } from '../diet/DietAIEngine.js';
 import { MediaManager } from '../db/MediaManager.js';
@@ -7,6 +8,40 @@ import { computeTdee, readBodyProfile, ageFromBirthYear, saveBirthYear, profileH
 // Dane użytkownika w innerHTML zawsze przez esc() (także w atrybutach w cudzysłowie).
 const esc = (t) => String(t ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const liczba = (v) => Number(v) || 0;
+
+// Arkusz dolny z-sheet (role="dialog", aria-modal): fokus zostaje w środku (Tab krąży), Escape i stuknięcie w zasłonę
+// zamykają przez `zamknij`, a fokus wraca tam, skąd arkusz otwarto (w Safari kliknięty przycisk nie dostaje fokusu,
+// więc `wroc` podaje element zastępczy).
+const FOKUS = 'button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
+const podepnijArkusz = (zaslona, zamknij, { zasloneZamyka = true } = {}) => {
+    // Klawisze na całym dokumencie, nie tylko w arkuszu: Safari nie daje fokusu klikniętemu przyciskowi, więc po stuknięciu
+    // fokus ląduje na <body>, a Escape i Tab muszą dalej należeć do otwartego arkusza (najwyżej leżącego).
+    const klawisz = (e) => {
+        if (!zaslona.isConnected) { document.removeEventListener('keydown', klawisz); return; }
+        if (zaslona.style.display === 'none') return;
+        const otwarte = [...document.querySelectorAll('.diet-okno-scrim')].filter((z) => z.style.display !== 'none');
+        if (otwarte[otwarte.length - 1] !== zaslona) return;
+        if (e.key === 'Escape') {
+            e.preventDefault();
+            e.stopPropagation();
+            zamknij();
+            return;
+        }
+        if (e.key !== 'Tab') return;
+        const el = [...zaslona.querySelectorAll(FOKUS)].filter((x) => x.getClientRects().length);
+        if (!el.length) return;
+        e.preventDefault();
+        const i = el.indexOf(document.activeElement);
+        el[i < 0 ? (e.shiftKey ? el.length - 1 : 0) : (i + (e.shiftKey ? -1 : 1) + el.length) % el.length].focus();
+    };
+    document.addEventListener('keydown', klawisz);
+    if (zasloneZamyka) zaslona.addEventListener('click', (e) => { if (e.target === zaslona) zamknij(); });
+};
+// Oddaje fokus elementowi, który otwierał arkusz (o ile jeszcze jest na stronie), albo zastępczemu.
+const oddajFokus = (el, zapas) => {
+    const cel = el && el.isConnected && el !== document.body ? el : (typeof zapas === 'function' ? zapas() : zapas);
+    if (cel && cel.focus) cel.focus();
+};
 // Szerokość/wysokość w procentach z jednym miejscem po przecinku, najwyżej 100 %.
 const procent = (czesc, calosc) => `${calosc > 0 ? Math.min(100, Math.round((czesc / calosc) * 1000) / 10) : 0}%`;
 
@@ -21,11 +56,12 @@ export const DietUI = {
         document.getElementById('diet-tdee-modal')?.remove();
         DietUI.renderUI(dashboard);
 
+        // Podpięcie zdarzeń przed wczytaniem danych: okno celu kcal (także z Profilu, DietUI.otworzCelKcal)
+        // działa od razu, nawet gdy baza jeszcze się otwiera.
+        DietUI.bindEvents();
+
         // Załadowanie dzisiejszych danych i wyliczenie TDEE
         await DietUI.loadTodayData();
-        
-        // Podpięcie zdarzeń
-        DietUI.bindEvents();
     },
 
     // Treść ekranu (spec 8.3, plansza Dieta) wpada do #diet-content; nagłówek z „Ustawieniami zapotrzebowania”
@@ -82,57 +118,57 @@ export const DietUI = {
             </section>
             </div>
 
-            <!-- Modal konfiguracji TDEE -->
-            <!-- z-index nad menu dolnym i przyciskiem „Start” (2000); okno przewija się na niskich ekranach -->
-            <div id="diet-tdee-modal" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(17,17,24,0.8); backdrop-filter: blur(5px); z-index: 2500; justify-content: center; align-items: flex-start; overflow-y: auto; box-sizing: border-box; padding: max(16px, env(safe-area-inset-top)) max(16px, env(safe-area-inset-right)) max(16px, env(safe-area-inset-bottom)) max(16px, env(safe-area-inset-left));">
-                <div style="background: rgba(255,255,255,0.08); backdrop-filter: blur(20px); padding: 30px 25px; border-radius: 24px; max-width: 400px; width: 100%; position: relative; border: 1px solid rgba(255,255,255,0.1); box-shadow: 0 20px 40px rgba(0,0,0,0.5); margin: auto; box-sizing: border-box; max-height: calc(100vh - 32px); max-height: calc(100dvh - 32px); overflow-y: auto; -webkit-overflow-scrolling: touch;">
-                    <button id="diet-tdee-close" style="position: absolute; top: 20px; right: 20px; background: none; border: none; color: #8E8E93; font-size: 1.5em; cursor: pointer; transition: color 0.2s;">×</button>
-                    <h3 style="margin: 0 0 25px 0; color: #fff; font-size: 1.2em; font-weight: 600;">Cel kaloryczny</h3>
-                    
-                    <div style="margin-bottom: 20px;">
-                        <label style="display: block; margin-bottom: 8px; color: #8E8E93; font-size: 0.85em; font-weight: 500;">Aktywność i Treningi</label>
-                        <select id="diet-tdee-activity" class="input-field" style="width: 100%; padding: 12px 15px; background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.1); color: #fff; border-radius: 12px; font-size: 1em; outline: none; appearance: none;">
-                            <option value="1.2">Praca siedząca (Brak treningów)</option>
+            <!-- Okno celu kcal (arkusz z-sheet; bindEvents przenosi je do <body>) -->
+            <div id="diet-tdee-modal" class="z-sheet-scrim diet-okno-scrim" style="display: none;">
+                <div class="z-sheet diet-okno" role="dialog" aria-modal="true" aria-labelledby="diet-tdee-tytul">
+                    <div class="z-sheet-grip" aria-hidden="true"></div>
+                    <div class="z-sheet-head">
+                        <h3 id="diet-tdee-tytul" class="z-hd diet-okno-tytul">Cel kaloryczny</h3>
+                        <button type="button" id="diet-tdee-close" class="z-ic z-card" aria-label="Zamknij">${ikona('x', 20)}</button>
+                    </div>
+
+                    <div class="diet-okno-pole">
+                        <label class="z-lab" for="diet-tdee-activity">Aktywność i treningi</label>
+                        <select id="diet-tdee-activity" class="z-in">
+                            <option value="1.2">Praca siedząca (brak treningów)</option>
                             <option value="1.375">Niska (1-2 treningi)</option>
                             <option value="1.55" selected>Umiarkowana (3-4 treningi)</option>
                             <option value="1.725">Wysoka (5-6 treningów)</option>
-                            <option value="1.9">Bardzo wysoka (Praca fiz. + treningi)</option>
+                            <option value="1.9">Bardzo wysoka (praca fiz. + treningi)</option>
                         </select>
                     </div>
 
-                    <div style="margin-bottom: 25px;">
-                        <label style="display: block; margin-bottom: 8px; color: #8E8E93; font-size: 0.85em; font-weight: 500;">Obecny cel</label>
-                        <select id="diet-tdee-goal" class="input-field" style="width: 100%; padding: 12px 15px; background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.1); color: #fff; border-radius: 12px; font-size: 1em; outline: none; appearance: none;">
+                    <div class="diet-okno-pole">
+                        <label class="z-lab" for="diet-tdee-goal">Obecny cel</label>
+                        <select id="diet-tdee-goal" class="z-in">
                             <option value="cut">Redukcja (-500 kcal)</option>
                             <option value="maintenance" selected>Utrzymanie wagi</option>
                             <option value="bulk">Budowa masy (+300 kcal)</option>
                         </select>
                     </div>
 
-                    <div style="margin-bottom: 20px;">
-                        <label for="diet-kcal-birth-year" style="display: block; margin-bottom: 8px; color: #8E8E93; font-size: 0.85em; font-weight: 500;">Rok urodzenia</label>
-                        <input type="text" inputmode="numeric" maxlength="4" id="diet-kcal-birth-year" class="input-field" autocomplete="bday-year" placeholder="np. 1990" aria-describedby="diet-kcal-birth-error" style="width: 100%; padding: 12px 15px; background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.1); color: #fff; border-radius: 12px; font-size: 1em; outline: none; box-sizing: border-box;">
-                        <div id="diet-kcal-birth-error" role="alert" style="display: none; color: #FF453A; font-size: 0.8em; margin-top: 6px;"></div>
+                    <div class="diet-okno-pole">
+                        <label class="z-lab" for="diet-kcal-birth-year">Rok urodzenia</label>
+                        <input type="text" inputmode="numeric" maxlength="4" id="diet-kcal-birth-year" class="z-in" autocomplete="bday-year" placeholder="np. 1990" aria-describedby="diet-kcal-birth-error">
+                        <div id="diet-kcal-birth-error" class="diet-okno-blad" role="alert" style="display: none;"></div>
                     </div>
 
-                    <div style="margin-bottom: 20px;">
-                        <label for="diet-kcal-manual" style="display: flex; align-items: center; gap: 6px; margin-bottom: 8px; color: #8E8E93; font-size: 0.85em; font-weight: 500;">Cel kaloryczny (kcal) <span id="diet-kcal-source-modal" style="display: inline-flex; color: #FF9800;"></span></label>
-                        <input type="text" inputmode="numeric" id="diet-kcal-manual" class="input-field" autocomplete="off" aria-describedby="diet-kcal-manual-error" style="width: 100%; padding: 12px 15px; background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.1); color: #fff; border-radius: 12px; font-size: 1em; outline: none; box-sizing: border-box;">
-                        <div id="diet-kcal-manual-error" role="alert" style="display: none; color: #FF453A; font-size: 0.8em; margin-top: 6px;"></div>
-                        <div style="display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-top: 8px; font-size: 0.8em; color: #8E8E93;">
-                            <span id="diet-kcal-suggested"></span>
-                            <button type="button" id="diet-kcal-restore" style="display: none; background: none; border: 1px solid rgba(255,152,0,0.4); color: #FF9800; border-radius: 10px; padding: 6px 10px; font-size: 1em; cursor: pointer; white-space: nowrap;">Przywróć wyliczony</button>
+                    <div class="diet-okno-pole">
+                        <label class="z-lab diet-okno-etykieta-ikona" for="diet-kcal-manual">Cel kaloryczny (kcal) <span id="diet-kcal-source-modal" class="diet-okno-zrodlo"></span></label>
+                        <input type="text" inputmode="numeric" id="diet-kcal-manual" class="z-in" autocomplete="off" aria-describedby="diet-kcal-manual-error">
+                        <div id="diet-kcal-manual-error" class="diet-okno-blad" role="alert" style="display: none;"></div>
+                        <div class="diet-okno-wyliczony">
+                            <span id="diet-kcal-suggested" class="z-mut"></span>
+                            <button type="button" id="diet-kcal-restore" class="z-ghost" style="display: none;">Przywróć wyliczony</button>
                         </div>
-                        <div id="diet-kcal-profile-hint" style="display: none; margin-top: 8px; font-size: 0.8em; color: #8E8E93; line-height: 1.4;"></div>
+                        <div id="diet-kcal-profile-hint" class="z-mut diet-okno-podpowiedz" style="display: none;"></div>
                     </div>
 
-                    <p style="font-size: 0.8em; color: #8E8E93; margin-bottom: 25px; line-height: 1.5;">
+                    <p class="z-mut diet-okno-opis">
                         Zapotrzebowanie wyliczane jest ze wzoru Mifflin-St Jeor na podstawie Twojej najnowszej wagi w sekcji Pomiary. Możesz wpisać własny cel; wtedy zmiana wagi czy aktywności go nie nadpisze.
                     </p>
 
-                    <button id="diet-tdee-save" style="width: 100%; background: #FF9800; color: #FFF; border: none; padding: 15px; border-radius: 12px; font-weight: 600; font-size: 1em; cursor: pointer; transition: opacity 0.2s;">
-                        Zapisz ustawienia
-                    </button>
+                    <button type="button" id="diet-tdee-save" class="z-btn diet-okno-zapisz">Zapisz ustawienia</button>
                 </div>
             </div>
         `;
@@ -164,29 +200,46 @@ export const DietUI = {
         // Okno ustawień przenosimy do <body>: w zakładce (osobny kontekst warstw) jego z-index nie przykryłby
         // menu dolnego ani przycisku „Start” (z-index 2000) na telefonie.
         if (modal && modal.parentElement !== document.body) document.body.appendChild(modal);
+        // Zamknięcie (przycisk, Escape, zasłona, zapis) oddaje fokus temu, co okno otworzyło: przyciskowi ustawień
+        // w nagłówku albo wierszowi „Cel kaloryczny” w Profilu (DietUI.otworzCelKcal), który dostaje też powiadomienie.
+        let otwarteZ = null;
+        const zamknijTdee = () => {
+            if (!modal) return;
+            modal.style.display = 'none';
+            const z = otwarteZ;
+            otwarteZ = null;
+            oddajFokus(z ? z.el : configBtn, null);
+            if (z && typeof z.poZamknieciu === 'function') z.poZamknieciu();
+        };
+        if (modal) podepnijArkusz(modal, zamknijTdee);
         const closeBtn = document.getElementById('diet-tdee-close');
         const saveBtn = document.getElementById('diet-tdee-save');
 
         if (configBtn && modal) {
             // Przycisk stoi w nagłówku w index.html (nie jest renderowany na nowo), więc onclick zamiast
             // addEventListener: ponowne DietUI.init() nie podwoi obsługi.
-            configBtn.onclick = async () => {
-                // Załaduj zapisane ustawienia
-                const savedGoal = localStorage.getItem('dietGoal') || 'maintenance';
-                const savedActivity = localStorage.getItem('dietActivity') || '1.55';
+            configBtn.onclick = () => otworzTdee(null);
+        }
+        // Okno celu kcal z innego ekranu (Profil → „Cel kaloryczny”): to samo okno i ten sam zapis.
+        DietUI.otworzCelKcal = (el, poZamknieciu) => otworzTdee({ el, poZamknieciu });
 
-                document.getElementById('diet-tdee-goal').value = savedGoal;
-                document.getElementById('diet-tdee-activity').value = savedActivity;
+        async function otworzTdee(z) {
+            if (!modal) return;
+            otwarteZ = z;
+            // Załaduj zapisane ustawienia
+            const savedGoal = localStorage.getItem('dietGoal') || 'maintenance';
+            const savedActivity = localStorage.getItem('dietActivity') || '1.55';
 
-                modal.style.display = 'flex';
-                await DietUI.fillKcalGoalForm();
-            };
+            document.getElementById('diet-tdee-goal').value = savedGoal;
+            document.getElementById('diet-tdee-activity').value = savedActivity;
+
+            modal.style.display = 'flex';
+            (document.getElementById('diet-tdee-close') || modal).focus();
+            await DietUI.fillKcalGoalForm();
         }
 
         if (closeBtn && modal) {
-            closeBtn.addEventListener('click', () => {
-                modal.style.display = 'none';
-            });
+            closeBtn.addEventListener('click', zamknijTdee);
         }
 
         // Zmiana aktywności lub celu w oknie: nowe wyliczenie obok (ręczny cel zostaje bez zmian).
@@ -260,7 +313,7 @@ export const DietUI = {
                 if (manualKcal !== null) saveKcalGoal(manualKcal, 'manual');
                 else useComputedKcalGoal(await DietUI.calculateTDEE({ goal, activity, birthYear }));
 
-                modal.style.display = 'none';
+                zamknijTdee();
                 await DietUI.loadTodayData();
             });
         }
@@ -317,7 +370,7 @@ export const DietUI = {
                 : noData ? NO_DATA_HINT : 'Wyliczenie wygląda na błędne. Sprawdź wagę i wzrost w Pomiarach.';
         }
         const restore = document.getElementById('diet-kcal-restore');
-        if (restore) restore.style.display = source === 'manual' && suggested !== null ? 'inline-block' : 'none';
+        if (restore) restore.style.display = source === 'manual' && suggested !== null ? 'inline-flex' : 'none';
         const profileBox = document.getElementById('diet-kcal-profile-hint');
         if (profileBox) {
             const birth = document.getElementById('diet-kcal-birth-year');
@@ -481,7 +534,9 @@ export const DietUI = {
         const ring = document.getElementById('diet-kcal-ring');
         if (ring) {
             ring.style.setProperty('--z-val', procent(totalKcal, tdee));
-            ring.setAttribute('aria-label', `Zjedzono ${totalKcal} z ${tdee} kcal`);
+            // Źródło celu (ręczny/wyliczony) jest w środku koła pod aria-hidden: dopisujemy je do etykiety koła.
+            const zrodloCelu = document.getElementById('diet-kcal-source')?.getAttribute('aria-label');
+            ring.setAttribute('aria-label', `Zjedzono ${totalKcal} z ${tdee} kcal${zrodloCelu ? `. ${zrodloCelu}` : ''}`);
             // Przekroczony cel: liczba w kolorze akcentu (koło jest już pełne).
             ring.classList.toggle('diet-ponad-cel', totalKcal > tdee);
             
@@ -608,55 +663,62 @@ export const DietUI = {
         const thumbnailList = Array.isArray(thumbnails) ? thumbnails : (thumbnails ? [thumbnails] : []);
         const primaryThumbnail = thumbnailList.length > 0 ? thumbnailList[0] : null;
         
+        // Fokus wraca tam, skąd otwarto okno (po analizie z AI przycisk „Analizuj z AI”).
+        const skad = document.activeElement;
         const modal = document.createElement('div');
         modal.id = 'diet-result-modal-overlay';
-        modal.style.cssText = 'position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 10000; display: flex; justify-content: center; align-items: center; padding: 20px; box-sizing: border-box;';
-        
+        modal.className = 'z-sheet-scrim diet-okno-scrim';
+        const gramy = (klucz, nazwa, liczbaG) => `
+                        <div class="diet-okno-m diet-okno-m-${klucz}"><span class="z-mut diet-okno-m-nazwa">${nazwa}</span><span class="z-big diet-okno-m-gramy">${esc(liczbaG)} g</span></div>`;
+
         modal.innerHTML = `
-            <div style="background: #1e1e1e; padding: 20px; border-radius: 12px; border: 1px solid #FF9800; max-width: 400px; width: 100%; text-align: center; color: #fff; position: relative;">
-                <h3 style="color: #FF9800; margin-top: 0; margin-bottom: 15px;">Potwierdź Posiłek</h3>
-                <div id="diet-result-thumbnail-container" style="margin-bottom: 15px;"></div>
-                
-                <div style="font-size: 1.2em; font-weight: bold; margin-bottom: 15px; color: #fff; word-break: break-word;">
-                    ${esc(result.food_name || 'Nieznany posiłek')}
+            <div class="z-sheet diet-okno" role="dialog" aria-modal="true" aria-labelledby="diet-result-tytul">
+                <div class="z-sheet-grip" aria-hidden="true"></div>
+                <div class="z-sheet-head">
+                    <h3 id="diet-result-tytul" class="z-hd diet-okno-tytul">Potwierdź posiłek</h3>
                 </div>
-                
-                <div style="background: rgba(255,152,0,0.1); border: 1px solid rgba(255,152,0,0.3); border-radius: 8px; padding: 15px; margin-bottom: 20px;">
-                    <div style="margin-bottom: 10px; color: #aaa;">Kalorie:</div>
-                    <div style="display: flex; align-items: center; justify-content: center; gap: 15px;">
-                        <button id="btn-minus-kcal" style="background: rgba(255, 68, 68, 0.2); border: 1px solid #ff4444; color: #ff4444; width: 45px; height: 45px; border-radius: 50%; font-size: 1.8em; cursor: pointer; display: flex; justify-content: center; align-items: center; padding-bottom: 3px;">-</button>
-                        <input type="number" id="diet-result-kcal-display" value="${currentKcal}" style="font-size: 2em; font-weight: bold; color: #FF9800; min-width: 100px; width: 120px; text-align: center; background: transparent; border: none; outline: none; -moz-appearance: textfield;">
-                        <button id="btn-plus-kcal" style="background: rgba(76, 175, 80, 0.2); border: 1px solid #4CAF50; color: #4CAF50; width: 45px; height: 45px; border-radius: 50%; font-size: 1.8em; cursor: pointer; display: flex; justify-content: center; align-items: center; padding-bottom: 3px;">+</button>
+                <div id="diet-result-thumbnail-container" class="diet-okno-fotki"></div>
+
+                <div class="diet-okno-nazwa">${esc(result.food_name || 'Nieznany posiłek')}</div>
+
+                <div class="z-card diet-okno-kcal">
+                    <label class="z-lab" for="diet-result-kcal-display">Kalorie</label>
+                    <div class="diet-okno-krok">
+                        <button type="button" id="btn-minus-kcal" class="z-ic z-card diet-krok-btn" aria-label="Mniej kalorii">${ikona('minus', 24)}</button>
+                        <input type="number" id="diet-result-kcal-display" class="z-in diet-okno-kcal-pole" inputmode="numeric" min="0" value="${currentKcal}">
+                        <button type="button" id="btn-plus-kcal" class="z-ic z-card diet-krok-btn" aria-label="Więcej kalorii">${ikona('plus', 24)}</button>
                     </div>
+                    <span class="z-mut diet-okno-jednostka">kcal</span>
                 </div>
 
-                <div style="font-size: 1.25em; color: #ddd; margin-bottom: 25px; display: flex; justify-content: space-between; padding: 0 10px;">
-                    <span><strong style="color: #4CAF50; font-size: 1.1em;">B:</strong> ${parseInt(result.protein) || 0}g</span>
-                    <span><strong style="color: #2196F3; font-size: 1.1em;">W:</strong> ${parseInt(result.carbs) || 0}g</span>
-                    <span><strong style="color: #E91E63; font-size: 1.1em;">T:</strong> ${parseInt(result.fat) || 0}g</span>
+                <div class="diet-okno-makra" role="group" aria-label="Zjedzone makroskładniki">${gramy('bialko', 'Białko', parseInt(result.protein) || 0)}${gramy('wegle', 'Węgle', parseInt(result.carbs) || 0)}${gramy('tluszcze', 'Tłuszcze', parseInt(result.fat) || 0)}
                 </div>
 
-                <div style="display: flex; gap: 15px;">
-                    <button id="diet-result-cancel" style="flex: 1; padding: 15px; font-size: 1.1em; background: transparent; border: 1px solid #555; color: #ccc; border-radius: 8px; cursor: pointer; font-weight: bold;">Anuluj</button>
-                    <button id="diet-result-save" style="flex: 1; padding: 15px; font-size: 1.1em; background: #FF9800; border: none; color: #000; border-radius: 8px; cursor: pointer; font-weight: bold;">Zapisz</button>
+                <div class="diet-okno-akcje">
+                    <button type="button" id="diet-result-cancel" class="z-ghost">Anuluj</button>
+                    <button type="button" id="diet-result-save" class="z-btn">Zapisz posiłek</button>
                 </div>
             </div>
         `;
         
         document.body.appendChild(modal);
+        const zamknij = () => {
+            modal.remove();
+            oddajFokus(skad, () => document.getElementById('diet-analyze-btn'));
+        };
+        // Wynik AI kosztuje zapytanie (dzienny limit): stuknięcie w zasłonę go nie odrzuca, zamyka Anuluj albo Escape.
+        podepnijArkusz(modal, zamknij, { zasloneZamyka: false });
+        document.getElementById('diet-result-save').focus();
         if (thumbnailList.length > 0) {
             const container = document.getElementById('diet-result-thumbnail-container');
             if (container) {
-                container.style.display = 'flex';
-                container.style.justifyContent = 'center';
-                container.style.gap = '8px';
-                container.style.flexWrap = 'wrap';
                 thumbnailList.forEach(thumb => {
                     MediaManager.getMediaUrl(thumb).then(url => {
                         if (url) {
                             const img = document.createElement('img');
+                            img.className = 'diet-okno-foto';
+                            img.alt = '';
                             img.src = url;
-                            img.style.cssText = 'width: 80px; height: 80px; object-fit: cover; border-radius: 8px; border: 2px solid #FF9800;';
                             container.appendChild(img);
                         }
                     });
@@ -685,12 +747,10 @@ export const DietUI = {
             updateKcalDisplay();
         });
 
-        document.getElementById('diet-result-cancel').addEventListener('click', () => {
-            modal.remove();
-        });
+        document.getElementById('diet-result-cancel').addEventListener('click', zamknij);
 
         document.getElementById('diet-result-save').addEventListener('click', async () => {
-            modal.remove();
+            zamknij();
             
             // Adjust macros proportionally if calories changed? 
             // Or just save the manually adjusted calories. Let's just save the calories.
@@ -718,47 +778,61 @@ export const DietUI = {
     showHistoryMealsModal: async (date) => {
         const logs = await DatabaseManager.getDietLogs(date);
         
+        const skad = document.activeElement;
         const modal = document.createElement('div');
         modal.id = 'diet-history-meals-modal';
-        modal.style.cssText = 'position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 10000; display: flex; justify-content: center; align-items: center; padding: 15px; box-sizing: border-box;';
+        modal.className = 'z-sheet-scrim diet-okno-scrim';
         
         let mealsHtml = '';
         if (logs.length === 0) {
-            mealsHtml = '<p style="color:#aaa; text-align:center;">Brak posiłków tego dnia.</p>';
+            mealsHtml = '<p class="z-mut diet-okno-pusto">Brak posiłków tego dnia.</p>';
         } else {
             logs.forEach(log => {
                 mealsHtml += `
-                    <div style="background: rgba(0,0,0,0.3); border: 1px solid #333; border-radius: 8px; padding: 10px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center;">
-                        <div>
-                            <div style="color: #FF9800; font-weight: bold; font-size: 1.05em; margin-bottom: 5px;">${esc(log.food_name || 'Posiłek')}</div>
-                            <div style="display:flex; gap:10px; font-size:0.85em;">
-                                <span style="color:#4CAF50">B: ${esc(log.protein)}g</span>
-                                <span style="color:#2196F3">W: ${esc(log.carbs)}g</span>
-                                <span style="color:#E91E63">T: ${esc(log.fat)}g</span>
-                            </div>
+                    <div class="z-card diet-okno-posilek">
+                        <div class="diet-okno-posilek-tekst">
+                            <div class="diet-okno-posilek-nazwa">${esc(log.food_name || 'Posiłek')}</div>
+                            <div class="z-mut diet-okno-posilek-makro">B ${esc(log.protein)} · W ${esc(log.carbs)} · T ${esc(log.fat)} g</div>
                         </div>
-                        <div style="text-align: right;">
-                            <div style="color: #fff; font-weight: bold; font-size: 1.1em;">${esc(log.calories)} kcal</div>
-                            <button onclick="DatabaseManager.deleteDietLog(${Number(log.id)}).then(() => { document.getElementById('diet-history-meals-modal').remove(); window.DietUI.loadTodayData(); })" style="background: transparent; color: #ff4444; border: 1px solid #ff4444; border-radius: 4px; padding: 3px 8px; font-size: 0.8em; margin-top: 5px; cursor: pointer;">Usuń</button>
+                        <div class="diet-okno-posilek-kcal">
+                            <div class="z-big">${esc(log.calories)}</div>
+                            <div class="z-mut">kcal</div>
                         </div>
+                        <button type="button" class="z-ic diet-okno-usun" data-id="${esc(Number(log.id))}" aria-label="Usuń ${esc(log.food_name || 'Posiłek')}" title="Usuń">${ikona('trash', 20)}</button>
                     </div>
                 `;
             });
         }
         
         modal.innerHTML = `
-            <div style="background: #1e1e1e; padding: 20px; border-radius: 12px; border: 1px solid #FF9800; max-width: 400px; width: 100%; max-height: 80vh; display: flex; flex-direction: column;">
-                <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #444; padding-bottom: 10px; margin-bottom: 15px;">
-                    <h3 style="color: #FF9800; margin: 0;">Posiłki z dnia: ${esc(date)}</h3>
-                    <button onclick="this.closest('#diet-history-meals-modal').remove()" style="background: none; border: none; color: #fff; font-size: 1.5em; cursor: pointer;">&times;</button>
+            <div class="z-sheet diet-okno" role="dialog" aria-modal="true" aria-labelledby="diet-dzien-tytul">
+                <div class="z-sheet-grip" aria-hidden="true"></div>
+                <div class="z-sheet-head">
+                    <h3 id="diet-dzien-tytul" class="z-hd diet-okno-tytul">Posiłki z dnia: ${esc(date)}</h3>
+                    <button type="button" class="z-ic z-card diet-dzien-zamknij" aria-label="Zamknij">${ikona('x', 20)}</button>
                 </div>
-                <div style="overflow-y: auto; flex: 1;">
+                <div class="diet-okno-lista">
                     ${mealsHtml}
                 </div>
             </div>
         `;
         
         document.body.appendChild(modal);
+        const zamknij = () => {
+            modal.remove();
+            oddajFokus(skad, () => document.querySelector(`#diet-history-chart .diet-dzien[data-date="${CSS.escape(String(date))}"]`));
+        };
+        podepnijArkusz(modal, zamknij);
+        modal.querySelector('.diet-dzien-zamknij').addEventListener('click', zamknij);
+        modal.querySelectorAll('.diet-okno-usun').forEach(btn => {
+            btn.addEventListener('click', async () => {
+                if (!confirm('Usunąć ten posiłek?')) return;
+                await DatabaseManager.deleteDietLog(Number(btn.dataset.id));
+                zamknij();
+                DietUI.loadTodayData();
+            });
+        });
+        modal.querySelector('.diet-dzien-zamknij').focus();
     },
 
     // „Historia 30 dni” (plansza): 30 mini-słupków i „śr. X kcal” z narysowanych dni z wpisami. Każdy dzień to przycisk

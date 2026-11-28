@@ -148,6 +148,8 @@ export const AiAnalyticsUI = {
     },
 
     openInterviewModal: (days) => {
+        // Poprzednie okno wywiadu zamykamy razem z jego słuchaczem Escape (bez wycieku przy ponownym otwarciu).
+        if (AiAnalyticsUI._zamknijWywiad) AiAnalyticsUI._zamknijWywiad();
         let modal = document.getElementById('ai-interview-modal');
         if (modal) modal.remove();
         modal = document.createElement('div');
@@ -214,9 +216,15 @@ export const AiAnalyticsUI = {
         document.getElementById('ai-sleep-minus').onclick = () => { senEl.value = String(Math.max(0, odczytSnu() - 0.5)); };
         document.getElementById('ai-sleep-plus').onclick = () => { senEl.value = String(Math.min(12, odczytSnu() + 0.5)); };
 
-        const zamknij = () => { modal.remove(); document.removeEventListener('keydown', naKlawisz); };
+        const zamknij = () => {
+            modal.remove();
+            document.removeEventListener('keydown', naKlawisz);
+            if (AiAnalyticsUI._zamknijWywiad === zamknij) AiAnalyticsUI._zamknijWywiad = null;
+        };
         const naKlawisz = (e) => { if (e.key === 'Escape') zamknij(); };
         document.addEventListener('keydown', naKlawisz);
+        AiAnalyticsUI._zamknijWywiad = zamknij;
+        senEl.focus();
         document.getElementById('ai-interview-cancel').onclick = zamknij;
 
         document.getElementById('ai-interview-submit').onclick = async () => {
@@ -287,6 +295,7 @@ export const AiAnalyticsUI = {
     },
 
     _showNoDataModal: (days) => {
+        if (AiAnalyticsUI._zamknijBrakDanych) AiAnalyticsUI._zamknijBrakDanych();
         let modal = document.getElementById('ai-nodata-modal');
         if (modal) modal.remove();
         modal = document.createElement('div');
@@ -299,7 +308,17 @@ export const AiAnalyticsUI = {
             <div class="z-dialog-actions"><button id="ai-nodata-close" type="button" class="z-btn">Rozumiem, zaraz trenuję!</button></div>
         </div>`;
         document.body.appendChild(modal);
-        document.getElementById('ai-nodata-close').onclick = () => modal.remove();
+        const zamknij = () => {
+            modal.remove();
+            document.removeEventListener('keydown', naKlawisz);
+            if (AiAnalyticsUI._zamknijBrakDanych === zamknij) AiAnalyticsUI._zamknijBrakDanych = null;
+        };
+        const naKlawisz = (e) => { if (e.key === 'Escape') zamknij(); };
+        document.addEventListener('keydown', naKlawisz);
+        AiAnalyticsUI._zamknijBrakDanych = zamknij;
+        const przycisk = document.getElementById('ai-nodata-close');
+        przycisk.onclick = zamknij;
+        przycisk.focus();
     },
 
     showReport: async (id) => {

@@ -144,3 +144,17 @@
     --ukis-chart-2: #fde68a;
     --ukis-chart-3: #cfc7bd;
 }
+
+/* C6: Analiza — Sylwetka (jaśniejszy czerwony tekst dla zmiany niekorzystnej: --ukis-color-danger ma na karcie motywu granat 4,25 : 1) */
+:root {
+    --ukis-danger-text: #ff8a84;
+}
+
+/* C6: pasy skali w oknie objaśnienia BF%/FFMI/WHR (pięć kolorów parami różnych w każdym motywie; wspólne dla trzech motywów, bo skala jest czytana kolorem) */
+:root {
+    --ukis-pas-0: #f5c542;
+    --ukis-pas-1: #5ab0ff;
+    --ukis-pas-2: #4ade80;
+    --ukis-pas-3: #c084fc;
+    --ukis-pas-4: #ff6b64;
+}

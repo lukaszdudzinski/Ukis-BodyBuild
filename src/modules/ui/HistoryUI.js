@@ -76,12 +76,13 @@ export const HistoryUI = {
             html += `<section class="z-hist-miesiac-grupa"><h3 class="z-hist-miesiac z-mut">${esc(monthYear)}</h3>`;
 
             monthRecords.forEach((rec, idx) => {
-                const totalSets = rec.exercises.reduce((sum, ex) => sum + (ex.sets ? ex.sets.length : 0), 0);
-                const totalVolume = rec.exercises.reduce((sum, ex) => {
+                // Serie i objętość liczymy też w ćwiczeniach wewnątrz superserii.
+                const plaskie = rec.exercises.flatMap(ex => (ex.type === 'superset' && Array.isArray(ex.exercises)) ? ex.exercises : [ex]);
+                const totalSets = plaskie.reduce((sum, ex) => sum + (ex.sets ? ex.sets.length : 0), 0);
+                const totalVolume = plaskie.reduce((sum, ex) => {
                     if (!ex.sets) return sum;
                     return sum + ex.sets.reduce((sSum, set) => sSum + (set.weight * set.reps), 0);
                 }, 0);
-
                 const cardId = `history-card-${monthYear.replace(/\s/g, '-')}-${idx}`;
                 const isTemplate = rec.name && templateNames.includes(rec.name.toLowerCase().trim());
                 const isNotebook = rec.source === 'zeszyt';

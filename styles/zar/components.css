@@ -273,6 +273,27 @@ select.z-in {
     background-size: 20px 20px;
 }
 
+/* Data i godzina: Safari na iPhonie daje tym polom własną minimalną szerokość i wyśrodkowany tekst,
+   przez co pole wychodziło poza kolumnę (Pomiary: data pod przełącznikiem płci). */
+.z-in[type="date"],
+.z-in[type="time"],
+.z-in[type="datetime-local"],
+.z-in[type="month"] {
+    -webkit-appearance: none;
+    appearance: none;
+    min-width: 0;
+    max-width: 100%;
+    text-align: left;
+}
+
+.z-in[type="date"]::-webkit-date-and-time-value,
+.z-in[type="time"]::-webkit-date-and-time-value,
+.z-in[type="datetime-local"]::-webkit-date-and-time-value,
+.z-in[type="month"]::-webkit-date-and-time-value {
+    min-height: 1.2em;
+    text-align: left;
+}
+
 /* Pole wyboru w wierszu <label> (rozdz. 6.2): cały wiersz min. 44 px. */
 .z-check {
     display: flex;

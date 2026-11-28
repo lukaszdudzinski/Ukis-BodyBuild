@@ -1,1 +1,307 @@
 /* wyglad: zar */
+/* ============================================================
+   EKRAN „PROFIL” (#settings-panel, spec 8.3, plansza Profil; SettingsUI.js)
+   Karta użytkownika, lista ustawień z-li (edytory rozwijane w miejscu), przełączniki z-switch, pomoc, „Zaawansowane”.
+   Kolory wyłącznie przez var(--ukis-…) (tokens.css); nakładki tylko rgba(0,0,0,…) / rgba(255,255,255,…).
+   ============================================================ */
+
+#settings-panel {
+    color: var(--ukis-text);
+    font-family: var(--ukis-font);
+}
+
+/* Klasy z display (z-pill, z-ghost) nie mogą odkryć elementu z atrybutem hidden. */
+#settings-panel [hidden] {
+    display: none !important;
+}
+
+.z-profil {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    max-width: 560px;
+    margin: 0 auto;
+    /* Odstęp na pływający przycisk Edwarda nad paskiem dolnym (koniec ekranu nie chowa się pod nim). */
+    padding-bottom: 110px;
+}
+
+#settings-panel .z-head-main {
+    padding-bottom: 4px;
+}
+
+#settings-panel .z-head-main .z-hd {
+    text-shadow: none;
+}
+
+/* ---------- Karta użytkownika ---------- */
+.profil-karta {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+
+/* Awatar 64 px z ramką 2 px akcentu; obraz (zdjęcie albo sylwetka) podaje SettingsUI w background-image. */
+.profil-awatar {
+    flex: 0 0 64px;
+    width: 64px;
+    height: 64px;
+    box-sizing: border-box;
+    border: 2px solid var(--ukis-color-accent);
+    border-radius: 50%;
+    background-color: var(--ukis-surface-2);
+    background-position: center;
+    background-size: cover;
+    background-repeat: no-repeat;
+}
+
+.profil-karta-txt {
+    flex: 1 1 auto;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+}
+
+.profil-nick {
+    max-width: 100%;
+    font-family: var(--ukis-font-display);
+    font-style: italic;
+    font-weight: 700;
+    font-size: 22px;
+    line-height: 1.15;
+    letter-spacing: 0.2px;
+    color: var(--ukis-text);
+    overflow-wrap: anywhere;
+}
+
+.profil-meta {
+    line-height: 1.3;
+}
+
+/* „Wersja PRO aktywna”: ramka w kolorze wyróżnienia. */
+.profil-pro {
+    margin-top: 2px;
+    border-color: var(--ukis-color-accent);
+    color: var(--ukis-text);
+}
+
+/* Stan PRO z PremiumUI: przy PRO wystarcza plakietka w karcie, pasek zostaje dla okresu próbnego i Light. */
+#premium-status-banner:empty,
+#premium-status-banner:has(.pro-stan-pro) {
+    display: none;
+}
+
+/* ---------- Listy (z-card z-list): pozycja = wiersz z-li + edytor rozwijany w miejscu ---------- */
+.profil-poz {
+    border-bottom: 1px solid var(--ukis-divider);
+}
+
+.profil-poz:last-child {
+    border-bottom: 0;
+}
+
+#settings-panel .profil-poz > .z-li {
+    border-bottom: 0;
+}
+
+/* Nazwa wiersza zajmuje wolne miejsce: strzałka stoi przy prawej krawędzi także w wierszach bez wartości. */
+#settings-panel .z-li > span:first-child {
+    flex: 1 1 auto;
+    min-width: 0;
+}
+
+/* Strzałka „chevron-right” obraca się w dół przy rozwiniętym edytorze. */
+#settings-panel .z-li[aria-expanded] > svg:last-child {
+    transition: transform 0.2s ease;
+}
+
+#settings-panel .z-li[aria-expanded="true"] > svg:last-child {
+    transform: rotate(90deg);
+}
+
+/* Wiersze „Instalacja” i „Instrukcja” zachowują klasę .install-guide-header (AppUI.js); bez starego wyglądu z pwa.css. */
+#settings-panel .install-guide-header,
+#settings-panel .install-guide-header:hover {
+    justify-content: flex-start;
+    padding: 12px 16px;
+    border: 0;
+    border-radius: 0;
+    background-color: transparent;
+}
+
+.profil-edytor {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 0 16px 16px;
+}
+
+.profil-edytor .z-lab {
+    margin-bottom: 0;
+}
+
+.profil-opis {
+    margin: 0;
+    line-height: 1.4;
+}
+
+/* „Zmień zdjęcie”: przycisk otwiera ukryte pole pliku. */
+.profil-plik {
+    align-self: flex-start;
+}
+
+.profil-szeroki {
+    width: 100%;
+}
+
+/* ---------- Odznaki ---------- */
+.profil-odznaki {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(76px, 1fr));
+    gap: 8px;
+}
+
+.profil-odznaka {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    padding: 10px 6px;
+    border: 1px solid rgba(255,255,255,.12);
+    border-radius: var(--ukis-radius-sm);
+    /* Ciemniejsze niż karta: wyciszony podpis odznaki do zdobycia ma co najmniej 4,5 : 1. */
+    background: rgba(0,0,0,.2);
+    color: var(--ukis-text-muted);
+    text-align: center;
+}
+
+.profil-odznaka.z-on {
+    border-color: var(--ukis-accent-line);
+    background: var(--ukis-primary-tint);
+    color: var(--ukis-text);
+}
+
+.profil-odznaka-ik svg {
+    display: block;
+    width: 24px;
+    height: 24px;
+}
+
+.profil-odznaka.z-on .profil-odznaka-ik {
+    color: var(--ukis-color-accent);
+}
+
+.profil-odznaka-tyt {
+    font-size: 11px;
+    font-weight: 600;
+    line-height: 1.2;
+}
+
+/* ---------- Przełączniki: etykieta z ukrytym polem role="switch" (stan z :checked) ---------- */
+#settings-panel .z-switch {
+    position: relative;
+    padding: 10px 16px;
+    box-sizing: border-box;
+    border-bottom: 1px solid var(--ukis-divider);
+    margin: 0;
+}
+
+.profil-przelaczniki > .z-switch:last-child,
+.profil-przelaczniki > :last-child > .z-switch {
+    border-bottom: 0;
+}
+
+/* Pole wyboru przykrywa cały wiersz (niewidoczne): stuknięcie w dowolne miejsce trafia wprost w nie. */
+.profil-switch-pole {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    opacity: 0;
+    cursor: pointer;
+    z-index: 1;
+}
+
+#settings-panel .z-switch input:checked ~ .z-switch-tor {
+    background: var(--ukis-color-primary);
+}
+
+#settings-panel .z-switch input:checked ~ .z-switch-tor::after {
+    transform: translateX(18px);
+}
+
+#settings-panel .z-switch input:focus-visible ~ .z-switch-tor {
+    outline: 2px solid var(--ukis-color-accent);
+    outline-offset: 2px;
+}
+
+.profil-switch-txt {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+    line-height: 1.3;
+}
+
+.profil-switch-txt .z-mut {
+    line-height: 1.35;
+}
+
+/* Imię trenera z ważnego kodu. */
+.profil-trener-kto {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--ukis-color-accent);
+}
+
+/* ---------- Pomoc (rozwinięcia w miejscu) ---------- */
+.profil-tekst {
+    gap: 6px;
+    font-size: 14px;
+    line-height: 1.55;
+    color: var(--ukis-text-secondary);
+}
+
+.profil-tekst p,
+.profil-tekst ol,
+.profil-tekst ul {
+    margin: 0;
+}
+
+.profil-tekst ol,
+.profil-tekst ul {
+    padding-left: 20px;
+}
+
+.profil-tekst li {
+    margin-bottom: 6px;
+}
+
+.profil-tekst strong {
+    color: var(--ukis-text);
+}
+
+.profil-tekst .profil-pomoc-tyt {
+    margin-top: 8px;
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--ukis-text);
+}
+
+/* Karta przełącznika wyglądów (ui-switch.js, styl własny do etapu D): tylko odstęp z siatki ekranu. */
+#profile-ui-switch:empty {
+    display: none;
+}
+
+#settings-panel #uki-ui-switch-card {
+    margin: 0 !important;
+}
+
+/* Wersja „Heavy v…” / „Light v…”. */
+.profil-wersja {
+    margin: 4px 0 0;
+    font-size: 11px;
+    text-align: center;
+}
